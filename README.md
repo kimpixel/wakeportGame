@@ -61,3 +61,7 @@ Testlauf ohne Fenster:
 ```
 godot --headless --path . --fixed-fps 120 -- --autotest --quit=120
 ```
+
+## Lizenz
+
+[MIT](LICENSE) – du darfst den Code frei verwenden, verändern und weitergeben, solange der Lizenzhinweis erhalten bleibt.
