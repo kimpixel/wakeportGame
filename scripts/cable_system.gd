@@ -7,11 +7,15 @@ extends Node3D
 
 enum State { IDLE, START, RUN, BRAKE, PAUSE, STOPPING }
 
-const START_Z := -15.0                    # Parkposition des Carriers beim Start
-const TURN_A_Z := -45.0                   # Wendepunkt vor dem Ufer (Platz zum Ausschwingen)
-const TURN_B_Z := Lake.MAST_B_Z + 25.0    # Wendepunkt vor Mast 2 (Platz zum Ausschwingen)
 const CARRIER_HANG := 0.45                # Zugseil hängt so weit unter dem Stahlseil
 const MARKER_COUNT := 12
+
+## Geometrie im lokalen Raum der Anlage (Seil entlang -z). Vor add_child() setzen.
+var mast_a_z := Lake.MAST_A_Z
+var mast_b_z := Lake.MAST_B_Z
+var start_z := -22.0                      # Parkposition des Carriers beim Start
+var turn_a_z := -30.0                     # Wendepunkt vor dem Ufer (Platz zum Ausschwingen)
+var turn_b_z := Lake.MAST_B_Z + 22.0      # Wendepunkt vor dem Endmast
 
 var max_speed := 30.0 / 3.6     # m/s (Standard 30 km/h)
 var start_speed := 2.5         # Anfahren vom Steg
@@ -21,14 +25,14 @@ var accel := 1.4
 var decel := 3.5               # spät und kräftig bremsen, damit das Seil lange zieht
 var pause_time := 0.15
 
-var s := START_Z         # Carrier-Position entlang z
+var s := 0.0             # Carrier-Position entlang z
 var v := 0.0             # Geschwindigkeit (mit Vorzeichen) entlang z
-var dir := -1.0          # -1 = Richtung Mast 2, +1 = Richtung Ufer
+var dir := -1.0          # -1 = Richtung Endmast, +1 = Richtung Ufer
 var state := State.IDLE
 var laps := 0
 var cable_travel := 0.0
 
-var _prev_s := START_Z
+var _prev_s := 0.0
 var _prev_travel := 0.0
 var _pause_t := 0.0
 var _after_turn := false
@@ -38,26 +42,33 @@ var _markers_a: Array[Node3D] = []
 var _markers_b: Array[Node3D] = []
 
 
+## Platziert die Anlage zwischen zwei Mastpunkten (Spielkoordinaten).
+func place_between(a: Vector3, b: Vector3) -> void:
+	var d := b - a
+	position = a
+	rotation.y = atan2(-d.x, -d.z)
+	mast_a_z = 0.0
+	mast_b_z = -Vector2(d.x, d.z).length()
+	turn_b_z = mast_b_z + 22.0
+
+
 func _ready() -> void:
+	s = start_z
+	_prev_s = s
 	var steel := Util.mat(Color(0.6, 0.62, 0.66), 0.35)
 	steel.metallic = 0.8
-	var mast_mat := Util.mat(Color(0.88, 0.88, 0.85), 0.6)
+	var galv := Util.mat(Color(0.72, 0.74, 0.76), 0.45)   # verzinkter Gittermast
+	galv.metallic = 0.6
 
-	_build_mast(Lake.MAST_A_Z, Lake.SHORE_Y, mast_mat, steel)
-	_build_mast(Lake.MAST_B_Z, -1.5, mast_mat, steel)
-
-	# Dreibein für den Mast im See
-	for i in 3:
-		var ang := TAU * i / 3.0 + 0.5
-		var foot := Vector3(cos(ang) * 3.2, -1.5, Lake.MAST_B_Z + sin(ang) * 3.2)
-		Util.beam(self, foot, Vector3(0.0, 5.0, Lake.MAST_B_Z), 0.09, mast_mat)
-	# Abspannung des Ufermasts nach hinten
-	Util.beam(self, Vector3(0.0, Lake.CABLE_Y, Lake.MAST_A_Z), Vector3(0.0, Lake.SHORE_Y, Lake.MAST_A_Z + 14.0), 0.02, steel)
+	var ga := global_position
+	var ground_a := Geo.height(ga.x, ga.z) if Geo.in_area(ga.x, ga.z) else 0.5
+	_build_mast(mast_a_z, maxf(ground_a, 0.0), galv, steel, false)
+	_build_mast(mast_b_z, -1.0, galv, steel, true)
 
 	# Die zwei Stränge der Stahlseil-Schlaufe (tangential an den Rollen)
 	for side: float in [-1.0, 1.0]:
 		var x := side * Lake.PULLEY_RADIUS
-		Util.beam(self, Vector3(x, Lake.CABLE_Y, Lake.MAST_A_Z), Vector3(x, Lake.CABLE_Y, Lake.MAST_B_Z), 0.03, steel)
+		Util.beam(self, Vector3(x, Lake.CABLE_Y, mast_a_z), Vector3(x, Lake.CABLE_Y, mast_b_z), 0.03, steel)
 
 	# Carrier
 	_carrier = Node3D.new()
@@ -72,8 +83,55 @@ func _ready() -> void:
 		_markers_b.append(Util.box(self, Vector3(0.09, 0.09, 0.35), Vector3.ZERO, mk))
 
 
-func _build_mast(z: float, base_y: float, mast_mat: Material, steel: Material) -> void:
-	Util.beam(self, Vector3(0.0, base_y, z), Vector3(0.0, Lake.CABLE_Y - 0.1, z), 0.2, mast_mat)
+## A-förmiger Gittermast wie am Wakeport: zwei Leiter-Beine, oben die Rolle.
+## Endmast im See steht auf einer kleinen Plattform über Pfählen.
+func _build_mast(z: float, base_y: float, galv: Material, steel: Material, in_lake: bool) -> void:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var tube := CylinderMesh.new()
+	tube.top_radius = 1.0
+	tube.bottom_radius = 1.0
+	tube.height = 1.0
+	tube.radial_segments = 6
+	tube.rings = 1
+	var top_y := Lake.CABLE_Y - 0.25
+	var foot_y := 0.45 if in_lake else base_y
+	for side: float in [-1.0, 1.0]:
+		var foot := Vector3(side * 2.3, foot_y, z)
+		var top := Vector3(side * 0.28, top_y, z)
+		for o: float in [-0.3, 0.3]:
+			var off := Vector3(0.0, 0.0, o)
+			st.append_from(tube, 0, Util.beam_transform(foot + off, top + off * 0.6, 0.05))
+		# Sprossen und Diagonalen
+		var n := 12
+		for i in n:
+			var t0 := float(i) / n
+			var t1 := float(i + 1) / n
+			var p0 := foot.lerp(top, t0)
+			var p1 := foot.lerp(top, t1)
+			var w0 := lerpf(0.3, 0.18, t0)
+			var w1 := lerpf(0.3, 0.18, t1)
+			st.append_from(tube, 0, Util.beam_transform(p0 + Vector3(0, 0, -w0), p0 + Vector3(0, 0, w0), 0.025))
+			st.append_from(tube, 0, Util.beam_transform(p0 + Vector3(0, 0, -w0), p1 + Vector3(0, 0, w1), 0.02))
+	# Querstreben zwischen den Beinen
+	for t: float in [0.35, 0.7]:
+		var y := lerpf(foot_y, top_y, t)
+		var half := lerpf(2.3, 0.28, t)
+		st.append_from(tube, 0, Util.beam_transform(Vector3(-half, y, z), Vector3(half, y, z), 0.04))
+	# Kopfplatte
+	st.append_from(tube, 0, Util.beam_transform(Vector3(-0.45, top_y, z), Vector3(0.45, top_y, z), 0.09))
+	if in_lake:
+		# Plattform + Pfähle
+		for px: float in [-2.5, 2.5]:
+			for pz: float in [-1.2, 1.2]:
+				st.append_from(tube, 0, Util.beam_transform(Vector3(px, -3.0, z + pz), Vector3(px, 0.4, z + pz), 0.18))
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = galv
+	add_child(mi)
+	if in_lake:
+		Util.box(self, Vector3(5.8, 0.15, 3.2), Vector3(0.0, 0.45, z), Util.mat(Color(0.5, 0.42, 0.32)))
+
 	# Rolle mit senkrechter Achse – das Seil läuft außen herum
 	var pulley := MeshInstance3D.new()
 	var c := CylinderMesh.new()
@@ -88,7 +146,9 @@ func _build_mast(z: float, base_y: float, mast_mat: Material, steel: Material) -
 	_pulleys.append(pulley)
 	# Speiche, damit man das Drehen der Rolle sieht
 	Util.box(pulley, Vector3(0.3, 0.1, 0.04), Vector3.ZERO, Util.mat(Color(0.9, 0.15, 0.1)))
-	Util.box(self, Vector3(0.45, 0.06, 0.45), Vector3(0.0, Lake.CABLE_Y + 0.12, z), mast_mat)
+	Util.box(self, Vector3(0.45, 0.06, 0.45), Vector3(0.0, Lake.CABLE_Y + 0.12, z), galv)
+	# Signallampe oben (orange, wie auf den Fotos)
+	Util.box(self, Vector3(0.25, 0.3, 0.25), Vector3(0.0, Lake.CABLE_Y + 0.3, z), Util.mat(Color(1.0, 0.45, 0.1), 0.5))
 
 
 func start() -> void:
@@ -104,7 +164,7 @@ func emergency_stop() -> void:
 
 
 func reset() -> void:
-	s = START_Z
+	s = start_z
 	_prev_s = s
 	v = 0.0
 	dir = -1.0
@@ -171,27 +231,26 @@ func step(delta: float, rider_vz: float, rope_slack: float) -> void:
 
 
 func _target() -> float:
-	return TURN_B_Z if dir < 0.0 else TURN_A_Z
+	return turn_b_z if dir < 0.0 else turn_a_z
 
 
 func _remaining() -> float:
 	return (_target() - s) * dir
 
 
-## Aufhängepunkt des Zugseils (Physik).
+## Aufhängepunkt des Zugseils (Physik), in Weltkoordinaten.
 func get_anchor() -> Vector3:
-	return Vector3(Lake.PULLEY_RADIUS, Lake.CABLE_Y - CARRIER_HANG, s)
+	return transform * Vector3(Lake.PULLEY_RADIUS, Lake.CABLE_Y - CARRIER_HANG, s)
 
 
 ## Interpolierter Aufhängepunkt für die Grafik.
 func get_anchor_visual() -> Vector3:
-	var a := get_anchor()
-	a.z = lerpf(_prev_s, s, Engine.get_physics_interpolation_fraction())
-	return a
+	var vs := lerpf(_prev_s, s, Engine.get_physics_interpolation_fraction())
+	return transform * Vector3(Lake.PULLEY_RADIUS, Lake.CABLE_Y - CARRIER_HANG, vs)
 
 
 func get_velocity() -> Vector3:
-	return Vector3(0.0, 0.0, v)
+	return transform.basis * Vector3(0.0, 0.0, v)
 
 
 func state_text() -> String:
@@ -210,10 +269,10 @@ func _process(_delta: float) -> void:
 	var cs := lerpf(_prev_s, s, frac)
 	var travel := lerpf(_prev_travel, cable_travel, frac)
 	_carrier.position = Vector3(Lake.PULLEY_RADIUS, Lake.CABLE_Y, cs)
-	var length := Lake.MAST_A_Z - Lake.MAST_B_Z
+	var length := mast_a_z - mast_b_z
 	for i in MARKER_COUNT:
 		var base := i * length / MARKER_COUNT
-		_markers_a[i].position = Vector3(Lake.PULLEY_RADIUS, Lake.CABLE_Y, Lake.MAST_B_Z + fposmod(travel + base, length))
-		_markers_b[i].position = Vector3(-Lake.PULLEY_RADIUS, Lake.CABLE_Y, Lake.MAST_B_Z + fposmod(-travel + base, length))
+		_markers_a[i].position = Vector3(Lake.PULLEY_RADIUS, Lake.CABLE_Y, mast_b_z + fposmod(travel + base, length))
+		_markers_b[i].position = Vector3(-Lake.PULLEY_RADIUS, Lake.CABLE_Y, mast_b_z + fposmod(-travel + base, length))
 	for p in _pulleys:
 		p.rotation.y = travel / Lake.PULLEY_RADIUS

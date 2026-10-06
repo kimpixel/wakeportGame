@@ -9,6 +9,9 @@ uniform float sim_time = 0.0;
 uniform vec3 deep_color : source_color = vec3(0.02, 0.15, 0.19);
 uniform vec3 shallow_color : source_color = vec3(0.07, 0.33, 0.35);
 uniform vec3 foam_color : source_color = vec3(0.93, 0.96, 0.97);
+uniform bool use_wake = true;
+uniform vec2 hole_center;       // grobes Gitter: unter dem feinen Gitter absenken
+uniform float hole_half = 0.0;
 
 const float WAKE_SPEED = 2.6;
 const float WAKE_WIDTH = 0.9;
@@ -30,6 +33,9 @@ float ambient(vec2 p, float t) {
 float surface(vec2 p, float t, out float foam) {
 	float h = ambient(p, t);
 	foam = 0.0;
+	if (!use_wake) {
+		return h;
+	}
 	for (int i = 0; i < WAKE_COUNT; i++) {
 		vec4 w = wake_points[i];
 		float age = t - w.z;
@@ -59,6 +65,9 @@ void vertex() {
 	float hx = surface(wp.xz + vec2(EPS, 0.0), sim_time, unused);
 	float hz = surface(wp.xz + vec2(0.0, EPS), sim_time, unused);
 	VERTEX.y += h;
+	if (hole_half > 0.0 && abs(wp.x - hole_center.x) < hole_half && abs(wp.z - hole_center.y) < hole_half) {
+		VERTEX.y -= 1.5;
+	}
 	v_world_normal = normalize(vec3(h - hx, EPS, h - hz));
 	v_world_pos = wp + vec3(0.0, h, 0.0);
 	v_foam = foam;

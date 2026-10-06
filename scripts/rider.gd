@@ -36,7 +36,7 @@ const POP_LOAD := 2.8
 const POP_ROPE := 1.8
 const BOARD_HALF := 0.35
 
-const START_POS := Vector3(0.0, Lake.DOCK_Y, -3.0)
+const START_POS := Vector3(1.7, Lake.DOCK_Y, -10.0)   # auf dem Startsteg vor der T2-Hütte
 
 var water: Water
 var cable: CableSystem

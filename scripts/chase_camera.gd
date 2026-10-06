@@ -101,7 +101,8 @@ func _process(delta: float) -> void:
 		var pitch := BASE_PITCH + _off_pitch
 		var offset := Basis(Vector3.UP, _yaw + _off_yaw) * Basis(Vector3.RIGHT, pitch) * Vector3(0.0, 0.0, distance)
 		var cam_pos := _focus + offset
-		cam_pos.y = maxf(cam_pos.y, water.height_at(cam_pos.x, cam_pos.z) + 0.5)
+		var ground := maxf(water.height_at(cam_pos.x, cam_pos.z), Geo.height(cam_pos.x, cam_pos.z))
+		cam_pos.y = maxf(cam_pos.y, ground + 0.6)
 		global_position = cam_pos
 		look_at(_focus + Vector3(0.0, 0.3, 0.0), Vector3.UP)
 

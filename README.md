@@ -6,10 +6,12 @@ Ein kleines 3D-Wakeboard-Spiel in **Godot 4.7**: Wakeboarden an einer **2-Mast-S
 
 ## Die Anlage
 
-- **Mast 1** steht am Ufer, **Mast 2** in der Mitte des Sees.
-- Ein Stahlseil ist als Schlaufe um zwei Rollen (Ø 30 cm) oben an den Masten gespannt.
+Nachgebaut ist der **Wakeport am Raunheimer Waldsee** (Hessen). Gespielt wird auf **T2**, daneben läuft T1.
+
+- Der Startmast steht am Strand, der Endmast etwa 198 m weiter draußen im See. Beide Positionen sind echte Koordinaten.
+- Ein Stahlseil ist als Schlaufe um zwei Rollen (Ø 30 cm) oben an den A-förmigen Gittermasten gespannt.
 - Ein **Carrier** sitzt fest auf einem der beiden Stränge. Der Motor kehrt an jedem Ende die Richtung um, so wird der Fahrer hin und her gezogen.
-- Am Carrier hängt das 18 m lange Zugseil des Fahrers.
+- Gelände, Ufer, Wald und Luftbild stammen aus den offenen Geodaten Hessens. Den Strandbereich mit den Hütten habe ich nach Fotos nachgebaut.
 
 ## Steuerung
 
@@ -45,6 +47,20 @@ Funktioniert am besten in Chrome, Edge oder Firefox am PC. Einmal ins Bild klick
 2. Im Projektmanager diesen Ordner importieren (`project.godot`).
 3. Mit **F5** starten.
 
+## Geodaten
+
+Grundlage sind die **offenen Geobasisdaten Hessen** der Hessischen Verwaltung für Bodenmanagement und Geoinformation (HVBG):
+- **DGM1:** Geländemodell mit 1 m Raster
+- **DOM1:** Oberflächenmodell; die Differenz zum Geländemodell ergibt die Baumhöhen
+- **DOP20:** Luftbilder
+
+Die aufbereiteten Daten liegen in `assets/geo/`. Neu laden kannst du sie mit:
+
+```
+cd tools
+node fetch_geodata.mjs
+```
+
 ## Projektaufbau
 
 | Datei | Inhalt |
@@ -53,7 +69,11 @@ Funktioniert am besten in Chrome, Edge oder Firefox am PC. Einmal ins Bild klick
 | `scripts/cable_system.gd` | Masten, Rollen, Seilschlaufe und Abläufe des Carriers (Wende, Anfahren) |
 | `scripts/water.gd`, `shaders/water.gdshader` | Wasser: Grundwellen und Heckwelle. Physik und Grafik nutzen dieselbe Höhenfunktion |
 | `scripts/chase_camera.gd` | 3rd-Person-Kamera |
-| `scripts/lake.gd` | Alle Maße der Anlage |
+| `scripts/lake.gd` | Maße der Anlage T2 (Masten, Startsteg, Kicker) |
+| `scripts/geo.gd` | Lädt die Geodaten und rechnet zwischen echten Koordinaten und Spielkoordinaten um |
+| `scripts/terrain.gd`, `shaders/terrain.gdshader` | Gelände mit Luftbild und Wald |
+| `scripts/beach.gd` | Strandbereich (Hütten, Stege, Hauptgebäude, Palmen …) |
+| `tools/fetch_geodata.mjs` | Lädt und bereitet die Geodaten auf |
 | `scripts/main.gd` | Szenenaufbau, Eingabe, HUD-Anbindung |
 
 Testlauf ohne Fenster:

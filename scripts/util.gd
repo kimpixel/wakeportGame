@@ -51,6 +51,17 @@ static func beam(parent: Node, a: Vector3, b: Vector3, radius: float, material: 
 	return mi
 
 
+## Transform für einen Einheitszylinder (Radius 1, Höhe 1) als Stab von a nach b.
+static func beam_transform(a: Vector3, b: Vector3, radius: float) -> Transform3D:
+	var axis := b - a
+	var length := maxf(axis.length(), 0.0001)
+	var up := axis / length
+	var ref := Vector3.RIGHT if absf(up.dot(Vector3.RIGHT)) < 0.9 else Vector3.FORWARD
+	var x := up.cross(ref).normalized()
+	var z := x.cross(up)
+	return Transform3D(Basis(x * radius, up * length, z * radius), (a + b) * 0.5)
+
+
 static func place_beam(mi: Node3D, a: Vector3, b: Vector3) -> void:
 	var axis := b - a
 	var length := axis.length()

@@ -16,7 +16,7 @@ var rider: Rider
 var cam: ChaseCamera
 var hud: Hud
 
-var _buoys: Array[Node3D] = []
+var cable_t1: CableSystem
 var _crash_t := 0.0
 var _max_tension := 0.0
 
@@ -26,6 +26,7 @@ var _shot_path := ""
 var _shot_time := 3.0
 var _shot_taken := false
 var _cam_arg := ""
+var _view_arg := PackedFloat32Array()
 var _elapsed := 0.0
 var _log_t := 0.0
 
@@ -34,17 +35,26 @@ func _ready() -> void:
 	_setup_input()
 	_parse_args()
 	_build_environment()
-	_build_shore()
+	Geo.ensure_loaded()
+	add_child(Terrain.new())
+	add_child(Beach.new())
 	_build_kickers()
 
 	water = Water.new()
 	add_child(water)
 	cable = CableSystem.new()
 	add_child(cable)
+	# Nachbaranlage T1 läuft zur Deko selbstständig mit
+	cable_t1 = CableSystem.new()
+	cable_t1.place_between(Geo.masts["t1_start"], Geo.masts["t1_end"])
+	cable_t1.start_z = -20.0
+	add_child(cable_t1)
+	cable_t1.start()
 	rider = Rider.new()
 	rider.water = water
 	rider.cable = cable
 	add_child(rider)
+	water.follow = rider
 	rider.crashed.connect(_on_crashed)
 	rider.trick_landed.connect(_on_trick)
 
@@ -61,7 +71,12 @@ func _ready() -> void:
 
 	hud = Hud.new()
 	add_child(hud)
-	_build_buoys()
+	if _view_arg.size() == 6:
+		# Testansicht: feste Kamera (x,y,z -> Blickpunkt x,y,z)
+		cam.set_process(false)
+		cam.global_position = Vector3(_view_arg[0], _view_arg[1], _view_arg[2])
+		cam.look_at(Vector3(_view_arg[3], _view_arg[4], _view_arg[5]), Vector3.UP)
+		hud.visible = false
 	_reset()
 
 	if _test_log:
@@ -74,6 +89,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	water.step(delta)
 	cable.step(delta, rider.vel.z if rider.attached else 0.0, rider.rope_slack())
+	cable_t1.step(delta, cable_t1.v, 0.0)
 	rider.step(delta)
 
 	if rider.mode == Rider.Mode.CRASHED:
@@ -98,9 +114,6 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(_delta: float) -> void:
-	for b in _buoys:
-		b.position.y = water.height_at(b.position.x, b.position.z) + 0.1
-
 	var info := "Fahrer: %d km/h\nAnlage: %s  (Tempo %d km/h)\nWenden: %d     Punkte: %d\nKamera: %s%s\nSeilzug: %d N" % [
 		roundi(rider.horizontal_speed() * 3.6), cable.state_text(), roundi(cable.max_speed * 3.6),
 		cable.laps, rider.score, cam.mode_name(), "   [AUTOPILOT]" if rider.autopilot else "",
@@ -210,6 +223,8 @@ func _parse_args() -> void:
 			_shot_path = arg.substr(7)
 		elif arg.begins_with("--shot-time="):
 			_shot_time = arg.substr(12).to_float()
+		elif arg.begins_with("--view="):
+			_view_arg = PackedFloat32Array(Array(arg.substr(7).split(",")).map(func(v: String) -> float: return v.to_float()))
 		elif arg.begins_with("--cam="):
 			_cam_arg = arg.substr(6)
 
@@ -229,19 +244,27 @@ func _build_environment() -> void:
 	env.background_mode = Environment.BG_SKY
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+	# Schatten nicht zu blau: Himmelslicht nur teilweise, Rest neutrales Grau
+	env.ambient_light_color = Color(0.62, 0.6, 0.55)
+	env.ambient_light_sky_contribution = 0.45
 	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.7, 0.78, 0.88)
-	env.fog_density = 0.0015
+	env.fog_density = 0.0005
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
 
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-48.0, -35.0, 0.0)
+	# Echte Himmelsrichtung: Nachmittagssonne aus Süd-Südwest (Azimut 200°, 45° hoch)
+	var az := deg_to_rad(200.0)
+	var el := deg_to_rad(45.0)
+	var flat := Geo.rel_to_game(sin(az), cos(az))
+	var to_sun := Vector3(flat.x * cos(el), sin(el), flat.y * cos(el))
+	sun.basis = Basis.looking_at(-to_sun)
 	sun.shadow_enabled = true
-	sun.directional_shadow_max_distance = 150.0
+	sun.directional_shadow_max_distance = 200.0
 	add_child(sun)
 
 	# Browser (Compatibility-Renderer) belichtet deutlich heller – eigene Werte, damit es
@@ -254,62 +277,6 @@ func _build_environment() -> void:
 		env.ambient_light_energy = 0.3
 		env.tonemap_exposure = 0.8
 		sun.light_energy = 0.65
-
-
-func _build_shore() -> void:
-	var compat := RenderingServer.get_current_rendering_method() == "gl_compatibility"
-	var grass := Util.mat(Color(0.14, 0.3, 0.08) if compat else Color(0.32, 0.55, 0.25))
-	var sand := Util.mat(Color(0.82, 0.74, 0.55))
-	var wood := Util.mat(Color(0.55, 0.38, 0.22))
-	var far := 500.0
-	var y := Lake.SHORE_Y - 1.5
-	var lake_len := Lake.MAX_Z - Lake.MIN_Z
-	var zc := (Lake.MIN_Z + Lake.MAX_Z) * 0.5
-	# Vier Uferblöcke um das See-Rechteck herum
-	Util.box(self, Vector3(2.0 * far, 3.0, far), Vector3(0.0, y, Lake.MAX_Z + far * 0.5), grass)
-	Util.box(self, Vector3(2.0 * far, 3.0, far), Vector3(0.0, y, Lake.MIN_Z - far * 0.5), grass)
-	Util.box(self, Vector3(far, 3.0, lake_len), Vector3(Lake.MIN_X - far * 0.5, y, zc), grass)
-	Util.box(self, Vector3(far, 3.0, lake_len), Vector3(Lake.MAX_X + far * 0.5, y, zc), grass)
-	# Strand + Startsteg + Motorhaus am Ufermast
-	Util.box(self, Vector3(40.0, 0.1, 12.0), Vector3(0.0, Lake.SHORE_Y, 6.0), sand)
-	var dmin := Lake.DOCK_MIN
-	var dmax := Lake.DOCK_MAX
-	Util.box(self, Vector3(dmax.x - dmin.x, 0.6, dmax.y - dmin.y),
-		Vector3((dmin.x + dmax.x) * 0.5, Lake.DOCK_Y - 0.3, (dmin.y + dmax.y) * 0.5), wood)
-	Util.box(self, Vector3(3.0, 2.5, 3.0), Vector3(4.5, Lake.SHORE_Y + 1.25, Lake.MAST_A_Z + 1.0), Util.mat(Color(0.3, 0.33, 0.38)))
-
-	# Bäume
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 42
-	var trunk := Util.mat(Color(0.4, 0.28, 0.18))
-	var leaf := Util.mat(Color(0.17, 0.38, 0.2))
-	var cone := CylinderMesh.new()
-	cone.top_radius = 0.0
-	cone.bottom_radius = 2.2
-	cone.height = 6.0
-	var placed := 0
-	while placed < 130:
-		var x := rng.randf_range(-170.0, 170.0)
-		var z := rng.randf_range(-600.0, 90.0)
-		if x > Lake.MIN_X - 6.0 and x < Lake.MAX_X + 6.0 and z > Lake.MIN_Z - 6.0 and z < Lake.MAX_Z + 16.0:
-			continue
-		var sc := rng.randf_range(0.7, 1.4)
-		var base := Vector3(x, Lake.SHORE_Y, z)
-		Util.beam(self, base, base + Vector3(0.0, 2.0 * sc, 0.0), 0.25 * sc, trunk)
-		var mi := MeshInstance3D.new()
-		mi.mesh = cone
-		mi.material_override = leaf
-		mi.position = base + Vector3(0.0, 5.0 * sc, 0.0)
-		mi.scale = Vector3.ONE * sc
-		add_child(mi)
-		placed += 1
-
-
-func _build_buoys() -> void:
-	var orange := Util.mat(Color(1.0, 0.45, 0.05), 0.5)
-	for side: float in [-1.0, 1.0]:
-		for i in 12:
-			_buoys.append(Util.sphere(self, 0.35, Vector3(side * 28.0, 0.0, -30.0 - i * 40.0), orange))
 
 
 func _build_kickers() -> void:

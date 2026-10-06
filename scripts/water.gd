@@ -19,7 +19,16 @@ var sim_time := 0.0
 var _points := PackedVector4Array()
 var _next := 0
 var _emit_timer := 0.0
+const PATCH_SIZE := 160.0          # feines Gitter rund um den Fahrer
+const LAKE_RECT := Rect2(-490.0, -635.0, 595.0, 720.0)   # ganzer See in Spielkoordinaten
+
+## Dem folgt das feine Wassergitter (normalerweise der Fahrer).
+var follow: Node3D
+
 var _material: ShaderMaterial
+var _coarse_material: ShaderMaterial
+var _patch: MeshInstance3D
+var _cell := 0.5
 
 
 func _ready() -> void:
@@ -27,28 +36,51 @@ func _ready() -> void:
 	for i in WAKE_COUNT:
 		_points[i] = Vector4(0.0, 0.0, -1000.0, 0.0)
 
-	var w := Lake.MAX_X - Lake.MIN_X + 8.0
-	var d := Lake.MAX_Z - Lake.MIN_Z + 8.0
-	var plane := PlaneMesh.new()
-	plane.size = Vector2(w, d)
-	# im Browser gröberes Gitter, damit es auch auf schwächeren Rechnern flüssig läuft
-	var cell := 1.0 if OS.has_feature("web") else 0.7
-	plane.subdivide_width = int(w / cell)
-	plane.subdivide_depth = int(d / cell)
-	_material = ShaderMaterial.new()
-	_material.shader = preload("res://shaders/water.gdshader")
-	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
-		# Browser-Renderer: dunkleres, satteres Wasser (sonst wirkt es hellblau)
-		_material.set_shader_parameter("deep_color", Color(0.01, 0.09, 0.13))
-		_material.set_shader_parameter("shallow_color", Color(0.03, 0.2, 0.24))
-	plane.material = _material
+	var compat := RenderingServer.get_current_rendering_method() == "gl_compatibility"
+	_material = _make_material(compat)
+	_coarse_material = _make_material(compat)
+	_coarse_material.set_shader_parameter("use_wake", false)
+	_coarse_material.set_shader_parameter("hole_half", PATCH_SIZE * 0.5 - 1.0)
 
-	var mi := MeshInstance3D.new()
-	mi.mesh = plane
-	mi.position = Vector3((Lake.MIN_X + Lake.MAX_X) * 0.5, 0.0, (Lake.MIN_Z + Lake.MAX_Z) * 0.5)
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	mi.extra_cull_margin = 2.0
-	add_child(mi)
+	# Feines Gitter (Wellen + Heckwelle), folgt dem Fahrer in ganzen Gitterschritten.
+	# Im Browser gröber, damit es auch auf schwächeren Rechnern flüssig läuft.
+	_cell = 1.0 if OS.has_feature("web") else 0.5
+	var fine := PlaneMesh.new()
+	fine.size = Vector2(PATCH_SIZE, PATCH_SIZE)
+	fine.subdivide_width = int(PATCH_SIZE / _cell) - 1
+	fine.subdivide_depth = int(PATCH_SIZE / _cell) - 1
+	fine.material = _material
+	_patch = MeshInstance3D.new()
+	_patch.mesh = fine
+	_patch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_patch.extra_cull_margin = 2.0
+	add_child(_patch)
+
+	# Grobes Gitter für den restlichen See; unter dem feinen Gitter abgesenkt.
+	var coarse := PlaneMesh.new()
+	coarse.size = LAKE_RECT.size
+	coarse.subdivide_width = int(LAKE_RECT.size.x / 4.0)
+	coarse.subdivide_depth = int(LAKE_RECT.size.y / 4.0)
+	coarse.material = _coarse_material
+	var cm := MeshInstance3D.new()
+	cm.mesh = coarse
+	cm.position = Vector3(LAKE_RECT.get_center().x, 0.0, LAKE_RECT.get_center().y)
+	cm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	cm.extra_cull_margin = 2.0
+	add_child(cm)
+
+
+func _make_material(compat: bool) -> ShaderMaterial:
+	var m := ShaderMaterial.new()
+	m.shader = preload("res://shaders/water.gdshader")
+	# Türkis wie auf den Fotos vom Waldsee; der Browser-Renderer belichtet heller.
+	if compat:
+		m.set_shader_parameter("deep_color", Color(0.0, 0.27, 0.29))
+		m.set_shader_parameter("shallow_color", Color(0.06, 0.46, 0.44))
+	else:
+		m.set_shader_parameter("deep_color", Color(0.0, 0.26, 0.29))
+		m.set_shader_parameter("shallow_color", Color(0.08, 0.52, 0.5))
+	return m
 
 
 func step(delta: float) -> void:
@@ -99,5 +131,12 @@ static func ring(r: float, age: float, strength: float) -> float:
 
 
 func _process(_delta: float) -> void:
-	_material.set_shader_parameter("sim_time", sim_time)
+	if follow:
+		var c := follow.global_position
+		var step := _cell * 2.0
+		_patch.position = Vector3(roundf(c.x / step) * step, 0.0, roundf(c.z / step) * step)
+	var hole := Vector2(_patch.position.x, _patch.position.z)
+	for m: ShaderMaterial in [_material, _coarse_material]:
+		m.set_shader_parameter("sim_time", sim_time)
+		m.set_shader_parameter("hole_center", hole)
 	_material.set_shader_parameter("wake_points", _points)
