@@ -31,8 +31,10 @@ func _ready() -> void:
 	var d := Lake.MAX_Z - Lake.MIN_Z + 8.0
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(w, d)
-	plane.subdivide_width = int(w / 0.6)
-	plane.subdivide_depth = int(d / 0.6)
+	# im Browser gröberes Gitter, damit es auch auf schwächeren Rechnern flüssig läuft
+	var cell := 1.0 if OS.has_feature("web") else 0.6
+	plane.subdivide_width = int(w / cell)
+	plane.subdivide_depth = int(d / cell)
 	_material = ShaderMaterial.new()
 	_material.shader = preload("res://shaders/water.gdshader")
 	plane.material = _material

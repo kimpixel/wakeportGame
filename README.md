@@ -33,7 +33,13 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 
 **Tipp für die Wende:** Wenn der Carrier am Ende bremst, wird das Seil locker. Mit **S** driften und mit **A/D** herumdrehen. Danach zieht die Anlage dich in die neue Richtung.
 
-## Starten
+## Im Browser spielen
+
+**▶ https://kimpixel.github.io/wakeportGame/**
+
+Funktioniert am besten in Chrome, Edge oder Firefox am PC. Einmal ins Bild klicken, damit Tastatur und Maus reagieren.
+
+## Lokal starten
 
 1. [Godot 4.7](https://godotengine.org/download) herunterladen.
 2. Im Projektmanager diesen Ordner importieren (`project.godot`).

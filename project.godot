@@ -18,4 +18,5 @@ common/physics_ticks_per_second=120
 
 [rendering]
 
+renderer/rendering_method.web="gl_compatibility"
 anti_aliasing/quality/msaa_3d=2
