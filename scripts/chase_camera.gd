@@ -97,7 +97,7 @@ func _process(delta: float) -> void:
 	_off_pitch = clampf(BASE_PITCH + _off_pitch, -1.35, 0.3) - BASE_PITCH
 
 	if cam_mode == CamMode.SIDE:
-		var side_pos := Vector3(_focus.x + 32.0, 6.0, _focus.z + 14.0)
+		var side_pos := Vector3(_focus.x - 32.0, 6.0, _focus.z + 14.0)   # Nordseite (offener See, T1 liegt im Süden)
 		global_position = global_position.lerp(side_pos, 1.0 - exp(-delta * 1.5))
 		look_at(_focus, Vector3.UP)
 	else:

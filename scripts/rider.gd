@@ -21,6 +21,7 @@ const ROPE_STIFFNESS := 2600.0
 const ROPE_DAMPING := 250.0
 const HANDLE_HEIGHT := 1.0
 const CRASH_TENSION := 5400.0
+const AIR_MAX_TENSION := 1400.0      # in der Luft federn die Arme den Seilzug ab
 
 const DRAG_QUAD := 2.4          # Längswiderstand (gleitend) – klein, damit man in der Wende durchgleitet
 const DRAG_LIN := 6.0
@@ -50,6 +51,14 @@ var tension := 0.0
 var tension_smooth := 0.0
 var rope_dir := Vector3.FORWARD
 var autopilot := false
+
+## Pro Fahrer einstellbar (der NPC auf T1 bekommt eigene Werte, vor add_child setzen)
+var start_pos := START_POS
+var start_yaw := 0.0
+var dock_rect := Rect2(Lake.DOCK_MIN, Lake.DOCK_MAX - Lake.DOCK_MIN)
+var mast_b := Vector3(0.0, 0.0, Lake.MAST_B_Z)
+var vest_color := Color(1.0, 0.45, 0.05)
+var is_npc := false
 var score := 0
 var crash_reason := ""
 var air_time := 0.0
@@ -72,6 +81,9 @@ var _lean_pitch := 0.0
 var _crouch := 0.0
 var _free_handle := Vector3.ZERO
 var _rope_dist := 0.0
+var _npc_jump_t := 6.0
+var _npc_charge := 0.0
+var _npc_spin := false
 
 var _board_pivot: Node3D
 var _body_pivot: Node3D
@@ -90,7 +102,7 @@ func _ready() -> void:
 	var board_mat := Util.mat(Color(0.08, 0.08, 0.1), 0.4)
 	var bind_mat := Util.mat(Color(0.85, 0.1, 0.1), 0.6)
 	var pants := Util.mat(Color(0.15, 0.18, 0.3))
-	var vest := Util.mat(Color(1.0, 0.45, 0.05), 0.6)
+	var vest := Util.mat(vest_color, 0.6)
 	var skin := Util.mat(Color(0.9, 0.7, 0.55))
 	var black := Util.mat(Color(0.05, 0.05, 0.05))
 
@@ -168,11 +180,11 @@ func _ready() -> void:
 
 func reset() -> void:
 	mode = Mode.WATER
-	pos = START_POS
+	pos = start_pos
 	_prev_pos = pos
 	vel = Vector3.ZERO
-	yaw = 0.0
-	_prev_yaw = 0.0
+	yaw = start_yaw
+	_prev_yaw = start_yaw
 	attached = true
 	tension = 0.0
 	tension_smooth = 0.0
@@ -197,6 +209,10 @@ func rope_slack() -> float:
 	return maxf(ROPE_LENGTH - _rope_dist, 0.0) if attached else 0.0
 
 
+func _in_dock(x: float, z: float) -> bool:
+	return dock_rect.has_point(Vector2(x, z))
+
+
 func horizontal_speed() -> float:
 	return Vector2(vel.x, vel.z).length()
 
@@ -214,7 +230,7 @@ func _aligned_yaw(target: float) -> float:
 
 func _obstacle_height(x: float, z: float) -> float:
 	var h := Lake.kicker_height(x, z)
-	if Lake.in_dock(x, z):
+	if _in_dock(x, z):
 		h = maxf(h, Lake.DOCK_Y)
 	return h
 
@@ -241,7 +257,7 @@ func step(delta: float) -> void:
 		_step_crashed(delta)
 		return
 	var rope_force := _rope_force(delta)
-	if tension_smooth > CRASH_TENSION:
+	if mode == Mode.WATER and tension_smooth > CRASH_TENSION:
 		crash("Seil aus der Hand gerissen!")
 		return
 	if mode == Mode.WATER:
@@ -260,7 +276,7 @@ func _read_input(delta: float) -> void:
 		_edge = Input.get_action_strength("edge")
 		_release = Input.get_action_strength("release")
 
-	var held := Input.is_action_pressed("jump") and not autopilot
+	var held := (Input.is_action_pressed("jump") and not autopilot) or _npc_charge > 0.0
 	if held:
 		if mode == Mode.WATER:
 			_load = minf(_load + delta / 0.5, 1.0)
@@ -278,11 +294,33 @@ func _autopilot_input(delta: float) -> void:
 	var side := 1.0 if fmod(_auto_t, 9.0) < 4.5 else -1.0
 	var carving := speed > 5.0 and tension_smooth > 50.0
 	var offset := 0.35 * side if carving else 0.0
-	var diff := wrapf(rope_yaw + offset - yaw, -PI, PI)
+	var target := rope_yaw + offset
+	if carving:
+		# Twin-Tip: während der Fahrt ist auch Switch (rückwärts) in Ordnung – nicht
+		# mitten in der Fahrt das Brett quer drehen. In der Wende dagegen herumcarven.
+		target = _aligned_yaw(target)
+	var diff := wrapf(target - yaw, -PI, PI)
 	_steer = clampf(-diff * 2.0, -1.0, 1.0)
 	_edge = 0.6 if carving else 0.0
 	# in der Wende (Seil locker) driften, um schneller herumzukommen
 	_release = 1.0 if tension_smooth < 30.0 and speed > 3.0 else 0.0
+	if is_npc:
+		_npc_tricks(delta, speed)
+
+
+## NPC: springt ab und zu ab (Leertaste "halten" und loslassen), manchmal mit 180.
+func _npc_tricks(delta: float, speed: float) -> void:
+	if mode == Mode.AIR:
+		_steer = 1.0 if _npc_spin and absf(_spin_accum) < PI * 0.92 else 0.0
+		return
+	if _npc_charge > 0.0:
+		_npc_charge -= delta
+		return
+	_npc_jump_t -= delta
+	if _npc_jump_t <= 0.0 and mode == Mode.WATER and speed > 7.0 and tension_smooth > 150.0:
+		_npc_charge = randf_range(0.3, 0.55)
+		_npc_spin = randf() < 0.4
+		_npc_jump_t = randf_range(5.0, 11.0)
 
 
 func _rope_force(delta: float) -> Vector3:
@@ -301,6 +339,16 @@ func _rope_force(delta: float) -> Vector3:
 	if stretch > 0.0:
 		var ext_rate := (cable.get_velocity() - vel).dot(rope_dir)
 		tension = maxf(ROPE_STIFFNESS * stretch + ROPE_DAMPING * ext_rate, 0.0)
+		if mode == Mode.AIR and tension > AIR_MAX_TENSION:
+			# In der Luft federn die Arme den Zug ab (Fahrer hängt am Seil). Damit das Seil
+			# dabei nicht beliebig weit gedehnt wird und bei der Landung zurückschnalzt,
+			# hält es den Fahrer auf maximaler Dehnung fest.
+			tension = AIR_MAX_TENSION
+			var max_stretch := AIR_MAX_TENSION / ROPE_STIFFNESS
+			if stretch > max_stretch:
+				pos += rope_dir * (stretch - max_stretch)
+			if ext_rate > 0.0:
+				vel += rope_dir * ext_rate
 	tension_smooth = lerpf(tension_smooth, tension, 1.0 - exp(-delta * 12.0))
 	return rope_dir * tension
 
@@ -312,7 +360,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var speed := vh.length()
 	var vl := vh.dot(f)
 	var vs := vh.dot(r)
-	var on_dock := Lake.in_dock(pos.x, pos.z) and pos.y > Lake.DOCK_Y - 0.05
+	var on_dock := _in_dock(pos.x, pos.z) and pos.y > Lake.DOCK_Y - 0.05
 
 	var f_long: float
 	var f_lat: float
@@ -346,7 +394,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	pos.x += vel.x * delta
 	pos.z += vel.z * delta
 	if _obstacle_height(pos.x, pos.z) > old_y + 0.15:
-		crash("Gegen den Steg!" if Lake.in_dock(pos.x, pos.z) else "Kicker gerammt!")
+		crash("Gegen den Steg!" if _in_dock(pos.x, pos.z) else "Kicker gerammt!")
 		return
 
 	# Höhe folgt der Oberfläche – fällt sie schneller weg als die Schwerkraft zieht
@@ -364,7 +412,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 		pos.y = surf
 
 	if not on_dock:
-		water.emit_wake(pos, clampf(speed / 8.0, 0.0, 1.2), delta)
+		water.emit_wake(pos, clampf(speed / 8.0, 0.0, 1.2), delta, get_instance_id())
 
 
 func _pop() -> void:
@@ -447,13 +495,12 @@ func _step_crashed(delta: float) -> void:
 
 
 func _check_bounds() -> void:
-	if Lake.in_dock(pos.x, pos.z):
+	if _in_dock(pos.x, pos.z):
 		return
 	if not Lake.in_lake(pos.x, pos.z, 0.5):
 		crash("Ab ans Ufer!")
 		return
-	var dz := pos.z - Lake.MAST_B_Z
-	if pos.x * pos.x + dz * dz < Lake.MAST_B_RADIUS * Lake.MAST_B_RADIUS and pos.y < 6.0:
+	if Vector2(pos.x - mast_b.x, pos.z - mast_b.z).length() < Lake.MAST_B_RADIUS and pos.y < 6.0:
 		crash("Gegen den Mast!")
 
 
@@ -483,7 +530,7 @@ func _process(delta: float) -> void:
 				- _steer * clampf(speed / 8.0, 0.0, 1.0) * 0.35
 			target_pitch = atan2(pull.dot(forward()), MASS * GRAVITY) * 0.5
 			target_crouch = _load * 0.25 + _edge_vis * 0.12
-			if speed < 2.5 and not Lake.in_dock(pos.x, pos.z):
+			if speed < 2.5 and not _in_dock(pos.x, pos.z):
 				target_crouch = maxf(target_crouch, 0.3)
 	var k := 1.0 - exp(-delta * 8.0)
 	_edge_vis = lerpf(_edge_vis, _edge, k)
@@ -526,7 +573,7 @@ func _process(delta: float) -> void:
 		Util.place_beam(_arm_r, body * Vector3(0.0, 1.38, -0.17), handle_pos + bar_axis * 0.08)
 	_draw_rope(handle_pos, anchor)
 
-	_spray.emitting = mode == Mode.WATER and speed > 3.0 and not Lake.in_dock(pos.x, pos.z)
+	_spray.emitting = mode == Mode.WATER and speed > 3.0 and not _in_dock(pos.x, pos.z)
 	_spray.initial_velocity_max = 1.5 + speed * 0.35
 	_spray.direction = Vector3(-signf(_lean_roll) * 0.8, 1.0, 0.5)
 

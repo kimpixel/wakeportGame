@@ -5,7 +5,7 @@ extends Node3D
 ## (überlagert ergibt das den typischen V-förmigen Wake). Die Höhenfunktion existiert
 ## identisch hier (für die Physik) und in shaders/water.gdshader (für die Grafik).
 
-const WAKE_COUNT := 56
+const WAKE_COUNT := 96   # reicht für zwei Fahrer (Spieler + NPC auf T1)
 const WAKE_INTERVAL := 0.1
 const WAKE_SPEED := 2.6
 const WAKE_WIDTH := 0.9
@@ -18,7 +18,7 @@ var sim_time := 0.0
 
 var _points := PackedVector4Array()
 var _next := 0
-var _emit_timer := 0.0
+var _emit_timers := {}   # pro Fahrer ein eigener Takt
 const PATCH_SIZE := 160.0          # feines Gitter rund um den Fahrer
 const LAKE_RECT := Rect2(-490.0, -635.0, 595.0, 720.0)   # ganzer See in Spielkoordinaten
 
@@ -88,11 +88,12 @@ func step(delta: float) -> void:
 
 
 ## Wird vom Fahrer jeden Physikschritt aufgerufen, solange das Brett im Wasser ist.
-func emit_wake(pos: Vector3, strength: float, delta: float) -> void:
-	_emit_timer -= delta
-	if _emit_timer > 0.0:
+func emit_wake(pos: Vector3, strength: float, delta: float, emitter := 0) -> void:
+	var t: float = _emit_timers.get(emitter, 0.0) - delta
+	_emit_timers[emitter] = t
+	if t > 0.0:
 		return
-	_emit_timer = WAKE_INTERVAL
+	_emit_timers[emitter] = WAKE_INTERVAL
 	_points[_next] = Vector4(pos.x, pos.z, sim_time, strength)
 	_next = (_next + 1) % WAKE_COUNT
 

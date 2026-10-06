@@ -2,7 +2,7 @@ shader_type spatial;
 render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_burley, specular_schlick_ggx;
 
 // Muss mit scripts/water.gd übereinstimmen (gleiche Höhenfunktion für Physik und Grafik).
-#define WAKE_COUNT 56
+#define WAKE_COUNT 96
 
 uniform vec4 wake_points[WAKE_COUNT]; // x, z, Entstehungszeit, Stärke
 uniform float sim_time = 0.0;

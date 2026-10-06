@@ -4,9 +4,8 @@ extends Node3D
 ## Oberflächenmodell (DOM1 - DGM1 = Baumhöhe). Nahe der Anlage fein (1 m), weiter weg gröber.
 
 const CHUNK := 40.0
-const TREE_SPACING := 4.5
+const TREE_SPACING := 4.2
 const TREE_CHUNK := 80.0
-const TREE_VIEW := 700.0
 
 var _material: ShaderMaterial
 var _dop_image: Image
@@ -143,6 +142,30 @@ func _build_far_ground(compat: bool) -> void:
 		mi.position = Vector3(r.get_center().x, 2.0, r.get_center().y)
 		add_child(mi)
 
+	# Kronendach außerhalb des Datengebiets, damit der Wald bis zum Horizont reicht
+	var canopy_mat := ShaderMaterial.new()
+	canopy_mat.shader = preload("res://shaders/canopy.gdshader")
+	canopy_mat.set_shader_parameter("brightness", 0.8 if compat else 1.0)
+	var data := Geo.game_bounds().grow(-10.0)
+	var far := data.grow(2500.0)
+	for r: Rect2 in [
+		Rect2(far.position.x, far.position.y, far.size.x, data.position.y - far.position.y),
+		Rect2(far.position.x, data.end.y, far.size.x, far.end.y - data.end.y),
+		Rect2(far.position.x, data.position.y, data.position.x - far.position.x, data.size.y),
+		Rect2(data.end.x, data.position.y, far.end.x - data.end.x, data.size.y),
+	]:
+		var pm := PlaneMesh.new()
+		pm.size = r.size
+		pm.subdivide_width = int(r.size.x / 25.0)
+		pm.subdivide_depth = int(r.size.y / 25.0)
+		var mi := MeshInstance3D.new()
+		mi.mesh = pm
+		mi.material_override = canopy_mat
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mi.extra_cull_margin = 12.0
+		mi.position = Vector3(r.get_center().x, 13.0, r.get_center().y)
+		add_child(mi)
+
 
 # ---------------------------------------------------------------- Wald
 
@@ -155,35 +178,81 @@ func _dop_color(x: float, z: float) -> Color:
 	return _dop_image.get_pixel(clampi(px, 0, _dop_image.get_width() - 1), clampi(py, 0, _dop_image.get_height() - 1))
 
 
+## Krone aus mehreren gestauchten Kugeln (Einheitsgröße ca. 2 x 1 x 2).
+func _blob_mesh(blobs: Array, segments: int) -> ArrayMesh:
+	var sphere := SphereMesh.new()
+	sphere.radius = 1.0
+	sphere.height = 2.0
+	sphere.radial_segments = segments
+	sphere.rings = 3
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for b: Array in blobs:
+		var pos: Vector3 = b[0]
+		var size: Vector3 = b[1]
+		st.append_from(sphere, 0, Transform3D(Basis.from_scale(size), pos))
+	return st.commit()
+
+
+func _tree_material() -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.vertex_color_use_as_albedo = true
+	m.vertex_color_is_srgb = true
+	m.roughness = 0.95
+	return m
+
+
 func _build_trees() -> void:
-	var crown := SphereMesh.new()
-	crown.radius = 1.0
-	crown.height = 2.0
-	crown.radial_segments = 7
-	crown.rings = 4
-	var crown_mat := StandardMaterial3D.new()
-	crown_mat.vertex_color_use_as_albedo = true
-	crown_mat.vertex_color_is_srgb = true
-	crown_mat.roughness = 0.95
-	crown.material = crown_mat
+	var mat := _tree_material()
+	# Waldkiefer: schirmartige, lockere Krone aus mehreren Büscheln
+	var pine := _blob_mesh([
+		[Vector3(0.0, 0.15, 0.0), Vector3(0.7, 0.42, 0.7)],
+		[Vector3(0.5, -0.1, 0.2), Vector3(0.45, 0.32, 0.45)],
+		[Vector3(-0.4, -0.05, -0.35), Vector3(0.5, 0.33, 0.5)],
+		[Vector3(0.05, 0.3, -0.35), Vector3(0.42, 0.28, 0.42)],
+		[Vector3(-0.35, 0.1, 0.42), Vector3(0.4, 0.3, 0.4)],
+	], 6)
+	# Laubbaum: runde, dichte Krone
+	var leafy := _blob_mesh([
+		[Vector3(0.0, 0.0, 0.0), Vector3(0.8, 0.6, 0.8)],
+		[Vector3(0.45, 0.15, 0.1), Vector3(0.55, 0.45, 0.55)],
+		[Vector3(-0.4, 0.1, 0.25), Vector3(0.55, 0.45, 0.55)],
+		[Vector3(0.1, 0.3, -0.35), Vector3(0.5, 0.4, 0.5)],
+		[Vector3(-0.1, -0.2, -0.4), Vector3(0.5, 0.4, 0.5)],
+	], 7)
+	# Fichte: gestufter Kegel
+	var spruce_st := SurfaceTool.new()
+	spruce_st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for c: Array in [[-0.2, 0.6, 1.0], [0.12, 0.5, 0.72], [0.38, 0.3, 0.42]]:
+		var cone := CylinderMesh.new()
+		cone.top_radius = 0.0
+		cone.bottom_radius = c[2]
+		cone.height = c[1]
+		cone.radial_segments = 7
+		cone.rings = 1
+		spruce_st.append_from(cone, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, c[0], 0.0)))
+	var spruce := spruce_st.commit()
+	for m: ArrayMesh in [pine, leafy, spruce]:
+		m.surface_set_material(0, mat)
 	var trunk := CylinderMesh.new()
-	trunk.top_radius = 0.12
-	trunk.bottom_radius = 0.2
+	trunk.top_radius = 0.7
+	trunk.bottom_radius = 1.0
 	trunk.height = 1.0
 	trunk.radial_segments = 5
 	trunk.rings = 1
-	trunk.material = Util.mat(Color(0.3, 0.24, 0.18))
+	trunk.material = mat
 
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7
 	var b := Geo.game_bounds()
-	var chunks := {}   # Vector2i -> [crown transforms, colors, trunk transforms]
+	var meshes := [pine, leafy, spruce]
+	var chunks := {}   # Vector3i(cx, cz, art) -> [Transforms, Farben];  art 3 = Stämme
 	var x := b.position.x
 	while x < b.end.x:
 		var z := b.position.y
 		while z < b.end.y:
-			var tx := x + rng.randf_range(-1.6, 1.6)
-			var tz := z + rng.randf_range(-1.6, 1.6)
+			var tx := x + rng.randf_range(-1.5, 1.5)
+			var tz := z + rng.randf_range(-1.5, 1.5)
 			z += TREE_SPACING
 			if not Geo.in_area(tx, tz):
 				continue
@@ -197,26 +266,58 @@ func _build_trees() -> void:
 			var col := _dop_color(tx, tz)
 			if not (col.g > col.r * 1.02 and col.g >= col.b * 0.95 and col.get_luminance() < 0.55):
 				continue
-			tree_h = minf(tree_h, 32.0) * rng.randf_range(0.9, 1.05)
-			var radius := clampf(tree_h * 0.27, 1.6, 5.0) * rng.randf_range(0.85, 1.15)
-			var crown_y := ground + tree_h - radius * 1.05
-			var key := Vector2i(floori(tx / TREE_CHUNK), floori(tz / TREE_CHUNK))
-			if not chunks.has(key):
-				chunks[key] = [[], [], []]
-			var entry: Array = chunks[key]
-			entry[0].append(Transform3D(Basis.from_scale(Vector3(radius, radius * 1.15, radius)).rotated(Vector3.UP, rng.randf() * TAU), Vector3(tx, crown_y, tz)))
-			entry[1].append((col * 1.1).lerp(Color(0.16, 0.3, 0.1), 0.45))
-			var trunk_h := maxf(crown_y - ground, 0.5)
-			entry[2].append(Transform3D(Basis.from_scale(Vector3(radius * 0.5, trunk_h, radius * 0.5)), Vector3(tx, ground + trunk_h * 0.5, tz)))
+			tree_h = minf(tree_h, 30.0) * rng.randf_range(0.92, 1.05)
+
+			# Baumart: überwiegend Kiefern, hellgrüne Stellen und Strandnähe eher Laubbäume
+			var leafy_chance := clampf((col.get_luminance() - 0.2) * 3.0, 0.08, 0.6)
+			if Vector2(tx, tz).length() < 90.0:
+				leafy_chance = maxf(leafy_chance, 0.55)
+			var roll := rng.randf()
+			var art := 1 if roll < leafy_chance else (2 if roll < leafy_chance + 0.1 else 0)
+
+			var crown_h: float
+			var crown_r: float
+			var tint: Color
+			var bark: Color
+			match art:
+				0:   # Kiefer: langer Stamm, Krone im oberen Drittel
+					crown_h = tree_h * rng.randf_range(0.28, 0.38)
+					crown_r = clampf(tree_h * 0.17, 1.3, 3.8) * rng.randf_range(0.8, 1.2)
+					tint = Color(0.11, 0.21, 0.1).lerp(col, 0.25) * rng.randf_range(0.85, 1.15)
+					bark = Color(0.27, 0.2, 0.16) * rng.randf_range(0.85, 1.1)
+				1:   # Laubbaum: Krone über gut die Hälfte der Höhe
+					crown_h = tree_h * rng.randf_range(0.5, 0.62)
+					crown_r = clampf(tree_h * 0.26, 1.6, 5.0) * rng.randf_range(0.85, 1.15)
+					tint = Color(0.24, 0.38, 0.13).lerp(col * 1.2, 0.35) * rng.randf_range(0.85, 1.15)
+					bark = Color(0.4, 0.37, 0.33)
+				_:   # Fichte: Kegel fast bis zum Boden
+					crown_h = tree_h * 0.78
+					crown_r = clampf(tree_h * 0.17, 1.2, 3.2)
+					tint = Color(0.08, 0.18, 0.11) * rng.randf_range(0.85, 1.15)
+					bark = Color(0.35, 0.27, 0.2)
+			var crown_y := ground + tree_h - crown_h * 0.5
+			var trunk_top := crown_y if art != 0 else crown_y + crown_h * 0.2
+			var trunk_r := 0.12 + tree_h * 0.009
+			var basis := Basis.from_scale(Vector3(crown_r, crown_h, crown_r)).rotated(Vector3.UP, rng.randf() * TAU)
+			_chunk_add(chunks, tx, tz, art, Transform3D(basis, Vector3(tx, crown_y, tz)), tint)
+			var trunk_h := maxf(trunk_top - ground, 0.5)
+			_chunk_add(chunks, tx, tz, 3, Transform3D(Basis.from_scale(Vector3(trunk_r, trunk_h, trunk_r)), Vector3(tx, ground + trunk_h * 0.5, tz)), bark)
 		x += TREE_SPACING
 
-	for key: Vector2i in chunks:
+	for key: Vector3i in chunks:
 		var entry: Array = chunks[key]
-		_add_multimesh(crown, entry[0], entry[1])
-		_add_multimesh(trunk, entry[2], [])
+		_add_multimesh(trunk if key.z == 3 else meshes[key.z], entry[0], entry[1])
 
 
-## Ein MultiMesh pro Kachel – so blendet die Sichtweite weit entfernte Bäume kachelweise aus.
+func _chunk_add(chunks: Dictionary, x: float, z: float, art: int, t: Transform3D, c: Color) -> void:
+	var key := Vector3i(floori(x / TREE_CHUNK), floori(z / TREE_CHUNK), art)
+	if not chunks.has(key):
+		chunks[key] = [[], []]
+	chunks[key][0].append(t)
+	chunks[key][1].append(c)
+
+
+## Ein MultiMesh pro Kachel und Baumart (kachelweise Sichtbarkeitsprüfung der Kamera).
 func _add_multimesh(mesh: Mesh, transforms: Array, colors: Array) -> void:
 	var center := Vector3.ZERO
 	for t: Transform3D in transforms:
@@ -224,18 +325,15 @@ func _add_multimesh(mesh: Mesh, transforms: Array, colors: Array) -> void:
 	center /= transforms.size()
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
-	mm.use_colors = not colors.is_empty()
+	mm.use_colors = true
 	mm.mesh = mesh
 	mm.instance_count = transforms.size()
 	for i in transforms.size():
 		var t: Transform3D = transforms[i]
 		t.origin -= center
 		mm.set_instance_transform(i, t)
-		if mm.use_colors:
-			mm.set_instance_color(i, colors[i])
+		mm.set_instance_color(i, colors[i])
 	var mmi := MultiMeshInstance3D.new()
 	mmi.multimesh = mm
 	mmi.position = center
-	mmi.visibility_range_end = TREE_VIEW
-	mmi.visibility_range_end_margin = 40.0
 	add_child(mmi)

@@ -249,6 +249,11 @@ func get_anchor_visual() -> Vector3:
 	return transform * Vector3(Lake.PULLEY_RADIUS, Lake.CABLE_Y - CARRIER_HANG, vs)
 
 
+## Geschwindigkeit (Welt) -> Anteil entlang der Seilrichtung dieser Anlage (lokales z).
+func local_vz(world_vel: Vector3) -> float:
+	return (transform.basis.inverse() * world_vel).z
+
+
 func get_velocity() -> Vector3:
 	return transform.basis * Vector3(0.0, 0.0, v)
 

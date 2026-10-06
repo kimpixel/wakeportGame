@@ -17,6 +17,8 @@ var cam: ChaseCamera
 var hud: Hud
 
 var cable_t1: CableSystem
+var npc: Rider
+var _npc_crash_t := 0.0
 var _crash_t := 0.0
 var _max_tension := 0.0
 
@@ -44,21 +46,43 @@ func _ready() -> void:
 	add_child(water)
 	cable = CableSystem.new()
 	add_child(cable)
-	# Nachbaranlage T1 läuft zur Deko selbstständig mit
+	# Nachbaranlage T1 mit einem NPC-Fahrer (startet vom T1-Schwimmsteg)
 	cable_t1 = CableSystem.new()
 	cable_t1.place_between(Geo.masts["t1_start"], Geo.masts["t1_end"])
-	cable_t1.start_z = -20.0
+	var dc := Geo.rel_to_game(21.9, -29.5)
+	var npc_start := Vector3(dc.x + 1.5, Lake.DOCK_Y, dc.y)
+	var npc_local_z := (cable_t1.transform.affine_inverse() * npc_start).z
+	cable_t1.start_z = npc_local_z - 12.0
+	cable_t1.turn_a_z = npc_local_z - 16.0
 	add_child(cable_t1)
-	cable_t1.start()
 	rider = Rider.new()
 	rider.water = water
 	rider.cable = cable
 	add_child(rider)
 	water.follow = rider
+
+	npc = Rider.new()
+	npc.water = water
+	npc.cable = cable_t1
+	npc.is_npc = true
+	npc.autopilot = true
+	npc.vest_color = Color(0.15, 0.45, 0.95)
+	npc.start_pos = npc_start
+	npc.start_yaw = cable_t1.rotation.y
+	npc.dock_rect = Rect2(dc.x - 3.5, dc.y - 2.2, 7.0, 4.4)
+	npc.mast_b = Geo.masts["t1_end"]
+	add_child(npc)
+	npc.reset()
+	npc.crashed.connect(func(reason: String) -> void:
+		cable_t1.emergency_stop()
+		if _test_log:
+			print("NPC CRASH: ", reason, " at ", npc.pos, " air=", npc.air_time))
+	cable_t1.start()
 	rider.crashed.connect(_on_crashed)
 	rider.trick_landed.connect(_on_trick)
 
 	cam = ChaseCamera.new()
+	cam.far = 6000.0
 	cam.rider = rider
 	cam.water = water
 	add_child(cam)
@@ -89,7 +113,15 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	water.step(delta)
 	cable.step(delta, rider.vel.z if rider.attached else 0.0, rider.rope_slack())
-	cable_t1.step(delta, cable_t1.v, 0.0)
+	cable_t1.step(delta, cable_t1.local_vz(npc.vel) if npc.attached else 0.0, npc.rope_slack())
+	npc.step(delta)
+	if npc.mode == Rider.Mode.CRASHED:
+		_npc_crash_t += delta
+		if _npc_crash_t > 4.0:
+			_npc_crash_t = 0.0
+			npc.reset()
+			cable_t1.reset()
+			cable_t1.start()
 	rider.step(delta)
 
 	if rider.mode == Rider.Mode.CRASHED:
@@ -105,10 +137,11 @@ func _physics_process(delta: float) -> void:
 		_log_t += delta
 		if _log_t >= 1.0:
 			_log_t = 0.0
-			print("t=%5.1f carrier=%-17s s=%7.1f v=%5.2f | rider %-7s pos=(%6.1f,%5.2f,%7.1f) %5.1f km/h T=%5.0f N Tmax=%5.0f laps=%d score=%d" % [
+			print("t=%5.1f carrier=%-17s s=%7.1f v=%5.2f | rider %-7s pos=(%6.1f,%5.2f,%7.1f) %5.1f km/h T=%5.0f N Tmax=%5.0f laps=%d score=%d | NPC %s %4.1f km/h T1-Wenden %d" % [
 				_elapsed, cable.state_text(), cable.s, cable.v, Rider.Mode.keys()[rider.mode],
 				rider.pos.x, rider.pos.y, rider.pos.z, rider.horizontal_speed() * 3.6,
-				rider.tension_smooth, _max_tension, cable.laps, rider.score])
+				rider.tension_smooth, _max_tension, cable.laps, rider.score,
+				Rider.Mode.keys()[npc.mode], npc.horizontal_speed() * 3.6, cable_t1.laps])
 	if _quit_after > 0.0 and _elapsed >= _quit_after:
 		get_tree().quit()
 
@@ -251,7 +284,7 @@ func _build_environment() -> void:
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.7, 0.78, 0.88)
-	env.fog_density = 0.0005
+	env.fog_density = 0.00022   # maximale Sichtweite, nur leichter Dunst am Horizont
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
