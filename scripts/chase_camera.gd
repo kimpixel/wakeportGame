@@ -63,7 +63,7 @@ func _process(delta: float) -> void:
 	if not _initialized:
 		_initialized = true
 		_focus = target
-		_yaw = rider.yaw
+		_yaw = rider.yaw - (1.2 if Lake.in_dock(rider.pos.x, rider.pos.z) else 0.0)
 	_focus = _focus.lerp(target, 1.0 - exp(-delta * 12.0))
 
 	var look := Input.get_vector("cam_left", "cam_right", "cam_up", "cam_down")
@@ -85,6 +85,9 @@ func _process(delta: float) -> void:
 			look_dir += Vector3(rider.rope_dir.x, 0.0, rider.rope_dir.z) * (1.0 - w)
 		if look_dir.length() > 0.15:
 			desired = atan2(-look_dir.x, -look_dir.z)
+		# Auf dem Startsteg steht hinter dem Fahrer die T2-Hütte – von der Seite (Norden) schauen
+		if Lake.in_dock(rider.pos.x, rider.pos.z) and speed < 2.0:
+			desired = rider.yaw - 1.2
 		_yaw = lerp_angle(_yaw, desired, 1.0 - exp(-delta * 2.5))
 		if _idle > 1.5:
 			var back := 1.0 - exp(-delta * 1.5)
