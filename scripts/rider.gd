@@ -87,6 +87,9 @@ var _free_handle := Vector3.ZERO
 var _rope_dist := 0.0
 var _slide_time := 0.0
 var _slide_part: FeaturePart
+var _line: FeaturePart          # Feature, das der Autopilot gerade anfährt
+var _line_popped := false
+var _line_skip: FeaturePart     # abgebrochenes Feature (nicht sofort wieder anfahren)
 var _npc_jump_t := 6.0
 var _npc_charge := 0.0
 var _npc_spin := false
@@ -215,32 +218,115 @@ func rope_slack() -> float:
 	return maxf(ROPE_LENGTH - _rope_dist, 0.0) if attached else 0.0
 
 
-## Fährt parallel zum Seil auf der Spur auto_lane (lokales x der Anlage).
-func _lane_input() -> void:
-	var inv := cable.transform.affine_inverse()
-	var local := inv * pos
-	var dir := -signf(cable.local_vz(vel)) if horizontal_speed() > 1.0 else 1.0
-	if dir < 0.0 and features and _feature_ahead():
-		_steer = clampf(-wrapf(atan2(-rope_dir.x, -rope_dir.z) - yaw, -PI, PI) * 2.0, -1.0, 1.0)
+## Fährt parallel zum Seil auf einer seitlichen Spur (lokales x der Anlage).
+## outward_only: Testspur gilt nur Richtung Endmast, zurück wird ausgewichen.
+func _lane_input(lane: float, outward_only: bool) -> void:
+	if mode == Mode.AIR:
+		_steer = 1.0 if _npc_spin and absf(_spin_accum) < PI * 0.92 else 0.0
 		return
-	var lane := auto_lane if dir > 0.0 else 0.0   # Rückweg: Richtung Seillinie, an den Features vorbei
-	var target_local := Vector3(lane, 0.0, local.z - dir * 14.0)
-	var target := cable.transform * target_local
+	var local := cable.transform.affine_inverse() * pos
+	var dir := -signf(cable.local_vz(vel)) if horizontal_speed() > 1.0 else 1.0
+	if outward_only and dir < 0.0:
+		lane = 0.0   # Rückweg: Richtung Seillinie, an den Features vorbei
+	var target := cable.transform * Vector3(lane, 0.0, local.z - dir * 14.0)
 	var want := atan2(-(target.x - pos.x), -(target.z - pos.z))
-	if tension_smooth < 30.0:
-		want = atan2(-rope_dir.x, -rope_dir.z)    # Wende: zum Carrier drehen
-	var diff := wrapf(_aligned_yaw(want) - yaw, -PI, PI) if tension_smooth > 30.0 else wrapf(want - yaw, -PI, PI)
+	var diff: float
+	if tension_smooth < 30.0 and mode == Mode.WATER and pos.y < 0.15:
+		diff = wrapf(atan2(-rope_dir.x, -rope_dir.z) - yaw, -PI, PI)   # Wende: zum Carrier drehen
+	else:
+		diff = wrapf(_aligned_yaw(want) - yaw, -PI, PI)
 	_steer = clampf(-diff * 2.5, -1.0, 1.0)
 	_edge = 0.5
-	_release = 1.0 if tension_smooth < 30.0 and horizontal_speed() > 3.0 else 0.0
+	_release = 1.0 if tension_smooth < 30.0 and horizontal_speed() > 3.0 and pos.y < 0.15 else 0.0
 
 
-func _feature_ahead() -> bool:
+## Spur des Features, das gerade angefahren wird (oder auf dem man fährt), sonst NAN.
+func _line_lane() -> float:
+	var inv := cable.transform.affine_inverse()
+	var local := inv * pos
+	var s_now := cable.mast_a_z - local.z
+	var travel := -signf(cable.local_vz(vel))          # +1 = Richtung Endmast
+	# Auf einem Feature (auch einem nicht geplanten, z. B. Pipe hinter dem Wedge): Spur halten
+	var under := features.part_at(pos.x, pos.z)
+	if under and pos.y > 0.12:
+		return under.lane_x()
+	if _line:
+		var exit_s := _line.s_center + travel * _line.length * 0.5
+		var entry_now := (_line.s_center - travel * _line.length * 0.5 - s_now) * travel
+		if (s_now - exit_s) * travel > 1.0:
+			_line = null
+		elif entry_now > 0.0 and (entry_now < 10.0 and absf(local.x - _line.lane_x()) > maxf(_line.width * 0.3, 0.15) or _feature_ahead(_line)):
+			# nicht rechtzeitig auf Linie: abbrechen und ausweichen statt seitlich hineinzufahren
+			_line_skip = _line
+			_line = null
+			return NAN
+	if _line == null:
+		var travel_world := cable.transform.basis * Vector3(0.0, 0.0, -travel)
+		var best_d := INF
+		for part in features.parts_of(cable):
+			var info := part.ride_info(travel_world)
+			if not info["rideable"] or absf(part.x_center) > 11.0:
+				continue
+			var entry_s := part.s_center - travel * part.length * 0.5
+			var d := (entry_s - s_now) * travel
+			# genug Anlauf zum Einschwenken; Teile hinter einem anderen (Combo) zählen nicht extra
+			# genug Anlauf, um seitlich einzuschwenken (ca. 1 m quer auf 3 m Strecke)
+			var lateral_ok := absf(part.lane_x() - local.x) < (d - 12.0) * 0.3
+			var free := features.height_at_entry_free(part, travel_world) and features.inner_side_clear(part)
+			if part != _line_skip and lateral_ok and d < 75.0 and d < best_d and free and _path_clear(part, s_now, travel):
+				best_d = d
+				_line = part
+		_line_popped = false
+		_npc_spin = is_npc and randf() < 0.3   # manchmal ein 180 vom Kicker
+	return _line.lane_x() if _line else NAN
+
+
+## Für Features ohne Auffahrt (Box, Ledge): rechtzeitig vor der Kante abspringen.
+func _line_pop(delta: float, speed: float) -> void:
+	if _npc_charge > 0.0:
+		_npc_charge -= delta
+		return
+	if _line == null or _line_popped or mode != Mode.WATER or pos.y > 0.12:
+		return
+	var local := cable.transform.affine_inverse() * pos
+	var travel := -signf(cable.local_vz(vel))
+	var info := _line.ride_info(cable.transform.basis * Vector3(0.0, 0.0, -travel))
+	var entry_s := _line.s_center - travel * _line.length * 0.5
+	var d := (entry_s - (cable.mast_a_z - local.z)) * travel
+	if info["needs_ollie"]:
+		if d < speed * 1.0 and d > 0.0:
+			_npc_charge = 0.5          # halten ... dann loslassen = Absprung kurz vor der Kante
+			_line_popped = true
+	else:
+		_line_popped = d < 0.0
+		if info["needs_ollie"]:
+			_npc_spin = false
+
+
+## Ist die Spur bis zum Einstieg des Teils frei von anderen Features?
+func _path_clear(part: FeaturePart, s_now: float, travel: float) -> bool:
+	var entry_s := part.s_center - travel * part.length * 0.5
+	var lane := part.lane_x()
+	var s := s_now + travel * 2.0
+	while (entry_s - s) * travel > 1.0:
+		for dx: float in [-1.6, 0.0, 1.6]:
+			var p := cable.transform * Vector3(lane + dx, 0.0, cable.mast_a_z - s)
+			var other := features.part_at(p.x, p.z)
+			if other and other != part:
+				return false
+		s += travel * 2.0
+	return true
+
+
+func _feature_ahead(ignore: FeaturePart = null) -> bool:
 	var vh := Vector3(vel.x, 0.0, vel.z)
+	var side := Vector3(-vh.z, 0.0, vh.x).normalized() * 1.0   # auch etwas links/rechts der Spur prüfen
 	for t: float in [0.3, 0.7, 1.1, 1.5, 1.9]:
 		var p := pos + vh * t
-		if features.height_at(p.x, p.z) > FeaturePart.NONE + 1.0:
-			return true
+		for q: Vector3 in [p, p + side, p - side]:
+			var hit := features.part_at(q.x, q.z)
+			if hit and hit != ignore:
+				return true
 	return false
 
 
@@ -263,8 +349,8 @@ func _aligned_yaw(target: float) -> float:
 	return target
 
 
-func _obstacle_height(x: float, z: float) -> float:
-	var h := features.height_at(x, z) if features else FeaturePart.NONE
+func _obstacle_height(x: float, z: float, collision := false) -> float:
+	var h := features.height_at(x, z, collision) if features else FeaturePart.NONE
 	if _in_dock(x, z):
 		h = maxf(h, Lake.DOCK_Y)
 	return h
@@ -329,10 +415,19 @@ func _autopilot_input(delta: float) -> void:
 	var side := 1.0 if fmod(_auto_t, 9.0) < 4.5 else -1.0
 	var carving := speed > 5.0 and tension_smooth > 50.0
 	var offset := 0.35 * side if carving else 0.0
-	# Hindernisse voraus: nicht seitlich hineincarven, sondern Richtung Seillinie (Carrier) halten
 	if not is_nan(auto_lane):
-		_lane_input()
+		_lane_input(auto_lane, true)
 		return
+	# Features fahren: passendes Feature voraus suchen und auf dessen Spur einschwenken
+	if features and (tension_smooth > 50.0 or mode == Mode.AIR):
+		var lane := _line_lane()
+		if not is_nan(lane):
+			_lane_input(lane, false)
+			_line_pop(delta, speed)
+			return
+	else:
+		_line = null
+	# Hindernisse voraus: nicht seitlich hineincarven, sondern Richtung Seillinie (Carrier) halten
 	if features and _feature_ahead():
 		offset = 0.0
 	var target := rope_yaw + offset
@@ -410,9 +505,10 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	if on_feature:
 		# Auf Box, Rail oder Pipe: das Brett rutscht in jede Richtung gleich leicht
 		# (Boardslide quer zur Fahrtrichtung ist also möglich).
+		# Mit belasteter Kante (W) hält das Brett quer besser – gegen den seitlichen Seilzug.
 		var fr := SLIDE_FRICTION * MASS * GRAVITY
 		f_long = -fr * vl / maxf(speed, 0.5)
-		f_lat = -fr * vs / maxf(speed, 0.5)
+		f_lat = -fr * (1.0 + 3.0 * _edge) * vs / maxf(absf(vs), 0.3)
 	elif on_dock:
 		# nasse Startrampe: rutschig längs, fest quer
 		f_long = -40.0 * vl
@@ -444,7 +540,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var old_y := pos.y
 	pos.x += vel.x * delta
 	pos.z += vel.z * delta
-	if _obstacle_height(pos.x, pos.z) > old_y + 0.15:
+	if _obstacle_height(pos.x, pos.z, true) > old_y + 0.15:
 		crash("Gegen den Steg!" if _in_dock(pos.x, pos.z) else "Gegen %s gefahren!" % _part_name(pos.x, pos.z))
 		return
 
@@ -486,6 +582,11 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 	_slide_part = null
 
 
+## Rutscht der Fahrer gerade auf einem Feature (für den Grind-Sound)?
+func is_sliding() -> bool:
+	return _slide_part != null and mode == Mode.WATER
+
+
 func _part_name(x: float, z: float) -> String:
 	var p := features.part_at(x, z) if features else null
 	return "die " + p.display_name if p else "das Hindernis"
@@ -508,7 +609,7 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	var drag := -vel * vel.length() * 0.3
 	vel += (rope + drag) / MASS * delta
 	vel.y -= GRAVITY * delta
-	var old_obstacle := _obstacle_height(pos.x, pos.z)
+	var old_obstacle := _obstacle_height(pos.x, pos.z, true)
 	pos += vel * delta
 	air_time += delta
 
@@ -523,7 +624,7 @@ func _step_air(delta: float, rope: Vector3) -> void:
 
 	# Seitlich gegen ein Feature geflogen? Nur wenn man von außen hineinfliegt –
 	# wer schon darüber ist (z. B. seitlich vom Rail fällt), landet stattdessen.
-	var obstacle := _obstacle_height(pos.x, pos.z)
+	var obstacle := _obstacle_height(pos.x, pos.z, true)
 	if obstacle > pos.y + 0.35 and old_obstacle < obstacle - 0.3:
 		crash("Gegen %s gefahren!" % _part_name(pos.x, pos.z))
 		return

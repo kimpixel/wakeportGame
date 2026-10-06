@@ -35,7 +35,8 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | + / − | Steuerkreuz ↑/↓ | Tempo der Anlage (16–40 km/h) |
 | C | Y | Kamera: Verfolger, Orbit oder Ufer |
 | Maus / Mausrad | rechter Stick | Umsehen / Zoom |
-| P | – | Autopilot |
+| P | – | Autopilot (fährt auch Features) |
+| M | – | Ton aus/an |
 
 **Tipp für die Wende:** Wenn der Carrier am Ende bremst, wird das Seil locker. Mit **S** driften und mit **A/D** herumdrehen. Danach zieht die Anlage dich in die neue Richtung.
 

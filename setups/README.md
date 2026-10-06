@@ -32,6 +32,10 @@ Einzelne Maße kannst du pro Zeile überschreiben, ohne den Katalog zu ändern, 
 | `rail` | Rail/Rohr auf Stützen | `length`, `height`, `ramp_in` / `ramp_out` (Transitions), `radius`, `color` (`grey` / `black`) |
 | `pipe` | Liegendes Rohr | `length`, `radius`, `center_y`, `ramp_in` / `ramp_out` |
 | `bump` | Kleine Pyramide | `length`, `width`, `height`, `top` (Breite der Spitze) |
+| `transition` | Transition Rail: auf der Seilseite eine geschwungene Transition, oben ein schwarzes Rail, hinten eine senkrechte Wand | `length`, `width`, `height`, `ramp_in` / `ramp_out` (schräge Auffahrten an den Enden) |
+| `group` | Mehrere Teile als ein Feature, z. B. die Pyramid Series (A-Frame Rail + Pyramid) | `parts`: Liste mit `part`, `s`, `x` (relativ zur Gruppe) |
+
+Bei `block`, `rail` und `pipe` legt `ramp_curve` die Form der Auffahrten fest: `1` = gerade (A-Frame), `2` = konkav (Transition). Mit `color` (`grey`) färbst du ein Teil grau.
 
 Physik und Grafik nutzen dieselbe Form. Was du hier einträgst, ist also genau so befahrbar, wie es aussieht.
 
@@ -41,6 +45,13 @@ Physik und Grafik nutzen dieselbe Form. Was du hier einträgst, ist also genau s
 - **Ohne Auffahrt** (Ollie Box, Ledges, Add-on Rail) musst du vorher mit der Leertaste abspringen. Fährst du seitlich oder von hinten dagegen, stürzt du.
 - **Auf dem Feature** rutscht das Brett. Mit A/D drehst du es quer für einen Boardslide.
 - **Punkte für Slides** gibt es beim Verlassen des Features: „50-50“ längs, „Boardslide“ quer.
+
+## Autopilot und NPC
+
+Der Autopilot (P) und der NPC auf T1 fahren Features selbstständig an. Dafür muss jeweils gelten:
+- **Auffahrt:** Das Teil hat eine Auffahrt, oder es ist maximal 1 m hoch und mindestens 0,8 m breit (dann springen sie ab).
+- **Freie Spur:** Bis zum Einstieg liegt kein anderes Teil im Weg.
+- **Kein höheres Teil daneben:** Auf der Seilseite steht kein höheres Teil, gegen das der Seilzug sie beim Rutschen ziehen würde.
 
 ## Testen
 

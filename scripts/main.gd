@@ -84,7 +84,11 @@ func _ready() -> void:
 	npc.crashed.connect(func(reason: String) -> void:
 		cable_t1.emergency_stop()
 		if _test_log:
-			print("NPC CRASH: ", reason, " at ", npc.pos, " air=", npc.air_time))
+			var l := cable_t1.transform.affine_inverse() * npc.pos
+			print("NPC CRASH: ", reason, " local x=%.2f s=%.2f y=%.2f" % [l.x, cable_t1.mast_a_z - l.z, npc.pos.y]))
+	npc.trick_landed.connect(func(trick: String, pts: int) -> void:
+		if _test_log:
+			print("NPC TRICK: ", trick, " +", pts))
 	cable_t1.start()
 	rider.crashed.connect(_on_crashed)
 	rider.trick_landed.connect(_on_trick)
@@ -103,6 +107,10 @@ func _ready() -> void:
 
 	hud = Hud.new()
 	add_child(hud)
+	var sfx := Sfx.new()
+	sfx.rider = rider
+	sfx.npc = npc
+	add_child(sfx)
 	if _view_arg.size() == 6:
 		# Testansicht: feste Kamera (x,y,z -> Blickpunkt x,y,z)
 		cam.set_process(false)
@@ -226,6 +234,7 @@ func _setup_input() -> void:
 	_bind("camera", [KEY_C], [JOY_BUTTON_Y], [])
 	_bind("autopilot", [KEY_P], [], [])
 	_bind("help", [KEY_H, KEY_F1], [], [])
+	_bind("mute", [KEY_M], [], [])
 	_bind("cam_left", [], [], [[JOY_AXIS_RIGHT_X, -1.0]])
 	_bind("cam_right", [], [], [[JOY_AXIS_RIGHT_X, 1.0]])
 	_bind("cam_up", [], [], [[JOY_AXIS_RIGHT_Y, -1.0]])

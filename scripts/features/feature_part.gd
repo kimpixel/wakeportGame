@@ -25,6 +25,13 @@ var radius := 0.4
 var center_y := 0.1
 var top := 1.0
 var rail_color := "grey"
+var ramp_curve := 1.6          # Form der Auffahrten: 1 = gerade (A-Frame), > 1 = konkav (Transition)
+var color := "white"           # Farbe des Körpers: white / grey
+
+## Lage auf der Anlage (wird von FeatureSet gesetzt)
+var cable: CableSystem
+var s_center := 0.0            # Abstand vom Startmast entlang des Seils
+var x_center := 0.0            # seitlicher Abstand zum Seil
 
 var _reach := 1.0              # Radius für die schnelle Vorauswahl
 var _inv := Transform3D()      # Welt -> lokal (Teile stehen still)
@@ -45,6 +52,8 @@ func setup(id: String, p: Dictionary) -> void:
 	center_y = p.get("center_y", center_y)
 	top = p.get("top", top)
 	rail_color = p.get("color", rail_color)
+	color = p.get("color", color)
+	ramp_curve = p.get("ramp_curve", ramp_curve)
 	if type == "pipe":
 		width = radius * 2.0
 	_reach = Vector2(length, width).length() * 0.5 + 0.5
@@ -52,13 +61,23 @@ func setup(id: String, p: Dictionary) -> void:
 
 ## Gleitet man auf diesem Teil (Box, Rail, Pipe) oder ist es eine Absprungrampe?
 func is_slide() -> bool:
-	return type in ["block", "rail", "pipe"]
+	return type in ["block", "rail", "pipe", "transition"]
+
+
+## Bevorzugte Fahrspur über das Teil (seitlicher Abstand zum Seil): Mitte bzw. beim
+## Transition Rail direkt am Rail.
+func lane_x() -> float:
+	if type != "transition":
+		return x_center
+	var p := global_transform * Vector3(width * 0.5 - 0.12, 0.0, 0.0)
+	return (cable.transform.affine_inverse() * p).x
 
 
 # ---------------------------------------------------------------- Form
 
 ## Oberkante an lokaler Position (u, v) oder NONE.
-func height_local(u: float, v: float) -> float:
+## collision: bei Rails nur die echte Rohrbreite (zum Draufspringen gilt eine breitere Toleranz).
+func height_local(u: float, v: float, collision := false) -> float:
 	var hl := length * 0.5
 	if u < -hl or u > hl:
 		return NONE
@@ -73,13 +92,30 @@ func height_local(u: float, v: float) -> float:
 				return NONE
 			return _with_ramps(u, lerpf(height, height_end, t))
 		"rail":
-			if absf(v) > 0.2:                        # Toleranz: so breit "trifft" das Brett den Rail
+			if absf(v) > (radius + 0.04 if collision else 0.2):   # Toleranz: so breit "trifft" das Brett den Rail
 				return NONE
 			return _with_ramps(u, height)
 		"pipe":
 			if absf(v) > radius * 0.8:
 				return NONE
 			return _with_ramps(u, center_y + sqrt(radius * radius - v * v))
+		"transition":
+			# Querschnitt: konkave Transition von der Seilseite (-v) hoch zur Kante (+v),
+			# dort das schwarze Rail; hinten senkrechte Wand. Enden: schräge Auffahrten.
+			var hw := width * 0.5
+			if absf(v) > hw:
+				return NONE
+			var h: float
+			if v > hw - 0.22:
+				h = height + 0.05                      # Rail auf der Oberkante
+			else:
+				h = ENTRY + (height - ENTRY) * pow((v + hw) / width, 2.0)
+			var top := height + 0.05
+			if ramp_in > 0.0:
+				h = minf(h, lerpf(ENTRY, top, clampf((u + hl) / ramp_in, 0.0, 1.0)))
+			if ramp_out > 0.0:
+				h = minf(h, lerpf(ENTRY, top, clampf((hl - u) / ramp_out, 0.0, 1.0)))
+			return h
 		"bump":
 			var hw := width * 0.5
 			if absf(v) > hw:
@@ -94,12 +130,30 @@ func height_local(u: float, v: float) -> float:
 func _with_ramps(u: float, h: float) -> float:
 	var hl := length * 0.5
 	if ramp_in > 0.0 and u < -hl + ramp_in:
-		var t := (u + hl) / ramp_in
-		h = minf(h, lerpf(ENTRY, h, 1.0 - pow(1.0 - t, 2.0)))
+		h = minf(h, lerpf(ENTRY, h, pow((u + hl) / ramp_in, ramp_curve)))
 	if ramp_out > 0.0 and u > hl - ramp_out:
-		var t := (hl - u) / ramp_out
-		h = minf(h, lerpf(ENTRY, h, 1.0 - pow(1.0 - t, 2.0)))
+		h = minf(h, lerpf(ENTRY, h, pow((hl - u) / ramp_out, ramp_curve)))
 	return h
+
+
+## Vorwärtsrichtung des Teils (Befahrrichtung) in Weltkoordinaten.
+func forward_world() -> Vector3:
+	return -global_basis.z
+
+
+## Wie fährt man dieses Teil in Fahrtrichtung travel an?
+## entry_h: Höhe direkt am Einstieg (<= 0.15 heißt: aus dem Wasser befahrbar, sonst Ollie nötig).
+func ride_info(travel: Vector3) -> Dictionary:
+	var d := 1.0 if forward_world().dot(travel) >= 0.0 else -1.0
+	var hl := length * 0.5
+	var entry_h := height_local(-d * (hl - 0.05), 0.0)
+	var top_h := maxf(height_local(0.0, 0.0), entry_h)
+	var needs_ollie := entry_h > 0.15
+	# Kicker/Wedge nur von der flachen Seite – von hinten ist es eine Wand
+	var rideable := top_h < 1.4 and entry_h > NONE + 1.0 and not (type in ["ramp", "bump"] and needs_ollie)
+	if needs_ollie and (entry_h > 1.0 or width < 0.8):
+		rideable = false          # zu hoch bzw. zu schmal, um sicher draufzuspringen
+	return {"entry_h": entry_h, "needs_ollie": needs_ollie, "rideable": rideable}
 
 
 ## Welt -> (u, v)
@@ -109,12 +163,12 @@ func to_uv(world: Vector3) -> Vector2:
 
 
 ## Oberkante in Weltkoordinaten oder NONE.
-func height_at(x: float, z: float) -> float:
+func height_at(x: float, z: float, collision := false) -> float:
 	var gp := global_position
 	if absf(x - gp.x) > _reach or absf(z - gp.z) > _reach:
 		return NONE
 	var uv := to_uv(Vector3(x, 0.0, z))
-	return height_local(uv.x, uv.y)
+	return height_local(uv.x, uv.y, collision)
 
 
 # ---------------------------------------------------------------- Grafik
@@ -122,6 +176,8 @@ func height_at(x: float, z: float) -> float:
 func _ready() -> void:
 	_inv = global_transform.affine_inverse()
 	var white := Util.mat(Color(0.93, 0.94, 0.93), 0.55)
+	if color == "grey":
+		white = Util.mat(Color(0.62, 0.64, 0.66), 0.45)
 	match type:
 		"rail":
 			_build_rail(white)
@@ -146,6 +202,12 @@ func _ready() -> void:
 			_build_heightfield(white, 12, 12)
 		"ramp":
 			_build_heightfield(white, 14, 2)
+		"transition":
+			_build_heightfield(white, 30, 12)
+			var black := Util.mat(Color(0.06, 0.06, 0.07), 0.35)
+			var hl := length * 0.5
+			var rx := width * 0.5 - 0.1
+			Util.beam(self, Vector3(rx, height + 0.02, hl - ramp_in * 0.15), Vector3(rx, height + 0.02, -hl + ramp_out * 0.15), 0.07, black)
 		_:
 			_build_heightfield(white, 24, 2)
 

@@ -2,8 +2,8 @@
   "_info": "Feature-Setup Terminal 1. Jede Zeile = ein Bauteil. s = Abstand vom Startmast entlang des Seils (Mitte des Teils), x = seitlich (+ rechts, - links, in Fahrtrichtung zum Endmast), dir = out (befahrbar Richtung Endmast) / in (Richtung Startsteg), yaw = Drehung in Grad.",
   "terminal": "T1",
   "parts": [
-    { "part": "kicker_m",     "s": 52.0,  "x": -7.6, "dir": "out", "yaw": 5 },
-    { "part": "kicker_m",     "s": 57.2,  "x": -7.6, "dir": "in",  "yaw": -5 },
+    { "part": "kicker_m",     "s": 52.0,  "x": -7.6, "dir": "out" },
+    { "part": "kicker_m",     "s": 57.0,  "x": -7.6, "dir": "in" },
     { "part": "bump",         "s": 54.5,  "x": -3.6 },
 
     { "part": "short_pipe",   "s": 54.0,  "x": 6.0,  "dir": "out" },
