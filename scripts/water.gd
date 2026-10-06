@@ -32,7 +32,7 @@ func _ready() -> void:
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(w, d)
 	# im Browser gröberes Gitter, damit es auch auf schwächeren Rechnern flüssig läuft
-	var cell := 1.0 if OS.has_feature("web") else 0.6
+	var cell := 1.0 if OS.has_feature("web") else 0.7
 	plane.subdivide_width = int(w / cell)
 	plane.subdivide_depth = int(d / cell)
 	_material = ShaderMaterial.new()

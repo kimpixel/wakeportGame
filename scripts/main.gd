@@ -288,9 +288,9 @@ func _build_shore() -> void:
 	cone.bottom_radius = 2.2
 	cone.height = 6.0
 	var placed := 0
-	while placed < 90:
+	while placed < 130:
 		var x := rng.randf_range(-170.0, 170.0)
-		var z := rng.randf_range(-430.0, 90.0)
+		var z := rng.randf_range(-600.0, 90.0)
 		if x > Lake.MIN_X - 6.0 and x < Lake.MAX_X + 6.0 and z > Lake.MIN_Z - 6.0 and z < Lake.MAX_Z + 16.0:
 			continue
 		var sc := rng.randf_range(0.7, 1.4)
@@ -308,7 +308,7 @@ func _build_shore() -> void:
 func _build_buoys() -> void:
 	var orange := Util.mat(Color(1.0, 0.45, 0.05), 0.5)
 	for side: float in [-1.0, 1.0]:
-		for i in 8:
+		for i in 12:
 			_buoys.append(Util.sphere(self, 0.35, Vector3(side * 28.0, 0.0, -30.0 - i * 40.0), orange))
 
 

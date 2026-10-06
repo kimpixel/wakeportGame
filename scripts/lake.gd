@@ -5,13 +5,13 @@ extends RefCounted
 
 const MIN_X := -90.0
 const MAX_X := 90.0
-const MIN_Z := -350.0
+const MIN_Z := -520.0
 const MAX_Z := 0.0
 const SHORE_Y := 0.5
 
 const CABLE_Y := 10.0          # Höhe des Stahlseils
 const MAST_A_Z := 6.0          # Mast 1 steht am Ufer
-const MAST_B_Z := -175.0       # Mast 2 steht in der Mitte des Sees
+const MAST_B_Z := -260.0       # Mast 2 steht in der Mitte des Sees
 const PULLEY_RADIUS := 0.15    # Rolle ca. 30 cm Durchmesser
 const MAST_B_RADIUS := 3.4     # Kollisionsradius Mast 2 inkl. Dreibein
 
@@ -21,8 +21,8 @@ const DOCK_Y := 0.35
 
 ## Kicker: dir = Richtung (entlang z), in die die Rampe ansteigt.
 const KICKERS := [
-	{"x": 7.0, "z": -95.0, "dir": -1.0, "len": 6.0, "width": 3.0, "height": 1.3},
-	{"x": -7.0, "z": -70.0, "dir": 1.0, "len": 6.0, "width": 3.0, "height": 1.3},
+	{"x": 7.0, "z": -150.0, "dir": -1.0, "len": 6.0, "width": 3.0, "height": 1.3},
+	{"x": -7.0, "z": -125.0, "dir": 1.0, "len": 6.0, "width": 3.0, "height": 1.3},
 ]
 
 
