@@ -1,0 +1,18 @@
+{
+  "_info": "Feature-Setup Terminal 2. Jede Zeile = ein Bauteil. s = Abstand vom Startmast entlang des Seils (Mitte des Teils), x = seitlich (+ rechts, - links, in Fahrtrichtung zum Endmast), dir = out (befahrbar Richtung Endmast) / in (Richtung Startsteg), yaw = Drehung in Grad.",
+  "terminal": "T2",
+  "parts": [
+    { "part": "kicker_s",        "s": 56.0,  "x": 6.0,  "dir": "out" },
+    { "part": "kicker_l",        "s": 62.0,  "x": 9.8,  "dir": "out", "yaw": -5 },
+
+    { "part": "pyramid",         "s": 70.0,  "x": -6.0, "dir": "out" },
+    { "part": "pyramid_rail",    "s": 70.0,  "x": -8.1, "dir": "out" },
+
+    { "part": "transition_rail", "s": 118.0, "x": 5.6,  "dir": "out" },
+    { "part": "transition_curb", "s": 116.0, "x": 7.9,  "dir": "out" },
+    { "part": "cheese_wedge",    "s": 127.0, "x": 7.9,  "dir": "out" },
+
+    { "part": "cheese_wedge",    "s": 114.0, "x": -6.0, "dir": "out" },
+    { "part": "pipe",            "s": 120.6, "x": -6.0, "dir": "out" }
+  ]
+}

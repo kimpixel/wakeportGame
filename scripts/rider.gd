@@ -31,8 +31,9 @@ const GRIP_QUAD := 160.0        # Querwiderstand der Kante
 const GRIP_LIN := 180.0
 const TURN_RATE := 1.7
 const SPIN_RATE := 7.5
-const AIR_ASSIST := 3.5         # Brett dreht in der Luft langsam zur Flugrichtung
+const AIR_ASSIST := 5.0         # Brett dreht in der Luft langsam zur Flugrichtung
 const POP_BASE := 2.2
+const SLIDE_FRICTION := 0.1     # Reibung Brett auf Feature-Oberfläche
 const POP_LOAD := 2.8
 const POP_ROPE := 1.8
 const BOARD_HALF := 0.35
@@ -40,6 +41,7 @@ const BOARD_HALF := 0.35
 const START_POS := Vector3(1.7, Lake.DOCK_Y, -10.0)   # auf dem Startsteg vor der T2-Hütte
 
 var water: Water
+var features: FeatureSet
 var cable: CableSystem
 
 var mode := Mode.WATER
@@ -59,6 +61,8 @@ var dock_rect := Rect2(Lake.DOCK_MIN, Lake.DOCK_MAX - Lake.DOCK_MIN)
 var mast_b := Vector3(0.0, 0.0, Lake.MAST_B_Z)
 var vest_color := Color(1.0, 0.45, 0.05)
 var is_npc := false
+## Test/Demo: Autopilot hält diese seitliche Spur (Meter neben dem Seil) und fährt Features direkt an
+var auto_lane := NAN
 var score := 0
 var crash_reason := ""
 var air_time := 0.0
@@ -81,6 +85,8 @@ var _lean_pitch := 0.0
 var _crouch := 0.0
 var _free_handle := Vector3.ZERO
 var _rope_dist := 0.0
+var _slide_time := 0.0
+var _slide_part: FeaturePart
 var _npc_jump_t := 6.0
 var _npc_charge := 0.0
 var _npc_spin := false
@@ -209,6 +215,35 @@ func rope_slack() -> float:
 	return maxf(ROPE_LENGTH - _rope_dist, 0.0) if attached else 0.0
 
 
+## Fährt parallel zum Seil auf der Spur auto_lane (lokales x der Anlage).
+func _lane_input() -> void:
+	var inv := cable.transform.affine_inverse()
+	var local := inv * pos
+	var dir := -signf(cable.local_vz(vel)) if horizontal_speed() > 1.0 else 1.0
+	if dir < 0.0 and features and _feature_ahead():
+		_steer = clampf(-wrapf(atan2(-rope_dir.x, -rope_dir.z) - yaw, -PI, PI) * 2.0, -1.0, 1.0)
+		return
+	var lane := auto_lane if dir > 0.0 else 0.0   # Rückweg: Richtung Seillinie, an den Features vorbei
+	var target_local := Vector3(lane, 0.0, local.z - dir * 14.0)
+	var target := cable.transform * target_local
+	var want := atan2(-(target.x - pos.x), -(target.z - pos.z))
+	if tension_smooth < 30.0:
+		want = atan2(-rope_dir.x, -rope_dir.z)    # Wende: zum Carrier drehen
+	var diff := wrapf(_aligned_yaw(want) - yaw, -PI, PI) if tension_smooth > 30.0 else wrapf(want - yaw, -PI, PI)
+	_steer = clampf(-diff * 2.5, -1.0, 1.0)
+	_edge = 0.5
+	_release = 1.0 if tension_smooth < 30.0 and horizontal_speed() > 3.0 else 0.0
+
+
+func _feature_ahead() -> bool:
+	var vh := Vector3(vel.x, 0.0, vel.z)
+	for t: float in [0.3, 0.7, 1.1, 1.5, 1.9]:
+		var p := pos + vh * t
+		if features.height_at(p.x, p.z) > FeaturePart.NONE + 1.0:
+			return true
+	return false
+
+
 func _in_dock(x: float, z: float) -> bool:
 	return dock_rect.has_point(Vector2(x, z))
 
@@ -229,7 +264,7 @@ func _aligned_yaw(target: float) -> float:
 
 
 func _obstacle_height(x: float, z: float) -> float:
-	var h := Lake.kicker_height(x, z)
+	var h := features.height_at(x, z) if features else FeaturePart.NONE
 	if _in_dock(x, z):
 		h = maxf(h, Lake.DOCK_Y)
 	return h
@@ -294,6 +329,12 @@ func _autopilot_input(delta: float) -> void:
 	var side := 1.0 if fmod(_auto_t, 9.0) < 4.5 else -1.0
 	var carving := speed > 5.0 and tension_smooth > 50.0
 	var offset := 0.35 * side if carving else 0.0
+	# Hindernisse voraus: nicht seitlich hineincarven, sondern Richtung Seillinie (Carrier) halten
+	if not is_nan(auto_lane):
+		_lane_input()
+		return
+	if features and _feature_ahead():
+		offset = 0.0
 	var target := rope_yaw + offset
 	if carving:
 		# Twin-Tip: während der Fahrt ist auch Switch (rückwärts) in Ordnung – nicht
@@ -361,10 +402,18 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var vl := vh.dot(f)
 	var vs := vh.dot(r)
 	var on_dock := _in_dock(pos.x, pos.z) and pos.y > Lake.DOCK_Y - 0.05
+	var feat_h := features.height_at(pos.x, pos.z) if features else FeaturePart.NONE
+	var on_feature := feat_h > 0.05 and pos.y > feat_h - 0.1
 
 	var f_long: float
 	var f_lat: float
-	if on_dock:
+	if on_feature:
+		# Auf Box, Rail oder Pipe: das Brett rutscht in jede Richtung gleich leicht
+		# (Boardslide quer zur Fahrtrichtung ist also möglich).
+		var fr := SLIDE_FRICTION * MASS * GRAVITY
+		f_long = -fr * vl / maxf(speed, 0.5)
+		f_lat = -fr * vs / maxf(speed, 0.5)
+	elif on_dock:
 		# nasse Startrampe: rutschig längs, fest quer
 		f_long = -40.0 * vl
 		f_lat = -500.0 * vs
@@ -384,9 +433,11 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	# Lenken über die Kante
 	# flaches (driftendes) Brett lässt sich schneller herumdrehen, belastete Kante zieht weite Bögen
 	var turn := TURN_RATE * clampf(0.6 + speed / 7.0, 0.6, 1.4) * (1.0 + 0.8 * _release - 0.3 * _edge)
+	if on_feature:
+		turn = 2.5   # auf dem Feature dreht man das Brett frei (z. B. in den Boardslide)
 	yaw -= _steer * turn * delta
 	# Wasserstart: solange das Brett nicht gleitet, dreht es sich in Zugrichtung
-	if speed < 2.5 and tension > 30.0:
+	if speed < 2.5 and tension > 30.0 and not on_feature:
 		var target := _aligned_yaw(atan2(-rope_dir.x, -rope_dir.z))
 		yaw = lerp_angle(yaw, target, (1.0 - speed / 2.5) * 2.0 * delta)
 
@@ -394,7 +445,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	pos.x += vel.x * delta
 	pos.z += vel.z * delta
 	if _obstacle_height(pos.x, pos.z) > old_y + 0.15:
-		crash("Gegen den Steg!" if _in_dock(pos.x, pos.z) else "Kicker gerammt!")
+		crash("Gegen den Steg!" if _in_dock(pos.x, pos.z) else "Gegen %s gefahren!" % _part_name(pos.x, pos.z))
 		return
 
 	# Höhe folgt der Oberfläche – fällt sie schneller weg als die Schwerkraft zieht
@@ -402,7 +453,8 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var surf := _board_surface()
 	var ay := -GRAVITY + rope.y / MASS
 	var y_ball := old_y + vel.y * delta + 0.5 * ay * delta * delta
-	if y_ball > surf + 0.03 and vel.y > 0.8:
+	# Abheben: Kante/Kamm wirft hoch, oder man rutscht über das Ende eines Features hinaus
+	if y_ball > surf + 0.03 and (vel.y > 0.8 or surf < old_y - 0.2):
 		pos.y = y_ball
 		vel.y += ay * delta
 		_enter_air()
@@ -411,8 +463,32 @@ func _step_water(delta: float, rope: Vector3) -> void:
 		vel.y = lerpf(vel.y, clampf((surf - old_y) / delta, -4.0, 4.0), 0.5)
 		pos.y = surf
 
-	if not on_dock:
+	if not on_dock and not on_feature:
 		water.emit_wake(pos, clampf(speed / 8.0, 0.0, 1.2), delta, get_instance_id())
+	_track_slide(delta, on_feature)
+
+
+## Punkte für Slides: wer eine Weile auf Box/Rail/Pipe rutscht, bekommt sie beim Verlassen.
+func _track_slide(delta: float, on_feature: bool) -> void:
+	var part := features.part_at(pos.x, pos.z) if (features and on_feature) else null
+	if part and part.is_slide():
+		_slide_time += delta
+		_slide_part = part
+		return
+	if _slide_part and _slide_time > 0.3:
+		var vh := Vector3(vel.x, 0.0, vel.z)
+		var across := vh.length() > 1.0 and absf(vh.normalized().dot(forward())) < 0.6
+		var trick := ("Boardslide" if across else "50-50") + " – " + _slide_part.display_name
+		var pts := int(_slide_time * 120.0) + (60 if across else 0)
+		score += pts
+		trick_landed.emit(trick, pts)
+	_slide_time = 0.0
+	_slide_part = null
+
+
+func _part_name(x: float, z: float) -> String:
+	var p := features.part_at(x, z) if features else null
+	return "die " + p.display_name if p else "das Hindernis"
 
 
 func _pop() -> void:
@@ -432,6 +508,7 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	var drag := -vel * vel.length() * 0.3
 	vel += (rope + drag) / MASS * delta
 	vel.y -= GRAVITY * delta
+	var old_obstacle := _obstacle_height(pos.x, pos.z)
 	pos += vel * delta
 	air_time += delta
 
@@ -444,8 +521,11 @@ func _step_air(delta: float, rope: Vector3) -> void:
 			yaw = rotate_toward(yaw, _aligned_yaw(atan2(-vh.x, -vh.z)), AIR_ASSIST * delta)
 	_spin_accum += wrapf(yaw - old_yaw, -PI, PI)
 
-	if _obstacle_height(pos.x, pos.z) > pos.y + 0.35:
-		crash("Kicker gerammt!")
+	# Seitlich gegen ein Feature geflogen? Nur wenn man von außen hineinfliegt –
+	# wer schon darüber ist (z. B. seitlich vom Rail fällt), landet stattdessen.
+	var obstacle := _obstacle_height(pos.x, pos.z)
+	if obstacle > pos.y + 0.35 and old_obstacle < obstacle - 0.3:
+		crash("Gegen %s gefahren!" % _part_name(pos.x, pos.z))
 		return
 	var surf := _board_surface()
 	if pos.y <= surf and vel.y <= 0.0:
@@ -454,7 +534,9 @@ func _step_air(delta: float, rope: Vector3) -> void:
 
 func _land(surf: float) -> void:
 	var vh := Vector3(vel.x, 0.0, vel.z)
-	if vh.length() > 2.0 and absf(vh.normalized().dot(forward())) < cos(deg_to_rad(50.0)):
+	# Auf einem Feature darf man quer landen (Boardslide), im Wasser nicht
+	var on_feature := _obstacle_height(pos.x, pos.z) > 0.05 and _obstacle_height(pos.x, pos.z) >= surf - 0.02
+	if not on_feature and vh.length() > 2.0 and absf(vh.normalized().dot(forward())) < cos(deg_to_rad(50.0)):
 		crash("Verkantet gelandet!")
 		return
 	if vel.y < -11.0:
@@ -573,12 +655,12 @@ func _process(delta: float) -> void:
 		Util.place_beam(_arm_r, body * Vector3(0.0, 1.38, -0.17), handle_pos + bar_axis * 0.08)
 	_draw_rope(handle_pos, anchor)
 
-	_spray.emitting = mode == Mode.WATER and speed > 3.0 and not _in_dock(pos.x, pos.z)
+	_spray.emitting = mode == Mode.WATER and speed > 3.0 and not _in_dock(pos.x, pos.z) and pos.y < 0.2
 	_spray.initial_velocity_max = 1.5 + speed * 0.35
 	_spray.direction = Vector3(-signf(_lean_roll) * 0.8, 1.0, 0.5)
 
 	# Drift: das quer rutschende Brett schiebt eine Gischtwand zur Seite
-	var drifting := mode == Mode.WATER and speed > 3.0 and _release_vis > 0.3 and absf(slip) > 0.6
+	var drifting := mode == Mode.WATER and pos.y < 0.2 and speed > 3.0 and _release_vis > 0.3 and absf(slip) > 0.6
 	_slide_spray.emitting = drifting
 	_slide_spray.direction = Vector3(signf(slip), 0.8, 0.0)
 	_slide_spray.initial_velocity_max = 2.0 + absf(slip) * 2.0

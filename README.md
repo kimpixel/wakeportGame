@@ -13,6 +13,10 @@ Nachgebaut ist der **Wakeport am Raunheimer Waldsee** (Hessen). Gespielt wird au
 - Ein **Carrier** sitzt fest auf einem der beiden Stränge. Der Motor kehrt an jedem Ende die Richtung um, so wird der Fahrer hin und her gezogen.
 - Gelände, Ufer, Wald und Luftbild stammen aus den offenen Geodaten Hessens. Den Strandbereich mit den Hütten habe ich nach Fotos nachgebaut.
 
+## Hindernisse
+
+Die echten Feature-Setups von T1 und T2 stehen modular in [setups/](setups/README.md): ein Bauteile-Katalog und pro Terminal eine Setup-Datei, in der jede Zeile ein Teil aufstellt. Zum Umbauen musst du nur die JSON-Dateien ändern.
+
 ## Steuerung
 
 Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:

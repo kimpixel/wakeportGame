@@ -17,6 +17,7 @@ var cam: ChaseCamera
 var hud: Hud
 
 var cable_t1: CableSystem
+var features: FeatureSet
 var npc: Rider
 var _npc_crash_t := 0.0
 var _crash_t := 0.0
@@ -29,6 +30,7 @@ var _shot_time := 3.0
 var _shot_taken := false
 var _cam_arg := ""
 var _view_arg := PackedFloat32Array()
+var _lane_arg := NAN
 var _elapsed := 0.0
 var _log_t := 0.0
 
@@ -40,7 +42,6 @@ func _ready() -> void:
 	Geo.ensure_loaded()
 	add_child(Terrain.new())
 	add_child(Beach.new())
-	_build_kickers()
 
 	water = Water.new()
 	add_child(water)
@@ -61,8 +62,15 @@ func _ready() -> void:
 	add_child(rider)
 	water.follow = rider
 
+	# Hindernisse beider Terminals aus den Setup-Dateien (modular, siehe setups/)
+	features = FeatureSet.new()
+	add_child(features)
+	features.load_setups(["res://setups/terminal1.json", "res://setups/terminal2.json"], {"T1": cable_t1, "T2": cable})
+	rider.features = features
+
 	npc = Rider.new()
 	npc.water = water
+	npc.features = features
 	npc.cable = cable_t1
 	npc.is_npc = true
 	npc.autopilot = true
@@ -105,6 +113,7 @@ func _ready() -> void:
 
 	if _test_log:
 		rider.autopilot = true
+		rider.auto_lane = _lane_arg
 		cable.start()
 
 
@@ -256,6 +265,8 @@ func _parse_args() -> void:
 			_shot_path = arg.substr(7)
 		elif arg.begins_with("--shot-time="):
 			_shot_time = arg.substr(12).to_float()
+		elif arg.begins_with("--lane="):
+			_lane_arg = arg.substr(7).to_float()
 		elif arg.begins_with("--view="):
 			_view_arg = PackedFloat32Array(Array(arg.substr(7).split(",")).map(func(v: String) -> float: return v.to_float()))
 		elif arg.begins_with("--cam="):
@@ -312,46 +323,6 @@ func _build_environment() -> void:
 		sun.light_energy = 0.65
 
 
-func _build_kickers() -> void:
-	var mat := Util.mat(Color(0.92, 0.92, 0.88), 0.7)
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	for k: Dictionary in Lake.KICKERS:
-		var kx: float = k["x"]
-		var kz: float = k["z"]
-		var kdir: float = k["dir"]
-		var klen: float = k["len"]
-		var kw: float = k["width"]
-		var kh: float = k["height"]
-		var x0 := kx - kw * 0.5
-		var x1 := kx + kw * 0.5
-		var bottom := -0.6
-		var st := SurfaceTool.new()
-		st.begin(Mesh.PRIMITIVE_TRIANGLES)
-		var n := 12
-		for i in n:
-			var u0 := float(i) / n
-			var u1 := float(i + 1) / n
-			var z0 := kz + kdir * (u0 * klen - klen * 0.5)
-			var z1 := kz + kdir * (u1 * klen - klen * 0.5)
-			var h0 := Lake.kicker_profile(u0, kh)
-			var h1 := Lake.kicker_profile(u1, kh)
-			_quad(st, Vector3(x0, h0, z0), Vector3(x1, h0, z0), Vector3(x1, h1, z1), Vector3(x0, h1, z1), Vector3.UP)
-			_quad(st, Vector3(x0, bottom, z0), Vector3(x0, h0, z0), Vector3(x0, h1, z1), Vector3(x0, bottom, z1), Vector3.LEFT)
-			_quad(st, Vector3(x1, bottom, z0), Vector3(x1, h0, z0), Vector3(x1, h1, z1), Vector3(x1, bottom, z1), Vector3.RIGHT)
-		var zl := kz + kdir * klen * 0.5
-		_quad(st, Vector3(x0, bottom, zl), Vector3(x1, bottom, zl), Vector3(x1, kh, zl), Vector3(x0, kh, zl), Vector3(0.0, 0.0, kdir))
-		st.generate_normals()
-		var mi := MeshInstance3D.new()
-		mi.mesh = st.commit()
-		mi.material_override = mat
-		add_child(mi)
 
 
-## Zwei Dreiecke; Reihenfolge wird so gedreht, dass die Normale nach "outward" zeigt.
-func _quad(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, outward: Vector3) -> void:
-	if Plane(a, b, c).normal.dot(outward) < 0.0:
-		var t := b
-		b = d
-		d = t
-	for v in [a, b, c, a, c, d]:
-		st.add_vertex(v)
+
