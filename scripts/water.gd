@@ -37,6 +37,10 @@ func _ready() -> void:
 	plane.subdivide_depth = int(d / cell)
 	_material = ShaderMaterial.new()
 	_material.shader = preload("res://shaders/water.gdshader")
+	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
+		# Browser-Renderer: dunkleres, satteres Wasser (sonst wirkt es hellblau)
+		_material.set_shader_parameter("deep_color", Color(0.01, 0.09, 0.13))
+		_material.set_shader_parameter("shallow_color", Color(0.03, 0.2, 0.24))
 	plane.material = _material
 
 	var mi := MeshInstance3D.new()

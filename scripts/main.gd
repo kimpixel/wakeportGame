@@ -244,9 +244,21 @@ func _build_environment() -> void:
 	sun.directional_shadow_max_distance = 150.0
 	add_child(sun)
 
+	# Browser (Compatibility-Renderer) belichtet deutlich heller – eigene Werte, damit es
+	# ungefähr so aussieht wie die Desktop-Version.
+	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
+		sky_mat.sky_top_color = Color(0.08, 0.22, 0.6)
+		sky_mat.sky_horizon_color = Color(0.42, 0.55, 0.76)
+		env.fog_light_color = Color(0.5, 0.6, 0.75)
+		sky_mat.energy_multiplier = 0.8
+		env.ambient_light_energy = 0.3
+		env.tonemap_exposure = 0.8
+		sun.light_energy = 0.65
+
 
 func _build_shore() -> void:
-	var grass := Util.mat(Color(0.32, 0.55, 0.25))
+	var compat := RenderingServer.get_current_rendering_method() == "gl_compatibility"
+	var grass := Util.mat(Color(0.14, 0.3, 0.08) if compat else Color(0.32, 0.55, 0.25))
 	var sand := Util.mat(Color(0.82, 0.74, 0.55))
 	var wood := Util.mat(Color(0.55, 0.38, 0.22))
 	var far := 500.0
