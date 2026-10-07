@@ -15,7 +15,9 @@ Nachgebaut ist der **Wakeport am Raunheimer Waldsee** (Hessen). Gespielt wird au
 
 ## Hindernisse
 
-Die echten Feature-Setups von T1 und T2 stehen modular in [setups/](setups/README.md): ein Bauteile-Katalog und pro Terminal eine Setup-Datei, in der jede Zeile ein Teil aufstellt. Zum Umbauen musst du nur die JSON-Dateien ändern.
+Die echten Feature-Setups von T1 und T2 stehen modular in [setups/](setups/README.md): ein Bauteile-Katalog mit den echten Modulen (Pipe-Hälften mit an-/absteckbaren Auffahrten, Port Plaza aus Plaza Kicker und Plaza Rail, Spine Kicker aus zwei Kicker M) und mehrere Setups, je eine Datei für beide Terminals. **Vor dem Start wählst du oben rechts, welches Setup du fährst** (oder mit F). Aktuell ist „2026 September“, dazu sechs ältere Setups, deren Datum noch als Platzhalter drinsteht.
+
+Der weiße Schwimmsteg, der Holzsteg und die Wendebojen sind Hindernisse: Wer dagegen fährt, stürzt.
 
 ## Steuerung
 

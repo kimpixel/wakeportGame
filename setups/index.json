@@ -1,0 +1,12 @@
+{
+  "_info": "Liste der Feature-Setups für das Auswahlmenü (oben = Standard). Unbekannte Daten als Platzhalter (?). Neues Setup: Datei setup_*.json anlegen und hier eintragen.",
+  "setups": [
+    { "id": "2026-09",     "name": "2026 September",        "file": "res://setups/setup_2026_09.json" },
+    { "id": "juli-august", "name": "Juli & August (Jahr ?)", "file": "res://setups/setup_f.json" },
+    { "id": "a",           "name": "Setup A (Datum ?)",      "file": "res://setups/setup_a.json" },
+    { "id": "b",           "name": "Setup B (Datum ?)",      "file": "res://setups/setup_b.json" },
+    { "id": "c",           "name": "Setup C (Datum ?)",      "file": "res://setups/setup_c.json" },
+    { "id": "d",           "name": "Setup D (Datum ?)",      "file": "res://setups/setup_d.json" },
+    { "id": "e",           "name": "Setup E (Datum ?)",      "file": "res://setups/setup_e.json" }
+  ]
+}

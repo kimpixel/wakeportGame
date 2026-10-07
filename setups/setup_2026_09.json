@@ -1,0 +1,26 @@
+{
+  "name": "2026 September",
+  "date": "2026-09",
+  "source": "Feature Setup Terminal 1.png / Terminal 2.png",
+  "T2": [
+    { "part": "kicker_s",        "s": 54.0,   "x": 6.0,  "dir": "in", "yaw": -4 },
+    { "part": "kicker_l",        "s": 55.0,   "x": 9.4,  "dir": "in", "yaw": -4 },
+    { "part": "pyramid_series",  "s": 70.0,   "x": -6.5, "dir": "out" },
+    { "part": "transition_rail", "s": 118.0,  "x": 5.0,  "dir": "out" },
+    { "part": "transition_curb", "s": 116.0,  "x": 7.9,  "dir": "out" },
+    { "part": "cheese_wedge",    "s": 126.0,  "x": 7.9,  "dir": "in" },
+    { "part": "cheese_wedge",    "s": 112.0,  "x": -6.0, "dir": "out" },
+    { "part": "pipe_half",       "s": 117.25, "x": -6.0, "dir": "out", "ramp_in": 0, "ramp_out": 0 }
+  ],
+  "T1": [
+    { "part": "spine_kicker",    "s": 54.5,  "x": -7.6 },
+    { "part": "bump",            "s": 54.5,  "x": -3.6 },
+    { "part": "pipe_half",       "s": 54.0,  "x": 6.0,  "dir": "out" },
+    { "part": "ollie_box",       "s": 122.0, "x": -6.9, "dir": "out" },
+    { "part": "ollie_ledge",     "s": 122.0, "x": -5.0, "dir": "out" },
+    { "part": "down_ledge",      "s": 112.0, "x": 5.4,  "dir": "out" },
+    { "part": "ledge",           "s": 125.0, "x": 5.4,  "dir": "out" },
+    { "part": "add_on_rail",     "s": 126.0, "x": 5.4,  "dir": "out" },
+    { "part": "cheese_wedge",    "s": 113.0, "x": 7.5,  "dir": "out" }
+  ]
+}

@@ -17,6 +17,10 @@ var _north_yaw := 0.0
 ## Jeder Eintrag: {"pos": Vector3 (Kopfhöhe, Welt), "pitch": Stimmlage}
 var people: Array[Dictionary] = []
 
+## Feste Hindernisse auf dem Wasser (weißer Steg, Holzsteg): wer dagegen fährt, stürzt.
+## Jeder Eintrag: {"a": Vector2, "b": Vector2 (Mittellinie, Spiel-x/z), "half_w": float, "top": float}
+var obstacles: Array[Dictionary] = []
+
 
 func _ready() -> void:
 	Geo.ensure_loaded()
@@ -241,6 +245,17 @@ func _build_t2_start() -> void:
 	_build_white_dock()
 
 
+## Hindernis-Abfrage: trifft ein Fahrer (Brett-Radius r) an p einen Steg? Darüber springen geht.
+func obstacle_hit(p: Vector3, r: float) -> bool:
+	for o: Dictionary in obstacles:
+		if p.y > o["top"] + 0.45:
+			continue
+		var q := Geometry2D.get_closest_point_to_segment(Vector2(p.x, p.z), o["a"], o["b"])
+		if q.distance_to(Vector2(p.x, p.z)) < o["half_w"] + r:
+			return true
+	return false
+
+
 ## Weißer Schwimmsteg (Kunststoffmodule, ca. 1,6 m breit) nach dem Luftbild: ein Arm nach Norden
 ## am Startsteg vorbei, ein langer Arm schräg nach Südosten; daran ein Holzsteg mit zwei Liegestühlen.
 func _build_white_dock() -> void:
@@ -250,6 +265,9 @@ func _build_white_dock() -> void:
 	_strip(Vector2(9.2, -3.3), Vector2(13.2, -14.0), 1.6, 0.18, white, seam)
 	# Holzsteg mit Liegestühlen, landseitig am Südost-Arm
 	var deck := _node(9.3, -9.6, 0.16, -20.5)
+	var dc := Geo.rel_to_game(9.3, -9.6)
+	var dx := deck.global_basis.x if deck.is_inside_tree() else deck.basis.x
+	obstacles.append({"a": Vector2(dc.x - dx.x * 1.5, dc.y - dx.z * 1.5), "b": Vector2(dc.x + dx.x * 1.5, dc.y + dx.z * 1.5), "half_w": 1.4, "top": 0.2})
 	var plank := Util.mat(Color(0.5, 0.43, 0.35))
 	_b(deck, Vector3(3.0, 0.3, 2.8), Vector3(0, -0.15, 0), _wood_dark)
 	for i in 14:
@@ -274,6 +292,7 @@ func _deck_chair(parent: Node3D, at: Vector3, mat: Material) -> void:
 
 
 ## Schwimmender Steg zwischen zwei Punkten (dE, dN): Module à ~2 m mit dunklen Fugen.
+## Wird als Hindernis in obstacles eingetragen.
 func _strip(a: Vector2, b: Vector2, width: float, top: float, mat: Material, seam_mat: Material) -> void:
 	var p0 := Geo.rel_to_game(a.x, a.y)
 	var p1 := Geo.rel_to_game(b.x, b.y)
@@ -283,6 +302,7 @@ func _strip(a: Vector2, b: Vector2, width: float, top: float, mat: Material, sea
 	n.position = Vector3((p0.x + p1.x) * 0.5, top, (p0.y + p1.y) * 0.5)
 	n.rotation.y = atan2(-d.y, d.x)
 	add_child(n)
+	obstacles.append({"a": p0, "b": p1, "half_w": width * 0.5, "top": top})
 	var modules := maxi(int(round(length / 2.0)), 1)
 	var ml := length / modules
 	for i in modules:

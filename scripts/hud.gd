@@ -7,7 +7,7 @@ S   Kante lösen = Driften: Brett rutscht quer, dreht schneller (gut für die We
 Leertaste halten + loslassen   Absprung
 Enter  Start     R  Neustart     + / -  Anlagentempo
 C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom
-P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus"""
+P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus     F  Feature-Setup (vor dem Start)"""
 
 const HELP_MOBILE := """Handy neigen   lenken
 Finger halten + loslassen   Absprung
@@ -20,6 +20,7 @@ var _help: Label
 var _bar: ProgressBar
 var _board: Label
 var _trick_time := 0.0
+var _setup_box: Control
 
 
 func _ready() -> void:
@@ -81,6 +82,36 @@ func set_center(text: String) -> void:
 func show_trick(text: String) -> void:
 	_trick.text = text
 	_trick_time = 2.0
+
+
+## Auswahl des Feature-Setups (nur vor dem Start sichtbar). Liefert die Auswahlbox.
+func add_setup_menu(names: Array, current: int, on_select: Callable) -> OptionButton:
+	var box := VBoxContainer.new()
+	box.anchor_left = 1.0
+	box.anchor_right = 1.0
+	box.offset_left = -330
+	box.offset_right = -16
+	box.offset_top = 12
+	add_child(box)
+	var title := _label(18)
+	title.text = "Feature-Setup  (F wechseln)"
+	title.reparent(box)
+	var opt := OptionButton.new()
+	opt.add_theme_font_size_override("font_size", 20)
+	opt.custom_minimum_size = Vector2(300, 44)
+	for n: String in names:
+		opt.add_item(n)
+	opt.select(current)
+	opt.item_selected.connect(on_select)
+	opt.focus_mode = Control.FOCUS_NONE         # Tastatur bleibt beim Spiel
+	box.add_child(opt)
+	_setup_box = box
+	return opt
+
+
+func show_setup_menu(on: bool) -> void:
+	if _setup_box:
+		_setup_box.visible = on
 
 
 func set_help(text: String) -> void:

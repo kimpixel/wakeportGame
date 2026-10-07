@@ -16,6 +16,7 @@ var active := false
 var tilt_available := false   # liefert der Sensor Werte (bzw. Erlaubnis erteilt)?
 var debug_roll := NAN         # Test: feste Neigung in Grad (--tilt=…)
 var _touches := 0
+var ui_blockers: Array = []     # Bedienelemente (z. B. Setup-Menü): Finger darauf starten/springen nicht
 var _pressed := ""            # Lenk-Aktion, die dieses Modul gerade hält
 
 # Läuft im Browser: hört auf deviceorientation (auf iOS erst nach Erlaubnis, die beim ersten
@@ -88,6 +89,8 @@ func _input(event: InputEvent) -> void:
 	var t := event as InputEventScreenTouch
 	if t == null:
 		return
+	if t.pressed and _over_ui(t.position):
+		return
 	if t.pressed:
 		_touches += 1
 		if _touches == 1:
@@ -97,6 +100,16 @@ func _input(event: InputEvent) -> void:
 		if _touches == 0:
 			touch_up.emit()
 	get_viewport().set_input_as_handled()
+
+
+## Liegt der Finger auf einem sichtbaren Bedienelement (oder ist dessen Popup offen)?
+func _over_ui(pos: Vector2) -> bool:
+	for c: Variant in ui_blockers:
+		if c is Window and (c as Window).visible:
+			return true
+		if c is Control and (c as Control).is_visible_in_tree() and (c as Control).get_global_rect().has_point(pos):
+			return true
+	return false
 
 
 func _process(_delta: float) -> void:

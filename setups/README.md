@@ -1,11 +1,22 @@
 # Feature-Setups (Hindernisse)
 
-Die Hindernisse sind **modular**. Es gibt zwei Ebenen:
+Die Hindernisse sind **modular**, genau wie die echten Module am Wakeport. Es gibt drei Ebenen:
 
-1. **`parts.json` – der Bauteile-Katalog:** Hier wird jedes Teil einmal mit seinen Maßen definiert (z. B. `kicker_l`, `pipe`, `transition_rail`).
-2. **`terminal1.json` / `terminal2.json` – das Setup einer Anlage:** Jede Zeile stellt ein Bauteil aus dem Katalog an einer Position auf.
+1. **`parts.json` – der Bauteile-Katalog:** Hier wird jedes Teil einmal mit seinen Maßen definiert (z. B. `kicker_l`, `pipe_half`, `transition_rail`).
+2. **`setup_*.json` – ein Feature-Setup:** Für beide Terminals (`T1`, `T2`) je eine Liste. Jede Zeile stellt ein Bauteil aus dem Katalog an einer Position auf.
+3. **`index.json` – die Liste der Setups** für das Auswahlmenü im Spiel (oben = Standard). Unbekannte Monate oder Jahre stehen als Platzhalter `?` drin.
 
-Das Spiel liest beide Ebenen beim Start. Für ein neues Setup musst du nur die JSON-Dateien ändern, nicht den Code.
+Vor dem Start wählst du das Setup oben rechts aus (oder mit F). Für ein neues Setup legst du eine `setup_*.json` an und trägst sie in `index.json` ein. Am Code ändert sich nichts.
+
+## Modulare Teile
+
+| Modul | Aufbau |
+|---|---|
+| **Pipe** | `pipe_half` = halbe Pipe (6,5 m Rohr). Die Auffahrten vorne (`ramp_in`) und hinten (`ramp_out`) steckst du einzeln an (2,2) oder ab (0). `s` meint immer die Rohrmitte. `pipe_long` = zwei Hälften ohne Auffahrten in der Mitte; `ramp_in`/`ramp_out` der Zeile gelten für die Enden. |
+| **Port Plaza** | `port_plaza` = `plaza_kicker` + `plaza_rail` (das Rail beginnt oben auf dem Kicker). Beide Teile gibt es auch einzeln; die Plaza Rail hat dann eine eigene kleine Auffahrt. |
+| **Spine Kicker** | `spine_kicker` = zwei `kicker_m` Rücken an Rücken. Einzeln stellst du sie als `kicker_m` auf. |
+| **1/2 Transition Rail** | `transition_rail_half` (11 m, eine Auffahrt). Für zwei gespiegelt nebeneinander legst du mit `inner_v` (+1/−1) fest, auf welcher Seite die Transition liegt. |
+| **Pyramid Series** | Gruppe mit `mirror`: Das A-Frame Rail steht immer außen (weg vom Seil), egal auf welcher Seite. |
 
 ## Eine Setup-Zeile
 
@@ -20,6 +31,7 @@ Das Spiel liest beide Ebenen beim Start. Für ein neues Setup musst du nur die J
 | `x` | Seitlicher Abstand zum Seil in Metern: + rechts, − links, jeweils mit Blick vom Startsteg zum Endmast |
 | `dir` | `out` = befahrbar Richtung Endmast, `in` = Richtung Startsteg |
 | `yaw` | Zusätzliche Drehung in Grad (optional) |
+| `inner_v` | Nur Transition: Seite der Transition erzwingen (+1/−1), sonst zeigt sie zum Seil |
 
 Einzelne Maße kannst du pro Zeile überschreiben, ohne den Katalog zu ändern, z. B. `"height": 1.2` oder `"length": 12`.
 
@@ -60,7 +72,7 @@ Der Autopilot (P) und der NPC auf T1 fahren Features selbstständig an. Dafür m
 Mit diesem Befehl fährt der Autopilot auf einer festen Spur, hier 6 m rechts vom Seil, direkt über die Features:
 
 ```
-godot --headless --path . --fixed-fps 120 -- --autotest --lane=6 --quit=100
+godot --headless --path . --fixed-fps 120 -- --autotest --setup=a --lane=6 --quit=100
 ```
 
 Im Log siehst du dann `TRICK:`- und `CRASH:`-Zeilen.

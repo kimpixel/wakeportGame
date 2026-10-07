@@ -1,0 +1,23 @@
+{
+  "name": "Setup C (Datum ?)",
+  "date": "????-??",
+  "source": "487880742_1263988212394376_3301962998234366319_n.jpg",
+  "T2": [
+    { "part": "pipe_long",       "s": 127.2, "x": -9.9, "dir": "out", "ramp_out": 0 },
+    { "part": "transition_curb", "s": 108.8, "x": -7.5, "dir": "out" },
+    { "part": "pyramid_series",  "s": 71.2,  "x": -6.6, "dir": "out" },
+    { "part": "transition_rail", "s": 115.3, "x": 5.0,  "dir": "out" },
+    { "part": "down_ledge",      "s": 115.7, "x": 7.0,  "dir": "in" },
+    { "part": "cheese_wedge",    "s": 125.2, "x": 8.8,  "dir": "in" },
+    { "part": "uprail",          "s": 62.9,  "x": 4.5,  "dir": "out" },
+    { "part": "kicker_l",        "s": 66.5,  "x": 7.4,  "dir": "in", "yaw": -6 }
+  ],
+  "T1": [
+    { "part": "ollie_box",       "s": 117.5, "x": -6.4, "dir": "out" },
+    { "part": "ollie_ledge",     "s": 117.5, "x": -4.5, "dir": "out" },
+    { "part": "kicker_m",        "s": 67.1,  "x": -7.0, "dir": "in", "yaw": -8 },
+    { "part": "bump",            "s": 67.1,  "x": -4.0 },
+    { "part": "port_plaza",      "s": 105.3, "x": 5.1,  "dir": "out" },
+    { "part": "kicker_m",        "s": 67.8,  "x": 5.0,  "dir": "in", "yaw": -4 }
+  ]
+}

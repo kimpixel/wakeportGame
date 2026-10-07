@@ -7,6 +7,7 @@ extends Node3D
 ##   --quit=SEK        nach SEK Sekunden Simulationszeit beenden
 ##   --shot=PFAD.png   Screenshot speichern (mit --shot-time=SEK) und beenden
 ##   --cam=side|orbit  Kameramodus beim Start
+##   --setup=ID        Feature-Setup aus setups/index.json (z. B. 2026-09, a, b)
 ##   --mobile          Handy-Steuerung erzwingen (mit --tilt=GRAD feste Neigung)
 ##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
 
@@ -18,6 +19,11 @@ var rider: Rider
 var cam: ChaseCamera
 var hud: Hud
 var mobile: MobileInput
+var _setups: Array = []          # aus setups/index.json
+var _setup_idx := 0
+var _setup_menu: OptionButton
+var _setup_arg := ""
+const SETTINGS := "user://settings.cfg"
 var _touch_started := false     # dieser Finger hat die Anlage gestartet (kein Sprung)
 
 var cable_t1: CableSystem
@@ -25,6 +31,7 @@ var features: FeatureSet
 var npc: Rider
 var _npc_crash_t := 0.0
 var buoys: TurnBuoys
+var beach: Beach
 
 # Wende-Wertung: wer die Wende schafft, ohne abzusinken, bekommt Punkte
 const SINK_SPEED := 1.5         # m/s – fast Stillstand, das Brett sinkt ein ...
@@ -58,7 +65,7 @@ func _ready() -> void:
 	_build_environment()
 	Geo.ensure_loaded()
 	add_child(Terrain.new())
-	var beach := Beach.new()
+	beach = Beach.new()
 	add_child(beach)
 
 	water = Water.new()
@@ -89,7 +96,9 @@ func _ready() -> void:
 
 	features = FeatureSet.new()
 	add_child(features)
-	features.load_setups(["res://setups/terminal1.json", "res://setups/terminal2.json"], {"T1": cable_t1, "T2": cable})
+	_setups = FeatureSet.list_setups()
+	_setup_idx = _initial_setup()
+	features.load_setup(_setups[_setup_idx]["file"], {"T1": cable_t1, "T2": cable})
 	rider.features = features
 
 	npc = Rider.new()
@@ -135,9 +144,14 @@ func _ready() -> void:
 
 	hud = Hud.new()
 	add_child(hud)
+	var names: Array = []
+	for e: Dictionary in _setups:
+		names.append(e["name"])
+	_setup_menu = hud.add_setup_menu(names, _setup_idx, _select_setup)
 	# Handy/Tablet: Tippen = Start bzw. Sprung, Neigen = lenken
 	mobile = MobileInput.new()
 	add_child(mobile)
+	mobile.ui_blockers = [_setup_menu.get_parent(), _setup_menu.get_popup()]
 	if mobile.active:
 		hud.set_help(Hud.HELP_MOBILE)
 		mobile.touch_down.connect(_on_touch_down)
@@ -160,6 +174,42 @@ func _ready() -> void:
 		cable.start()
 
 
+# ---------------------------------------------------------------- Feature-Setups
+
+## Start-Setup: --setup=ID, sonst das zuletzt gewählte, sonst das erste (aktuellste).
+func _initial_setup() -> int:
+	var want := _setup_arg
+	if want == "":
+		var cfg := ConfigFile.new()
+		if cfg.load(SETTINGS) == OK:
+			want = cfg.get_value("game", "setup", "")
+	for i in _setups.size():
+		if _setups[i]["id"] == want:
+			return i
+	return 0
+
+
+## Anderes Feature-Setup aufbauen (nur solange die Anlage steht).
+func _select_setup(idx: int) -> void:
+	if cable.state != CableSystem.State.IDLE or idx == _setup_idx:
+		_setup_menu.select(_setup_idx)
+		return
+	_setup_idx = idx
+	features.load_setup(_setups[idx]["file"], {"T1": cable_t1, "T2": cable})
+	rider.forget_features()
+	npc.forget_features()
+	npc.reset()
+	cable_t1.reset()
+	cable_t1.start()
+	_npc_crash_t = 0.0
+	_setup_menu.select(idx)
+	hud.show_trick("Setup: " + str(_setups[idx]["name"]))
+	var cfg := ConfigFile.new()
+	cfg.load(SETTINGS)
+	cfg.set_value("game", "setup", _setups[idx]["id"])
+	cfg.save(SETTINGS)
+
+
 # ---------------------------------------------------------------- Ablauf
 
 ## Finger auf den Bildschirm: steht die Anlage, startet sie (ohne Sprung);
@@ -178,10 +228,14 @@ func _on_touch_up() -> void:
 	Input.action_release("jump")
 
 
-## Bojen sind Hindernisse: wer dagegen fährt, stürzt.
+## Bojen und Stege sind Hindernisse: wer dagegen fährt, stürzt.
 func _check_buoy(r: Rider) -> void:
-	if r.mode != Rider.Mode.CRASHED and buoys.hits(r.pos, 0.25):
+	if r.mode == Rider.Mode.CRASHED:
+		return
+	if buoys.hits(r.pos, 0.25):
 		r.crash("Gegen die Boje gefahren!")
+	elif beach.obstacle_hit(r.pos, 0.25):
+		r.crash("Gegen den Steg gefahren!")
 
 
 func _physics_process(delta: float) -> void:
@@ -256,6 +310,7 @@ func _process(_delta: float) -> void:
 		roundi(rider.tension_smooth)]
 	hud.set_info(info, rider.tension_smooth / Rider.CRASH_TENSION)
 	hud.set_board(rider.board_state_text())
+	hud.show_setup_menu(cable.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED)
 	if rider.mode != Rider.Mode.CRASHED:
 		if cable.state == CableSystem.State.IDLE:
 			hud.set_center("Tippen zum Starten" if mobile.active else "ENTER drücken zum Starten")
@@ -286,6 +341,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		cam.cycle_mode()
 	elif event.is_action_pressed("autopilot"):
 		rider.autopilot = not rider.autopilot
+	elif event.is_action_pressed("next_setup"):
+		_select_setup((_setup_idx + 1) % _setups.size())
 	elif event.is_action_pressed("help"):
 		hud.toggle_help()
 
@@ -357,6 +414,7 @@ func _setup_input() -> void:
 	_bind("camera", [KEY_C], [JOY_BUTTON_Y], [])
 	_bind("autopilot", [KEY_P], [], [])
 	_bind("help", [KEY_H, KEY_F1], [], [])
+	_bind("next_setup", [KEY_F], [], [])
 	_bind("mute", [KEY_M], [], [])
 	_bind("cam_left", [], [], [[JOY_AXIS_RIGHT_X, -1.0]])
 	_bind("cam_right", [], [], [[JOY_AXIS_RIGHT_X, 1.0]])
@@ -399,6 +457,8 @@ func _parse_args() -> void:
 			_shot_time = arg.substr(12).to_float()
 		elif arg.begins_with("--crash-at="):
 			_crash_at = arg.substr(11).to_float()
+		elif arg.begins_with("--setup="):
+			_setup_arg = arg.substr(8)
 		elif arg.begins_with("--touch-at="):
 			for v in arg.substr(11).split(","):
 				_touch_at.append(v.to_float())

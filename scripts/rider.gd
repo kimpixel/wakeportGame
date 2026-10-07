@@ -869,6 +869,13 @@ func _update_spray(speed: float) -> void:
 	_spray.emitting = true
 
 
+## Nach einem Setup-Wechsel: gemerkte Features vergessen (die alten Teile gibt es nicht mehr).
+func forget_features() -> void:
+	_slide_part = null
+	_line = null
+	_line_skip = null
+
+
 func board_state_text() -> String:
 	if mode != Mode.WATER:
 		return ""

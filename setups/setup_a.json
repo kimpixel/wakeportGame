@@ -1,0 +1,22 @@
+{
+  "name": "Setup A (Datum ?)",
+  "date": "????-??",
+  "source": "471623216_18477988378052956_1200163661590710167_n.jpg",
+  "T2": [
+    { "part": "transition_rail_half", "s": 92.7, "x": -9.0, "dir": "out", "inner_v": -1 },
+    { "part": "transition_rail_half", "s": 92.7, "x": -5.8, "dir": "out", "inner_v": 1 },
+    { "part": "pipe_long",       "s": 104.7, "x": -7.4, "dir": "out", "ramp_in": 0 },
+    { "part": "kicker_l",        "s": 62.0,  "x": -8.7, "dir": "in", "yaw": -4 },
+    { "part": "cheese_wedge",    "s": 62.0,  "x": -5.4, "dir": "in", "yaw": -4 },
+    { "part": "ollie_box",       "s": 119.8, "x": 4.8,  "dir": "out" },
+    { "part": "ollie_ledge",     "s": 119.8, "x": 2.9,  "dir": "out" },
+    { "part": "pyramid_series",  "s": 74.3,  "x": 4.8,  "dir": "out" }
+  ],
+  "T1": [
+    { "part": "down_ledge",      "s": 111.3, "x": -6.7, "dir": "in" },
+    { "part": "cheese_wedge",    "s": 120.8, "x": -4.9, "dir": "in" },
+    { "part": "bump",            "s": 67.3,  "x": -4.8 },
+    { "part": "port_plaza",      "s": 103.8, "x": 4.6,  "dir": "out" },
+    { "part": "spine_kicker",    "s": 65.0,  "x": 4.5 }
+  ]
+}
