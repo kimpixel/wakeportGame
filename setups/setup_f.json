@@ -9,8 +9,8 @@
     { "part": "kicker_l",        "s": 68.4,  "x": -8.4, "dir": "in", "yaw": -4 },
     { "part": "kicker_s",        "s": 66.4,  "x": -4.6, "dir": "in", "yaw": -4 },
     { "part": "down_ledge",      "s": 114.5, "x": 6.0,  "dir": "in" },
-    { "part": "cheese_wedge",    "s": 127.5, "x": 4.2,  "dir": "in" },
-    { "part": "kicker_m",        "s": 127.5, "x": 7.9,  "dir": "in" },
+    { "part": "cheese_wedge",    "s": 120.8, "x": 4.2, "dir": "in" },
+    { "part": "kicker_m",        "s": 120.3, "x": 7.8,  "dir": "in" },
     { "part": "ollie_box",       "s": 70.5,  "x": 5.9,  "dir": "out" },
     { "part": "ollie_ledge",     "s": 70.5,  "x": 7.4,  "dir": "out" }
   ],

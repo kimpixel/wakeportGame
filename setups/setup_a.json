@@ -14,7 +14,8 @@
   ],
   "T1": [
     { "part": "down_ledge",      "s": 107.3, "x": -6.7, "dir": "in" },
-    { "part": "cheese_wedge",    "s": 120.8, "x": -4.9, "dir": "in" },
+    { "part": "cheese_wedge",    "s": 114.3, "x": -4.9, "dir": "in" },
+    { "part": "cheese_wedge",    "s": 110.3, "x": -4.9, "dir": "out" },
     { "part": "bump",            "s": 67.3,  "x": -4.8 },
     { "part": "port_plaza",      "s": 103.8, "x": 4.6,  "dir": "out" },
     { "part": "spine_kicker",    "s": 65.0,  "x": 4.5 }

@@ -1,9 +1,9 @@
 class_name FeatureMap
 extends Control
-## Draufsicht auf alle Features einer Anlage (wie die Feature-Pläne), Seil waagerecht:
-## links der Startmast, rechts der Endmast, unten = rechts in Fahrtrichtung.
+## Draufsicht auf alle Features einer Anlage wie die Feature-Pläne: Seil senkrecht,
+## unten der Startsteg, oben der Endmast, rechts = rechts in Fahrtrichtung zum Endmast.
 ## Teile, die (fast) aneinanderstoßen, bilden einen "Hack" und werden zusammen ausgewählt.
-## Maus: Klick wählt aus, Ziehen verschiebt, Rad zoomt.
+## Maus: Klick wählt aus, Doppelklick zoomt auf den Hack, Ziehen verschiebt, Rad zoomt.
 
 signal hack_selected(parts: Array)
 
@@ -19,17 +19,22 @@ var selected := -1
 var _hover := -1
 var _polys: Dictionary = {}      # FeaturePart -> PackedVector2Array in (s, x)
 var _zoom := 5.0                 # Pixel pro Meter
-var _pan := Vector2.ZERO         # Bildschirmposition von (s=0, x=0)
+var _pan := Vector2.ZERO         # Bildschirmposition von (s=0, x=0); s zeigt nach oben
 var _press := Vector2.INF
 var _dragged := false
 var _whole := false
+var _zoomed := -1                # auf diesen Hack gezoomt (bleibt beim Ändern der Fenstergröße)
 var s_offset := 0.0              # Beschriftung in Setup-Metern (T1: Teile sind um diesen Versatz verschoben)
 
 
 func _ready() -> void:
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	resized.connect(func() -> void: fit(_whole))
+	resized.connect(func() -> void:
+		if _zoomed >= 0:
+			zoom_to(_zoomed)
+		else:
+			fit(_whole))
 
 
 ## Neue Anlage bzw. neues Setup anzeigen.
@@ -42,6 +47,7 @@ func set_parts(c: CableSystem, parts: Array[FeaturePart]) -> void:
 	hacks.sort_custom(func(a: Array, b: Array) -> bool: return _center(a).x < _center(b).x)
 	selected = -1
 	_hover = -1
+	_zoomed = -1
 	fit()
 
 
@@ -58,9 +64,27 @@ func fit(whole := false) -> void:
 			for q in poly:
 				r = r.expand(q)
 		r = r.grow(6.0)
-	_zoom = minf((size.x - 30.0) / r.size.x, (size.y - 30.0) / r.size.y)
-	_pan = size * 0.5 - r.get_center() * _zoom
+	_view(r)
+
+
+## Ausschnitt r (in s, x) einpassen.
+func _view(r: Rect2) -> void:
+	_zoom = minf((size.x - 30.0) / r.size.y, (size.y - 30.0) / r.size.x)
+	var c := r.get_center()
+	_pan = Vector2(size.x * 0.5 - c.y * _zoom, size.y * 0.5 + c.x * _zoom)
 	queue_redraw()
+
+
+## Auf einen Hack zoomen.
+func zoom_to(idx: int) -> void:
+	_zoomed = idx
+	var r := Rect2()
+	var first := true
+	for p: FeaturePart in hacks[idx]:
+		for q in _polys[p]:
+			r = Rect2(q, Vector2.ZERO) if first else r.expand(q)
+			first = false
+	_view(r.grow(4.0))
 
 
 func select(idx: int) -> void:
@@ -152,7 +176,7 @@ func _center(hack: Array) -> Vector2:
 
 
 func _to_screen(sx: Vector2) -> Vector2:
-	return _pan + sx * _zoom
+	return _pan + Vector2(sx.y, -sx.x) * _zoom
 
 
 func _hack_at(pos: Vector2) -> int:
@@ -180,7 +204,11 @@ func _gui_input(event: InputEvent) -> void:
 				queue_redraw()
 			accept_event()
 		elif mb.button_index == MOUSE_BUTTON_LEFT:
-			if mb.pressed:
+			if mb.pressed and mb.double_click:
+				var hi := _hack_at(mb.position)
+				if hi >= 0:
+					zoom_to(hi)
+			elif mb.pressed:
 				_press = mb.position
 				_dragged = false
 			else:
@@ -191,7 +219,8 @@ func _gui_input(event: InputEvent) -> void:
 				_press = Vector2.INF
 			accept_event()
 		elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
-			_whole = not _whole
+			_whole = not _whole if _zoomed < 0 else false
+			_zoomed = -1
 			fit(_whole)
 	elif event is InputEventMouseMotion:
 		var mm := event as InputEventMouseMotion
@@ -223,10 +252,13 @@ func _draw() -> void:
 		var a := _to_screen(Vector2(s, -40.0))
 		var b := _to_screen(Vector2(s, 40.0))
 		draw_line(a, b, COL_GRID, 1.0)
-		draw_string(font, _to_screen(Vector2(s, 0.0)) + Vector2(3, -6), "%d m" % roundi(s - s_offset), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.45))
+		draw_string(font, _to_screen(Vector2(s, 0.0)) + Vector2(4, -3), "%d m" % roundi(s - s_offset), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.45))
 		s += step
-	for x in [-30.0, -20.0, -10.0, 10.0, 20.0, 30.0]:
-		draw_line(_to_screen(Vector2(0.0, x)), _to_screen(Vector2(length, x)), COL_GRID, 1.0)
+	var xs := [-30.0, -20.0, -10.0, 10.0, 20.0, 30.0]
+	if _zoom > 12.0:
+		xs = range(-30, 31).filter(func(v: int) -> bool: return v != 0)
+	for x in xs:
+		draw_line(_to_screen(Vector2(0.0, float(x))), _to_screen(Vector2(length, float(x))), COL_GRID, 1.0)
 	# Seil, Masten, Wendepunkte, Startplatz
 	draw_line(_to_screen(Vector2(0, 0)), _to_screen(Vector2(length, 0)), COL_CABLE, 2.0)
 	for m in [0.0, length]:
@@ -235,7 +267,7 @@ func _draw() -> void:
 		draw_circle(_to_screen(Vector2(cable.mast_a_z - tz, 0)), 3.5, Color(1.0, 0.4, 0.3))
 	var start := _to_screen(Vector2(cable.mast_a_z - cable.start_z, 0))
 	draw_rect(Rect2(start - Vector2(5, 5), Vector2(10, 10)), Color(0.95, 0.95, 0.95))
-	draw_string(font, start + Vector2(-14, 20), "Start", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
+	draw_string(font, start + Vector2(10, 5), "Start", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
 	# Features
 	for i in hacks.size():
 		var hi := i == selected
@@ -281,7 +313,7 @@ func _draw_part(p: FeaturePart, sel: bool, hover: bool) -> void:
 	if p.type != "ball" and p.type != "bump" and p.length * _zoom > 14.0:
 		var a := _to_screen((_polys[p][0] + _polys[p][1]) * 0.25 + (_polys[p][2] + _polys[p][3]) * 0.25)
 		var dir_l := cable.transform.affine_inverse().basis * (p.global_basis * Vector3(0, 0, -1))
-		var d := Vector2(-dir_l.z, dir_l.x).normalized()
+		var d := Vector2(dir_l.x, dir_l.z).normalized()
 		var half := minf(p.length * _zoom * 0.3, 14.0)
 		var col := Color(0.1, 0.1, 0.1, 0.8) if p.type != "rail" else Color(1, 1, 1, 0.8)
 		draw_line(a - d * half, a + d * half, col, 2.0)

@@ -65,10 +65,10 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	root.add_child(mid)
 	var left := VBoxContainer.new()
 	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left.size_flags_stretch_ratio = 1.4
+	left.size_flags_stretch_ratio = 1.0
 	mid.add_child(left)
 	var lt := Label.new()
-	lt.text = "Draufsicht – Feature oder Hack anklicken   (ziehen: verschieben, Rad: Zoom, Rechtsklick: ganze Anlage)"
+	lt.text = "Draufsicht – Feature oder Hack anklicken   (Doppelklick: heranzoomen, ziehen: verschieben, Rad: Zoom, Rechtsklick: Übersicht/ganze Anlage)"
 	lt.add_theme_font_size_override("font_size", 14)
 	lt.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
 	left.add_child(lt)
@@ -141,6 +141,7 @@ func select_by_name(prefix: String) -> void:
 	for i in _map.hacks.size():
 		if FeatureMap.hack_name(_map.hacks[i]).to_lower().contains(prefix.to_lower()):
 			_map.select(i)
+			_map.zoom_to(i)
 			return
 
 
