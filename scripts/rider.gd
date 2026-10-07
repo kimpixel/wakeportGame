@@ -23,6 +23,7 @@ const SINK_SPEED := 1.0          # so langsam ohne Seil -> man sinkt ins Wasser
 const SETTLE_TIME := 1.5         # so lange nach dem Sturz treibt man, bevor man schwimmen kann
 const SWIM_SPEED := 1.1          # Rückenschwimmen mit Brett an den Füßen (m/s)
 const GRAB_DIST := 1.0
+const AUTO_TURN_START := 20.0     # Autopilot beginnt die Wende so weit vor dem Wendepunkt
 
 ## Einsinken: Das Brett trägt nur mit Tempo oder Seilzug. Hängt das Seil durch und wird man
 ## langsam (z. B. eine Wende ohne Druck), steigt der Sinkpegel; ist er voll, ist man abgesoffen
@@ -286,7 +287,7 @@ func _turn_input(speed: float) -> bool:
 	if _turn_end == 0.0:
 		# Wende beginnt an der roten Boje: dort rauskanten, solange das Seil noch zieht
 		var end := -signf(cable.local_vz(vel))
-		var s_red := (cable.mast_a_z - (cable.turn_b_z if end > 0.0 else cable.turn_a_z)) - end * TurnBuoys.RED_BEFORE
+		var s_red := (cable.mast_a_z - (cable.turn_b_z if end > 0.0 else cable.turn_a_z)) - end * AUTO_TURN_START
 		var at_red := (s_now - s_red) * end > -2.0 and (s_now - s_red) * end < 4.0 and cable.dir * -1.0 == end
 		if not (at_red or cable.state == CableSystem.State.BRAKE) or speed < 3.0:
 			return false

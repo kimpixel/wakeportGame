@@ -48,6 +48,11 @@ static func ensure_loaded() -> void:
 		var p: Array = m[key]
 		var g := utm_to_game(float(p[0]), float(p[1]))
 		masts[key] = Vector3(g.x, 0.0, g.y)
+	# Die Endmasten stehen weiter draußen als in den Daten (Bahnen sind länger, siehe Lake.END_EXTEND)
+	for t: String in ["t1", "t2"]:
+		var sa: Vector3 = masts[t + "_start"]
+		var sb: Vector3 = masts[t + "_end"]
+		masts[t + "_end"] = sb + (sb - sa).normalized() * Lake.END_EXTEND
 	_terrain = FileAccess.get_file_as_bytes(DIR + "terrain.bin")
 	_canopy = FileAccess.get_file_as_bytes(DIR + "canopy.bin")
 

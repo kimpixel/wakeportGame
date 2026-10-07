@@ -5,7 +5,7 @@ extends Node3D
 ##  * zwei weiße Bojen links und rechts = um diese fährt man die ideale Kurve herum
 ## Die Positionen ergeben sich aus den Wendepunkten des Carriers (CableSystem.turn_*_z).
 
-const RED_BEFORE := 20.0       # rote Boje so weit vor dem Wendepunkt des Carriers
+const RED_BEFORE := 27.0       # rote Boje so weit vor dem Wendepunkt des Carriers (hier nach außen ziehen)
 const WHITE_BEFORE := 4.0      # weiße Bojen kurz vor dem Wendepunkt ...
 const WHITE_SIDE := 7.0        # ... so weit links/rechts vom Seil
 const SIZE := 0.75             # Bojengröße (1 = ursprüngliche Größe)

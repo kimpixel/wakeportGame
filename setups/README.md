@@ -33,7 +33,7 @@ Die Pläne zeigen vor allem die **Positionen**; Größen und Abstände sind dort
 | Feld | Bedeutung |
 |---|---|
 | `part` | Name des Bauteils aus `parts.json` |
-| `s` | Abstand vom Startmast entlang des Seils in Metern, gemessen zur Mitte des Teils. Das Seil von T2 ist ca. 198 m lang. Gefahren wird etwa zwischen 30 m und 175 m |
+| `s` | Abstand vom Startmast entlang des Seils in Metern, gemessen zur Mitte des Teils. Das Seil von T2 ist ca. 233 m lang. Im Spiel stehen alle Teile 10 m weiter draußen als hier angegeben (`FEATURE_SHIFT` in main.gd), damit vor der Ufer-Wende Platz ist. Gefahren wird etwa zwischen 30 m und 210 m |
 | `x` | Seitlicher Abstand zum Seil in Metern: + rechts, − links, jeweils mit Blick vom Startsteg zum Endmast |
 | `dir` | `out` = befahrbar Richtung Endmast, `in` = Richtung Startsteg |
 | `yaw` | Zusätzliche Drehung in Grad (optional) |

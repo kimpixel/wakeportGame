@@ -8,7 +8,7 @@ Ein kleines 3D-Wakeboard-Spiel in **Godot 4.7**: Wakeboarden an einer **2-Mast-S
 
 Nachgebaut ist der **Wakeport am Raunheimer Waldsee** (Hessen). **Vor dem Start wählst du oben rechts, an welcher Anlage du fährst: T2 oder T1** (oder mit T). An der anderen fährt ein NPC (blaue Weste) mit Sprüngen und 180ern. An beiden Startstegen steht ein Steuermann mit der gelben Fernsteuerung; der Jubel kommt immer aus dem Startblock deiner Anlage.
 
-- Der Startmast steht am Strand, der Endmast etwa 198 m weiter draußen im See. Beide Positionen sind echte Koordinaten.
+- Der Startmast steht am Strand (echte Koordinaten), der Endmast rund 233 m weiter draußen im See (T1: 240 m). Die Endmasten stehen 35 m weiter draußen als in den Geodaten, damit zwischen Features und Wendebojen genug Platz ist (`Lake.END_EXTEND`).
 - Ein Stahlseil ist als Schlaufe um zwei Rollen (Ø 30 cm) oben an den A-förmigen Gittermasten gespannt.
 - Ein **Carrier** sitzt fest auf einem der beiden Stränge. Der Motor kehrt an jedem Ende die Richtung um, so wird der Fahrer hin und her gezogen.
 - Gelände, Ufer, Wald und Luftbild stammen aus den offenen Geodaten Hessens. Den Strandbereich mit den Hütten habe ich nach Fotos nachgebaut.

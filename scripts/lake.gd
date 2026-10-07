@@ -5,7 +5,8 @@ extends RefCounted
 
 const CABLE_Y := 10.0          # Höhe des Stahlseils über dem Wasser
 const MAST_A_Z := 0.0          # T2-Startmast am Strand
-const MAST_B_Z := -197.57      # T2-Endmast im See (Seillänge ca. 198 m)
+const END_EXTEND := 35.0       # Endmasten so viel weiter draußen als in den Geodaten (mehr Platz für Wenden)
+const MAST_B_Z := -197.57 - END_EXTEND   # T2-Endmast im See (Seillänge ca. 233 m)
 const PULLEY_RADIUS := 0.15    # Rolle ca. 30 cm Durchmesser
 const MAST_B_RADIUS := 3.0     # Kollisionsradius des Endmasts samt Plattform
 
