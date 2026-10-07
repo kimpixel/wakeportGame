@@ -1,7 +1,7 @@
 class_name StartScreen
 extends CanvasLayer
 ## Startbildschirm: Terminal und Feature-Setup wählen, oben die Bahn live in der echten
-## Szene (Features anklickbar, zusammenstehende Teile = Hack, auf beiden Anlagen fährt ein
+## Szene (isometrisch von der Seeseite) (Features anklickbar, zusammenstehende Teile = Hack, auf beiden Anlagen fährt ein
 ## Fahrer), unten das gewählte Feature bzw. der Hack in 3D. Dient auch zum Prüfen der Features.
 ## Tastatur: T Terminal, F Feature-Setup, ←/→ Feature, Enter Spiel starten.
 

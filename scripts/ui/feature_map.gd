@@ -1,7 +1,7 @@
 class_name FeatureMap
 extends Control
-## Die Bahn in der echten 3D-Szene, live (die Fahrer fahren weiter): Start links, Endmast
-## rechts, leicht schräg von der Seite gesehen. Darüber nur die Markierung des gewählten
+## Die Bahn in der echten 3D-Szene, live (die Fahrer fahren weiter), isometrisch von der
+## Seeseite gesehen (der See liegt links der Bahn): Startsteg rechts, Endmast links. Darüber nur die Markierung des gewählten
 ## bzw. überfahrenen Features/Hacks und sein Name.
 ## Teile, die (fast) aneinanderstoßen, bilden einen "Hack" und werden zusammen ausgewählt.
 ## Maus: Klick wählt aus, Doppelklick zoomt auf den Hack, Ziehen verschiebt, Rad zoomt,
@@ -11,7 +11,8 @@ signal hack_selected(parts: Array)
 
 const HACK_GAP := 0.8            # so nah (m) beieinander gilt als Hack
 const COL_SEL := Color(1.0, 0.82, 0.2)
-const TILT := deg_to_rad(40.0)   # Blick schräg von oben (90° = senkrecht)
+const TILT := deg_to_rad(35.0)   # Blick schräg von oben (90° = senkrecht)
+const AZIMUTH := deg_to_rad(30.0) # Blick schräg über die Bahn (0 = genau quer)
 const CAM_DIST := 160.0
 
 var cable: CableSystem
@@ -86,10 +87,19 @@ func fit() -> void:
 ## Ausschnitt r (in s, x) einpassen.
 func _view(r: Rect2) -> void:
 	_center_sx = r.get_center()
-	var aspect := size.x / maxf(size.y, 1.0)
-	# Breite: s-Ausdehnung; die x-Ausdehnung erscheint durch die Neigung um sin(TILT) gestaucht
-	_span = maxf(r.size.x, r.size.y * sin(TILT) * aspect)
 	_zoomed = -1
+	if cable == null or _cam == null or size.x < 10.0:
+		return
+	# Projektion ist linear (orthogonal): einmal messen, dann passend skalieren
+	_span = 100.0
+	_place_camera()
+	var box := Rect2()
+	var first := true
+	for c: Vector2 in [r.position, r.position + Vector2(r.size.x, 0), r.end, r.position + Vector2(0, r.size.y)]:
+		var sp := _to_screen(c)
+		box = Rect2(sp, Vector2.ZERO) if first else box.expand(sp)
+		first = false
+	_span = clampf(100.0 * maxf(box.size.x / (size.x - 30.0), box.size.y / (size.y - 30.0)), 6.0, 400.0)
 	queue_redraw()
 
 
@@ -216,9 +226,13 @@ func _mpp() -> float:
 	return _span / maxf(size.x, 1.0)
 
 
-## Bildschirm-Verschiebung (Pixel) -> Verschiebung auf dem Wasser in (s, x)
-func _ground(px: Vector2) -> Vector2:
-	return Vector2(px.x, px.y / sin(TILT)) * _mpp()
+## Bildpunkt -> Punkt auf dem Wasser in (s, x)
+func _ground(pos: Vector2) -> Vector2:
+	var o := _cam.project_ray_origin(pos)
+	var d := _cam.project_ray_normal(pos)
+	var w := o + d * (-o.y / minf(d.y, -0.01))
+	var l := cable.global_transform.affine_inverse() * w
+	return Vector2(cable.mast_a_z - l.z, l.x)
 
 
 func _hack_at(pos: Vector2) -> int:
@@ -241,8 +255,10 @@ func _gui_input(event: InputEvent) -> void:
 			if mb.pressed:
 				var f := 1.0 / 1.15 if mb.button_index == MOUSE_BUTTON_WHEEL_UP else 1.15
 				# der Punkt unter der Maus bleibt stehen
-				_center_sx += _ground(mb.position - size * 0.5) * (1.0 - f)
+				var before := _ground(mb.position)
 				_span = clampf(_span * f, 6.0, 400.0)
+				_place_camera()
+				_center_sx += before - _ground(mb.position)
 				_zoomed = -1
 				queue_redraw()
 			accept_event()
@@ -268,7 +284,7 @@ func _gui_input(event: InputEvent) -> void:
 		if _press != Vector2.INF and (mm.button_mask & MOUSE_BUTTON_MASK_LEFT):
 			if _dragged or mm.position.distance_to(_press) > 4.0:
 				_dragged = true
-				_center_sx -= _ground(mm.relative)
+				_center_sx += _ground(mm.position - mm.relative) - _ground(mm.position)
 				_zoomed = -1
 				queue_redraw()
 		else:
@@ -293,14 +309,14 @@ func _draw() -> void:
 	_overlay.queue_redraw()
 
 
-## Kamera schräg von der rechten Seite (in Fahrtrichtung zum Endmast): Bild nach rechts = s,
-## Bild nach unten = rechts in Fahrtrichtung.
+## Kamera isometrisch über dem See (links der Bahn), leicht schräg zum Endmast hin.
 func _place_camera() -> void:
 	if cable == null or _cam == null:
 		return
 	var target := _world(_center_sx)
-	var away := cable.global_basis.orthonormalized() * Vector3.RIGHT          # +x = Bild unten
-	var fwd := (-away * cos(TILT) + Vector3.DOWN * sin(TILT)).normalized()
+	var b := cable.global_basis.orthonormalized()
+	var flat := (b * Vector3(cos(AZIMUTH), 0.0, -sin(AZIMUTH))).normalized()   # vom See zur Bahn
+	var fwd := (flat * cos(TILT) + Vector3.DOWN * sin(TILT)).normalized()
 	_cam.size = _span
 	_cam.global_transform = Transform3D(Basis.looking_at(fwd, Vector3.UP), target - fwd * CAM_DIST)
 

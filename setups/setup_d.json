@@ -4,7 +4,7 @@
   "source": "490741733_1275206211272576_7078681114487318565_n.jpg",
   "T2": [
     { "part": "pipe_half",       "s": 130.4, "x": -10.4, "dir": "out", "ramp_out": 0 },
-    { "part": "pipe_half",       "s": 117.2, "x": -7.9,  "dir": "out", "ramp_out": 0 },
+    { "part": "pipe_half",       "s": 125.4, "x": -8.7,  "dir": "out", "ramp_out": 0 },
     { "part": "uprail",          "s": 92.0,  "x": -10.1, "dir": "out" },
     { "part": "kicker_l",        "s": 63.9,  "x": -8.4,  "dir": "in", "yaw": 8 },
     { "part": "kicker_m",        "s": 62.4,  "x": -4.5,  "dir": "in", "yaw": 6 },
