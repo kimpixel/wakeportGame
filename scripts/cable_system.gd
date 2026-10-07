@@ -175,6 +175,14 @@ func fetch(z: float) -> void:
 	state = State.FETCH
 
 
+## Abkürzung (Leertaste): Handle ist sofort beim Fahrer, Carrier steht auf seiner Höhe.
+func hold_at(z: float) -> void:
+	s = clampf(z, turn_b_z, turn_a_z)
+	_prev_s = s
+	v = 0.0
+	state = State.HOLD
+
+
 ## Fahrer hat die Handle: weiter in Richtung des nächstgelegenen Wendepunkts.
 func resume() -> void:
 	dir = -1.0 if absf(s - turn_b_z) < absf(s - turn_a_z) else 1.0

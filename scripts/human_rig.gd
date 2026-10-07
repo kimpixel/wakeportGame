@@ -42,6 +42,27 @@ func begin() -> void:
 	skeleton.reset_bone_poses()
 
 
+## Momentaufnahme aller Knochen (lokale Pose), z. B. zum Überblenden zweier Haltungen.
+func snapshot() -> Array:
+	var ps := PackedVector3Array()
+	var rs: Array[Quaternion] = []
+	for i in skeleton.get_bone_count():
+		ps.append(skeleton.get_bone_pose_position(i))
+		rs.append(skeleton.get_bone_pose_rotation(i))
+	return [ps, rs]
+
+
+## Aktuelle Pose mit einer Momentaufnahme mischen (w = Anteil der Momentaufnahme).
+func blend_from(snap: Array, w: float) -> void:
+	if snap.is_empty() or w <= 0.0:
+		return
+	var ps: PackedVector3Array = snap[0]
+	var rs: Array = snap[1]
+	for i in mini(skeleton.get_bone_count(), ps.size()):
+		skeleton.set_bone_pose_position(i, skeleton.get_bone_pose_position(i).lerp(ps[i], w))
+		skeleton.set_bone_pose_rotation(i, skeleton.get_bone_pose_rotation(i).slerp(rs[i], w))
+
+
 ## Weltpunkt -> Skelettraum
 func to_skel(world: Vector3) -> Vector3:
 	return skeleton.global_transform.affine_inverse() * world

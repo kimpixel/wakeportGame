@@ -88,6 +88,13 @@ var score := 0
 var crash_reason := ""
 var swimming := false            # schwimmt gerade zur Handle
 var _crash_t := 0.0
+var _getup := 1.0                # Deep-Water-Start: 0 = liegt im Wasser, 1 = steht
+var _dw_handle := Vector3.ZERO   # Handle-Lage beim Liegen im Wasser
+var _board_xf := Transform3D()   # Brettlage aus der Pose (Figur)
+var _swim_from: Array = []       # Haltung beim Übergang ins Schwimmen
+var _swim_board_from := Transform3D()
+var _swim_blend := 1.0
+var _swim_phase := 0.0
 var air_time := 0.0
 
 var _steer := 0.0
@@ -214,6 +221,7 @@ func reset() -> void:
 	_rope_dist = 0.0
 	swimming = false
 	_crash_t = 0.0
+	_getup = 1.0
 	if _ragdoll:
 		_ragdoll.stop()
 
@@ -447,6 +455,9 @@ func step(delta: float) -> void:
 		_update_free_handle(delta)
 		return
 	var rope_force := _rope_force(delta)
+	# Deep-Water-Start: liegen bleiben, bis das Seil spannt, dann langsam aufstehen
+	if attached and _getup < 1.0 and (tension_smooth > 250.0 or horizontal_speed() > 2.0):
+		_getup = minf(_getup + delta / 1.6, 1.0)
 	if mode == Mode.WATER and attached and tension_smooth > CRASH_TENSION:
 		let_go("Seil aus der Hand gerissen!")
 		rope_force = Vector3.ZERO
@@ -475,12 +486,10 @@ func let_go(reason: String) -> void:
 	rope_lost.emit(reason)
 
 
-## Ausgeglitten: ins Wasser sinken (Rückenlage in der Weste), dann zur Handle schwimmen.
+## Ausgeglitten: ins Wasser sinken und in die Schwimmlage gehen.
 func _sink() -> void:
 	mode = Mode.CRASHED
-	_crash_t = 0.0
-	if _ragdoll:
-		_ragdoll.start(vel * 0.5, water.height_at(pos.x, pos.z), pos)
+	_crash_t = SETTLE_TIME
 	vel.y = 0.0
 
 
@@ -496,11 +505,19 @@ func _update_free_handle(delta: float) -> void:
 	_free_handle = Vector3(h.x, water.height_at(h.x, h.z) + 0.05, h.z)
 
 
-## Schwimmen zur Handle (Autopilot/NPC von selbst, sonst W/Leertaste bzw. Finger halten).
+## Schwimmen zur Handle in Bauchlage (Autopilot/NPC von selbst, sonst W halten).
+## Leertaste (bzw. Tippen): sofort weiterfahren – Handle ist direkt da.
 ## Liegt die Handle bereit und ist nah genug: greifen.
 func _swim(delta: float) -> void:
 	swimming = false
 	if _crash_t < SETTLE_TIME or not Lake.in_lake(pos.x, pos.z, 0.0):
+		return
+	if _ragdoll and _ragdoll.active:
+		_ragdoll.stop()                    # aus der Rückenlage in die Schwimmlage
+	if not autopilot and Input.is_action_just_pressed("jump"):
+		cable.hold_at((cable.transform.affine_inverse() * pos).z)
+		_free_handle = pos
+		_grab()
 		return
 	var to := _free_handle - pos
 	to.y = 0.0
@@ -508,16 +525,15 @@ func _swim(delta: float) -> void:
 	if d < GRAB_DIST and cable.state == CableSystem.State.HOLD:
 		_grab()
 		return
-	var want := autopilot or Input.is_action_pressed("edge") or Input.is_action_pressed("jump")
+	if d > 0.3:
+		yaw = lerp_angle(yaw, atan2(-to.x, -to.z), clampf(delta * 2.0, 0.0, 1.0))
+	var want := autopilot or Input.is_action_pressed("edge")
 	if not want or d < 0.3:
 		return
 	swimming = true
 	var sv := to / d * SWIM_SPEED
-	if _ragdoll and _ragdoll.active:
-		_ragdoll.swim(sv, delta)
-	else:
-		vel.x = sv.x
-		vel.z = sv.z
+	vel.x = sv.x
+	vel.z = sv.z
 
 
 ## Handle gegriffen: im Wasser sitzend (Deep-Water-Start) wieder ans Seil.
@@ -538,6 +554,7 @@ func _grab() -> void:
 	tension_smooth = 0.0
 	_rope_dist = 0.0
 	_load = 0.0
+	_getup = 0.0
 	grabbed.emit()
 
 
@@ -973,6 +990,8 @@ func _process(delta: float) -> void:
 	_lean_pitch = lerpf(_lean_pitch, clampf(target_pitch, -0.6, 0.6), k)
 	_crouch = lerpf(_crouch, target_crouch, k)
 
+	_swim_blend = minf(_swim_blend + delta / 0.8, 1.0)
+	_swim_phase += delta * TAU / 1.3 * (1.0 if swimming else 0.3)
 	if _rig:
 		_pose_human()
 	_body_pivot.rotation = Vector3(_lean_pitch, 0.0, _lean_roll)
@@ -980,6 +999,8 @@ func _process(delta: float) -> void:
 	_body_pivot.position.y = -0.3 if mode == Mode.CRASHED else 0.06
 	if _ragdoll and _ragdoll.active:
 		_board_on_feet()
+	elif _rig:
+		_board_pivot.global_transform = _board_xf
 	else:
 		_board_pivot.position = Vector3(0.0, BOARD_Y, 0.0)
 		_board_pivot.rotation = Vector3(0.0, 0.0, 1.2 if mode == Mode.CRASHED \
@@ -997,6 +1018,8 @@ func _process(delta: float) -> void:
 			# Realistischer Griff: vor der vorderen Hüfte, Arme fast gestreckt
 			var rb := global_transform.basis.orthonormalized()
 			handle_pos = vpos + rb * Vector3(0.2, 0.86 - 0.3 * _crouch, -0.2) + to_anchor * 0.5
+			if _getup < 1.0:
+				handle_pos = _dw_handle.lerp(handle_pos, smoothstep(0.0, 1.0, _getup))
 	else:
 		handle_pos = _free_handle
 		to_anchor = (anchor - handle_pos).normalized()
@@ -1149,17 +1172,134 @@ func _pose_human() -> void:
 	if _ragdoll.active:
 		var c := _ragdoll.center()
 		_ragdoll.follow_water(water.height_at(c.x, c.z), c)
+		_swim_from = []
 		return
 	_human.rotation = Vector3(0.0, PI * 0.5, 0.0)
 	_human.position = Vector3(0.0, 0.06, 0.0)
-	_rig.begin()
 	if mode == Mode.CRASHED:
-		_human.rotation = Vector3(0.0, PI * 0.5, 1.45)        # liegt im Wasser
-		_human.position = Vector3(0.6, -0.25, 0.0)
+		# Schwimmen: aus der letzten Haltung weich in die Bauchlage übergehen
+		if _swim_from.is_empty():
+			_swim_from = _rig.snapshot()
+			_swim_board_from = _board_pivot.global_transform
+			_swim_blend = 0.0
+		_rig.begin()
+		_pose_swim()
+		var t := smoothstep(0.0, 1.0, _swim_blend)
+		_rig.blend_from(_swim_from, 1.0 - t)
+		_board_xf = _swim_board_from.interpolate_with(_board_xf, t)
 		return
+	_swim_from = []
+	if _getup < 1.0:
+		# Deep-Water-Start: liegt im Wasser, bis das Seil spannt, dann langsam aufstehen
+		_rig.begin()
+		_pose_deep_water()
+		var lie := _rig.snapshot()
+		var lie_board := _board_xf
+		_rig.begin()
+		_pose_stand()
+		var t := smoothstep(0.0, 1.0, _getup)
+		_rig.blend_from(lie, 1.0 - t)
+		_board_xf = lie_board.interpolate_with(_board_xf, t)
+		return
+	_rig.begin()
+	_pose_stand()
+
+
+## Brettlage im Stehen (Fahrerposition, gekippt mit der Kante).
+func _board_stand_xf() -> Transform3D:
+	var roll := _lean_roll * (0.35 + 0.45 * _edge_vis) * (1.0 - 0.85 * _release_vis)
+	return global_transform * Transform3D(Basis.from_euler(Vector3(0.0, 0.0, roll)), Vector3(0.0, BOARD_Y, 0.0))
+
+
+## Brett (Oberseite zeigt nach board_up, Länge quer = lateral) mit den Füßen darin;
+## Becken an pelvis_world, Körper mit Kopf Richtung body_up und Brust Richtung face.
+func _pose_body_with_board(pelvis_world: Vector3, body_up: Vector3, face: Vector3,
+		board_center: Vector3, board_up: Vector3, lateral: Vector3, knee_pole: Vector3) -> void:
+	var skel := _rig.skeleton.global_transform
+	var skel_inv := skel.affine_inverse()
+	var skel_b := skel.basis.orthonormalized()
+	var to_skel := func(bw: Basis) -> Basis: return skel_b.inverse() * bw * skel_b
+	var w := HumanRig._frame_rot(skel_b * Vector3.UP, skel_b * Vector3.BACK, body_up.normalized(), face.normalized())
+	_rig.set_pelvis(skel_inv * pelvis_world, to_skel.call(w))
+	# Brett: Längsachse quer zum Körper, linker (vorderer) Fuß auf der linken Körperseite
+	var left := body_up.cross(face).normalized()
+	var zb := lateral.normalized()
+	if (zb.dot(left) > 0.0) != (Wakeboard.ankle_local(true).z > 0.0):
+		zb = -zb
+	var yb := (board_up - zb * board_up.dot(zb)).normalized()
+	var b := Basis(yb.cross(zb), yb, zb)
+	var ank := (Wakeboard.ankle_local(true) + Wakeboard.ankle_local(false)) * 0.5
+	_board_xf = Transform3D(b, board_center - b * ank)
+	var foot_front := _board_xf * Wakeboard.ankle_local(true)
+	var foot_back := _board_xf * Wakeboard.ankle_local(false)
+	_rig.leg("l", skel_inv * foot_front, skel_inv * (knee_pole + left * 0.12))
+	_rig.leg("r", skel_inv * foot_back, skel_inv * (knee_pole - left * 0.12))
+	var rb := global_transform.basis.orthonormalized()
+	var board_rel := b * rb.inverse()
+	for front: bool in [true, false]:
+		var fb := "foot_l" if front else "foot_r"
+		var fw := board_rel * Basis(rb * Vector3.UP, Wakeboard.foot_yaw(front))
+		_rig.set_end_basis(fb, skel_b.inverse() * fw * skel_b * _rig.rest_global(fb).basis)
+
+
+## Schwimmen in Bauchlage (Kraulen), Knie gebeugt: das Brett an den Füßen hinten oben.
+func _pose_swim() -> void:
+	var f := forward()
+	var wy := water.height_at(pos.x, pos.z)
+	var ph := _swim_phase
+	var pelvis := Vector3(pos.x, wy - 0.1 + 0.02 * sin(ph * 2.0), pos.z)
+	var body_up := f + Vector3.UP * 0.15                      # Kopf etwas aus dem Wasser
+	var face := Vector3.DOWN + f * 0.15
+	var left := body_up.normalized().cross(face.normalized()).normalized()
+	_pose_body_with_board(pelvis, body_up, face,
+		pelvis - f * 0.5 + Vector3.UP * 0.5, Vector3.DOWN + f * 0.25, left,
+		pelvis - f * 0.45 + Vector3.DOWN * 0.6)
+	var skel := _rig.skeleton.global_transform
+	var skel_inv := skel.affine_inverse()
+	# Kraularme: Zug unter Wasser nach hinten, Rückholen über Wasser mit hohem Ellbogen
+	for side: String in ["l", "r"]:
+		var lat := left if side == "l" else -left
+		var t := fposmod(ph + (0.0 if side == "l" else PI), TAU) / TAU
+		var sh := skel * _rig.global_pose("upperarm_" + side).origin
+		var hand: Vector3
+		var pole: Vector3
+		if t < 0.5:
+			var u := t / 0.5
+			hand = sh + f * lerpf(0.62, -0.35, u) + Vector3.UP * (-0.12 - 0.28 * sin(PI * u)) + lat * 0.05
+			pole = sh + lat * 0.5 + Vector3.UP * 0.1
+		else:
+			var u := (t - 0.5) / 0.5
+			hand = sh + f * lerpf(-0.35, 0.62, u) + Vector3.UP * (0.12 + 0.18 * sin(PI * u)) + lat * 0.22
+			pole = sh + Vector3.UP * 0.6 + lat * 0.3 - f * 0.1
+		_rig.arm(side, skel_inv * hand, skel_inv * pole)
+	_rig.look_at(skel_inv * (pelvis + f * 3.0 + Vector3.UP * 0.6))
+
+
+## Deep-Water-Start: zurückgelehnt im Wasser, Knie an der Brust, Brett quer vor sich,
+## Spitzen aus dem Wasser, Handle zwischen den Knien.
+func _pose_deep_water() -> void:
+	var f := Vector3(rope_dir.x, 0.0, rope_dir.z)
+	f = f.normalized() if f.length() > 0.1 else forward()
+	var wy := water.height_at(pos.x, pos.z)
+	var a := 1.0                                               # zurückgelehnt (rad)
+	var body_up := Vector3.UP * cos(a) - f * sin(a)
+	var face := f * cos(a) + Vector3.UP * sin(a)
+	var pelvis := Vector3(pos.x, wy - 0.32, pos.z) - f * 0.1
+	var left := Vector3.UP.cross(f).normalized()
+	_pose_body_with_board(pelvis, body_up, face,
+		pelvis + f * 0.8 + Vector3.UP * 0.34, -f + Vector3.UP * 1.2, left,
+		pelvis + f * 0.4 + Vector3.UP * 0.9)
+	_dw_handle = pelvis + f * 0.62 + Vector3.UP * 0.42
+	var skel_inv := _rig.skeleton.global_transform.affine_inverse()
+	_rig.look_at(skel_inv * (pelvis + f * 6.0 + Vector3.UP * 1.0))
+
+
+## Stehen auf dem Brett.
+func _pose_stand() -> void:
 	var skel_inv := _rig.skeleton.global_transform.affine_inverse()
 	var rb := global_transform.basis.orthonormalized()
-	var board := _board_pivot.global_transform
+	var board := _board_stand_xf()
+	_board_xf = board
 	var foot_front := board * Wakeboard.ankle_local(true)    # linker Fuß Richtung Nose
 	var foot_back := board * Wakeboard.ankle_local(false)
 	var mid := (foot_front + foot_back) * 0.5

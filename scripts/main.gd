@@ -503,11 +503,12 @@ func _process(_delta: float) -> void:
 	hud.set_board(rider.board_state_text())
 	hud.show_setup_menu(pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED)
 	if not rider.attached:
-		var swim_key := "Finger halten" if mobile.active else "W oder Leertaste halten"
+		var skip := "Tippen: sofort weiterfahren" if mobile.active \
+			else "W halten: zur Handle schwimmen     Leertaste: sofort weiterfahren\n(R = zurück zum Steg)"
 		if pc.state == CableSystem.State.HOLD:
-			hud.set_center("%s: zur Handle schwimmen%s" % [swim_key, "" if mobile.active else "\n(R = zurück zum Steg)"])
+			hud.set_center(skip)
 		elif pc.state == CableSystem.State.FETCH:
-			hud.set_center("Der Operator bringt dir die Handle …")
+			hud.set_center("Der Operator bringt dir die Handle …\n" + skip)
 		else:
 			hud.set_center("")
 	elif rider.mode != Rider.Mode.CRASHED:
