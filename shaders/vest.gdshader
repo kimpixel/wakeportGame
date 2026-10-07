@@ -2,9 +2,11 @@ shader_type spatial;
 render_mode cull_disabled;
 // Aufdruck der Impact-Weste: "Sticker-Bomb"-Collage aus überlappenden, gedrehten Aufklebern
 // (eigenes Design, keine echten Logos). Liegt in UV-Koordinaten, bewegt sich also mit dem Stoff.
+// Farben wie das Original: Schwarz, Weiß/Creme, Rot, Braun/Orange, gelbe Schrift – kein Grün.
 // Sorten: schwarzer Streifen mit gelber Block-Schrift, weißer Aufkleber mit schwarzer Schrift,
 // roter Stern auf Streifen, runder cremefarbener Button mit Ring-Schrift, roter Schriftzug auf
-// Weiß, "Foto"-Fleck in Orange/Braun, Comic-Fleck in Grün.
+// Weiß, "Foto" in Braun/Orange/Altrosa, weiße Fläche mit großer schwarzer Schrift,
+// cremefarbener Zeitungsausschnitt.
 
 uniform float cells = 20.0;         // Aufkleber pro UV-Breite
 
@@ -58,14 +60,19 @@ vec3 sticker(vec2 q, int k, float seed) {
 		vec2 t = vec2((u.x - 0.06) / 0.88, (u.y - 0.3) / 0.4);
 		bool in_t = t.x > 0.0 && t.x < 1.0 && t.y > 0.0 && t.y < 1.0;
 		return (in_t && letters(t, seed, 9.0) > 0.5) ? red : white;
-	} else if (k == 5) {   // "Foto": warmer Verlauf mit dunklen Flecken
+	} else if (k == 5) {   // "Foto": warme Töne (Orange, Braun, Altrosa) mit dunklen Flecken
 		float n = h21(floor(u * 6.0) + seed);
-		vec3 a = srgb(vec3(0.75, 0.35, 0.12));
-		vec3 b = srgb(vec3(0.22, 0.12, 0.08));
+		vec3 a = fract(seed) < 0.5 ? srgb(vec3(0.80, 0.42, 0.18)) : srgb(vec3(0.78, 0.55, 0.52));
+		vec3 b = srgb(vec3(0.25, 0.13, 0.09));
 		return mix(a, b, smoothstep(0.2, 0.9, u.y * 0.7 + n * 0.5));
-	} else {               // Comic-Fleck grün/gelb mit schwarzen Linien
-		vec3 c = srgb(vec3(0.62, 0.72, 0.28));
-		return fract((u.x + u.y) * 6.0) < 0.15 ? black : c;
+	} else if (k == 6) {   // weiße Fläche mit großer schwarzer Schrift (Pinselschrift)
+		vec2 t = vec2((u.x - 0.05) / 0.9, (u.y - 0.12) / 0.76);
+		bool in_t = t.x > 0.0 && t.x < 1.0 && t.y > 0.0 && t.y < 1.0;
+		return (in_t && letters(t, seed, 4.0) > 0.5) ? black : white;
+	} else {               // cremefarbener Zeitungsausschnitt mit kleiner Schrift
+		float line = floor(u.y * 9.0);
+		vec2 t = vec2(fract(u.x * 2.0), fract(u.y * 9.0));
+		return letters(t, seed + line, 11.0) > 0.5 && t.y > 0.25 ? srgb(vec3(0.2, 0.17, 0.14)) : cream;
 	}
 }
 
@@ -84,9 +91,9 @@ void fragment() {
 				vec2 h = h22(id);
 				vec2 center = c + 0.5 + (h - 0.5) * 0.8;
 				float ang = (h21(id + 3.1) - 0.5) * 0.9;
-				int kind = int(floor(h21(id + 7.7) * 7.0));
+				int kind = int(floor(h21(id + 7.7) * 8.0));
 				vec2 size = kind == 3 ? vec2(0.55) : vec2(0.55 + 0.45 * h.x, 0.25 + 0.2 * h.y);
-				if (kind == 2 || kind == 5 || kind == 6) size = vec2(0.5 + 0.3 * h.y, 0.45 + 0.3 * h.x);
+				if (kind == 2 || kind == 5 || kind == 7) size = vec2(0.5 + 0.3 * h.y, 0.45 + 0.3 * h.x);
 				vec2 q = rot(p - center, -ang) / size;
 				if (abs(q.x) <= 1.0 && abs(q.y) <= 1.0) {
 					float layer = h21(id + 11.0);

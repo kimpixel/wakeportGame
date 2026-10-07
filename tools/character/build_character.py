@@ -140,7 +140,7 @@ def _cut_at_knee(name_part: str) -> None:
 
 VEST_PITCH = 0.075      # Höhe der gesteppten Kammern
 VEST_THICK = 0.010      # Dicke Neopren + Schaum (nach innen)
-VEST_BULGE = 0.011      # so weit wölben sich die Kammern nach außen
+VEST_BULGE = 0.020      # so weit wölben sich die Kammern nach außen
 
 
 def _new_mat(name, srgb, rough):
@@ -194,7 +194,7 @@ def _make_vest(name_part: str) -> None:
     bm.to_mesh(obj.data)
     bm.free()
     obj.data.materials.clear()
-    for m in (_new_mat("vest_print", (0.6, 0.5, 0.4), 0.7), _new_mat("vest_lining", (0.86, 0.92, 0.42), 0.8),
+    for m in (_new_mat("vest_print", (0.6, 0.5, 0.4), 0.7), _new_mat("vest_lining", (0.93, 0.91, 0.58), 0.8),
               _new_mat("vest_trim", (0.05, 0.05, 0.05), 0.7), _new_mat("vest_zip", (0.03, 0.03, 0.03), 0.4)):
         obj.data.materials.append(m)
     for f in obj.data.polygons:
@@ -212,7 +212,7 @@ def _make_vest(name_part: str) -> None:
     bm.normal_update()
     for v in bm.verts:
         z = (mw @ v.co).z - hem_z
-        bulge = pow(abs(math.sin(math.pi * z / VEST_PITCH)), 0.6)
+        bulge = pow(abs(math.sin(math.pi * z / VEST_PITCH)), 0.4)
         v.co += v.normal * (0.003 + VEST_BULGE * bulge) / scale
     bm.to_mesh(obj.data)
     bm.free()
