@@ -77,11 +77,9 @@ var buoys: TurnBuoys
 var beach: Beach
 
 # Wende-Wertung: wer die Wende schafft, ohne abzusinken, bekommt Punkte
-const SINK_SPEED := 1.5         # m/s – fast Stillstand, das Brett sinkt ein ...
-const SINK_TIME := 1.0          # ... und nach so vielen Sekunden ist man abgesoffen
 var _turn_active := false
 var _turn_end := 1.0
-var _turn_slow := 0.0
+var _turn_sank := false          # in der Wende abgesoffen -> keine Punkte
 var _turn_around := false
 var _crash_t := 0.0
 var _max_tension := 0.0
@@ -178,6 +176,10 @@ func _ready() -> void:
 		if _test_log:
 			print("HANDLE GEGRIFFEN at ", rider.pos.snapped(Vector3.ONE * 0.1)))
 	rider.trick_landed.connect(_on_trick)
+	rider.sank.connect(func() -> void:
+		if _turn_active:
+			_turn_sank = true
+		hud.show_trick("Abgesoffen!"))
 	rider.skipped.connect(func() -> void: _penalty(SKIP_PENALTY))
 
 	cam = ChaseCamera.new()
@@ -668,22 +670,19 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 ## Wertet eine Wende aus: beginnt, wenn der Carrier zur Wende bremst, endet, wenn er
-## wieder auf Tempo geht. Punkte, wenn man nicht abgesoffen ist (nicht länger als
-## SINK_TIME unter SINK_SPEED);
+## wieder auf Tempo geht. Punkte nur, wenn man nicht abgesoffen ist (Rider.sank);
 ## Bonus, wenn man außen um eine der weißen Bojen herumgefahren ist.
 func _track_turn() -> void:
 	if pc.state == CableSystem.State.BRAKE and not _turn_active and rider.attached and rider.mode != Rider.Mode.CRASHED:
 		_turn_active = true
 		_turn_end = 1.0 if pc.dir < 0.0 else -1.0
-		_turn_slow = 0.0
+		_turn_sank = false
 		_turn_around = false
 	if not _turn_active:
 		return
 	if rider.mode == Rider.Mode.CRASHED or not rider.attached:
 		_turn_active = false
 		return
-	if rider.mode == Rider.Mode.WATER and rider.horizontal_speed() < SINK_SPEED:
-		_turn_slow += get_physics_process_delta_time()
 	var local := pc.transform.affine_inverse() * rider.pos
 	var s := pc.mast_a_z - local.z
 	var s_turn := pc.mast_a_z - (pc.turn_b_z if _turn_end > 0.0 else pc.turn_a_z)
@@ -692,10 +691,10 @@ func _track_turn() -> void:
 		_turn_around = true
 	if pc.state == CableSystem.State.RUN:
 		_turn_active = false
-		if _turn_slow < SINK_TIME:
+		if not _turn_sank:
 			rider.award("Wende um die Boje" if _turn_around else "Saubere Wende", 30 if _turn_around else 15)
 		elif _test_log:
-			print("WENDE abgesoffen, %.1f s zu langsam" % _turn_slow)
+			print("WENDE abgesoffen – keine Punkte")
 
 
 func _reset() -> void:

@@ -59,7 +59,7 @@ Auf dem iPhone fragt Safari beim ersten Tippen nach der Erlaubnis für Bewegungs
 - **Rote Boje** mittig unter dem Seil: hier rauskanten.
 - **Zwei weiße Bojen** links und rechts: um eine davon fährst du herum.
 
-Solange der Carrier noch nicht zurückzieht, schwingst du quer zum Seil um ihn herum und drehst erst dann in die neue Richtung. Wer die Wende schafft, ohne abzusaufen, bekommt ein paar **Punkte** (15, um die weiße Boje 30). Jubel aus dem Startblock gibt es nur für große Tricks ab 200 Punkten.
+Solange der Carrier noch nicht zurückzieht, schwingst du quer zum Seil um ihn herum und drehst erst dann in die neue Richtung. Wer langsam wird, sinkt ein – das Brett gleitet erst ab etwa 8 km/h richtig. Wer praktisch steht (unter 0,5 m/s länger als gut eine Sekunde), ist abgesoffen: Er liegt im Wasser wie beim Wasserstart und steht erst wieder auf, wenn das Seil zieht. Wer die Wende schafft, ohne abzusaufen, bekommt ein paar **Punkte** (15, um die weiße Boje 30), sonst keine. Jubel aus dem Startblock gibt es nur für große Tricks ab 200 Punkten.
 
 ## Im Browser spielen
 

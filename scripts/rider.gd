@@ -14,6 +14,7 @@ signal trick_landed(trick_name: String, points: int)
 signal bumped                    # kleines "Ups": über eine Boje oder einen Steg gerumpelt
 signal rope_lost(reason: String) # Handle verloren (kein Sturz): ausgleiten, absinken, schwimmen
 signal grabbed                   # nach dem Schwimmen die Handle wieder gegriffen
+signal sank                      # zu langsam geworden und abgesoffen: wie ein Wasserstart
 signal skipped                   # Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
 
 ## Bergung nach Sturz/Seilverlust (2-Mast-Anlage: niemand muss zurück zum Start):
@@ -22,6 +23,14 @@ const SINK_SPEED := 1.0          # so langsam ohne Seil -> man sinkt ins Wasser
 const SETTLE_TIME := 1.5         # so lange nach dem Sturz treibt man, bevor man schwimmen kann
 const SWIM_SPEED := 1.1          # Rückenschwimmen mit Brett an den Füßen (m/s)
 const GRAB_DIST := 1.0
+
+## Langsam werden (z. B. in der Wende): das Brett verliert Auftrieb, man sinkt ein.
+## Unter SINK_DEEP für SINK_DEEP_TIME ist man abgesoffen und muss wie beim Wasserstart aufstehen.
+const SINK_DEPTH := 0.42         # so tief sinkt man (m), wenn man fast steht
+const SINK_DEEP := 0.5           # m/s
+const SINK_DEEP_TIME := 1.2
+var _slow_t := 0.0
+var _sink_vis := 0.0
 
 const UPS_TIME := 0.45
 var _ups := 0.0                  # Restzeit des "Ups"-Wacklers
@@ -468,11 +477,26 @@ func step(delta: float) -> void:
 		_step_air(delta, rope_force)
 	if mode != Mode.CRASHED:
 		_check_bounds()
+	_check_sink(delta)
 	if not attached:
 		# ohne Seil gleitet man aus und sinkt dann ins Wasser
 		if mode == Mode.WATER and horizontal_speed() < SINK_SPEED:
 			_sink()
 		_update_free_handle(delta)
+
+
+## Zu langsam (Wende verpasst, Seil locker): nach kurzer Zeit abgesoffen -> liegt im Wasser
+## wie beim Wasserstart und steht erst wieder auf, wenn das Seil zieht.
+func _check_sink(delta: float) -> void:
+	var can := attached and mode == Mode.WATER and _getup >= 1.0 and not _in_dock(pos.x, pos.z) and pos.y < 0.2
+	if can and horizontal_speed() < SINK_DEEP:
+		_slow_t += delta
+		if _slow_t > SINK_DEEP_TIME:
+			_slow_t = 0.0
+			_getup = 0.0
+			sank.emit()
+	else:
+		_slow_t = 0.0
 
 
 ## Handle verloren (zu viel Zug): kein Sturz – man lässt los und gleitet aus.
@@ -965,6 +989,12 @@ func _process(delta: float) -> void:
 	basis = Basis(Vector3.UP, lerp_angle(_prev_yaw, yaw, frac))
 
 	var speed := horizontal_speed()
+	# Einsinken, wenn das Brett langsam wird (gleitet erst ab PLANE_SPEED richtig)
+	var sink_target := 0.0
+	if mode == Mode.WATER and attached and _getup >= 1.0 and pos.y < 0.2 and not _in_dock(pos.x, pos.z):
+		sink_target = clampf(1.0 - speed / PLANE_SPEED, 0.0, 1.0)
+	_sink_vis = lerpf(_sink_vis, sink_target, 1.0 - exp(-delta * 3.0))
+	position.y -= SINK_DEPTH * _sink_vis
 	var target_roll := 0.0
 	var target_pitch := 0.0
 	var target_crouch := 0.0
