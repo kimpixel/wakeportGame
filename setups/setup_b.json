@@ -10,7 +10,7 @@
     { "part": "ollie_box_half",  "s": 56.3,  "x": -9.5,  "dir": "out" },
     { "part": "ollie_box_half",  "s": 56.3,  "x": -5.5,  "dir": "out" },
     { "part": "transition_rail", "s": 112.2, "x": 7.1,   "dir": "out" },
-    { "part": "transition_curb", "s": 118.9, "x": 4.6,   "dir": "out" },
+    { "part": "transition_curb", "s": 118.9, "x": 4.0,   "dir": "out" },
     { "part": "plaza_kicker",    "s": 103.3, "x": 3.9,   "dir": "out" },
     { "part": "kicker_m",        "s": 64.8,  "x": 4.6,   "dir": "in", "yaw": -4 },
     { "part": "kicker_l",        "s": 66.6,  "x": 7.8,   "dir": "in", "yaw": -4 }

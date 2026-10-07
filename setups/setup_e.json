@@ -10,8 +10,8 @@
     { "part": "add_on_rail",     "s": 113.4, "x": 7.4,  "dir": "in" },
     { "part": "cheese_wedge",    "s": 128.7, "x": 5.5,  "dir": "in" },
     { "part": "cheese_wedge",    "s": 128.7, "x": 9.3,  "dir": "in" },
-    { "part": "transition_curb", "s": 79.4,  "x": 7.4,  "dir": "out" },
-    { "part": "cheese_wedge",    "s": 69.4,  "x": 7.4,  "dir": "out" },
+    { "part": "transition_curb", "s": 79.4,  "x": 7.4,  "dir": "in" },
+    { "part": "cheese_wedge",    "s": 73.75, "x": 7.4,  "dir": "out" },
     { "part": "bump",            "s": 71.2,  "x": 4.2 }
   ],
   "T1": [

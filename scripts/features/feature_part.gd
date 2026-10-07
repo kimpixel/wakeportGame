@@ -29,6 +29,7 @@ var rail_color := "grey"
 var ramp_curve := 1.6          # Form der Auffahrten: 1 = gerade (A-Frame), > 1 = konkav (Transition)
 var color := "white"           # Farbe des Körpers: white / grey
 var side_ramp := 0.0           # seitliche Transition auf der Seilseite (Breite in m, 0 = senkrechte Wand)
+var body_curve := 1.0          # Block: Verlauf height -> height_end (1 = gerade, 2 = konkav wie die Transition Curb)
 var inner_v := 1.0             # +1/-1: in welche lokale v-Richtung das Seil liegt (setzt FeatureSet)
 
 ## Lage auf der Anlage (wird von FeatureSet gesetzt)
@@ -59,6 +60,7 @@ func setup(id: String, p: Dictionary) -> void:
 	color = p.get("color", color)
 	ramp_curve = p.get("ramp_curve", ramp_curve)
 	side_ramp = p.get("side_ramp", side_ramp)
+	body_curve = p.get("body_curve", body_curve)
 	if type == "pipe" or type == "ball":
 		width = radius * 2.0
 	if type == "ball":
@@ -97,7 +99,9 @@ func height_local(u: float, v: float, collision := false) -> float:
 		"block":
 			if absf(v) > width * 0.5:
 				return NONE
-			return _with_side_ramp(v, _with_ramps(u, lerpf(height, height_end, t)))
+			# Verlauf über den Körper (ohne Auffahrten): z. B. Transition Curb konkav von 0,35 auf 1,1 m
+			var tb := clampf((u + hl - ramp_in) / maxf(length - ramp_in - ramp_out, 0.01), 0.0, 1.0)
+			return _with_side_ramp(v, _with_ramps(u, lerpf(height, height_end, pow(tb, body_curve))))
 		"rail":
 			if absf(v) > (radius + 0.04 if collision else 0.2):   # Toleranz: so breit "trifft" das Brett den Rail
 				return NONE
