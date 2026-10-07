@@ -9,7 +9,7 @@ extends Node
 ## Taste M schaltet den Ton stumm.
 
 const RATE := 22050
-const CHEER_MIN := 150      # ab so vielen Punkten jubelt der Startblock
+const CHEER_MIN := 200      # ab so vielen Punkten jubelt der Startblock
 
 var rider: Rider
 var people: Array[Dictionary] = []   # aus Beach: Leute im Startblock
