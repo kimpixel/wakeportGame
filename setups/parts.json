@@ -20,9 +20,9 @@
   "ollie_box_half":  { "name": "Ollie Box 1/2",     "type": "block", "length": 4.1,  "width": 2.25, "height": 0.45, "ramp_in": 0.35, "ramp_out": 0.35, "ramp_curve": 1.0 },
   "ledge":           { "name": "Ledge",             "type": "block", "length": 14.0, "width": 0.6, "height": 0.5 },
   "ollie_ledge":     { "name": "Ollie Box Ledge",   "type": "block", "length": 10.4, "width": 0.7, "height": 0.8, "ramp_in": 0.8, "ramp_out": 0.8, "ramp_curve": 1.0 },
-  "down_ledge":      { "name": "Down Ledge",        "type": "block", "length": 12.0, "width": 0.6, "height": 1.9,
-                       "profile": [[0.0, -0.1], [0.45, 0.35], [2.2, 1.9], [11.4, 1.1], [12.0, -0.1]],
-                       "_info": "Rooftop: kleine Safety vorne, steil hoch, lang abfallend, hinten eine höhere, sehr steile Safety" },
+  "down_ledge":      { "name": "Down Ledge",        "type": "block", "length": 20.0, "width": 0.6, "height": 1.9,
+                       "profile": [[0.0, -0.1], [1.3, 0.8], [9.1, 1.9], [19.85, 0.8], [20.0, -0.1]],
+                       "_info": "Rooftop: kleine flache Safety vorne, lang hoch bis zur Spitze, lang abfallend, hinten hohe, fast senkrechte Safety" },
   "uprail":          { "name": "Up Rail",           "type": "block", "length": 10.0, "width": 0.6, "height": 0.45, "height_end": 1.1, "ramp_in": 1.5 },
 
   "transition_rail": { "name": "Transition Rail",   "type": "transition", "length": 22.0, "width": 3.2, "height": 1.5, "ramp_in": 5.0, "ramp_out": 5.0 },

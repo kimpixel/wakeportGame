@@ -13,7 +13,7 @@
     { "part": "pyramid_series",  "s": 74.3,  "x": 4.8,  "dir": "out" }
   ],
   "T1": [
-    { "part": "down_ledge",      "s": 111.3, "x": -6.7, "dir": "in" },
+    { "part": "down_ledge",      "s": 107.3, "x": -6.7, "dir": "in" },
     { "part": "cheese_wedge",    "s": 120.8, "x": -4.9, "dir": "in" },
     { "part": "bump",            "s": 67.3,  "x": -4.8 },
     { "part": "port_plaza",      "s": 103.8, "x": 4.6,  "dir": "out" },

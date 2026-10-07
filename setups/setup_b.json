@@ -4,7 +4,7 @@
   "source": "486841237_1256891829770681_311964884361715964_n.jpg",
   "T2": [
     { "part": "kicker_m",        "s": 134.9, "x": -8.8,  "dir": "in", "yaw": -12 },
-    { "part": "down_ledge",      "s": 121.7, "x": -7.3,  "dir": "in" },
+    { "part": "down_ledge",      "s": 117.7, "x": -7.3,  "dir": "in" },
     { "part": "cheese_wedge",    "s": 131.1, "x": -5.3,  "dir": "in" },
     { "part": "pipe_long",       "s": 64.7,  "x": -7.5,  "dir": "out" },
     { "part": "ollie_box_half",  "s": 56.3,  "x": -9.5,  "dir": "out" },

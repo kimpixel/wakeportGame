@@ -18,8 +18,8 @@
     { "part": "pipe_half",       "s": 54.0,  "x": 6.0,  "dir": "out" },
     { "part": "ollie_box",       "s": 122.0, "x": -6.5, "dir": "out" },
     { "part": "ollie_ledge",     "s": 122.0, "x": -5.0, "dir": "out" },
-    { "part": "down_ledge",      "s": 112.0, "x": 5.4,  "dir": "out" },
+    { "part": "down_ledge",      "s": 108.0, "x": 5.4,  "dir": "out" },
     { "part": "ledge",           "s": 125.0, "x": 5.4,  "dir": "out" },
-    { "part": "cheese_wedge",    "s": 113.0, "x": 7.5,  "dir": "out" }
+    { "part": "cheese_wedge",    "s": 105.0, "x": 7.5,  "dir": "out" }
   ]
 }
