@@ -60,6 +60,7 @@ var ambient: Ambient
 var weather: Weather
 var airplanes: Airplanes
 var _plane_arg := NAN
+var _load_arg := NAN
 var _weather_arg := ""
 var _hour_arg := NAN
 var _day_arg := 0
@@ -455,6 +456,8 @@ func _physics_process(delta: float) -> void:
 	_check_buoy(npc)
 	_recover(npc, nc, delta)
 	rider.step(delta)
+	if not is_nan(_load_arg):
+		rider._load = _load_arg            # Test: Sprung so weit aufgeladen (nur Haltung)
 	_check_buoy(rider)
 	_track_turn()
 	_recover(rider, pc, delta)
@@ -803,6 +806,8 @@ func _parse_args() -> void:
 			_day_arg = arg.substr(6).to_int()
 		elif arg.begins_with("--plane="):
 			_plane_arg = arg.substr(8).to_float()
+		elif arg.begins_with("--load="):
+			_load_arg = arg.substr(7).to_float()
 		elif arg == "--no-screen":
 			_no_screen = true
 		elif arg == "--screen" or arg.begins_with("--screen="):

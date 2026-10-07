@@ -981,7 +981,8 @@ func _process(delta: float) -> void:
 			target_roll = atan2(pull.dot(right()), MASS * GRAVITY) * (1.1 + 0.5 * _edge_vis) * (1.0 - 0.6 * _release_vis) \
 				- _steer * clampf(speed / 8.0, 0.0, 1.0) * 0.35
 			target_pitch = atan2(pull.dot(forward()), MASS * GRAVITY) * 0.5
-			target_crouch = _load * 0.25 + _edge_vis * 0.12
+			# Sprung aufladen: stufenlos vom geraden Stand bis tief in die Knie
+			target_crouch = minf(_load * 0.95 + _edge_vis * 0.12, 1.0)
 			if speed < 2.5 and not _in_dock(pos.x, pos.z):
 				target_crouch = maxf(target_crouch, 0.3)
 	# "Ups": kurz in die Knie und nach vorne geruckt (über Boje/Steg gerumpelt)
@@ -1002,7 +1003,7 @@ func _process(delta: float) -> void:
 	if _rig:
 		_pose_human()
 	_body_pivot.rotation = Vector3(_lean_pitch, 0.0, _lean_roll)
-	_body_pivot.scale = Vector3(1.0, 1.0 - _crouch, 1.0)
+	_body_pivot.scale = Vector3(1.0, 1.0 - 0.5 * _crouch, 1.0)
 	_body_pivot.position.y = -0.3 if mode == Mode.CRASHED else 0.06
 	if _ragdoll and _ragdoll.active:
 		_board_on_feet()
@@ -1024,7 +1025,7 @@ func _process(delta: float) -> void:
 		if _rig:
 			# Realistischer Griff: vor der vorderen Hüfte, Arme fast gestreckt
 			var rb := global_transform.basis.orthonormalized()
-			handle_pos = vpos + rb * Vector3(0.2, 0.86 - 0.3 * _crouch, -0.2) + to_anchor * 0.5
+			handle_pos = vpos + rb * Vector3(0.2, 0.86 - 0.34 * _crouch, -0.2) + to_anchor * 0.5
 			if _getup < 1.0:
 				handle_pos = _dw_handle.lerp(handle_pos, smoothstep(0.0, 1.0, _getup))
 	else:
@@ -1310,7 +1311,7 @@ func _pose_stand() -> void:
 	var foot_front := board * Wakeboard.ankle_local(true)    # linker Fuß Richtung Nose
 	var foot_back := board * Wakeboard.ankle_local(false)
 	var mid := (foot_front + foot_back) * 0.5
-	var hip_h := 0.84 - 0.32 * _crouch
+	var hip_h := 0.84 - 0.36 * _crouch            # tief in den Knien: Becken ~0,5 m über den Füßen
 	var lean_local := Vector3(-sin(_lean_roll) * 0.55, hip_h * cos(_lean_roll) * cos(_lean_pitch), sin(_lean_pitch) * 0.4)
 	var pelvis_world := mid + rb * lean_local
 	# Becken- und Oberkörperneigung (Welt -> Skelettraum)
