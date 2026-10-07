@@ -27,6 +27,7 @@ enum TimeState { IDLE, RUNNING, LOW, OVER }
 var _center: Label
 var _trick: Label
 var _help: Label
+var _help_hint: Label
 var _board: Label
 var _debug: Label
 var _trick_time := 0.0
@@ -75,6 +76,14 @@ func _ready() -> void:
 	_help.offset_top = -175
 	_help.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	_help.add_theme_color_override("font_color", Color(1, 1, 1, 0.85))
+	_help.visible = false                       # beim Start aus, H blendet ein
+	_help_hint = _label(16)
+	_help_hint.text = "H  Hilfe"
+	_help_hint.anchor_top = 1.0
+	_help_hint.anchor_bottom = 1.0
+	_help_hint.offset_left = 16
+	_help_hint.offset_top = -34
+	_help_hint.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
 
 	# Technik-Angaben klein unten rechts
 	_debug = _label(14)
@@ -262,10 +271,14 @@ func show_setup_menu(on: bool) -> void:
 
 func set_help(text: String) -> void:
 	_help.text = text
+	# Handy: kurze Hilfe immer sichtbar (keine H-Taste)
+	_help.visible = true
+	_help_hint.visible = false
 
 
 func toggle_help() -> void:
 	_help.visible = not _help.visible
+	_help_hint.visible = not _help.visible
 
 
 func set_board(text: String) -> void:
