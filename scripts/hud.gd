@@ -8,7 +8,7 @@ Leertaste halten + loslassen   Absprung
 Enter  Start     R  Neustart     + / -  Anlagentempo
 C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom
 P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus
-Vor dem Start:   T  Terminal (T1/T2)     F  Feature-Setup"""
+Vor dem Start:   T  Terminal (T1/T2)     F  Feature-Setup     Tab  Feature-Übersicht"""
 
 const HELP_MOBILE := """Handy neigen   lenken
 Finger halten + loslassen   Absprung

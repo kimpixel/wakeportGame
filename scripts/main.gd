@@ -11,6 +11,7 @@ extends Node3D
 ##   --terminal=T1|T2  an welcher Anlage man fährt (der NPC fährt an der anderen)
 ##   --mobile          Handy-Steuerung erzwingen (mit --tilt=GRAD feste Neigung)
 ##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
+##   --screen[=NAME]   mit dem Startbildschirm beginnen (NAME: Feature/Hack auswählen, z. B. "hack")
 
 const RESET_DELAY := 3.0
 
@@ -37,6 +38,9 @@ var _terminal_arg := ""
 var _start := {}                 # "T1"/"T2" -> {pos, yaw, dock, mast_b}
 var sfx: Sfx
 var ambient: Ambient
+var start_screen: StartScreen
+var _screen_arg := false
+var _screen_select := ""
 
 var cable_t1: CableSystem
 var features: FeatureSet
@@ -184,6 +188,7 @@ func _ready() -> void:
 	ambient.build()
 	ambient.pike_hit.connect(func() -> void: hud.show_trick("Hecht erwischt!"))
 	_apply_terminal(_initial_terminal())
+	_build_start_screen()
 	if _view_arg.size() == 6:
 		# Testansicht: feste Kamera (x,y,z -> Blickpunkt x,y,z)
 		cam.set_process(false)
@@ -196,6 +201,52 @@ func _ready() -> void:
 		rider.autopilot = true
 		rider.auto_lane = _lane_arg
 		pc.start()
+	if _screen_arg:
+		_open_start_screen()
+		if _screen_select != "":
+			start_screen.select_by_name(_screen_select)
+		if _shot_path != "":
+			get_tree().create_timer(_shot_time, true).timeout.connect(_take_shot)
+
+
+# ---------------------------------------------------------------- Startbildschirm
+
+func _build_start_screen() -> void:
+	start_screen = StartScreen.new()
+	start_screen.features = features
+	start_screen.cable_of = {"T1": cable_t1, "T2": cable}
+	start_screen.s_offset = _s_offset()
+	var names: Array = []
+	for e: Dictionary in _setups:
+		names.append(e["name"])
+	start_screen.build(TERMINALS, ["T2 (Strand, große Hütte)", "T1 (Lounge-Steg)"], names)
+	start_screen.visible = false
+	add_child(start_screen)
+	start_screen.terminal_chosen.connect(func(t: String) -> void:
+		_select_terminal(t)
+		start_screen.refresh(terminal, _setup_idx))
+	start_screen.setup_chosen.connect(func(i: int) -> void:
+		_select_setup(i)
+		start_screen.refresh(terminal, _setup_idx))
+	start_screen.start_pressed.connect(_close_start_screen)
+
+
+## Startbildschirm zeigen: Fahrer zurück an den Steg, Spiel pausiert.
+func _open_start_screen() -> void:
+	_reset()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	get_tree().paused = true
+	hud.visible = false
+	start_screen.visible = true
+	start_screen.refresh(terminal, _setup_idx)
+
+
+func _close_start_screen() -> void:
+	start_screen.visible = false
+	hud.visible = true
+	get_tree().paused = false
+	_reset()
+	cam.snap()
 
 
 # ---------------------------------------------------------------- Terminal
@@ -413,11 +464,17 @@ func _process(_delta: float) -> void:
 			hud.set_center("")
 
 	if _shot_path != "" and not _shot_taken and _elapsed >= _shot_time:
-		_shot_taken = true
-		await RenderingServer.frame_post_draw
-		get_viewport().get_texture().get_image().save_png(_shot_path)
-		print("screenshot saved: ", _shot_path)
-		get_tree().quit()
+		_take_shot()
+
+
+func _take_shot() -> void:
+	if _shot_taken:
+		return
+	_shot_taken = true
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png(_shot_path)
+	print("screenshot saved: ", _shot_path)
+	get_tree().quit()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -440,6 +497,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_select_setup((_setup_idx + 1) % _setups.size())
 	elif event.is_action_pressed("help"):
 		hud.toggle_help()
+	elif event.is_action_pressed("overview"):
+		_open_start_screen()
 
 
 ## Wertet eine Wende aus: beginnt, wenn der Carrier zur Wende bremst, endet, wenn er
@@ -512,6 +571,7 @@ func _setup_input() -> void:
 	_bind("next_setup", [KEY_F], [], [])
 	_bind("next_terminal", [KEY_T], [], [])
 	_bind("mute", [KEY_M], [], [])
+	_bind("overview", [KEY_TAB], [], [])
 	_bind("cam_left", [], [], [[JOY_AXIS_RIGHT_X, -1.0]])
 	_bind("cam_right", [], [], [[JOY_AXIS_RIGHT_X, 1.0]])
 	_bind("cam_up", [], [], [[JOY_AXIS_RIGHT_Y, -1.0]])
@@ -569,6 +629,9 @@ func _parse_args() -> void:
 			_lane_arg = arg.substr(7).to_float()
 		elif arg.begins_with("--view="):
 			_view_arg = PackedFloat32Array(Array(arg.substr(7).split(",")).map(func(v: String) -> float: return v.to_float()))
+		elif arg == "--screen" or arg.begins_with("--screen="):
+			_screen_arg = true
+			_screen_select = arg.substr(9) if arg.length() > 9 else ""
 		elif arg.begins_with("--cam="):
 			_cam_arg = arg.substr(6)
 

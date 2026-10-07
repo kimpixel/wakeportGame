@@ -38,6 +38,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | C | Y | Kamera: Verfolger, Orbit oder Ufer |
 | T | – | Terminal T1/T2 (vor dem Start) |
 | F | – | Feature-Setup (vor dem Start) |
+| Tab | – | Feature-Übersicht: Terminal und Setup wählen, Draufsicht aller Features (anklicken), Detailansicht in 3D (ziehen = drehen) |
 | Maus / Mausrad | rechter Stick | Umsehen / Zoom |
 | P | – | Autopilot (fährt auch Features) |
 | M | – | Ton aus/an |
