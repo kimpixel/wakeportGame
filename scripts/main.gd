@@ -593,14 +593,16 @@ func _process(_delta: float) -> void:
 		hud.visible = false
 		var rp := rider.visual_position()
 		cam.look_at_from_position(rp + rider.global_basis * _closeup, rp + rider.global_basis * _closeup_look)
-	var clock := "Zeit: %s" % _clock(_time_left if _session else _game_time)
+	var state := Hud.TimeState.IDLE
 	if _finishing:
-		clock = "Zeit um – zurück zum Start"
-	var info := "%s\nFahrer: %d km/h\nAnlage %s: %s  (Tempo %d km/h)\nWenden: %d     Punkte: %d\nKamera: %s%s\nSeilzug: %d N" % [
-		clock, roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
-		pc.laps, _final_score if _finishing else rider.score, cam.mode_name(), "   [AUTOPILOT]" if rider.autopilot else "",
-		roundi(rider.tension_smooth)]
-	hud.set_info(info, rider.tension_smooth / Rider.CRASH_TENSION)
+		state = Hud.TimeState.OVER
+	elif _session:
+		state = Hud.TimeState.LOW if _time_left < 60.0 else Hud.TimeState.RUNNING
+	hud.set_stats(_clock(_time_left if _session else _game_time), state,
+		_final_score if _finishing else rider.score, rider.tension_smooth, rider.tension_smooth / Rider.CRASH_TENSION)
+	hud.set_debug("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nWenden %d   ·   Kamera: %s%s" % [
+		roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
+		pc.laps, cam.mode_name(), "   ·   AUTOPILOT" if rider.autopilot else ""])
 	hud.set_board(rider.board_state_text())
 	hud.show_setup_menu(pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED)
 	if not rider.attached:
