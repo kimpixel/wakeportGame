@@ -124,6 +124,7 @@ func _ready() -> void:
 	npc.shirt_color = Color(0.85, 0.85, 0.82)
 	npc.shorts_color = Color(0.1, 0.1, 0.12)
 	npc.board_design = 4               # "Dots" aus der Brett-Bibliothek
+	npc.helmet_design = 2
 	add_child(npc)
 	# Startplätze beider Anlagen (Startsteg, Blickrichtung, Steg-Fläche, Endmast)
 	_start["T2"] = {"pos": Rider.START_POS, "yaw": 0.0, "dock": Rect2(Lake.DOCK_MIN, Lake.DOCK_MAX - Lake.DOCK_MIN),

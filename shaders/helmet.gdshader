@@ -6,6 +6,13 @@ shader_type spatial;
 
 uniform vec3 center = vec3(0.0, 0.07, 0.015);
 uniform vec3 radii = vec3(0.116, 0.125, 0.138);
+// Design (Helmet.DESIGNS): Farbe links/rechts, Muster 0 = in der Mitte geteilt,
+// 1 = einfarbig mit Mittelstreifen, 2 = Streifen quer über die Schale, 3 = Punkte, 4 = matt einfarbig
+uniform vec3 color_left : source_color = vec3(0.86, 0.6, 0.007);
+uniform vec3 color_right : source_color = vec3(0.023, 0.19, 0.012);
+uniform vec3 color_accent : source_color = vec3(0.86, 0.6, 0.007);
+uniform int pattern = 0;
+uniform float gloss = 0.55;
 
 varying vec3 lp;
 varying float part;
@@ -31,17 +38,33 @@ float spot(vec3 d, vec3 target, float size) {
 }
 
 void fragment() {
-	vec3 yellow = srgb(vec3(0.93, 0.78, 0.08));
-	vec3 green = srgb(vec3(0.18, 0.47, 0.12));
+	vec3 yellow = color_left;
+	vec3 green = color_right;
 	vec3 col;
-	float rough = 0.55;
+	float rough = gloss;
 	if (part > 0.25) {
 		col = srgb(vec3(0.06, 0.06, 0.065));     // Polster
 		rough = 0.9;
 	} else {
 		bool left = lp.x > 0.0;
-		col = left ? yellow : green;
 		vec3 q = lp - center;
+		vec3 dd = dir_of(lp);
+		if (pattern == 0) {
+			col = left ? yellow : green;
+		} else if (pattern == 1) {
+			col = abs(q.x) < 0.018 ? color_accent : yellow;          // Rennstreifen in der Mitte
+		} else if (pattern == 2) {
+			col = fract((q.z + q.y * 0.6) * 9.0) < 0.35 ? color_accent : yellow;
+		} else if (pattern == 3) {
+			vec2 g = fract(vec2(atan(dd.x, dd.z) * 2.2, acos(dd.y) * 4.5)) - 0.5;
+			col = length(g) < 0.22 ? color_accent : yellow;
+		} else {
+			col = yellow;
+		}
+		if (pattern != 0) {
+			green = color_accent;                                  // Logo-Felder in der Akzentfarbe
+			left = true;
+		}
 		// Logo-Feld: gelbe Seite = langes grünes Feld (Schläfe bis Hinterkopf),
 		// grüne Seite = kurzes gelbes Feld vorne
 		vec2 box_c = left ? vec2(0.0, 0.03) : vec2(0.085, 0.0);     // (längs z, Höhe y)

@@ -13,13 +13,35 @@ const N_AZ := 64                               # Unterteilung rundherum (Vielfac
 const N_EL := 18                               # Unterteilung Scheitel -> Rand
 
 
-func _init() -> void:
+## Helm-Designs: nur Farben/Muster unterscheiden sich, die Form ist immer gleich.
+## Design 0 = der gelb/grün geteilte Helm des Spielers.
+const DESIGNS := [
+	{"left": Color(0.93, 0.78, 0.08), "right": Color(0.18, 0.47, 0.12), "accent": Color(0.93, 0.78, 0.08), "pattern": 0},
+	{"left": Color(0.92, 0.92, 0.9), "right": Color(0.1, 0.1, 0.11), "accent": Color(0.85, 0.12, 0.1), "pattern": 1},
+	{"left": Color(0.08, 0.16, 0.42), "right": Color(0.08, 0.16, 0.42), "accent": Color(0.95, 0.95, 0.92), "pattern": 2},
+	{"left": Color(0.95, 0.45, 0.1), "right": Color(0.95, 0.45, 0.1), "accent": Color(0.1, 0.1, 0.1), "pattern": 3},
+	{"left": Color(0.1, 0.1, 0.11), "right": Color(0.1, 0.1, 0.11), "accent": Color(0.4, 0.4, 0.42), "pattern": 4, "gloss": 0.85},
+	{"left": Color(0.85, 0.2, 0.45), "right": Color(0.2, 0.75, 0.85), "accent": Color(0.95, 0.95, 0.92), "pattern": 0},
+	{"left": Color(0.35, 0.42, 0.2), "right": Color(0.35, 0.42, 0.2), "accent": Color(0.9, 0.82, 0.55), "pattern": 1, "gloss": 0.8},
+]
+
+var design := 0
+
+
+func _init(design_id := 0) -> void:
+	design = posmod(design_id, DESIGNS.size())
 	var shell := MeshInstance3D.new()
 	shell.mesh = _build_shell()
 	var mat := ShaderMaterial.new()
 	mat.shader = load("res://shaders/helmet.gdshader")
 	mat.set_shader_parameter("center", CENTER)
 	mat.set_shader_parameter("radii", OUTER)
+	var d: Dictionary = DESIGNS[design]
+	mat.set_shader_parameter("color_left", d["left"])
+	mat.set_shader_parameter("color_right", d["right"])
+	mat.set_shader_parameter("color_accent", d["accent"])
+	mat.set_shader_parameter("pattern", d["pattern"])
+	mat.set_shader_parameter("gloss", d.get("gloss", 0.55))
 	shell.material_override = mat
 	add_child(shell)
 	var black := Util.mat(Color(0.05, 0.05, 0.055), 0.8)

@@ -17,6 +17,7 @@ var kind := "operator"
 var watch: Node3D                    # wen die Figur im Blick hat (der Fahrer)
 var path: Array[Vector3] = []        # operator: Wegpunkte (Welt), als Kette begehbar
 var board_design := 1
+var helmet_design := 1
 
 var _rig: HumanRig
 var _fig: Node3D
@@ -212,7 +213,7 @@ func _attach_helmet() -> void:
 	var att := BoneAttachment3D.new()
 	att.bone_name = "head"
 	_rig.skeleton.add_child(att)
-	var h := Helmet.new()
+	var h := Helmet.new(helmet_design)
 	h.transform = Transform3D(_rig.rest_global("head").basis.orthonormalized().inverse(), Vector3.ZERO)
 	att.add_child(h)
 

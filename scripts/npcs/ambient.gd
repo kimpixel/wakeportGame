@@ -46,6 +46,7 @@ func build() -> void:
 		var w := Person.new()
 		w.kind = spot["kind"]
 		w.board_design = 1 + i % (BoardLibrary.count() - 1)
+		w.helmet_design = [3, 1, 5, 4, 6][i % 5]
 		add_child(w)
 		w.global_position = spot["pos"]
 		var f: Vector3 = spot["face"]

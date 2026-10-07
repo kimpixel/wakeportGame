@@ -71,6 +71,7 @@ var model_path := "res://assets/characters/rider.glb"
 var shirt_color := Color(0.22, 0.24, 0.28)
 var shorts_color := Color(0.15, 0.35, 0.7)
 var board_design := 0             # Brett aus der BoardLibrary
+var helmet_design := 0            # Helm aus Helmet.DESIGNS
 var is_npc := false
 ## Test/Demo: Autopilot hält diese seitliche Spur (Meter neben dem Seil) und fährt Features direkt an
 var auto_lane := NAN
@@ -999,7 +1000,7 @@ func _load_model() -> void:
 	_body_pivot.visible = false
 	_tint_clothes(_human)
 	# Helm am Kopf-Knochen (die Impact-Weste ist das eng anliegende Oberteil, siehe _tint_clothes)
-	_attach_node("head", Helmet.new())
+	_attach_node("head", Helmet.new(helmet_design))
 
 
 ## Kleidung einfärben: T-Shirt als Rashguard, Hose als Boardshorts.
