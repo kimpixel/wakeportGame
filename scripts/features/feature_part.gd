@@ -277,10 +277,18 @@ func _build_heightfield(mat: Material, nu: int, nv: int, u_from := -INF, u_to :=
 		var v := lerpf(-hw, hw, float(j) / nv)
 		var h := height_local(clampf(u, -hl + 0.001, hl - 0.001), clampf(v, -hw + 0.001, hw - 0.001))
 		return Vector3(v, maxf(h, BOTTOM + 0.05), -u)
+	# Harte Kanten: jede Fläche bekommt eine eigene Glättungsgruppe, sonst rundet
+	# generate_normals() die Kanten zwischen Oberseite und Wänden ab (Ledges sähen rund aus).
+	# Nur geschwungene Oberseiten (Transitions, Kicker, Bump) werden in sich geglättet.
+	var curved := type in ["ramp", "transition", "bump", "pipe"] or side_ramp > 0.0 or body_curve > 1.0 \
+		or (ramp_curve > 1.0 and (ramp_in > 0.0 or ramp_out > 0.0))
+	st.set_smooth_group(1 if curved else 0xFFFFFFFF)
 	# Oberseite
 	for i in nu:
 		for j in nv:
 			_quad(st, p.call(i, j), p.call(i + 1, j), p.call(i + 1, j + 1), p.call(i, j + 1), Vector3.UP)
+	# Wände immer flach (scharfe Kanten)
+	st.set_smooth_group(0xFFFFFFFF)
 	# Seitenwände
 	for i in nu:
 		for j: int in [0, nv]:

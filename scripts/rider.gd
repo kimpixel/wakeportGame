@@ -105,7 +105,6 @@ var _turn_end := 0.0            # Autopilot-Wende: +1 = am Endmast, -1 = am Ufer
 var _turn_side := 1.0
 var _npc_jump_t := 6.0
 var _npc_charge := 0.0
-var _ball_charge := 0.0          # Autopilot: Sprung über einen Ball wird geladen
 var _npc_spin := false
 
 var _board_pivot: Node3D
@@ -452,7 +451,7 @@ func _read_input(delta: float) -> void:
 		_edge = Input.get_action_strength("edge")
 		_release = Input.get_action_strength("release")
 
-	var held := (Input.is_action_pressed("jump") and not autopilot) or _npc_charge > 0.0 or _ball_charge > 0.0
+	var held := (Input.is_action_pressed("jump") and not autopilot) or _npc_charge > 0.0
 	if held:
 		if mode == Mode.WATER:
 			_load = minf(_load + delta / 0.5, 1.0)
@@ -466,7 +465,6 @@ func _read_input(delta: float) -> void:
 func _autopilot_input(delta: float) -> void:
 	_auto_t += delta
 	var speed := horizontal_speed()
-	_ball_jump(delta, speed)
 	var rope_yaw := atan2(-rope_dir.x, -rope_dir.z)
 	var side := 1.0 if fmod(_auto_t, 9.0) < 4.5 else -1.0
 	var carving := speed > 5.0 and tension_smooth > 50.0
@@ -475,6 +473,12 @@ func _autopilot_input(delta: float) -> void:
 		_lane_input(auto_lane, true)
 		return
 	if _turn_input(speed):
+		return
+	# Gummiball voraus: seitlich daran vorbeifahren
+	var dodge := _ball_dodge_lane()
+	if not is_nan(dodge):
+		_line = null
+		_lane_input(dodge, false)
 		return
 	# Features fahren: passendes Feature voraus suchen und auf dessen Spur einschwenken
 	if features and (tension_smooth > 50.0 or mode == Mode.AIR):
@@ -502,15 +506,42 @@ func _autopilot_input(delta: float) -> void:
 		_npc_tricks(delta, speed)
 
 
-## Autopilot/NPC: liegt ein Ball (Gummiball-Feature) voraus, rechtzeitig laden und drüberspringen.
-func _ball_jump(delta: float, speed: float) -> void:
-	if _ball_charge > 0.0:
-		_ball_charge -= delta
-		return
-	if mode != Mode.WATER or speed < 4.0 or pos.y > 0.3:
-		return
-	if _ball_ahead(speed, 0.8, 1.1):          # Absprung ca. 3 m vor dem Ball
-		_ball_charge = 0.4
+## Autopilot/NPC: liegt ein Gummiball in den nächsten ~30 m nahe der eigenen Spur?
+## Dann eine Spur neben dem Ball zurückgeben (auf der Seite, auf der man schon ist), sonst NAN.
+func _ball_dodge_lane() -> float:
+	if features == null:
+		return NAN
+	var local := cable.transform.affine_inverse() * pos
+	var dir := -signf(cable.local_vz(vel)) if horizontal_speed() > 1.0 else 1.0
+	var s_now := cable.mast_a_z - local.z
+	for part in features.parts_of(cable):
+		if part.type != "ball":
+			continue
+		var ahead := (part.s_center - s_now) * dir
+		if ahead < -1.0 or ahead > 30.0 or absf(part.x_center - local.x) > 2.6:
+			continue
+		# bevorzugt die Seite, auf der man schon ist – aber nur, wenn dort kein anderes Teil im Weg steht
+		var side := signf(local.x - part.x_center)
+		if side == 0.0:
+			side = -signf(part.x_center)
+		for sd: float in [side, -side]:
+			var lane := part.x_center + sd * 2.4
+			if _lane_free(lane, s_now, part.s_center + dir * 12.0):
+				return lane
+		return part.x_center + side * 2.4
+	return NAN
+
+
+## Steht zwischen s_from und s_to auf Spur lane (seitlicher Abstand zum Seil) ein Feature?
+func _lane_free(lane: float, s_from: float, s_to: float) -> bool:
+	var n := maxi(int(absf(s_to - s_from) / 1.0), 1)
+	for i in n + 1:
+		var s := lerpf(s_from, s_to, float(i) / n)
+		for dx: float in [-0.6, 0.0, 0.6]:
+			var p := cable.transform * Vector3(lane + dx, 0.0, cable.mast_a_z - s)
+			if features.height_at(p.x, p.z) > 0.0:
+				return false
+	return true
 
 
 ## Liegt in t_from..t_to Sekunden Fahrt ein Ball auf dem Weg?

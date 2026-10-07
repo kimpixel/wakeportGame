@@ -109,7 +109,7 @@ func _ready() -> void:
 	add_child(features)
 	_setups = FeatureSet.list_setups()
 	_setup_idx = _initial_setup()
-	features.load_setup(_setups[_setup_idx]["file"], {"T1": cable_t1, "T2": cable})
+	features.load_setup(_setups[_setup_idx]["file"], {"T1": cable_t1, "T2": cable}, _s_offset())
 	rider.features = features
 
 	npc = Rider.new()
@@ -244,6 +244,12 @@ func _place_rider(r: Rider, c: CableSystem, s: Dictionary) -> void:
 
 # ---------------------------------------------------------------- Feature-Setups
 
+## Die Setups sind ab dem T2-Startsteg gemessen. Der T1-Steg liegt weiter draußen am Seil –
+## dort rücken die Teile um den Unterschied nach hinten (gleicher Anlauf auf beiden Anlagen).
+func _s_offset() -> Dictionary:
+	return {"T1": (cable.start_z - cable_t1.start_z) - (cable.mast_a_z - cable_t1.mast_a_z)}
+
+
 ## Start-Setup: --setup=ID, sonst das zuletzt gewählte, sonst das erste (aktuellste).
 func _initial_setup() -> int:
 	var want := _setup_arg
@@ -263,7 +269,7 @@ func _select_setup(idx: int) -> void:
 		_setup_menu.select(_setup_idx)
 		return
 	_setup_idx = idx
-	features.load_setup(_setups[idx]["file"], {"T1": cable_t1, "T2": cable})
+	features.load_setup(_setups[idx]["file"], {"T1": cable_t1, "T2": cable}, _s_offset())
 	rider.forget_features()
 	npc.forget_features()
 	npc.reset()

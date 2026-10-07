@@ -21,7 +21,9 @@ static func list_setups() -> Array:
 
 ## Entfernt das aktuelle Setup und baut das Setup aus file auf.
 ## terminals: z. B. {"T1": cable_t1, "T2": cable}
-func load_setup(file: String, terminals: Dictionary) -> void:
+## s_offset: pro Terminal zusätzlicher Abstand (m) – die Setups sind vom T2-Startsteg aus
+## gemessen; liegt der Startsteg einer Anlage weiter draußen, rücken ihre Teile mit.
+func load_setup(file: String, terminals: Dictionary, s_offset := {}) -> void:
 	for part in parts:
 		part.queue_free()
 	parts.clear()
@@ -29,8 +31,11 @@ func load_setup(file: String, terminals: Dictionary) -> void:
 	var setup := _read_json(file)
 	setup_name = setup.get("name", file)
 	for terminal: String in terminals:
+		var off: float = s_offset.get(terminal, 0.0)
 		for row: Dictionary in setup.get(terminal, []):
-			_place(row, terminals[terminal], file)
+			var r := row.duplicate()
+			r["s"] = float(r.get("s", 0.0)) + off
+			_place(r, terminals[terminal], file)
 
 
 func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transform3D.IDENTITY) -> void:
