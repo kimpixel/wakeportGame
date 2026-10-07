@@ -64,6 +64,20 @@ Die Haltung wird im Spiel live aus der Physik berechnet, mit einer eigenen IK in
 
 Beim Sturz wird die Figur zur **Ragdoll** (`scripts/ragdoll.gd`): Physik-Knochen mit Gelenkgrenzen, Wasserdämpfung und Auftrieb an der Oberfläche. Die Weste dreht den Fahrer auf den Rücken, das Brett bleibt an den Füßen. Am Griff bilden die Hände eine Faust um die Stange (Finger darüber, Daumen darunter).
 
+## Brett und Bindungen
+
+Das Twin-Tip-Board (`scripts/wakeboard.gd`) hat einen nach einem echten Cable-Board gemessenen Umriss, durchgehenden Rocker und dünnere Kanten. Die Grafik kommt aus `shaders/wakeboard.gdshader`: oben schwarz mit Zeitungscollage, unten creme mit großem S. Die Bindungen sind hohe Schuhe mit Riemen, Camo-Feld und weißer Sohle, erzeugt per Skript:
+
+```
+blender -b --factory-startup --python tools/board/build_boot.py -- assets/board/boot.glb
+```
+
+**Eigene Unterseite (nur lokal):** Ein Produktfoto mit den Ansichten oben/unten/Seite nebeneinander lässt sich als Textur nutzen. Die Ausgabe liegt in `assets/board/custom/` und kommt weder ins Repo noch in den Export, denn fremde Fotos und Logos dürfen nicht veröffentlicht werden.
+
+```
+godot --headless --path . --script tools/board/make_texture.gd -- foto.png 1 assets/board/custom/bottom.png
+```
+
 ## Lokal starten
 
 1. [Godot 4.7](https://godotengine.org/download) herunterladen.

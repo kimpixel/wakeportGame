@@ -36,6 +36,7 @@ const POP_BASE := 2.2
 const SLIDE_FRICTION := 0.1     # Reibung Brett auf Feature-Oberfläche
 const POP_LOAD := 2.8
 const POP_ROPE := 1.8
+const BOARD_Y := 0.012          # Unterkante Brettmitte über der Fahrerposition
 const ARM_REACH := 0.88         # Griff höchstens so weit weg (Anteil der Armlänge) – Arme leicht gebeugt
 const BOARD_HALF := 0.35
 
@@ -118,43 +119,16 @@ var _slide_spray: CPUParticles3D
 # ---------------------------------------------------------------- Aufbau
 
 func _ready() -> void:
-	var board_mat := Util.mat(Color(0.1, 0.32, 0.55), 0.35)
-	var bind_mat := Util.mat(Color(0.85, 0.1, 0.1), 0.6)
 	var pants := Util.mat(Color(0.15, 0.18, 0.3))
 	var vest := Util.mat(vest_color, 0.6)
 	var skin := Util.mat(Color(0.9, 0.7, 0.55))
 	var black := Util.mat(Color(0.05, 0.05, 0.05))
 
 	_board_pivot = Node3D.new()
-	_board_pivot.position = Vector3(0.0, 0.03, 0.0)
+	_board_pivot.position = Vector3(0.0, BOARD_Y, 0.0)
 	add_child(_board_pivot)
-	# Twin-Tip-Board: flache Kapsel = abgerundete Spitzen, dazu Bindungen (Boots) und Finnen
-	var deck := CapsuleMesh.new()
-	deck.radius = 0.215
-	deck.height = 1.38
-	deck.radial_segments = 24
-	deck.rings = 6
-	var board_mi := MeshInstance3D.new()
-	board_mi.mesh = deck
-	board_mi.material_override = board_mat
-	board_mi.rotation.x = PI * 0.5
-	board_mi.scale = Vector3(1.0, 1.0, 0.1)
-	_board_pivot.add_child(board_mi)
-	var boot := Util.mat(Color(0.08, 0.08, 0.09), 0.6)
-	for bz: float in [-0.25, 0.25]:
-		var boot_mesh := CapsuleMesh.new()
-		boot_mesh.radius = 0.065
-		boot_mesh.height = 0.3
-		var boot_mi := MeshInstance3D.new()
-		boot_mi.mesh = boot_mesh
-		boot_mi.material_override = boot
-		boot_mi.rotation = Vector3(0.0, PI * 0.5, PI * 0.5)    # liegt quer zum Brett (Fuß zeigt zur Brust)
-		boot_mi.scale = Vector3(1.0, 1.0, 1.25)
-		boot_mi.position = Vector3(0.02, 0.085, bz)
-		_board_pivot.add_child(boot_mi)
-		Util.box(_board_pivot, Vector3(0.2, 0.03, 0.34), Vector3(0.0, 0.03, bz), bind_mat)
-	for fz: float in [-0.6, 0.6]:
-		Util.box(_board_pivot, Vector3(0.012, 0.04, 0.07), Vector3(0.0, -0.035, fz), boot)
+	# Twin-Tip-Board mit Bindungsschuhen (scripts/wakeboard.gd)
+	_board_pivot.add_child(Wakeboard.new())
 
 	# Fahrer steht seitlich auf dem Brett: Schultern entlang der Brettachse, Brust zeigt nach +X
 	_body_pivot = Node3D.new()
@@ -833,7 +807,7 @@ func _process(delta: float) -> void:
 	if _ragdoll and _ragdoll.active:
 		_board_on_feet()
 	else:
-		_board_pivot.position = Vector3(0.0, 0.03, 0.0)
+		_board_pivot.position = Vector3(0.0, BOARD_Y, 0.0)
 		_board_pivot.rotation = Vector3(0.0, 0.0, 1.2 if mode == Mode.CRASHED \
 			else _lean_roll * (0.35 + 0.45 * _edge_vis) * (1.0 - 0.85 * _release_vis))
 
@@ -972,8 +946,8 @@ func _pose_human() -> void:
 	var skel_inv := _rig.skeleton.global_transform.affine_inverse()
 	var rb := global_transform.basis.orthonormalized()
 	var board := _board_pivot.global_transform
-	var foot_front := board * Vector3(0.0, 0.07, -0.25)    # linker Fuß Richtung Nose
-	var foot_back := board * Vector3(0.0, 0.07, 0.25)
+	var foot_front := board * Wakeboard.ankle_local(true)    # linker Fuß Richtung Nose
+	var foot_back := board * Wakeboard.ankle_local(false)
 	var mid := (foot_front + foot_back) * 0.5
 	var hip_h := 0.84 - 0.32 * _crouch
 	var lean_local := Vector3(-sin(_lean_roll) * 0.55, hip_h * cos(_lean_roll) * cos(_lean_pitch), sin(_lean_pitch) * 0.4)
@@ -993,11 +967,15 @@ func _pose_human() -> void:
 	_rig.bend_spine(to_skel.call(spine_w).get_rotation_quaternion())
 	# Beine: Knie Richtung Brust/Zehen, leicht nach außen
 	var knee_dir := chest * 1.0 + Vector3.UP * 0.3
-	_rig.leg("l", skel_inv * foot_front, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, -0.25)))
-	_rig.leg("r", skel_inv * foot_back, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, 0.25)))
+	_rig.leg("l", skel_inv * foot_front, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, -Wakeboard.STANCE)))
+	_rig.leg("r", skel_inv * foot_back, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, Wakeboard.STANCE)))
 	# Füße flach in den Bindungen (Ruhe-Ausrichtung relativ zum Fahrer)
-	for fb: String in ["foot_l", "foot_r"]:
-		_rig.set_end_basis(fb, _rig.rest_global(fb).basis)
+	# Füße in den Bindungen: kippen mit dem Brett, Duck-Stance wie die Schuhe
+	var board_rel := board.basis.orthonormalized() * rb.inverse()
+	for front: bool in [true, false]:
+		var fb := "foot_l" if front else "foot_r"
+		var w := board_rel * Basis(rb * Vector3.UP, Wakeboard.foot_yaw(front))
+		_rig.set_end_basis(fb, skel_b.inverse() * w * skel_b * _rig.rest_global(fb).basis)
 	# Kopf: in Fahrtrichtung bzw. zum Seil
 	var look_dir := Vector3(vel.x, 0.0, vel.z)
 	if look_dir.length() < 1.0:
@@ -1020,7 +998,8 @@ func _board_on_feet() -> void:
 	var y := (up_l + up_r)
 	y = (y - z * y.dot(z)).normalized() if (y - z * y.dot(z)).length() > 0.01 else Vector3.UP
 	var b := Basis(y.cross(z), y, z)
-	_board_pivot.global_transform = Transform3D(b, (front + back) * 0.5 - y * 0.07)
+	var ank := (Wakeboard.ankle_local(true) + Wakeboard.ankle_local(false)) * 0.5
+	_board_pivot.global_transform = Transform3D(b, (front + back) * 0.5 - b * ank)
 
 
 ## Arme an den Griff. Die Armlänge ist die Grenze: Liegt der Wunsch-Griffpunkt weiter weg,
