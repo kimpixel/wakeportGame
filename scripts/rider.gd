@@ -899,11 +899,7 @@ func _load_model() -> void:
 	_body_pivot.visible = false
 	_tint_clothes(_human)
 	# Helm am Kopf-Knochen (die Impact-Weste ist das eng anliegende Oberteil, siehe _tint_clothes)
-	var helmet := SphereMesh.new()
-	helmet.radius = 0.125
-	helmet.height = 0.14
-	helmet.is_hemisphere = true
-	_attach("head", helmet, Vector3(0.0, 0.085, 0.0), Vector3(1.0, 1.05, 1.15), Util.mat(Color(0.12, 0.12, 0.13), 0.35))
+	_attach_node("head", Helmet.new())
 
 
 ## Kleidung einfärben: T-Shirt als Rashguard, Hose als Boardshorts.
@@ -927,17 +923,15 @@ func _tint_clothes(n: Node) -> void:
 		_tint_clothes(c)
 
 
-## Hängt ein Mesh an einen Knochen; offset/scale in Skelett-Achsen der Ruhepose.
-func _attach(bone: String, mesh: Mesh, offset: Vector3, scl: Vector3, mat: Material) -> void:
+## Hängt einen Knoten an einen Knochen; der Knoten ist in Skelett-Achsen der Ruhepose gebaut
+## (Ursprung = Knochen, +Y oben, +Z vorne).
+func _attach_node(bone: String, node: Node3D) -> void:
 	var att := BoneAttachment3D.new()
 	att.bone_name = bone
 	_rig.skeleton.add_child(att)
 	var rest := _rig.rest_global(bone).basis.orthonormalized()
-	var mi := MeshInstance3D.new()
-	mi.mesh = mesh
-	mi.material_override = mat
-	mi.transform = Transform3D(rest.inverse() * Basis.from_scale(scl), rest.inverse() * offset)
-	att.add_child(mi)
+	node.transform = Transform3D(rest.inverse(), Vector3.ZERO)
+	att.add_child(node)
 
 
 ## Pose aus der Physik: Füße in den Bindungen, Becken/Oberkörper gegen den Seilzug,
