@@ -17,6 +17,10 @@ Vor dem Start wählst du das Setup oben rechts aus (oder mit F). Für ein neues 
 | **Spine Kicker** | `spine_kicker` = zwei `kicker_m` Rücken an Rücken. Einzeln stellst du sie als `kicker_m` auf. |
 | **1/2 Transition Rail** | `transition_rail_half` (11 m, eine Auffahrt). Für zwei gespiegelt nebeneinander legst du mit `inner_v` (+1/−1) fest, auf welcher Seite die Transition liegt. |
 | **Pyramid Series** | Gruppe mit `mirror`: Das A-Frame Rail steht immer außen (weg vom Seil), egal auf welcher Seite. |
+| **Ollie Box** | `ollie_box` (8,2 × 2,25 m) und `ollie_box_half`, an beiden Enden kurze Auffahrten; daneben meist die `ollie_ledge` (0,7 m breit, Endstücke als Auffahrt). Maße nach „Feature Setup Terminal 1.png“. |
+| **Ball** | `ball`: blauer Gummiball, 1 m Durchmesser, treibt hoch auf dem Wasser. Nur mit einem Sprung zu überwinden – wer dagegen fährt oder darauf landet, stürzt. |
+
+Die Pläne zeigen vor allem die **Positionen**; Größen und Abstände sind dort nicht maßstäblich. Die Maße der Teile kommen deshalb aus dem Katalog.
 
 ## Eine Setup-Zeile
 

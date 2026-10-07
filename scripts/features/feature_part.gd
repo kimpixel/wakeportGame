@@ -13,6 +13,7 @@ const ENTRY := -0.15           # Rampenanfang knapp unter Wasser
 
 var part_id := ""
 var display_name := ""
+var article := "die"           # für Meldungen: "Gegen die Pipe" / "Gegen den Ball"
 var type := "block"
 var length := 4.0
 var width := 2.0
@@ -42,6 +43,7 @@ var _inv := Transform3D()      # Welt -> lokal (Teile stehen still)
 func setup(id: String, p: Dictionary) -> void:
 	part_id = id
 	display_name = p.get("name", id)
+	article = p.get("article", article)
 	type = p.get("type", "block")
 	length = p.get("length", length)
 	width = p.get("width", 0.4 if type == "rail" else (radius * 2.0 if type == "pipe" else width))
@@ -57,8 +59,10 @@ func setup(id: String, p: Dictionary) -> void:
 	color = p.get("color", color)
 	ramp_curve = p.get("ramp_curve", ramp_curve)
 	side_ramp = p.get("side_ramp", side_ramp)
-	if type == "pipe":
+	if type == "pipe" or type == "ball":
 		width = radius * 2.0
+	if type == "ball":
+		length = radius * 2.0
 	_reach = Vector2(length, width).length() * 0.5 + 0.5
 
 
@@ -120,6 +124,13 @@ func height_local(u: float, v: float, collision := false) -> float:
 			if ramp_out > 0.0:
 				h = minf(h, lerpf(ENTRY, top, clampf((hl - u) / ramp_out, 0.0, 1.0)))
 			return h
+		"ball":
+			# Gummiball (treibt hoch, viel Luft drin): Kugeloberfläche – schon der Rand liegt
+			# über dem Wasser, man kommt also nur mit einem Sprung drüber
+			var d2 := u * u + v * v
+			if d2 > radius * radius:
+				return NONE
+			return center_y + sqrt(radius * radius - d2)
 		"bump":
 			var hw := width * 0.5
 			if absf(v) > hw:
@@ -164,7 +175,7 @@ func ride_info(travel: Vector3) -> Dictionary:
 	var top_h := maxf(height_local(0.0, 0.0), entry_h)
 	var needs_ollie := entry_h > 0.15
 	# Kicker/Wedge nur von der flachen Seite – von hinten ist es eine Wand
-	var rideable := top_h < 1.4 and entry_h > NONE + 1.0 and not (type in ["ramp", "bump"] and needs_ollie)
+	var rideable := top_h < 1.4 and entry_h > NONE + 1.0 and not (type in ["ramp", "bump"] and needs_ollie) and type != "ball"
 	if needs_ollie and (entry_h > 1.0 or width < 0.8):
 		rideable = false          # zu hoch bzw. zu schmal, um sicher draufzuspringen
 	return {"entry_h": entry_h, "needs_ollie": needs_ollie, "rideable": rideable}
@@ -212,6 +223,23 @@ func _ready() -> void:
 			mi.rotation.x = PI * 0.5
 			mi.position = Vector3(0.0, center_y, (ramp_out - ramp_in) * 0.5)   # lokal -Z = Fahrtrichtung
 			add_child(mi)
+		"ball":
+			var ball := SphereMesh.new()
+			ball.radius = radius
+			ball.height = radius * 2.0
+			ball.radial_segments = 32
+			ball.rings = 16
+			var rubber := Util.mat(Color(0.05, 0.12, 0.55), 0.3)
+			rubber.clearcoat_enabled = true
+			rubber.clearcoat = 0.6
+			var mi := MeshInstance3D.new()
+			mi.mesh = ball
+			mi.material_override = rubber
+			mi.position.y = center_y
+			add_child(mi)
+			# Ventil oben und Ankerleine nach unten
+			Util.sphere(self, 0.03, Vector3(0.0, center_y + radius, 0.0), Util.mat(Color(0.05, 0.05, 0.05), 0.5))
+			Util.beam(self, Vector3(0.0, center_y - radius + 0.05, 0.0), Vector3(0.0, -1.5, 0.0), 0.008, Util.mat(Color(0.2, 0.2, 0.2), 0.8))
 		"bump":
 			_build_heightfield(white, 12, 12)
 		"ramp":

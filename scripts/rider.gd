@@ -11,6 +11,10 @@ extends Node3D
 
 signal crashed(reason: String)
 signal trick_landed(trick_name: String, points: int)
+signal bumped                    # kleines "Ups": über eine Boje oder einen Steg gerumpelt
+
+const UPS_TIME := 0.45
+var _ups := 0.0                  # Restzeit des "Ups"-Wacklers
 
 enum Mode { WATER, AIR, CRASHED }
 
@@ -101,6 +105,7 @@ var _turn_end := 0.0            # Autopilot-Wende: +1 = am Endmast, -1 = am Ufer
 var _turn_side := 1.0
 var _npc_jump_t := 6.0
 var _npc_charge := 0.0
+var _ball_charge := 0.0          # Autopilot: Sprung über einen Ball wird geladen
 var _npc_spin := false
 
 var _board_pivot: Node3D
@@ -442,7 +447,7 @@ func _read_input(delta: float) -> void:
 		_edge = Input.get_action_strength("edge")
 		_release = Input.get_action_strength("release")
 
-	var held := (Input.is_action_pressed("jump") and not autopilot) or _npc_charge > 0.0
+	var held := (Input.is_action_pressed("jump") and not autopilot) or _npc_charge > 0.0 or _ball_charge > 0.0
 	if held:
 		if mode == Mode.WATER:
 			_load = minf(_load + delta / 0.5, 1.0)
@@ -456,6 +461,7 @@ func _read_input(delta: float) -> void:
 func _autopilot_input(delta: float) -> void:
 	_auto_t += delta
 	var speed := horizontal_speed()
+	_ball_jump(delta, speed)
 	var rope_yaw := atan2(-rope_dir.x, -rope_dir.z)
 	var side := 1.0 if fmod(_auto_t, 9.0) < 4.5 else -1.0
 	var carving := speed > 5.0 and tension_smooth > 50.0
@@ -491,6 +497,32 @@ func _autopilot_input(delta: float) -> void:
 		_npc_tricks(delta, speed)
 
 
+## Autopilot/NPC: liegt ein Ball (Gummiball-Feature) voraus, rechtzeitig laden und drüberspringen.
+func _ball_jump(delta: float, speed: float) -> void:
+	if _ball_charge > 0.0:
+		_ball_charge -= delta
+		return
+	if mode != Mode.WATER or speed < 4.0 or pos.y > 0.3:
+		return
+	if _ball_ahead(speed, 0.8, 1.1):          # Absprung ca. 3 m vor dem Ball
+		_ball_charge = 0.4
+
+
+## Liegt in t_from..t_to Sekunden Fahrt ein Ball auf dem Weg?
+func _ball_ahead(speed: float, t_from: float, t_to: float) -> bool:
+	if features == null or speed < 1.0:
+		return false
+	var dir := Vector3(vel.x, 0.0, vel.z) / speed
+	var t := t_from
+	while t <= t_to + 0.001:
+		var p := pos + dir * speed * t
+		var part := features.part_at(p.x, p.z)
+		if part and part.type == "ball":
+			return true
+		t += 0.15
+	return false
+
+
 ## NPC: springt ab und zu ab (Leertaste "halten" und loslassen), manchmal mit 180.
 func _npc_tricks(delta: float, speed: float) -> void:
 	if mode == Mode.AIR:
@@ -500,6 +532,8 @@ func _npc_tricks(delta: float, speed: float) -> void:
 		_npc_charge -= delta
 		return
 	_npc_jump_t -= delta
+	if _ball_ahead(speed, 0.2, 2.5):
+		return                    # keine Spaßsprünge kurz vor dem Ball – dort wird gezielt gesprungen
 	if _npc_jump_t <= 0.0 and mode == Mode.WATER and speed > 7.0 and tension_smooth > 150.0:
 		_npc_charge = randf_range(0.3, 0.55)
 		_npc_spin = randf() < 0.4
@@ -642,7 +676,9 @@ func is_sliding() -> bool:
 
 func _part_name(x: float, z: float) -> String:
 	var p := features.part_at(x, z) if features else null
-	return "die " + p.display_name if p else "das Hindernis"
+	if p == null:
+		return "das Hindernis"
+	return p.article + " " + p.display_name
 
 
 func _pop() -> void:
@@ -692,6 +728,10 @@ func _land(surf: float) -> void:
 	var on_feature := _obstacle_height(pos.x, pos.z) > 0.05 and _obstacle_height(pos.x, pos.z) >= surf - 0.02
 	if not on_feature and vh.length() > 2.0 and absf(vh.normalized().dot(forward())) < cos(deg_to_rad(50.0)):
 		crash("Verkantet gelandet!")
+		return
+	var landed_on := features.part_at(pos.x, pos.z) if (features and on_feature) else null
+	if landed_on and landed_on.type == "ball":
+		crash("Auf dem Ball gelandet!")      # auf dem runden Gummiball hält sich kein Brett
 		return
 	if vel.y < -11.0:
 		crash("Zu harte Landung!")
@@ -777,6 +817,12 @@ func _process(delta: float) -> void:
 			target_crouch = _load * 0.25 + _edge_vis * 0.12
 			if speed < 2.5 and not _in_dock(pos.x, pos.z):
 				target_crouch = maxf(target_crouch, 0.3)
+	# "Ups": kurz in die Knie und nach vorne geruckt (über Boje/Steg gerumpelt)
+	if _ups > 0.0:
+		_ups -= delta
+		var w := sin(PI * clampf(1.0 - _ups / UPS_TIME, 0.0, 1.0))
+		target_crouch = maxf(target_crouch, 0.38 * w)
+		target_pitch += 0.3 * w
 	var k := 1.0 - exp(-delta * 8.0)
 	_edge_vis = lerpf(_edge_vis, _edge, k)
 	_release_vis = lerpf(_release_vis, _release, k)
@@ -867,6 +913,16 @@ func _update_spray(speed: float) -> void:
 	_spray.scale_amount_min = 0.5 + 0.3 * w
 	_spray.scale_amount_max = 1.0 + 1.0 * w
 	_spray.emitting = true
+
+
+## Über eine Boje oder einen Steg gerumpelt: kein Sturz, nur ein kleiner Wackler und etwas Tempo weg.
+func ups() -> void:
+	if mode != Mode.WATER or _ups > 0.0:
+		return
+	_ups = UPS_TIME
+	vel.x *= 0.9
+	vel.z *= 0.9
+	bumped.emit()
 
 
 ## Nach einem Setup-Wechsel: gemerkte Features vergessen (die alten Teile gibt es nicht mehr).

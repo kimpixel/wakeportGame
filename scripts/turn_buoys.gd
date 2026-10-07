@@ -9,7 +9,8 @@ const RED_BEFORE := 20.0       # rote Boje so weit vor dem Wendepunkt des Carrie
 const WHITE_BEFORE := 4.0      # weiße Bojen kurz vor dem Wendepunkt ...
 const WHITE_SIDE := 7.0        # ... so weit links/rechts vom Seil
 const SIZE := 0.75             # Bojengröße (1 = ursprüngliche Größe)
-const HIT_HEIGHT := 0.6        # darüber springt man hinweg
+const HIT_HEIGHT := 0.6        # darüber springt man hinweg (keine Berührung)
+const DUNK := 0.45             # so tief drückt das Brett die Boje unter Wasser
 
 var water: Water
 
@@ -17,6 +18,9 @@ var water: Water
 var turns: Array[Dictionary] = []
 var _floats: Array[Node3D] = []
 var _radius: Array[float] = []
+var _dip: Array[float] = []        # wie tief die Boje gerade unter Wasser gedrückt ist
+var _dip_v: Array[float] = []      # Geschwindigkeit dieser Auf-/Abbewegung (Feder)
+var _touched := {}                 # "fahrer:boje" -> gerade berührt (nur einmal "Ups" je Überfahrt)
 
 
 func add_cable(cable: CableSystem) -> void:
@@ -43,20 +47,32 @@ func _place(cable: CableSystem, s: float, x: float, mat: Material, r: float) -> 
 	Util.beam(buoy, Vector3(0, r, 0), Vector3(0, r + 0.25 * SIZE, 0), 0.03 * SIZE, mat)   # kleiner Stab obendrauf
 	_floats.append(buoy)
 	_radius.append(r)
+	_dip.append(0.0)
+	_dip_v.append(0.0)
 	return p
 
 
-## Hindernis: trifft ein Fahrer (Brett-Radius r) eine Boje auf dem Wasser?
-func hits(p: Vector3, r: float) -> bool:
+## Fährt ein Fahrer (Brett-Radius r) über eine Boje? Dann wird sie unter Wasser gedrückt.
+## Gibt true nur beim ersten Kontakt zurück (für das kleine "Ups" des Fahrers).
+func run_over(p: Vector3, r: float, who: int) -> bool:
+	var first := false
 	for i in _floats.size():
 		var b := _floats[i].position
-		if p.y < b.y + HIT_HEIGHT and Vector2(p.x - b.x, p.z - b.z).length() < _radius[i] + r:
-			return true
-	return false
+		var on := p.y < b.y + _dip[i] + HIT_HEIGHT and Vector2(p.x - b.x, p.z - b.z).length() < _radius[i] + r
+		if on:
+			_dip_v[i] = minf(_dip_v[i], -3.0)            # nach unten weggedrückt
+			if not _touched.get("%d:%d" % [who, i], false):
+				first = true
+		_touched["%d:%d" % [who, i]] = on
+	return first
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if water == null:
 		return
-	for b in _floats:
-		b.position.y = water.height_at(b.position.x, b.position.z)
+	for i in _floats.size():
+		# gedämpfte Feder: Auftrieb holt die Boje wieder an die Oberfläche (leichtes Nachwippen)
+		_dip_v[i] += (-60.0 * _dip[i] - 7.0 * _dip_v[i]) * delta
+		_dip[i] = clampf(_dip[i] + _dip_v[i] * delta, -DUNK, 0.15)
+		var b := _floats[i]
+		b.position.y = water.height_at(b.position.x, b.position.z) + _dip[i]

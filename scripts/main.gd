@@ -228,14 +228,20 @@ func _on_touch_up() -> void:
 	Input.action_release("jump")
 
 
-## Bojen und Stege sind Hindernisse: wer dagegen fährt, stürzt.
+## Über Bojen und Stege fährt man einfach drüber: die Boje wird unter Wasser gedrückt,
+## der Fahrer macht ein kleines "Ups" (kein Sturz).
+var _on_steg := {}
+
 func _check_buoy(r: Rider) -> void:
 	if r.mode == Rider.Mode.CRASHED:
 		return
-	if buoys.hits(r.pos, 0.25):
-		r.crash("Gegen die Boje gefahren!")
-	elif beach.obstacle_hit(r.pos, 0.25):
-		r.crash("Gegen den Steg gefahren!")
+	var id := r.get_instance_id()
+	if buoys.run_over(r.pos, 0.25, id):
+		r.ups()
+	var on := beach.obstacle_hit(r.pos, 0.25) and not Lake.in_dock(r.pos.x, r.pos.z)
+	if on and not _on_steg.get(id, false):
+		r.ups()
+	_on_steg[id] = on
 
 
 func _physics_process(delta: float) -> void:

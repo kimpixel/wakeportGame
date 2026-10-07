@@ -66,6 +66,8 @@ func _ready() -> void:
 
 	rider.trick_landed.connect(_on_trick)
 	rider.crashed.connect(func(_r: String) -> void: _play(_fx, _crash, 1.0))
+	# "Ups" über Boje/Steg: kurzes, helles Plopp
+	rider.bumped.connect(func() -> void: _play(_fx, _thud, randf_range(1.6, 1.9)))
 
 
 func _player(db: float) -> AudioStreamPlayer:

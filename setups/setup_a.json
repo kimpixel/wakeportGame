@@ -8,7 +8,7 @@
     { "part": "pipe_long",       "s": 104.7, "x": -7.4, "dir": "out", "ramp_in": 0 },
     { "part": "kicker_l",        "s": 62.0,  "x": -8.7, "dir": "in", "yaw": -4 },
     { "part": "cheese_wedge",    "s": 62.0,  "x": -5.4, "dir": "in", "yaw": -4 },
-    { "part": "ollie_box",       "s": 119.8, "x": 4.8,  "dir": "out" },
+    { "part": "ollie_box",       "s": 119.8, "x": 4.4,  "dir": "out" },
     { "part": "ollie_ledge",     "s": 119.8, "x": 2.9,  "dir": "out" },
     { "part": "pyramid_series",  "s": 74.3,  "x": 4.8,  "dir": "out" }
   ],

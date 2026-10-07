@@ -1,11 +1,11 @@
 {
   "_info": "Bauteile-Katalog. Maße in Metern. Typen: ramp, block, rail, pipe, bump, transition, group (mehrere Teile als ein Feature). Modular wie die echten Module: Pipe-Hälften mit einzeln an-/absteckbaren Auffahrten, Port Plaza = Plaza Kicker + Plaza Rail, Spine Kicker = zwei Kicker M. Siehe setups/README.md",
 
-  "kicker_s":        { "name": "Kicker S",          "type": "ramp",  "length": 4.0,  "width": 2.6, "height": 0.8,  "curve": 1.5 },
-  "kicker_m":        { "name": "Kicker M",          "type": "ramp",  "length": 5.0,  "width": 3.0, "height": 1.1,  "curve": 1.6 },
-  "kicker_l":        { "name": "Kicker L",          "type": "ramp",  "length": 6.0,  "width": 3.4, "height": 1.5,  "curve": 1.7 },
-  "cheese_wedge":    { "name": "Cheese Wedge",      "type": "ramp",  "length": 4.0,  "width": 3.0, "height": 1.1,  "curve": 1.0 },
-  "spine_kicker":    { "name": "Spine Kicker",      "type": "group", "parts": [
+  "kicker_s":        { "name": "Kicker S", "article": "den",          "type": "ramp",  "length": 4.0,  "width": 2.6, "height": 0.8,  "curve": 1.5 },
+  "kicker_m":        { "name": "Kicker M", "article": "den",          "type": "ramp",  "length": 5.0,  "width": 3.0, "height": 1.1,  "curve": 1.6 },
+  "kicker_l":        { "name": "Kicker L", "article": "den",          "type": "ramp",  "length": 6.0,  "width": 3.4, "height": 1.5,  "curve": 1.7 },
+  "cheese_wedge":    { "name": "Cheese Wedge", "article": "den",      "type": "ramp",  "length": 4.0,  "width": 3.0, "height": 1.1,  "curve": 1.0 },
+  "spine_kicker":    { "name": "Spine Kicker", "article": "den",      "type": "group", "parts": [
                        { "part": "kicker_m", "s": -2.5, "x": 0.0, "dir": "out" },
                        { "part": "kicker_m", "s": 2.5,  "x": 0.0, "dir": "in" } ] },
 
@@ -14,11 +14,11 @@
                        { "part": "py_pyramid",     "s": 0.0, "x": 0.0 } ] },
   "py_aframe_rail":  { "name": "A-Frame Rail",      "type": "block", "length": 21.0, "width": 0.7, "height": 1.25, "ramp_in": 5.5, "ramp_out": 5.5, "ramp_curve": 1.0, "color": "grey" },
   "py_pyramid":      { "name": "Pyramid",           "type": "block", "length": 16.0, "width": 4.4, "height": 0.95, "ramp_in": 5.0, "ramp_out": 5.0, "ramp_curve": 2.0, "side_ramp": 2.0 },
-  "transition_curb": { "name": "Transition Curb",   "type": "block", "length": 16.0, "width": 1.6, "height": 0.55, "ramp_in": 2.5, "ramp_out": 2.5 },
-  "ollie_box":       { "name": "Ollie Box",         "type": "block", "length": 18.0, "width": 3.0, "height": 0.5 },
-  "ollie_box_half":  { "name": "Ollie Box 1/2",     "type": "block", "length": 9.0,  "width": 3.0, "height": 0.5 },
+  "transition_curb": { "name": "Transition Curb", "article": "den",   "type": "block", "length": 16.0, "width": 1.6, "height": 0.55, "ramp_in": 2.5, "ramp_out": 2.5 },
+  "ollie_box":       { "name": "Ollie Box",         "type": "block", "length": 8.2,  "width": 2.25, "height": 0.45, "ramp_in": 0.35, "ramp_out": 0.35, "ramp_curve": 1.0 },
+  "ollie_box_half":  { "name": "Ollie Box 1/2",     "type": "block", "length": 4.1,  "width": 2.25, "height": 0.45, "ramp_in": 0.35, "ramp_out": 0.35, "ramp_curve": 1.0 },
   "ledge":           { "name": "Ledge",             "type": "block", "length": 14.0, "width": 0.6, "height": 0.5 },
-  "ollie_ledge":     { "name": "Ollie Box Ledge",   "type": "block", "length": 22.0, "width": 0.6, "height": 1.0 },
+  "ollie_ledge":     { "name": "Ollie Box Ledge",   "type": "block", "length": 10.4, "width": 0.7, "height": 0.8, "ramp_in": 0.8, "ramp_out": 0.8, "ramp_curve": 1.0 },
   "down_ledge":      { "name": "Down Ledge",        "type": "block", "length": 12.0, "width": 0.6, "height": 1.1,  "height_end": 0.5 },
   "uprail":          { "name": "Up Rail",           "type": "block", "length": 10.0, "width": 0.6, "height": 0.45, "height_end": 1.1, "ramp_in": 1.5, "color": "grey" },
 
@@ -27,7 +27,7 @@
   "add_on_rail":     { "name": "Add-on Rail",       "type": "rail",  "length": 9.0,  "height": 0.85, "radius": 0.05, "color": "black" },
   "pro_rail":        { "name": "Pro Rail",          "type": "rail",  "length": 12.0, "height": 0.8,  "radius": 0.05, "ramp_in": 2.5, "color": "grey" },
 
-  "plaza_kicker":    { "name": "Plaza Kicker",      "type": "block", "length": 9.0,  "width": 3.0, "height": 1.0, "ramp_in": 3.5 },
+  "plaza_kicker":    { "name": "Plaza Kicker", "article": "den",      "type": "block", "length": 9.0,  "width": 3.0, "height": 1.0, "ramp_in": 3.5 },
   "plaza_rail":      { "name": "Plaza Rail",        "type": "rail",  "length": 14.0, "height": 1.05, "radius": 0.05, "ramp_in": 3.0, "color": "black" },
   "port_plaza":      { "name": "Port Plaza",        "type": "group", "parts": [
                        { "part": "plaza_kicker", "s": 0.0, "x": 0.0 },
@@ -38,5 +38,7 @@
                        { "part": "pipe_half", "s": -3.25, "x": 0.0, "edge": "in",  "ramp_out": 0.0 },
                        { "part": "pipe_half", "s": 3.25,  "x": 0.0, "edge": "out", "ramp_in": 0.0 } ] },
 
-  "bump":            { "name": "Bump",              "type": "bump",  "length": 3.0,  "width": 3.0, "height": 0.6, "top": 1.0 }
+  "ball":            { "name": "Ball",              "article": "den", "type": "ball", "radius": 0.5, "center_y": 0.35 },
+
+  "bump":            { "name": "Bump", "article": "den",              "type": "bump",  "length": 3.0,  "width": 3.0, "height": 0.6, "top": 1.0 }
 }

@@ -3,7 +3,7 @@
   "date": "????-??",
   "source": "517931862_18514896826052956_2920697889484683650_n.jpg",
   "T2": [
-    { "part": "ollie_box",       "s": 115.1, "x": -5.5, "dir": "out" },
+    { "part": "ollie_box",       "s": 115.1, "x": -5.2, "dir": "out" },
     { "part": "ollie_ledge",     "s": 115.1, "x": -3.7, "dir": "out" },
     { "part": "kicker_l",        "s": 67.3,  "x": -6.0, "dir": "in", "yaw": -5 },
     { "part": "down_ledge",      "s": 118.6, "x": 7.4,  "dir": "in" },

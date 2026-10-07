@@ -13,7 +13,8 @@
     { "part": "kicker_l",        "s": 66.5,  "x": 7.4,  "dir": "in", "yaw": -6 }
   ],
   "T1": [
-    { "part": "ollie_box",       "s": 117.5, "x": -6.4, "dir": "out" },
+    { "part": "ball",            "s": 109.8, "x": 2.1 },
+    { "part": "ollie_box",       "s": 117.5, "x": -6.0, "dir": "out" },
     { "part": "ollie_ledge",     "s": 117.5, "x": -4.5, "dir": "out" },
     { "part": "kicker_m",        "s": 67.1,  "x": -7.0, "dir": "in", "yaw": -8 },
     { "part": "bump",            "s": 67.1,  "x": -4.0 },
