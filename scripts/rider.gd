@@ -167,7 +167,7 @@ func _ready() -> void:
 
 	_arm_l = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.045, skin)
 	_arm_r = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.045, skin)
-	_handle = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.025, black)
+	_handle = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.017, black)
 	_load_model()
 	for n: Node3D in [_arm_l, _arm_r, _handle]:
 		n.top_level = true
@@ -772,6 +772,7 @@ func _step_crashed(delta: float) -> void:
 	pos.x += vel.x * delta
 	pos.z += vel.z * delta
 	if _ragdoll and _ragdoll.active:
+		_ragdoll.step(delta)
 		# Fahrerposition (Kamera, Brett) folgt dem treibenden Körper
 		var c := _ragdoll.center()
 		pos.x = c.x
@@ -863,7 +864,7 @@ func _process(delta: float) -> void:
 	if _rig and attached and mode != Mode.CRASHED:
 		# Die Hände bestimmen, wo der Griff ist: nie weiter weg, als die Arme reichen
 		handle_pos = _pose_arms(handle_pos, bar_axis)
-	Util.place_beam(_handle, handle_pos - bar_axis * 0.22, handle_pos + bar_axis * 0.22)
+	Util.place_beam(_handle, handle_pos - bar_axis * 0.2, handle_pos + bar_axis * 0.2)
 	if attached and _rig == null:     # Ersatzarme nur ohne Figur (place_beam macht sichtbar!)
 		var body := _body_pivot.global_transform
 		Util.place_beam(_arm_l, body * Vector3(0.0, 1.38, 0.17), handle_pos - bar_axis * 0.08)
@@ -1031,7 +1032,7 @@ func _pose_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
 	var sh_l := skel * _rig.global_pose("upperarm_l").origin
 	var sh_r := skel * _rig.global_pose("upperarm_r").origin
 	var reach := (_rig.rest_global("upperarm_l").origin.distance_to(_rig.rest_global("lowerarm_l").origin)
-		+ _rig.rest_global("lowerarm_l").origin.distance_to(_rig.rest_global("hand_l").origin)) * ARM_REACH
+		+ _rig.rest_global("lowerarm_l").origin.distance_to(_rig.rest_global("hand_l").origin)) * ARM_REACH + HumanRig.GRIP_ALONG * 0.8
 	for i in 4:
 		var over := 0.0
 		var pull := Vector3.ZERO
@@ -1051,8 +1052,11 @@ func _pose_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
 	# jede Hand an das Griffende, das näher an ihrer Schulter liegt (sonst überkreuzen die Arme)
 	var front := a if sh_l.distance_to(a) + sh_r.distance_to(b) < sh_l.distance_to(b) + sh_r.distance_to(a) else b
 	var back := b if front == a else a
-	_rig.arm("l", skel_inv * front, skel_inv * (sh_l + Vector3.DOWN * 0.6 + (sh_l - mid_sh).normalized() * 0.25))
-	_rig.arm("r", skel_inv * back, skel_inv * (sh_r + Vector3.DOWN * 0.6 + (sh_r - mid_sh).normalized() * 0.25))
+	# Hände umschließen den Griff (Faust), Daumen zur Griffmitte
+	_rig.grip("l", skel_inv * front, skel_inv.basis * (handle_pos - front),
+		skel_inv * (sh_l + Vector3.DOWN * 0.6 + (sh_l - mid_sh).normalized() * 0.25))
+	_rig.grip("r", skel_inv * back, skel_inv.basis * (handle_pos - back),
+		skel_inv * (sh_r + Vector3.DOWN * 0.6 + (sh_r - mid_sh).normalized() * 0.25))
 	return handle_pos
 
 

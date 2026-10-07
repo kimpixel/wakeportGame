@@ -33,6 +33,9 @@ var _water: StaticBody3D
 var _skel: Skeleton3D
 var _owner: Node3D
 var _binding: Generic6DOFJoint3D   # Brett: beide Unterschenkel fest miteinander verbunden
+var _chest_local := Vector3.FORWARD     # Brustrichtung im Knochenraum von spine_02
+
+const VEST_TORQUE := 140.0   # Auftrieb der Prallweste vorne: dreht auf den Rücken (N·m bei Bauchlage)
 
 
 func _init(skel: Skeleton3D, owner_node: Node3D) -> void:
@@ -87,6 +90,10 @@ func _init(skel: Skeleton3D, owner_node: Node3D) -> void:
 			pb.set("joint_constraints/angular_limit_upper", 140.0)
 			pb.set("joint_constraints/angular_limit_lower", 0.0)
 		_bones.append(pb)
+	var sp := skel.find_bone("spine_02")
+	if sp >= 0:
+		# Figur schaut im Skelettraum nach +Z
+		_chest_local = (skel.get_bone_global_rest(sp).basis.inverse() * Vector3(0, 0, 1)).normalized()
 	# Wasserfläche, nur für die Ragdoll
 	_water = StaticBody3D.new()
 	_water.top_level = true
@@ -136,6 +143,33 @@ func start(vel: Vector3, water_y: float, at: Vector3) -> void:
 		_binding.global_position = (cl.global_position + cr.global_position) * 0.5
 		_binding.node_a = _binding.get_path_to(cl)
 		_binding.node_b = _binding.get_path_to(cr)
+
+
+## Pro Physikschritt: Die Weste trägt vorne – ein Drehmoment rollt den Oberkörper
+## auf den Rücken (Gesicht nach oben), wie bei einem echten Sturz mit Impact-Weste.
+func step(delta: float) -> void:
+	if not active:
+		return
+	var sp := _bone("spine_02")
+	if sp == null:
+		return
+	var chest := (sp.global_basis * _chest_local).normalized()
+	var face_down := 1.0 - chest.dot(Vector3.UP)          # 0 = Rücken, 2 = Bauch
+	if face_down < 0.05:
+		return
+	var axis := chest.cross(Vector3.UP)
+	if axis.length() < 0.15:
+		# genau in Bauchlage: über die Körperlängsachse seitlich wegrollen
+		axis = sp.global_basis.y.normalized()
+	axis = axis.normalized()
+	# Kräftepaar statt Drehmoment (PhysicalBone3D hat nur Impulse): oben/unten an der Brust
+	var torque := VEST_TORQUE * minf(face_down, 1.0)
+	# Hebel u senkrecht zur Achse, Kraft axis × u  ->  u × (axis × u) = axis
+	var u := Vector3.UP - axis * Vector3.UP.dot(axis)
+	u = u.normalized() if u.length() > 0.1 else sp.global_basis.z.normalized()
+	var push := axis.cross(u).normalized()
+	sp.apply_impulse(push * torque / 0.3 * delta, u * 0.15)
+	sp.apply_impulse(-push * torque / 0.3 * delta, -u * 0.15)
 
 
 ## Wasserebene folgt der Welle an der aktuellen Stelle.

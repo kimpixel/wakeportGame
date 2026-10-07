@@ -42,6 +42,7 @@ var _view_arg := PackedFloat32Array()
 var _lane_arg := NAN
 var _crash_at := -1.0          # Test: Sturz zu dieser Zeit auslösen
 var _closeup := Vector3.INF     # Testkamera relativ zum Fahrer
+var _closeup_look := Vector3(0, 1.1, 0)   # Blickpunkt relativ zum Fahrer (optional 4.-6. Wert)
 var _elapsed := 0.0
 var _log_t := 0.0
 
@@ -193,7 +194,7 @@ func _process(_delta: float) -> void:
 		cam.set_process(false)
 		hud.visible = false
 		var rp := rider.visual_position()
-		cam.look_at_from_position(rp + rider.global_basis * _closeup, rp + Vector3(0, 1.1, 0))
+		cam.look_at_from_position(rp + rider.global_basis * _closeup, rp + rider.global_basis * _closeup_look)
 	var info := "Fahrer: %d km/h\nAnlage: %s  (Tempo %d km/h)\nWenden: %d     Punkte: %d\nKamera: %s%s\nSeilzug: %d N" % [
 		roundi(rider.horizontal_speed() * 3.6), cable.state_text(), roundi(cable.max_speed * 3.6),
 		cable.laps, rider.score, cam.mode_name(), "   [AUTOPILOT]" if rider.autopilot else "",
@@ -341,6 +342,8 @@ func _parse_args() -> void:
 		elif arg.begins_with("--closeup="):
 			var c := arg.substr(10).split(",")
 			_closeup = Vector3(c[0].to_float(), c[1].to_float(), c[2].to_float())
+			if c.size() >= 6:
+				_closeup_look = Vector3(c[3].to_float(), c[4].to_float(), c[5].to_float())
 		elif arg.begins_with("--lane="):
 			_lane_arg = arg.substr(7).to_float()
 		elif arg.begins_with("--view="):

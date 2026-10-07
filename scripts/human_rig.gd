@@ -150,6 +150,52 @@ func arm(side: String, hand_target: Vector3, elbow_pole: Vector3) -> void:
 	two_bone("upperarm_" + side, "lowerarm_" + side, "hand_" + side, hand_target, elbow_pole, Vector3(0, 0, -1))
 
 
+## Hand umschließt eine Stange (Ristgriff): Arm per IK so, dass die Stange in der Handfläche
+## liegt, Handrücken nach oben/vorne, Daumen zur Mitte, Finger zur Faust um die Stange gebogen.
+## grip_point: Stelle auf der Stange, toward_center: Stangenrichtung zur anderen Hand (beides Skelettraum).
+const GRIP_ALONG := 0.10      # Stange so weit vom Handgelenk Richtung Fingerknöchel ...
+const GRIP_PALM := 0.026      # ... und so weit vor der Handfläche (≈ Stangenradius + Polster)
+const FINGER_CURL := [1.3, 1.45, 0.8]    # Beugung Grund-, Mittel-, Endgelenk (rad)
+const THUMB_CURL := [0.0, 0.3, 0.45]    # Daumen-Mittel-/Endglied zur Stange
+const THUMB_UNDER := 0.03              # Daumen so weit unter der Stangenmitte (Handflächenseite)
+
+func grip(side: String, grip_point: Vector3, toward_center: Vector3, elbow_pole: Vector3) -> void:
+	var s := 1.0 if side == "l" else -1.0     # Spiegelung: linke und rechte Hand sind Spiegelbilder
+	var hand := "hand_" + side
+	var rh := rest_global(hand)
+	var f_rest := (rest_global("middle_01_" + side).origin - rh.origin).normalized()
+	var a_rest := rest_global("index_01_" + side).origin - rest_global("pinky_01_" + side).origin
+	a_rest = (a_rest - f_rest * a_rest.dot(f_rest)).normalized()
+	var bar := toward_center.normalized()
+	var shoulder := global_pose("upperarm_" + side).origin
+	# Fingerrichtung: quer zur Stange, etwa von der Schulter weg, aber flacher (Handgelenk leicht gebeugt)
+	var d := grip_point - shoulder
+	d.y *= 0.4
+	var f_new := (d - bar * d.dot(bar)).normalized()
+	var palm := f_new.cross(bar) * s
+	arm(side, grip_point - f_new * GRIP_ALONG - palm * GRIP_PALM, elbow_pole)
+	set_end_basis(hand, _frame_rot(f_rest, a_rest, f_new, bar) * rh.basis)
+	# Finger zur Faust: jedes Glied dreht seine Spitze Richtung Handfläche
+	var curl_axis := f_new.cross(palm).normalized()
+	for finger: String in ["index", "middle", "ring", "pinky"]:
+		for k in 3:
+			rotate_global("%s_0%d_%s" % [finger, k + 1, side], Quaternion(curl_axis, FINGER_CURL[k]))
+	# Daumen: unter der Stange entlang Richtung andere Hand, Spitze leicht um die Stange gebogen
+	var t1 := global_pose("thumb_01_" + side).origin
+	var t3 := global_pose("thumb_03_" + side).origin
+	var thumb_target := grip_point + palm * THUMB_UNDER + bar * 0.035
+	rotate_global("thumb_01_" + side, _arc(t3 - t1, thumb_target - t1))
+	for k in [1, 2]:
+		var tb := "thumb_0%d_%s" % [k + 1, side]
+		var g := global_pose(tb)
+		var tdir := g.basis.y.normalized()
+		var to_bar := grip_point - g.origin
+		to_bar -= bar * to_bar.dot(bar)
+		var ax := tdir.cross(to_bar)
+		if ax.length() > 0.001:
+			rotate_global(tb, Quaternion(ax.normalized(), THUMB_CURL[k]))
+
+
 ## Vorwärtsrichtung des Kopfes in Knochen-Koordinaten (aus der Ruhepose: Figur schaut nach +Z).
 func _local_forward(bone_name: String) -> Vector3:
 	return rest_global(bone_name).basis.inverse() * Vector3(0, 0, 1)
