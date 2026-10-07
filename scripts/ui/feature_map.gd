@@ -129,16 +129,28 @@ func select_step(step: int) -> void:
 	select(posmod(selected + step, hacks.size()))
 
 
+## Name eines Features bzw. Hacks. Übliche Kombinationen sind kein Hack: Module aus mehreren
+## Teilen (Pyramid Series, Spine Kicker …), Ollie Box mit Ledge und Kicker nebeneinander.
 static func hack_name(hack: Array) -> String:
 	if hack.size() == 1:
 		return (hack[0] as FeaturePart).display_name
+	var group := (hack[0] as FeaturePart).group_name
+	var ids := {}
+	for p: FeaturePart in hack:
+		if p.group_name != group:
+			group = ""
+		ids[p.part_id] = true
+	if group != "":
+		return group
+	var standard := ids.keys().all(func(i: String) -> bool: return i.begins_with("kicker_")) \
+		or ids.keys().all(func(i: String) -> bool: return i in ["ollie_box", "ollie_box_half", "ollie_ledge"])
 	var counts := {}
 	for p: FeaturePart in hack:
 		counts[p.display_name] = counts.get(p.display_name, 0) + 1
 	var names: Array[String] = []
 	for n: String in counts:
 		names.append(("%d× %s" % [counts[n], n]) if counts[n] > 1 else n)
-	return "Hack: " + " + ".join(names)
+	return ("" if standard else "Hack: ") + " + ".join(names)
 
 
 # ---------------------------------------------------------------- Geometrie

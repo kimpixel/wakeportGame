@@ -13,6 +13,7 @@ const ENTRY := -0.15           # Rampenanfang knapp unter Wasser
 
 var part_id := ""
 var display_name := ""
+var group_name := ""          # gehört zu einem Modul aus mehreren Teilen (z. B. Pyramid Series)
 var article := "die"           # für Meldungen: "Gegen die Pipe" / "Gegen den Ball"
 var type := "block"
 var length := 4.0

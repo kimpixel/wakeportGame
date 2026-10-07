@@ -61,6 +61,7 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 			mirror = -signf(x if x != 0.0 else -1.0) * (-1.0 if flipped else 1.0)
 		for child: Dictionary in entry.get("parts", []):
 			var c := child.duplicate()
+			c["group"] = entry.get("name", id)
 			c["x"] = float(c.get("x", 0.0)) * mirror
 			if row.has("ramp_in") and c.get("edge", "") == "in":
 				c["ramp_in"] = row["ramp_in"]
@@ -82,6 +83,7 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 		local = local * Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, -(ro - ri) * 0.5))
 	var part := FeaturePart.new()
 	part.setup(id, p)
+	part.group_name = row.get("group", "")
 	part.cable = cable
 	var world := cable.transform * Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, cable.mast_a_z)) * local
 	part.transform = world
