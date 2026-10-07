@@ -43,7 +43,7 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 		return
 	# Katalogwerte, einzelne Werte dürfen im Setup überschrieben werden
 	var p: Dictionary = entry.duplicate()
-	for key: String in ["length", "width", "height", "height_end", "ramp_in", "ramp_out", "ramp_curve", "curve", "radius", "center_y", "color", "name"]:
+	for key: String in ["length", "width", "height", "height_end", "ramp_in", "ramp_out", "ramp_curve", "side_ramp", "curve", "radius", "center_y", "color", "name"]:
 		if row.has(key):
 			p[key] = row[key]
 	var part := FeaturePart.new()
@@ -54,6 +54,9 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 	var on_cable := cable.transform.affine_inverse() * world.origin
 	part.s_center = cable.mast_a_z - on_cable.z
 	part.x_center = on_cable.x
+	# Auf welcher Seite (lokal v) liegt das Seil? Dort sind Transitions / seitliche Auffahrten.
+	var side_pt := cable.transform.affine_inverse() * (world * Vector3(1.0, 0.0, 0.0))
+	part.inner_v = 1.0 if absf(side_pt.x) < absf(on_cable.x) else -1.0
 	add_child(part)
 	parts.append(part)
 

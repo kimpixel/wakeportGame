@@ -27,6 +27,8 @@ var top := 1.0
 var rail_color := "grey"
 var ramp_curve := 1.6          # Form der Auffahrten: 1 = gerade (A-Frame), > 1 = konkav (Transition)
 var color := "white"           # Farbe des Körpers: white / grey
+var side_ramp := 0.0           # seitliche Transition auf der Seilseite (Breite in m, 0 = senkrechte Wand)
+var inner_v := 1.0             # +1/-1: in welche lokale v-Richtung das Seil liegt (setzt FeatureSet)
 
 ## Lage auf der Anlage (wird von FeatureSet gesetzt)
 var cable: CableSystem
@@ -54,6 +56,7 @@ func setup(id: String, p: Dictionary) -> void:
 	rail_color = p.get("color", rail_color)
 	color = p.get("color", color)
 	ramp_curve = p.get("ramp_curve", ramp_curve)
+	side_ramp = p.get("side_ramp", side_ramp)
 	if type == "pipe":
 		width = radius * 2.0
 	_reach = Vector2(length, width).length() * 0.5 + 0.5
@@ -69,7 +72,7 @@ func is_slide() -> bool:
 func lane_x() -> float:
 	if type != "transition":
 		return x_center
-	var p := global_transform * Vector3(width * 0.5 - 0.12, 0.0, 0.0)
+	var p := global_transform * Vector3(-inner_v * (width * 0.5 - 0.12), 0.0, 0.0)
 	return (cable.transform.affine_inverse() * p).x
 
 
@@ -90,7 +93,7 @@ func height_local(u: float, v: float, collision := false) -> float:
 		"block":
 			if absf(v) > width * 0.5:
 				return NONE
-			return _with_ramps(u, lerpf(height, height_end, t))
+			return _with_side_ramp(v, _with_ramps(u, lerpf(height, height_end, t)))
 		"rail":
 			if absf(v) > (radius + 0.04 if collision else 0.2):   # Toleranz: so breit "trifft" das Brett den Rail
 				return NONE
@@ -105,11 +108,12 @@ func height_local(u: float, v: float, collision := false) -> float:
 			var hw := width * 0.5
 			if absf(v) > hw:
 				return NONE
+			var w := -v * inner_v                     # > 0 Richtung Außenkante (weg vom Seil)
 			var h: float
-			if v > hw - 0.22:
+			if w > hw - 0.22:
 				h = height + 0.05                      # Rail auf der Oberkante
 			else:
-				h = ENTRY + (height - ENTRY) * pow((v + hw) / width, 2.0)
+				h = ENTRY + (height - ENTRY) * pow((w + hw) / width, 2.0)
 			var top := height + 0.05
 			if ramp_in > 0.0:
 				h = minf(h, lerpf(ENTRY, top, clampf((u + hl) / ramp_in, 0.0, 1.0)))
@@ -134,6 +138,16 @@ func _with_ramps(u: float, h: float) -> float:
 	if ramp_out > 0.0 and u > hl - ramp_out:
 		h = minf(h, lerpf(ENTRY, h, pow((hl - u) / ramp_out, ramp_curve)))
 	return h
+
+
+## Seitliche Auffahrt auf der Seilseite: von der Innenkante (Wasser) konkav hoch auf h.
+func _with_side_ramp(v: float, h: float) -> float:
+	if side_ramp <= 0.0:
+		return h
+	var d := width * 0.5 - v * inner_v         # 0 an der Innenkante
+	if d >= side_ramp:
+		return h
+	return minf(h, lerpf(ENTRY, h, pow(clampf(d / side_ramp, 0.0, 1.0), 2.0)))
 
 
 ## Vorwärtsrichtung des Teils (Befahrrichtung) in Weltkoordinaten.
@@ -206,11 +220,11 @@ func _ready() -> void:
 			_build_heightfield(white, 30, 12)
 			var black := Util.mat(Color(0.06, 0.06, 0.07), 0.35)
 			var hl := length * 0.5
-			var rx := width * 0.5 - 0.1
+			var rx := -inner_v * (width * 0.5 - 0.1)
 			# Rail nur auf dem flachen Oberteil: beginnt und endet dort, wo die schrägen Auffahrten oben ankommen
 			Util.beam(self, Vector3(rx, height + 0.02, hl - ramp_in), Vector3(rx, height + 0.02, -hl + ramp_out), 0.07, black)
 		_:
-			_build_heightfield(white, 24, 2)
+			_build_heightfield(white, 24, 12 if side_ramp > 0.0 else 2)
 
 
 ## Allgemeine Form: Oberfläche aus height_local() + senkrechte Wände bis unter Wasser.

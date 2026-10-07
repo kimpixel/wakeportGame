@@ -37,6 +37,8 @@ Einzelne Maße kannst du pro Zeile überschreiben, ohne den Katalog zu ändern, 
 
 Bei `block`, `rail` und `pipe` legt `ramp_curve` die Form der Auffahrten fest: `1` = gerade (A-Frame), `2` = konkav (Transition). Mit `color` (`grey`) färbst du ein Teil grau.
 
+Mit `side_ramp` (Meter) bekommt ein `block` auf der Seilseite eine geschwungene seitliche Auffahrt. Dort kann man von der Seite hochfahren, ohne zu stürzen; ohne `side_ramp` ist die Seite eine senkrechte Wand. Die Pyramid der Pyramid Series hat 2 m. Das Transition Rail hat diese Seite immer.
+
 Physik und Grafik nutzen dieselbe Form. Was du hier einträgst, ist also genau so befahrbar, wie es aussieht.
 
 ## Fahrverhalten an den Features
