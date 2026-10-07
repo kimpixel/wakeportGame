@@ -18,6 +18,7 @@ extends Node3D
 ##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, regen, dunst)
 ##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30
 ##   --plane=S         Test: sofort ein Jet im Anflug, S m vor dem See (negativ) bzw. danach
+##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
 
 const RESET_DELAY := 3.0
@@ -61,6 +62,7 @@ var weather: Weather
 var airplanes: Airplanes
 var _plane_arg := NAN
 var _load_arg := NAN
+var _passive_arg := false       # Test: Fahrer ohne Autopilot, ohne Eingaben
 var _weather_arg := ""
 var _hour_arg := NAN
 var _day_arg := 0
@@ -177,6 +179,8 @@ func _ready() -> void:
 			print("HANDLE GEGRIFFEN at ", rider.pos.snapped(Vector3.ONE * 0.1)))
 	rider.trick_landed.connect(_on_trick)
 	rider.sank.connect(func() -> void:
+		if _test_log:
+			print("ABGESOFFEN at t=%.1f" % _elapsed)
 		if _turn_active:
 			_turn_sank = true
 		hud.show_trick("Abgesoffen!"))
@@ -241,7 +245,7 @@ func _ready() -> void:
 	_reset()
 
 	if _test_log:
-		rider.autopilot = true
+		rider.autopilot = not _passive_arg
 		rider.auto_lane = _lane_arg
 		if _game_time != GAME_TIME:
 			_start_run()
@@ -807,6 +811,8 @@ func _parse_args() -> void:
 			_plane_arg = arg.substr(8).to_float()
 		elif arg.begins_with("--load="):
 			_load_arg = arg.substr(7).to_float()
+		elif arg == "--passive":
+			_passive_arg = true
 		elif arg == "--no-screen":
 			_no_screen = true
 		elif arg == "--screen" or arg.begins_with("--screen="):

@@ -24,12 +24,15 @@ const SETTLE_TIME := 1.5         # so lange nach dem Sturz treibt man, bevor man
 const SWIM_SPEED := 1.1          # Rückenschwimmen mit Brett an den Füßen (m/s)
 const GRAB_DIST := 1.0
 
-## Langsam werden (z. B. in der Wende): das Brett verliert Auftrieb, man sinkt ein.
-## Unter SINK_DEEP für SINK_DEEP_TIME ist man abgesoffen und muss wie beim Wasserstart aufstehen.
-const SINK_DEPTH := 0.42         # so tief sinkt man (m), wenn man fast steht
-const SINK_DEEP := 0.5           # m/s
-const SINK_DEEP_TIME := 1.2
-var _slow_t := 0.0
+## Einsinken: Das Brett trägt nur mit Tempo oder Seilzug. Hängt das Seil durch und wird man
+## langsam (z. B. eine Wende ohne Druck), steigt der Sinkpegel; ist er voll, ist man abgesoffen
+## und liegt im Wasser wie beim Wasserstart (keine Punkte für die Wende).
+const SINK_DEPTH := 0.45         # so tief sinkt man (m) kurz vor dem Absaufen
+const SINK_HOLD_SPEED := 7.0     # ohne Seilzug trägt erst so viel Tempo das Brett ganz (25 km/h)
+const SINK_HOLD_PULL := 150.0    # ab diesem Seilzug (N) trägt das Seil allein
+const SINK_RATE := 0.9           # Pegel pro Sekunde ohne Tempo und ohne Zug
+const SINK_RECOVER := 1.0        # nur echter Seilzug holt einen wieder hoch
+var sink_level := 0.0            # 0 = gleitet, 1 = abgesoffen
 var _sink_vis := 0.0
 
 const UPS_TIME := 0.45
@@ -314,10 +317,25 @@ func _turn_input(speed: float) -> bool:
 		var t1 := rope_yaw + PI * 0.5
 		var t2 := rope_yaw - PI * 0.5
 		want = t1 if absf(wrapf(t1 - vel_yaw, -PI, PI)) < absf(wrapf(t2 - vel_yaw, -PI, PI)) else t2
+	# Seil gespannt halten (sonst säuft man ab): solange der Carrier bremst oder steht, um ihn
+	# herum pendeln – hängt das Seil durch, nach außen weg vom Carrier, bis es wieder zieht.
+	var pendulum := not carrier_back and cable.state != CableSystem.State.RUN
+	if pendulum:
+		var anchor := cable.get_anchor()
+		var to_c := Vector3(anchor.x - pos.x, 0.0, anchor.z - pos.z)
+		var dz := anchor.y - pos.y - HANDLE_HEIGHT
+		var reach := sqrt(maxf(ROPE_LENGTH * ROPE_LENGTH - dz * dz, 1.0))
+		var c_yaw := atan2(-to_c.x, -to_c.z)                 # Blick zum Carrier
+		var vel_yaw := atan2(-vel.x, -vel.z)
+		var t1 := c_yaw + PI * 0.5
+		var t2 := c_yaw - PI * 0.5
+		var tangent := t1 if absf(wrapf(t1 - vel_yaw, -PI, PI)) < absf(wrapf(t2 - vel_yaw, -PI, PI)) else t2
+		var slack := clampf((reach - to_c.length()) / 4.0, 0.0, 1.0)
+		want = tangent + wrapf(c_yaw + PI - tangent, -PI, PI) * slack
 	var diff := wrapf(want - yaw, -PI, PI)
 	_steer = clampf(-diff * 2.5, -1.0, 1.0)
-	_edge = 0.8 if absf(diff) < 0.6 else 0.3
-	_release = 1.0 if absf(diff) > 1.2 else 0.0          # zum Herumdrehen kurz driften
+	_edge = 0.8 if absf(diff) < 0.6 or pendulum else 0.3
+	_release = 1.0 if absf(diff) > 1.2 and not pendulum else 0.0   # zum Herumdrehen kurz driften
 	return true
 
 
@@ -485,18 +503,20 @@ func step(delta: float) -> void:
 		_update_free_handle(delta)
 
 
-## Zu langsam (Wende verpasst, Seil locker): nach kurzer Zeit abgesoffen -> liegt im Wasser
-## wie beim Wasserstart und steht erst wieder auf, wenn das Seil zieht.
+## Sinkpegel: steigt, wenn weder Tempo noch Seilzug das Brett tragen. Voll = abgesoffen ->
+## liegt im Wasser wie beim Wasserstart und steht erst wieder auf, wenn das Seil zieht.
 func _check_sink(delta: float) -> void:
 	var can := attached and mode == Mode.WATER and _getup >= 1.0 and not _in_dock(pos.x, pos.z) and pos.y < 0.2
-	if can and horizontal_speed() < SINK_DEEP:
-		_slow_t += delta
-		if _slow_t > SINK_DEEP_TIME:
-			_slow_t = 0.0
-			_getup = 0.0
-			sank.emit()
-	else:
-		_slow_t = 0.0
+	if not can:
+		sink_level = move_toward(sink_level, 0.0, delta * 2.0)
+		return
+	var pull := clampf(tension_smooth / SINK_HOLD_PULL, 0.0, 1.0)
+	var rise := SINK_RATE * (1.0 - clampf(horizontal_speed() / SINK_HOLD_SPEED, 0.0, 1.0)) * (1.0 - pull)
+	sink_level = clampf(sink_level + (rise - SINK_RECOVER * pull) * delta, 0.0, 1.0)
+	if sink_level >= 1.0:
+		sink_level = 0.0
+		_getup = 0.0
+		sank.emit()
 
 
 ## Handle verloren (zu viel Zug): kein Sturz – man lässt los und gleitet aus.
@@ -989,10 +1009,10 @@ func _process(delta: float) -> void:
 	basis = Basis(Vector3.UP, lerp_angle(_prev_yaw, yaw, frac))
 
 	var speed := horizontal_speed()
-	# Einsinken, wenn das Brett langsam wird (gleitet erst ab PLANE_SPEED richtig)
+	# Einsinken nach Sinkpegel (schlaffes Seil + wenig Tempo), etwas auch nur vom Tempo
 	var sink_target := 0.0
 	if mode == Mode.WATER and attached and _getup >= 1.0 and pos.y < 0.2 and not _in_dock(pos.x, pos.z):
-		sink_target = clampf(1.0 - speed / PLANE_SPEED, 0.0, 1.0)
+		sink_target = maxf(sink_level, clampf(1.0 - speed / PLANE_SPEED, 0.0, 1.0) * 0.5)
 	_sink_vis = lerpf(_sink_vis, sink_target, 1.0 - exp(-delta * 3.0))
 	position.y -= SINK_DEPTH * _sink_vis
 	var target_roll := 0.0
