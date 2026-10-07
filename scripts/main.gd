@@ -11,7 +11,9 @@ extends Node3D
 ##   --terminal=T1|T2  an welcher Anlage man fährt (der NPC fährt an der anderen)
 ##   --mobile          Handy-Steuerung erzwingen (mit --tilt=GRAD feste Neigung)
 ##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
-##   --screen[=NAME]   mit dem Startbildschirm beginnen (NAME: Feature/Hack auswählen, z. B. "hack")
+##   --screen[=NAME]   Startbildschirm erzwingen (NAME: Feature/Hack auswählen, z. B. "hack");
+##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
+##   --no-screen       ohne Startbildschirm direkt ins Spiel
 
 const RESET_DELAY := 3.0
 
@@ -40,6 +42,7 @@ var sfx: Sfx
 var ambient: Ambient
 var start_screen: StartScreen
 var _screen_arg := false
+var _no_screen := false
 var _screen_select := ""
 
 var cable_t1: CableSystem
@@ -201,6 +204,9 @@ func _ready() -> void:
 		rider.autopilot = true
 		rider.auto_lane = _lane_arg
 		pc.start()
+	# Das Spiel beginnt mit dem Startbildschirm (Testläufe gehen direkt ins Spiel)
+	if not _screen_arg and not _no_screen and not _test_log and _shot_path == "" and _view_arg.is_empty() and _closeup == Vector3.INF:
+		_screen_arg = true
 	if _screen_arg:
 		_open_start_screen()
 		if _screen_select != "":
@@ -364,6 +370,8 @@ func _select_setup(idx: int) -> void:
 ## Finger auf den Bildschirm: steht die Anlage, startet sie (ohne Sprung);
 ## sonst wird wie mit der Leertaste der Sprung aufgeladen.
 func _on_touch_down() -> void:
+	if start_screen.visible:
+		return
 	if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED:
 		pc.start()
 		_touch_started = true
@@ -373,6 +381,8 @@ func _on_touch_down() -> void:
 
 ## Finger weg: Absprung (falls geladen).
 func _on_touch_up() -> void:
+	if start_screen.visible:
+		return
 	_touch_started = false
 	Input.action_release("jump")
 
@@ -640,6 +650,8 @@ func _parse_args() -> void:
 			_lane_arg = arg.substr(7).to_float()
 		elif arg.begins_with("--view="):
 			_view_arg = PackedFloat32Array(Array(arg.substr(7).split(",")).map(func(v: String) -> float: return v.to_float()))
+		elif arg == "--no-screen":
+			_no_screen = true
 		elif arg == "--screen" or arg.begins_with("--screen="):
 			_screen_arg = true
 			_screen_select = arg.substr(9) if arg.length() > 9 else ""

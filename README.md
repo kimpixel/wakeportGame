@@ -38,7 +38,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | C | Y | Kamera: Verfolger, Orbit oder Ufer |
 | T | – | Terminal T1/T2 (vor dem Start) |
 | F | – | Feature-Setup (vor dem Start) |
-| Tab | – | Startscreen: oben die Bahn live, isometrisch von der Seeseite (Start rechts, Features/Hacks anklicken, Doppelklick zoomt), unten das Feature in 3D (ziehen = drehen). Dort: T Terminal, F Feature-Setup, ←/→ Feature, Enter Start |
+| Tab | – | zurück zum Startscreen (mit ihm beginnt das Spiel): oben die Bahn live, isometrisch von der Seeseite (Start rechts, Features/Hacks anklicken, Doppelklick zoomt), unten das Feature in 3D (ziehen = drehen). Dort: T Terminal, F Feature-Setup, ←/→ Feature, Enter Start |
 | Maus / Mausrad | rechter Stick | Umsehen / Zoom |
 | P | – | Autopilot (fährt auch Features) |
 | M | – | Ton aus/an |
