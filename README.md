@@ -72,10 +72,10 @@ Das Twin-Tip-Board (`scripts/wakeboard.gd`) hat einen nach einem echten Cable-Bo
 blender -b --factory-startup --python tools/board/build_boot.py -- assets/board/boot.glb
 ```
 
-**Eigene Unterseite (nur lokal):** Ein Produktfoto mit den Ansichten oben/unten/Seite nebeneinander lässt sich als Textur nutzen. Die Ausgabe liegt in `assets/board/custom/` und kommt weder ins Repo noch in den Export, denn fremde Fotos und Logos dürfen nicht veröffentlicht werden.
+**Foto-Texturen:** Ober- und Unterseite (`assets/board/top.png`, `bottom.png`) sind aus einem Produktfoto ausgeschnitten. Ansicht 0 ist oben, 1 ist unten. Fehlen die Dateien, zeichnet der Shader ein eigenes Design.
 
 ```
-godot --headless --path . --script tools/board/make_texture.gd -- foto.png 1 assets/board/custom/bottom.png
+godot --headless --path . --script tools/board/make_texture.gd -- foto.png 1 assets/board/bottom.png
 ```
 
 ## Lokal starten
@@ -122,3 +122,5 @@ godot --headless --path . --fixed-fps 120 -- --autotest --quit=120
 ## Lizenz
 
 [MIT](LICENSE) – du darfst den Code frei verwenden, verändern und weitergeben, solange der Lizenzhinweis erhalten bleibt.
+
+**Ausgenommen:** `assets/board/top.png` und `assets/board/bottom.png` zeigen ein Board von Slingshot. Foto, Grafik und Logo © Slingshot. Sie stehen nicht unter der MIT-Lizenz und dürfen nicht weiterverwendet werden.

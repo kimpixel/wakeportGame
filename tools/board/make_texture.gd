@@ -3,7 +3,7 @@ extends SceneTree
 ## die Brett-Unterseite aus und speichert sie als Textur:
 ##   godot --headless --path . --script tools/board/make_texture.gd -- <foto.png> <ansicht 0|1|2> <ausgabe.png>
 ## Hintergrund (fast weiß) wird transparent; das Brett wird auf seine Umrisse zugeschnitten.
-## Nur für die lokale Nutzung: die Ausgabe liegt in assets/board/custom/ (nicht im Repo, nicht im Export).
+## Ausgabe nach assets/board/top.png bzw. bottom.png (Ansicht 0 = oben, 1 = unten).
 
 func _initialize() -> void:
 	var args := OS.get_cmdline_user_args()

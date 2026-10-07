@@ -18,9 +18,10 @@ const OUTLINE := [
 	[0.139, 0.1638], [0.208, 0.1772], [0.277, 0.1881], [0.416, 0.2041], [0.555, 0.2125],
 	[0.71, 0.215],
 ]
-# Eigene Unterseiten-Textur (nur lokal, nicht im Repo/Export): siehe tools/board/make_texture.gd
-const BOTTOM_TEX := "res://assets/board/custom/bottom.png"
-const TOP_TEX := "res://assets/board/custom/top.png"
+# Foto-Texturen von Ober- und Unterseite (tools/board/make_texture.gd). Foto/Logo © Slingshot,
+# nicht unter MIT. Fehlen sie, zeichnet der Shader ein eigenes Design.
+const BOTTOM_TEX := "res://assets/board/bottom.png"
+const TOP_TEX := "res://assets/board/top.png"
 const ROCKER := 0.068          # Aufbiegung an den Spitzen
 const THICK := 0.016           # Dicke in der Mitte
 const STANCE := 0.27           # halber Abstand der Bindungen
@@ -87,10 +88,8 @@ func _init() -> void:
 	mat.set_shader_parameter("half_w", HALF_W)
 	for side: String in ["bottom", "top"]:
 		var path := BOTTOM_TEX if side == "bottom" else TOP_TEX
-		if FileAccess.file_exists(path):
-			var img := Image.load_from_file(ProjectSettings.globalize_path(path))
-			img.generate_mipmaps()
-			mat.set_shader_parameter(side + "_tex", ImageTexture.create_from_image(img))
+		if ResourceLoader.exists(path):
+			mat.set_shader_parameter(side + "_tex", load(path))
 			mat.set_shader_parameter("use_" + side + "_tex", true)
 	mi.material_override = mat
 	add_child(mi)
