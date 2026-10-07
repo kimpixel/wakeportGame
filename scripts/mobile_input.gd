@@ -16,6 +16,7 @@ var active := false
 var tilt_available := false   # liefert der Sensor Werte (bzw. Erlaubnis erteilt)?
 var debug_roll := NAN         # Test: feste Neigung in Grad (--tilt=…)
 var _touches := 0
+var _pressed := ""            # Lenk-Aktion, die dieses Modul gerade hält
 
 # Läuft im Browser: hört auf deviceorientation (auf iOS erst nach Erlaubnis, die beim ersten
 # Antippen erfragt wird – das muss direkt im Touch-Ereignis passieren) und liefert die Neigung
@@ -108,13 +109,16 @@ func _process(_delta: float) -> void:
 		if v != null:
 			tilt_available = true
 			roll = float(v)
+	if not tilt_available:
+		return          # ohne Sensor nichts anfassen (Tastatur/Gamepad bleiben unberührt)
 	var mag := clampf((absf(roll) - DEADZONE) / (MAX_TILT - DEADZONE), 0.0, 1.0)
-	if roll > 0.0 and mag > 0.0:
-		Input.action_press("steer_right", mag)
-		Input.action_release("steer_left")
-	elif roll < 0.0 and mag > 0.0:
-		Input.action_press("steer_left", mag)
-		Input.action_release("steer_right")
-	else:
-		Input.action_release("steer_left")
-		Input.action_release("steer_right")
+	var want := ""
+	if mag > 0.0:
+		want = "steer_right" if roll > 0.0 else "steer_left"
+	# nur Aktionen loslassen, die wir selbst gedrückt haben – sonst würde jeder Frame
+	# die Tastatur-Lenkung wieder aufheben
+	if _pressed != "" and _pressed != want:
+		Input.action_release(_pressed)
+	if want != "":
+		Input.action_press(want, mag)
+	_pressed = want
