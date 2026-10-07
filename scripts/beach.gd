@@ -121,11 +121,14 @@ func _build_t2_start() -> void:
 	roof.position.y = 0.05
 	_b(hut, Vector3(1.6, 0.45, 3.0), Vector3(-1.8, 0.23, 0.5), _wood)                # Bank
 	_b(hut, Vector3(0.9, 1.6, 1.2), Vector3(2.0, 0.8, 2.5), _wood_grey)              # Spind
-	# Steuerpult mit Hebel, davor der Steuermann (schaut aufs Wasser)
-	_b(hut, Vector3(0.6, 1.0, 1.1), Vector3(2.3, 0.5, -1.5), _wood_grey)
-	_b(hut, Vector3(0.5, 0.04, 0.9), Vector3(2.25, 1.02, -1.5), _black)
-	Util.beam(hut, Vector3(2.2, 1.02, -1.3), Vector3(2.05, 1.35, -1.3), 0.025, Util.mat(Color(0.85, 0.1, 0.1)))
-	_person(hut, Vector3(1.55, 0.0, -1.5), Color(0.1, 0.1, 0.12), false)
+	# Steuermann ("Hebler") vorne an der Kante, schaut aufs Wasser, mit gelber Fernsteuerung
+	# (ca. 30 cm lang, 10 cm dick) in beiden Händen vor dem Bauch
+	var remote_at := Vector3(1.85, 1.08, -1.5)
+	_person(hut, Vector3(1.55, 0.0, -1.5), Color(0.1, 0.1, 0.12), false, remote_at)
+	_b(hut, Vector3(0.1, 0.3, 0.12), remote_at, Util.mat(Color(1.0, 0.82, 0.05), 0.5))
+	_b(hut, Vector3(0.02, 0.06, 0.06), remote_at + Vector3(0.06, 0.08, 0.0), Util.mat(Color(0.85, 0.1, 0.1)))   # Not-Aus
+	_b(hut, Vector3(0.02, 0.04, 0.04), remote_at + Vector3(0.06, -0.03, -0.03), _black)                      # Taster
+	_b(hut, Vector3(0.02, 0.04, 0.04), remote_at + Vector3(0.06, -0.03, 0.03), _black)
 	people.append({"pos": hut.global_transform * Vector3(1.55, 1.6, -1.5), "pitch": 0.92})
 	# Gäste auf der Bank – je nach Session 0 bis 3
 	var rng := RandomNumberGenerator.new()
@@ -158,7 +161,8 @@ func _build_t2_start() -> void:
 
 
 ## Einfache Figur, schaut in lokale +X-Richtung (aufs Wasser). sitting: sitzt auf Höhe base.y.
-func _person(parent: Node3D, base: Vector3, shirt: Color, sitting: bool) -> void:
+## hands_at: optionaler Punkt, an dem beide Hände etwas halten (lokal).
+func _person(parent: Node3D, base: Vector3, shirt: Color, sitting: bool, hands_at := Vector3.INF) -> void:
 	var skin := Util.mat(Color(0.88, 0.68, 0.52))
 	var pants := Util.mat(Color(0.2, 0.22, 0.3))
 	var hip := base + Vector3(0, 0.0 if sitting else 0.85, 0)
@@ -171,7 +175,10 @@ func _person(parent: Node3D, base: Vector3, shirt: Color, sitting: bool) -> void
 	_b(parent, Vector3(0.24, 0.6, 0.4), hip + Vector3(0, 0.33, 0), Util.mat(shirt))
 	Util.sphere(parent, 0.12, hip + Vector3(0, 0.78, 0), skin)
 	for side: float in [-0.24, 0.24]:
-		Util.beam(parent, hip + Vector3(0, 0.6, side), hip + Vector3(0.25 if not sitting else 0.2, 0.2, side * 1.1), 0.045, skin)
+		var hand := hip + Vector3(0.25 if not sitting else 0.2, 0.2, side * 1.1)
+		if hands_at != Vector3.INF:
+			hand = hands_at + Vector3(-0.03, -0.05, signf(side) * 0.07)
+		Util.beam(parent, hip + Vector3(0, 0.6, side), hand, 0.045, skin)
 
 
 # ---------------------------------------------------------------- T1-Start
