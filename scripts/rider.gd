@@ -16,7 +16,7 @@ enum Mode { WATER, AIR, CRASHED }
 
 const MASS := 80.0
 const GRAVITY := 9.81
-const ROPE_LENGTH := 18.0
+const ROPE_LENGTH := 14.0       # Zugseil Griff bis Carrier
 const ROPE_STIFFNESS := 2600.0
 const ROPE_DAMPING := 250.0
 const HANDLE_HEIGHT := 1.0
@@ -26,7 +26,7 @@ const AIR_MAX_TENSION := 1400.0      # in der Luft federn die Arme den Seilzug a
 const DRAG_QUAD := 2.4          # Längswiderstand (gleitend) – klein, damit man in der Wende durchgleitet
 const DRAG_LIN := 6.0
 const PLOW_DRAG := 260.0        # Zusatzwiderstand, solange das Brett noch nicht gleitet
-const PLANE_SPEED := 3.0
+const PLANE_SPEED := 2.3
 const GRIP_QUAD := 160.0        # Querwiderstand der Kante
 const GRIP_LIN := 180.0
 const TURN_RATE := 1.7
@@ -90,6 +90,8 @@ var _slide_part: FeaturePart
 var _line: FeaturePart          # Feature, das der Autopilot gerade anfährt
 var _line_popped := false
 var _line_skip: FeaturePart     # abgebrochenes Feature (nicht sofort wieder anfahren)
+var _turn_end := 0.0            # Autopilot-Wende: +1 = am Endmast, -1 = am Ufer, 0 = keine
+var _turn_side := 1.0
 var _npc_jump_t := 6.0
 var _npc_charge := 0.0
 var _npc_spin := false
@@ -238,6 +240,55 @@ func _lane_input(lane: float, outward_only: bool) -> void:
 	_steer = clampf(-diff * 2.5, -1.0, 1.0)
 	_edge = 0.5
 	_release = 1.0 if tension_smooth < 30.0 and horizontal_speed() > 3.0 and pos.y < 0.15 else 0.0
+
+
+## Wende wie ein guter Fahrer: sobald das Seil locker wird, außen um die weiße Boje
+## carven (Tempo halten), dann driftend in die neue Richtung drehen. Gibt true zurück,
+## solange die Wende läuft.
+func _turn_input(speed: float) -> bool:
+	if mode != Mode.WATER or pos.y > 0.15:
+		return false
+	var local := cable.transform.affine_inverse() * pos
+	var s_now := cable.mast_a_z - local.z
+	if _turn_end == 0.0:
+		# Wende beginnt an der roten Boje: dort rauskanten, solange das Seil noch zieht
+		var end := -signf(cable.local_vz(vel))
+		var s_red := (cable.mast_a_z - (cable.turn_b_z if end > 0.0 else cable.turn_a_z)) - end * TurnBuoys.RED_BEFORE
+		var at_red := (s_now - s_red) * end > -2.0 and (s_now - s_red) * end < 4.0 and cable.dir * -1.0 == end
+		if not (at_red or cable.state == CableSystem.State.BRAKE) or speed < 3.0:
+			return false
+		_turn_end = end
+		_turn_side = signf(local.x) if absf(local.x) > 0.5 else 1.0
+	elif tension_smooth > 250.0 and cable.state == CableSystem.State.RUN:
+		_turn_end = 0.0                                    # Seil zieht wieder: Wende vorbei
+		return false
+	var turn_z := cable.turn_b_z if _turn_end > 0.0 else cable.turn_a_z
+	var s_white := (cable.mast_a_z - turn_z) - _turn_end * TurnBuoys.WHITE_BEFORE
+	var target_local: Vector3
+	if (s_now - s_white) * _turn_end < 0.0:
+		# noch vor der Boje: kräftig nach außen rauskanten (Tempo aufbauen), weit an ihr vorbei
+		target_local = Vector3(_turn_side * (TurnBuoys.WHITE_SIDE + 4.0), 0.0, cable.mast_a_z - s_white)
+		if features and _feature_ahead():
+			target_local.x = 0.0    # Feature im Weg (z. B. T1 nahe der Wende): nicht rauskanten
+	else:
+		# hinter der Boje: zurück in die neue Fahrtrichtung, Richtung Seillinie
+		target_local = Vector3(_turn_side * 2.0, 0.0, cable.mast_a_z - (s_now - _turn_end * 15.0))
+	var target := cable.transform * target_local
+	var want := atan2(-(target.x - pos.x), -(target.z - pos.z))
+	# Solange der Carrier noch nicht zurückzieht: quer zum Seil um ihn herum schwingen
+	# (Pendel) statt gegen den Zug zu fahren – so bleibt das Tempo erhalten.
+	var carrier_back := cable.v * _turn_end < -1.0
+	if (s_now - s_white) * _turn_end >= 0.0 and not carrier_back and tension_smooth > 30.0:
+		var rope_yaw := atan2(-rope_dir.x, -rope_dir.z)
+		var vel_yaw := atan2(-vel.x, -vel.z)
+		var t1 := rope_yaw + PI * 0.5
+		var t2 := rope_yaw - PI * 0.5
+		want = t1 if absf(wrapf(t1 - vel_yaw, -PI, PI)) < absf(wrapf(t2 - vel_yaw, -PI, PI)) else t2
+	var diff := wrapf(want - yaw, -PI, PI)
+	_steer = clampf(-diff * 2.5, -1.0, 1.0)
+	_edge = 0.8 if absf(diff) < 0.6 else 0.3
+	_release = 1.0 if absf(diff) > 1.2 else 0.0          # zum Herumdrehen kurz driften
+	return true
 
 
 ## Spur des Features, das gerade angefahren wird (oder auf dem man fährt), sonst NAN.
@@ -418,6 +469,8 @@ func _autopilot_input(delta: float) -> void:
 	if not is_nan(auto_lane):
 		_lane_input(auto_lane, true)
 		return
+	if _turn_input(speed):
+		return
 	# Features fahren: passendes Feature voraus suchen und auf dessen Spur einschwenken
 	if features and (tension_smooth > 50.0 or mode == Mode.AIR):
 		var lane := _line_lane()
@@ -580,6 +633,12 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 		trick_landed.emit(trick, pts)
 	_slide_time = 0.0
 	_slide_part = null
+
+
+## Punkte von außen vergeben (z. B. für eine saubere Wende) – löst auch den Jubel aus.
+func award(trick_name: String, points: int) -> void:
+	score += points
+	trick_landed.emit(trick_name, points)
 
 
 ## Rutscht der Fahrer gerade auf einem Feature (für den Grind-Sound)?

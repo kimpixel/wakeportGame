@@ -13,7 +13,7 @@ const MARKER_COUNT := 12
 ## Geometrie im lokalen Raum der Anlage (Seil entlang -z). Vor add_child() setzen.
 var mast_a_z := Lake.MAST_A_Z
 var mast_b_z := Lake.MAST_B_Z
-var start_z := -22.0                      # Parkposition des Carriers beim Start
+var start_z := -19.0                      # Parkposition des Carriers beim Start (Seil noch locker)
 var turn_a_z := -30.0                     # Wendepunkt vor dem Ufer (Platz zum Ausschwingen)
 var turn_b_z := Lake.MAST_B_Z + 22.0      # Wendepunkt vor dem Endmast
 

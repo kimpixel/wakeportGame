@@ -38,7 +38,11 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | P | – | Autopilot (fährt auch Features) |
 | M | – | Ton aus/an |
 
-**Tipp für die Wende:** Wenn der Carrier am Ende bremst, wird das Seil locker. Mit **S** driften und mit **A/D** herumdrehen. Danach zieht die Anlage dich in die neue Richtung.
+**Wende:** An jedem Wendepunkt liegen drei Bojen:
+- **Rote Boje** mittig unter dem Seil: hier rauskanten.
+- **Zwei weiße Bojen** links und rechts: um eine davon fährst du herum.
+
+Solange der Carrier noch nicht zurückzieht, schwingst du quer zum Seil um ihn herum und drehst erst dann in die neue Richtung. Wer die Wende schafft, ohne abzusaufen, bekommt **Punkte** (120, um die weiße Boje 250) und Jubel aus dem Startblock.
 
 ## Im Browser spielen
 

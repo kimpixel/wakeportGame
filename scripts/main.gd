@@ -20,6 +20,15 @@ var cable_t1: CableSystem
 var features: FeatureSet
 var npc: Rider
 var _npc_crash_t := 0.0
+var buoys: TurnBuoys
+
+# Wende-Wertung: wer die Wende schafft, ohne abzusinken, bekommt Punkte
+const SINK_SPEED := 1.5         # m/s – fast Stillstand, das Brett sinkt ein ...
+const SINK_TIME := 1.0          # ... und nach so vielen Sekunden ist man abgesoffen
+var _turn_active := false
+var _turn_end := 1.0
+var _turn_slow := 0.0
+var _turn_around := false
 var _crash_t := 0.0
 var _max_tension := 0.0
 
@@ -54,7 +63,7 @@ func _ready() -> void:
 	var dc := Geo.rel_to_game(21.9, -29.5)
 	var npc_start := Vector3(dc.x + 1.5, Lake.DOCK_Y, dc.y)
 	var npc_local_z := (cable_t1.transform.affine_inverse() * npc_start).z
-	cable_t1.start_z = npc_local_z - 12.0
+	cable_t1.start_z = npc_local_z - 9.0
 	cable_t1.turn_a_z = npc_local_z - 16.0
 	add_child(cable_t1)
 	rider = Rider.new()
@@ -64,6 +73,12 @@ func _ready() -> void:
 	water.follow = rider
 
 	# Hindernisse beider Terminals aus den Setup-Dateien (modular, siehe setups/)
+	buoys = TurnBuoys.new()
+	buoys.water = water
+	add_child(buoys)
+	buoys.add_cable(cable)
+	buoys.add_cable(cable_t1)
+
 	features = FeatureSet.new()
 	add_child(features)
 	features.load_setups(["res://setups/terminal1.json", "res://setups/terminal2.json"], {"T1": cable_t1, "T2": cable})
@@ -141,6 +156,7 @@ func _physics_process(delta: float) -> void:
 			cable_t1.reset()
 			cable_t1.start()
 	rider.step(delta)
+	_track_turn()
 
 	if rider.mode == Rider.Mode.CRASHED:
 		_crash_t += delta
@@ -200,7 +216,39 @@ func _unhandled_input(event: InputEvent) -> void:
 		hud.toggle_help()
 
 
+## Wertet eine Wende aus: beginnt, wenn der Carrier zur Wende bremst, endet, wenn er
+## wieder auf Tempo geht. Punkte, wenn man nicht abgesoffen ist (nicht länger als
+## SINK_TIME unter SINK_SPEED);
+## Bonus, wenn man außen um eine der weißen Bojen herumgefahren ist.
+func _track_turn() -> void:
+	if cable.state == CableSystem.State.BRAKE and not _turn_active and rider.attached and rider.mode != Rider.Mode.CRASHED:
+		_turn_active = true
+		_turn_end = 1.0 if cable.dir < 0.0 else -1.0
+		_turn_slow = 0.0
+		_turn_around = false
+	if not _turn_active:
+		return
+	if rider.mode == Rider.Mode.CRASHED or not rider.attached:
+		_turn_active = false
+		return
+	if rider.mode == Rider.Mode.WATER and rider.horizontal_speed() < SINK_SPEED:
+		_turn_slow += get_physics_process_delta_time()
+	var local := cable.transform.affine_inverse() * rider.pos
+	var s := cable.mast_a_z - local.z
+	var s_turn := cable.mast_a_z - (cable.turn_b_z if _turn_end > 0.0 else cable.turn_a_z)
+	var s_white := s_turn - _turn_end * TurnBuoys.WHITE_BEFORE
+	if (s - s_white) * _turn_end > 0.0 and absf(local.x) > TurnBuoys.WHITE_SIDE - 0.5:
+		_turn_around = true
+	if cable.state == CableSystem.State.RUN:
+		_turn_active = false
+		if _turn_slow < SINK_TIME:
+			rider.award("Wende um die Boje" if _turn_around else "Saubere Wende", 250 if _turn_around else 120)
+		elif _test_log:
+			print("WENDE abgesoffen, %.1f s zu langsam" % _turn_slow)
+
+
 func _reset() -> void:
+	_turn_active = false
 	rider.reset()
 	cable.reset()
 	water.clear_wake()

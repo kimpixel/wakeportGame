@@ -357,29 +357,31 @@ func _build_water_items() -> void:
 	var boat := _node(7.5, 5.0, 0.1, 30.0)
 	_b(boat, Vector3(1.5, 0.45, 3.4), Vector3.ZERO, Util.mat(Color(0.85, 0.15, 0.2), 0.5))
 	_b(boat, Vector3(0.3, 0.5, 0.4), Vector3(0, 0.35, 1.6), _black)
-	# Gelbe Bojenleine (Abgrenzung zum Badebereich im Norden)
-	var buoy := SphereMesh.new()
-	buoy.radius = 0.12
-	buoy.height = 0.24
-	buoy.radial_segments = 6
-	buoy.rings = 3
-	var yellow := Util.mat(Color(1.0, 0.82, 0.1), 0.5)
+	# Gelbe Bojenleine (Abgrenzung zum Badebereich im Norden): ca. 2 m lange gelbe
+	# Schwimmzylinder, aneinandergekettet
+	var tube := CylinderMesh.new()
+	tube.top_radius = 0.13
+	tube.bottom_radius = 0.13
+	tube.height = 1.9
+	tube.radial_segments = 10
+	tube.rings = 1
+	var yellow := Util.mat(Color(1.0, 0.82, 0.1), 0.45)
+	var link_mat := Util.mat(Color(0.15, 0.15, 0.15), 0.6)
 	var pts := [Vector2(4.0, 11.0), Vector2(22.0, 26.0), Vector2(60.0, 55.0), Vector2(110.0, 92.0)]
 	for s in pts.size() - 1:
 		var a: Vector2 = pts[s]
 		var b: Vector2 = pts[s + 1]
-		var n := int(a.distance_to(b) / 0.9)
+		var n := int(a.distance_to(b) / 2.0)
 		for k in n:
-			var p := a.lerp(b, float(k) / n)
-			var g := Geo.rel_to_game(p.x, p.y)
-			if Geo.height(g.x, g.y) > -0.1:
+			var p0 := Geo.rel_to_game(a.lerp(b, float(k) / n).x, a.lerp(b, float(k) / n).y)
+			var p1 := Geo.rel_to_game(a.lerp(b, float(k + 1) / n).x, a.lerp(b, float(k + 1) / n).y)
+			if Geo.height(p0.x, p0.y) > -0.1 or Geo.height(p1.x, p1.y) > -0.1:
 				continue
 			var mi := MeshInstance3D.new()
-			mi.mesh = buoy
+			mi.mesh = tube
 			mi.material_override = yellow
-			mi.position = Vector3(g.x, 0.02, g.y)
+			var t := Util.beam_transform(Vector3(p0.x, 0.03, p0.y), Vector3(p1.x, 0.03, p1.y), 1.0)
+			t.basis = t.basis.orthonormalized()          # Zylinderlänge bleibt 1,9 m, nur ausrichten
+			mi.transform = t
 			add_child(mi)
-	# Weiße Markierungsbojen neben der Strecke
-	for p: Vector2 in [Vector2(45.0, 22.0), Vector2(95.0, -18.0), Vector2(140.0, 26.0), Vector2(70.0, -22.0)]:
-		var g := Geo.rel_to_game(p.x, p.y)
-		Util.sphere(self, 0.25, Vector3(g.x, 0.05, g.y), _white)
+			Util.sphere(self, 0.07, Vector3(p1.x, 0.03, p1.y), link_mat)    # Kettenglied
