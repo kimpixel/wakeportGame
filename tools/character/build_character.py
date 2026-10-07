@@ -7,6 +7,7 @@
 #
 # Voraussetzung: Blender-Extension "MPFB" und die CC0-Asset-Packs (system assets, skins01,
 # hair01, pants01, shirts01) sind installiert.
+import math
 import sys
 import bmesh
 import bpy
@@ -25,6 +26,7 @@ PRESETS = {
         "eyebrows": "eyebrow001/eyebrow001.mhclo",
         "clothes": ["cortu_cargo_pants/cortu_cargo_pants.mhclo", "elvs_crude_t-shirt_male/elvs_crude_t-shirt_male.mhclo"],
         "boardshorts": True,      # Cargohose am Knie abschneiden = knielange Boardshorts
+        "vest": "elvs_crude_t-shirt_male",   # T-Shirt -> ärmellose Impact-Weste (Aufdruck per Shader im Spiel)
         "texture": 1024,
     },
     # Steuermann ("Hebler"): etwas älter, Polo-Shirt, Cargohose
@@ -85,6 +87,8 @@ def build(preset_name: str, out_path: str) -> None:
 
     if p.get("boardshorts"):
         _cut_at_knee("cortu_cargo_pants")
+    if p.get("vest"):
+        _make_vest(p["vest"])
 
     # Texturen verkleinern (Dateigröße fürs Web)
     max_tex = p.get("texture", 1024)
@@ -132,6 +136,101 @@ def _cut_at_knee(name_part: str) -> None:
     bmesh.ops.delete(bm, geom=doomed, context="VERTS")
     bm.to_mesh(obj.data)
     bm.free()
+
+
+VEST_PITCH = 0.075      # Höhe der gesteppten Kammern
+VEST_THICK = 0.010      # Dicke Neopren + Schaum (nach innen)
+VEST_BULGE = 0.011      # so weit wölben sich die Kammern nach außen
+
+
+def _new_mat(name, srgb, rough):
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    bsdf = m.node_tree.nodes["Principled BSDF"]
+    bsdf.inputs["Base Color"].default_value = tuple(pow(c, 2.2) for c in srgb) + (1.0,)
+    bsdf.inputs["Roughness"].default_value = rough
+    m.use_backface_culling = False
+    return m
+
+
+def _apply_first(obj, mod):
+    """Modifier ganz nach vorne (vor die Armatur) schieben und anwenden."""
+    bpy.context.view_layer.objects.active = obj
+    for o in bpy.context.scene.objects:
+        o.select_set(o == obj)
+    bpy.ops.object.modifier_move_to_index(modifier=mod.name, index=0)
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+
+
+def _make_vest(name_part: str) -> None:
+    """T-Shirt -> ärmellose Impact-Weste: Ärmel weg (nach Gewicht der Arm-Knochen), Saum gerade
+    an der Hüfte, waagerechte gesteppte Kammern, aufgedickt mit neongelbem Futter und schwarzer
+    Einfassung, schwarzer Reißverschluss vorne. Materialien: vest_print (Aufdruck, im Spiel per
+    Shader), vest_lining, vest_trim, vest_zip."""
+    arm = next(o for o in bpy.data.objects if o.type == "ARMATURE")
+    obj = next(o for o in bpy.data.objects if name_part in o.name and o.type == "MESH")
+    obj.name = "vest"
+    # Haut unter den Ärmeln wieder einblenden (MakeHuman blendet sie unter Kleidung aus)
+    for o in bpy.data.objects:
+        if o.type == "MESH":
+            for m in list(o.modifiers):
+                if m.type == "MASK" and name_part in (m.vertex_group or "") + m.name:
+                    o.modifiers.remove(m)
+    mw = obj.matrix_world
+    scale = mw.to_scale().x
+    hem_z = (arm.matrix_world @ arm.data.bones["spine_01"].head_local).z - 0.035
+
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    deform = bm.verts.layers.deform.verify()
+    arm_groups = {obj.vertex_groups[n].index for n in ("upperarm_l", "upperarm_r", "lowerarm_l", "lowerarm_r")
+                  if n in obj.vertex_groups}
+    doomed = []
+    for v in bm.verts:
+        w_arm = sum(w for g, w in v[deform].items() if g in arm_groups)
+        if w_arm > 0.35 or (mw @ v.co).z < hem_z:
+            doomed.append(v)
+    bmesh.ops.delete(bm, geom=doomed, context="VERTS")
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.materials.clear()
+    for m in (_new_mat("vest_print", (0.6, 0.5, 0.4), 0.7), _new_mat("vest_lining", (0.86, 0.92, 0.42), 0.8),
+              _new_mat("vest_trim", (0.05, 0.05, 0.05), 0.7), _new_mat("vest_zip", (0.03, 0.03, 0.03), 0.4)):
+        obj.data.materials.append(m)
+    for f in obj.data.polygons:
+        f.material_index = 0
+
+    # feiner unterteilen, damit die Kammern rund werden (Gewichte werden mit interpoliert)
+    sub = obj.modifiers.new("vest_sub", "SUBSURF")
+    sub.levels = 1
+    sub.subdivision_type = "SIMPLE"
+    _apply_first(obj, sub)
+
+    # Kammern: nach außen wölben, an den Nähten (alle VEST_PITCH) eingezogen
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bm.normal_update()
+    for v in bm.verts:
+        z = (mw @ v.co).z - hem_z
+        bulge = pow(abs(math.sin(math.pi * z / VEST_PITCH)), 0.6)
+        v.co += v.normal * (0.003 + VEST_BULGE * bulge) / scale
+    bm.to_mesh(obj.data)
+    bm.free()
+
+    sol = obj.modifiers.new("vest_solid", "SOLIDIFY")
+    sol.thickness = VEST_THICK / scale
+    sol.offset = -1.0
+    sol.use_rim = True
+    sol.material_offset = 1
+    sol.material_offset_rim = 2
+    _apply_first(obj, sol)
+
+    # Reißverschluss: schmaler Streifen vorne in der Mitte (MakeHuman: vorne = -Y)
+    for f in obj.data.polygons:
+        c = mw @ f.center
+        if f.material_index == 0 and abs(c.x) < 0.008 and c.y < 0.0:
+            f.material_index = 3
+    print("VEST faces:", len(obj.data.polygons))
 
 
 if __name__ == "__main__":

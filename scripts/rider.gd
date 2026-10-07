@@ -912,6 +912,13 @@ func _tint_clothes(n: Node) -> void:
 			tint = vest_color.lerp(Color.BLACK, 0.25)     # Oberteil = Impact-Weste
 		elif "pants" in lname or "shorts" in lname:
 			tint = shorts_color
+		# Impact-Weste (aus dem Charakter-Skript): Aufdruck als Sticker-Collage per Shader
+		for si in mi.mesh.get_surface_count():
+			var sm := mi.mesh.surface_get_material(si)
+			if sm and sm.resource_name.begins_with("vest_print"):
+				var vm := ShaderMaterial.new()
+				vm.shader = load("res://shaders/vest.gdshader")
+				mi.set_surface_override_material(si, vm)
 		if tint != Color.WHITE:
 			for si in mi.mesh.get_surface_count():
 				var m := mi.get_active_material(si)
