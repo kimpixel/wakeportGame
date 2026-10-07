@@ -54,8 +54,13 @@ Funktioniert am besten in Chrome, Edge oder Firefox am PC. Einmal ins Bild klick
 
 Fahrer, NPC, Steuermann und Gäste sind realistische Menschen aus **MakeHuman** (MPFB für Blender, alle Assets CC0). Erzeugt werden sie per Skript:
 
-\
-Presets: , , , . Die Haltung wird im Spiel live aus der Physik berechnet (eigene IK in ): Füße in den Bindungen, Hände am Griff, Oberkörper gegen den Seilzug.
+```
+blender -b --python tools/character/build_character.py -- rider assets/characters/rider.glb
+```
+
+Presets: `rider`, `operator`, `guest_f`, `guest_m`.
+
+Die Haltung wird im Spiel live aus der Physik berechnet, mit einer eigenen IK in `scripts/human_rig.gd`: Füße in den Bindungen, Hände am Griff, Oberkörper gegen den Seilzug.
 
 ## Lokal starten
 
