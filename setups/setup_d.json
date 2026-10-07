@@ -8,7 +8,7 @@
     { "part": "uprail",          "s": 92.0,  "x": -10.1, "dir": "out" },
     { "part": "kicker_l",        "s": 63.9,  "x": -8.4,  "dir": "in", "yaw": 8 },
     { "part": "kicker_m",        "s": 62.4,  "x": -4.5,  "dir": "in", "yaw": 6 },
-    { "part": "transition_curb", "s": 114.3, "x": 4.05,  "dir": "out" },
+    { "part": "transition_curb", "s": 114.3, "x": 4.05,  "dir": "in" },
     { "part": "down_ledge",      "s": 111.3, "x": 5.85,  "dir": "in" },
     { "part": "cheese_wedge",    "s": 118.3, "x": 7.65, "dir": "in" },
     { "part": "cheese_wedge",    "s": 114.3, "x": 7.65, "dir": "out" },
