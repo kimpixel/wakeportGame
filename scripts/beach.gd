@@ -101,26 +101,88 @@ func _railing(parent: Node3D, a: Vector3, b: Vector3, mat: Material) -> void:
 
 # ---------------------------------------------------------------- T2-Start
 
+## T2-Startblock: Hütte nach den Drohnenfotos – niedrige Holzhütte direkt am Ufer auf einer
+## Reifenmauer, helles Wellblech-Pultdach, Seitenwände aus senkrechten Brettern, offen zum See.
+## Davor (nach dem aktuellen Luftbild DOP20 und Fotos): Treppe zum schwimmenden Startsteg (blau
+## eingefasst), weißer Schwimmsteg nach Norden und schräg nach Südosten, Holzsteg mit Liegestühlen.
+const HUT_DECK_Y := 1.35         # Deck der Hütte über dem Wasserspiegel
+const HUT_BACK := -2.9           # Hütten-Raum (lokal x = Ost): Rückwand (Land) ...
+const HUT_FRONT := 2.7           # ... Vorderkante über dem Wasser
+const HUT_HALF_Z := 3.3          # halbe Länge Nord-Süd
+
 func _build_t2_start() -> void:
-	# Starthütte direkt am Wasser: Holzdeck, offene Front zum See, graues Pultdach
-	var y := maxf(_ground(3.9, -2.0, 5.6, 7.0), 0.6)
+	var y := HUT_DECK_Y
 	var hut := _node(3.9, -2.0, y)
-	_b(hut, Vector3(6.4, 0.25, 7.6), Vector3(0.3, -0.12, 0), _wood_dark)          # Deck
-	for p: Vector2 in [Vector2(-2.8, -3.6), Vector2(3.3, -3.6), Vector2(-2.8, 3.6), Vector2(3.3, 3.6), Vector2(0.3, 0.0)]:
-		_post(hut, p.x, p.y, -y - 1.0, -0.2, _wood_grey, 0.12)                     # Pfähle unter dem Deck
-	for p: Vector2 in [Vector2(-2.6, -3.3), Vector2(2.6, -3.3), Vector2(-2.6, 3.3), Vector2(2.6, 3.3)]:
-		_post(hut, p.x, p.y, 0.0, 2.9 if p.x < 0 else 2.5, _wood, 0.1)
-	_b(hut, Vector3(0.12, 2.8, 6.8), Vector3(-2.65, 1.4, 0), _wood)                 # Rückwand (Land)
-	_b(hut, Vector3(5.3, 1.1, 0.1), Vector3(0, 0.55, -3.35), _wood)                 # Brüstung Nord
-	_b(hut, Vector3(5.3, 1.1, 0.1), Vector3(0, 0.55, 3.35), _wood)                  # Brüstung Süd
+	var plank := Util.mat(Color(0.58, 0.5, 0.41))        # verwittertes Holz (Deck, Stege)
+	var board := Util.mat(Color(0.67, 0.62, 0.55))       # helle, graue Bretter (Wände)
+	var post := Util.mat(Color(0.5, 0.44, 0.37))
+	var depth := HUT_FRONT - HUT_BACK
+	# Deck aus Dielen, darunter Unterbau bis ins Wasser
+	var n_planks := int(HUT_HALF_Z * 2.0 / 0.16)
+	for i in n_planks:
+		var z := -HUT_HALF_Z + (i + 0.5) * HUT_HALF_Z * 2.0 / n_planks
+		_b(hut, Vector3(depth + 0.1, 0.06, 0.145), Vector3((HUT_BACK + HUT_FRONT) * 0.5, -0.03, z), plank)
+	_b(hut, Vector3(depth, 0.22, HUT_HALF_Z * 2.0), Vector3((HUT_BACK + HUT_FRONT) * 0.5, -0.17, 0), _wood_dark)
+	# Pfosten unter dem Deck bis in den Boden (Hang fällt zum Wasser ab)
+	var px := HUT_BACK + 0.1
+	while px < HUT_FRONT:
+		for z: float in [-HUT_HALF_Z + 0.1, HUT_HALF_Z - 0.1]:
+			_post(hut, px, z, -y - 0.6, -0.2, post, 0.08)
+		px += 1.1
+	# Eckpfosten: hinten höher (Pultdach fällt zum Wasser hin ab)
+	var roof_back := 2.75
+	var roof_front := 2.35
+	for x: float in [HUT_BACK + 0.08, HUT_FRONT - 0.15]:
+		for z: float in [-HUT_HALF_Z + 0.08, HUT_HALF_Z - 0.08]:
+			_post(hut, x, z, 0.0, roof_back if x < 0.0 else roof_front, post, 0.07)
+	_post(hut, HUT_FRONT - 0.15, 0.0, 0.0, roof_front, post, 0.06)
+	# Rückwand zum Land: waagerechte Bretter bis unters Dach
+	for i in int(roof_back / 0.2):
+		_b(hut, Vector3(0.05, 0.18, HUT_HALF_Z * 2.0), Vector3(HUT_BACK + 0.02, 0.1 + i * 0.2, 0), board)
+	# Seitenwände: senkrechte Bretter mit Fugen, hinten hoch, vorne brusthoch (offen zum See)
+	for side: float in [-1.0, 1.0]:
+		var z := side * (HUT_HALF_Z - 0.03)
+		var x := HUT_BACK + 0.1
+		while x < HUT_FRONT - 0.25:
+			var h := lerpf(roof_back - 0.1, 1.05, clampf((x - HUT_BACK) / 2.5, 0.0, 1.0))
+			_b(hut, Vector3(0.13, h, 0.04), Vector3(x + 0.065, h * 0.5, z), board)
+			x += 0.155
+		_b(hut, Vector3(depth - 0.2, 0.07, 0.09), Vector3((HUT_BACK + HUT_FRONT) * 0.5 - 0.1, 1.08, z), post)  # Handlauf
+	# Pultdach aus hellem Wellblech mit Überstand; Rippen laufen zum Wasser hin
 	var roof := Node3D.new()
-	roof.rotation.y = PI * 0.5
-	roof.position = Vector3(0, 0, 0)
 	hut.add_child(roof)
-	_shed_roof(roof, 8.0, 6.6, 2.55, 3.0, _roof)
-	roof.position.y = 0.05
-	_b(hut, Vector3(1.6, 0.45, 3.0), Vector3(-1.8, 0.23, 0.5), _wood)                # Bank
-	_b(hut, Vector3(0.9, 1.6, 1.2), Vector3(2.0, 0.8, 2.5), _wood_grey)              # Spind
+	var over := 0.35
+	var run := depth + over * 2.0
+	roof.position = Vector3((HUT_BACK + HUT_FRONT) * 0.5, (roof_back + roof_front) * 0.5 + 0.06, 0)
+	roof.rotation.z = -atan2(roof_back - roof_front, depth)
+	var tin := Util.mat(Color(0.82, 0.83, 0.82), 0.45)
+	tin.metallic = 0.35
+	var tin_dark := Util.mat(Color(0.68, 0.69, 0.69), 0.5)
+	tin_dark.metallic = 0.35
+	var roof_w := HUT_HALF_Z * 2.0 + over * 2.0
+	_b(roof, Vector3(run, 0.02, roof_w), Vector3.ZERO, tin)
+	var nz := int(roof_w / 0.2)
+	for i in nz + 1:
+		_b(roof, Vector3(run, 0.035, 0.05), Vector3(0, 0.02, -roof_w * 0.5 + i * roof_w / nz), tin_dark)
+	_b(roof, Vector3(0.06, 0.12, roof_w), Vector3(run * 0.5, -0.04, 0), tin_dark)      # Traufblech vorne
+	# Einrichtung: Bank an der Rückwand, Holztruhe vorne rechts, Feuerlöscher, Schaltkasten
+	_b(hut, Vector3(0.5, 0.06, 4.4), Vector3(-1.75, 0.45, 0.4), plank)
+	_b(hut, Vector3(0.45, 0.42, 4.4), Vector3(-1.78, 0.21, 0.4), _wood_dark)
+	_b(hut, Vector3(0.08, 0.5, 4.4), Vector3(-2.75, 0.75, 0.4), plank)                 # Lehne
+	_b(hut, Vector3(0.75, 0.6, 1.1), Vector3(2.2, 0.3, 2.6), Util.mat(Color(0.78, 0.68, 0.52)))   # Truhe
+	_b(hut, Vector3(0.8, 0.06, 1.15), Vector3(2.2, 0.63, 2.6), plank)                  # Deckel
+	var ext := CylinderMesh.new()
+	ext.top_radius = 0.08
+	ext.bottom_radius = 0.08
+	ext.height = 0.5
+	var ext_mi := MeshInstance3D.new()
+	ext_mi.mesh = ext
+	ext_mi.material_override = Util.mat(Color(0.85, 0.08, 0.06), 0.4)
+	ext_mi.position = Vector3(HUT_FRONT - 0.15, 0.55, -HUT_HALF_Z + 0.25)
+	hut.add_child(ext_mi)                                                              # Feuerlöscher
+	_b(hut, Vector3(0.05, 0.08, 0.05), ext_mi.position + Vector3(0, 0.29, 0), _black)
+	_b(hut, Vector3(0.12, 0.45, 0.35), Vector3(HUT_BACK + 0.12, 1.5, -2.4), _wood_grey)   # Schaltkasten
+	_tire_wall(hut, y)
 	# Steuermann ("Hebler") vorne an der Kante, schaut aufs Wasser, mit gelber Fernsteuerung
 	# (ca. 30 cm lang, 10 cm dick) in beiden Händen vor dem Bauch
 	var remote_at := Vector3(1.85, 1.08, -1.5)
@@ -144,24 +206,118 @@ func _build_t2_start() -> void:
 		people.append({"pos": hut.global_transform * Vector3(-1.6, 1.15, gz), "pitch": rng.randf_range(1.0, 1.35)})
 	_b(hut, Vector3(0.6, 1.0, 0.1), Vector3(-2.55, 1.6, -1.5), Util.mat(Color(0.8, 0.15, 0.12)))  # Rettungsring-Tafel
 
-	# Schwimmende Startstege (entspricht Lake.DOCK_*, darauf startet der Fahrer)
+	# Schwimmender Startsteg (entspricht Lake.DOCK_*, darauf startet der Fahrer):
+	# helle Holzfläche, rundherum blau eingefasst (Schwimmkörper)
 	var dmin := Lake.DOCK_MIN
 	var dmax := Lake.DOCK_MAX
 	var dock := Node3D.new()
 	add_child(dock)
-	var c := Vector3((dmin.x + dmax.x) * 0.5, Lake.DOCK_Y - 0.15, (dmin.y + dmax.y) * 0.5)
-	_b(dock, Vector3(dmax.x - dmin.x, 0.3, dmax.y - dmin.y), c, _wood)
-	_b(dock, Vector3(dmax.x - dmin.x + 0.2, 0.32, 0.25), c + Vector3(0, -0.02, (dmax.y - dmin.y) * 0.5), _blue)
-	_b(dock, Vector3(dmax.x - dmin.x + 0.2, 0.32, 0.25), c + Vector3(0, -0.02, -(dmax.y - dmin.y) * 0.5), _blue)
-	# Steg zwischen Hütte und Startsteg
-	var link := Geo.rel_to_game(7.2, -2.0)
-	_b(dock, Vector3(1.6, 0.25, 1.8), Vector3(link.x, Lake.DOCK_Y - 0.12, link.y), _wood_dark)
-	# Wakeboards am Steg (Leihbretter aus der Brett-Bibliothek, mit Bindungen nach oben)
+	var c := Vector3((dmin.x + dmax.x) * 0.5, Lake.DOCK_Y, (dmin.y + dmax.y) * 0.5)
+	var sx := dmax.x - dmin.x
+	var sz := dmax.y - dmin.y
+	var float_blue := Util.mat(Color(0.25, 0.62, 0.88), 0.5)
+	_b(dock, Vector3(sx, 0.42, sz), c + Vector3(0, -0.23, 0), float_blue)               # Schwimmkörper
+	_b(dock, Vector3(sx - 0.3, 0.05, sz - 0.3), c + Vector3(0, -0.02, 0), Util.mat(Color(0.86, 0.8, 0.66), 0.8))  # Deckfläche
+	# Treppe von der Hütte hinunter zum Startsteg
+	var stairs := _node(7.15, -2.0, 0.0)
+	var steps := 4
+	for i in steps:
+		var h := lerpf(HUT_DECK_Y, Lake.DOCK_Y, float(i + 1) / (steps + 1))
+		_b(stairs, Vector3(0.32, 0.06, 1.3), Vector3(-0.45 + i * 0.3, h - 0.03, 0), plank)
+	for side: float in [-1.0, 1.0]:
+		Util.beam(stairs, Vector3(-0.65, HUT_DECK_Y - 0.05, side * 0.68), Vector3(0.75, Lake.DOCK_Y - 0.05, side * 0.68), 0.05, _wood_dark)
+	# Brettständer am Landende des Startstegs: Leihbretter aus der Brett-Bibliothek stehen hochkant
+	var rack := _node(8.2, -3.2, Lake.DOCK_Y)
+	for z: float in [-0.9, 0.9]:
+		_post(rack, 0.0, z, 0.0, 1.0, _black, 0.04)
+	Util.beam(rack, Vector3(0, 0.95, -0.9), Vector3(0, 0.95, 0.9), 0.03, _black)
 	for i in 3:
 		var bd := BoardLibrary.make(i + 1)
-		bd.position = Vector3(c.x - 2.0 + i * 0.62, Lake.DOCK_Y + 0.002, c.z + 1.65)
-		bd.rotation.y = (i - 1) * 0.06
-		dock.add_child(bd)
+		# Länge senkrecht, Bindungen zeigen zum See (Ost), leicht an die Stange gelehnt
+		# (Brettlänge lokal z -> senkrecht, Bindungen lokal +y -> Osten, oben leicht zur Stange geneigt)
+		var stand := Basis(Vector3.BACK, 0.12) * Basis(Vector3.UP, -PI * 0.5) * Basis(Vector3.RIGHT, -PI * 0.5)
+		bd.transform = Transform3D(stand, Vector3(0.2, Wakeboard.LENGTH * 0.5 + 0.03, -0.55 + i * 0.55))
+		rack.add_child(bd)
+	_build_white_dock()
+
+
+## Weißer Schwimmsteg (Kunststoffmodule, ca. 1,6 m breit) nach dem Luftbild: ein Arm nach Norden
+## am Startsteg vorbei, ein langer Arm schräg nach Südosten; daran ein Holzsteg mit zwei Liegestühlen.
+func _build_white_dock() -> void:
+	var white := Util.mat(Color(0.93, 0.94, 0.93), 0.55)
+	var seam := Util.mat(Color(0.55, 0.57, 0.58), 0.6)
+	_strip(Vector2(9.7, 8.2), Vector2(9.7, 2.3), 1.6, 0.18, white, seam)
+	_strip(Vector2(9.2, -3.3), Vector2(13.2, -14.0), 1.6, 0.18, white, seam)
+	# Holzsteg mit Liegestühlen, landseitig am Südost-Arm
+	var deck := _node(9.3, -9.6, 0.16, -20.5)
+	var plank := Util.mat(Color(0.5, 0.43, 0.35))
+	_b(deck, Vector3(3.0, 0.3, 2.8), Vector3(0, -0.15, 0), _wood_dark)
+	for i in 14:
+		_b(deck, Vector3(0.19, 0.04, 2.8), Vector3(-1.4 + i * 0.215, 0.02, 0), plank)
+	for z: float in [-0.6, 0.6]:
+		_deck_chair(deck, Vector3(0.2, 0.04, z), plank)
+
+
+## Liegestuhl aus Holz (Adirondack-Stil), Lehne zum Land (lokal -x), Blick zum See.
+func _deck_chair(parent: Node3D, at: Vector3, mat: Material) -> void:
+	var ch := Node3D.new()
+	ch.position = at
+	parent.add_child(ch)
+	var seat := _b(ch, Vector3(0.6, 0.05, 0.6), Vector3(0.1, 0.3, 0), mat)
+	seat.rotation.z = 0.12
+	var back := _b(ch, Vector3(0.06, 0.8, 0.6), Vector3(-0.28, 0.62, 0), mat)
+	back.rotation.z = -0.45
+	for z: float in [-0.32, 0.32]:
+		_b(ch, Vector3(0.7, 0.05, 0.1), Vector3(0.05, 0.52, z), mat)          # Armlehnen
+		_post(ch, 0.35, z, 0.0, 0.5, mat, 0.03)
+		_post(ch, -0.15, z, 0.0, 0.3, mat, 0.03)
+
+
+## Schwimmender Steg zwischen zwei Punkten (dE, dN): Module à ~2 m mit dunklen Fugen.
+func _strip(a: Vector2, b: Vector2, width: float, top: float, mat: Material, seam_mat: Material) -> void:
+	var p0 := Geo.rel_to_game(a.x, a.y)
+	var p1 := Geo.rel_to_game(b.x, b.y)
+	var d := p1 - p0
+	var length := d.length()
+	var n := Node3D.new()
+	n.position = Vector3((p0.x + p1.x) * 0.5, top, (p0.y + p1.y) * 0.5)
+	n.rotation.y = atan2(-d.y, d.x)
+	add_child(n)
+	var modules := maxi(int(round(length / 2.0)), 1)
+	var ml := length / modules
+	for i in modules:
+		var x := -length * 0.5 + (i + 0.5) * ml
+		_b(n, Vector3(ml - 0.04, 0.4, width), Vector3(x, -0.2, 0), mat)
+		_b(n, Vector3(0.05, 0.38, width + 0.01), Vector3(x + ml * 0.5, -0.2, 0), seam_mat)
+
+
+## Reifenmauer unter der Vorderkante der Hütte (liegende Autoreifen, gestapelt, zwei Reihen).
+func _tire_wall(hut: Node3D, deck_y: float) -> void:
+	var tire := TorusMesh.new()
+	tire.inner_radius = 0.17
+	tire.outer_radius = 0.32
+	tire.rings = 16
+	tire.ring_segments = 8
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = tire
+	var xf: Array[Transform3D] = []
+	for row in 2:
+		var x := HUT_FRONT - 0.35 - row * 0.55
+		var z := -HUT_HALF_Z - 0.3 + row * 0.3
+		while z < HUT_HALF_Z + 0.3:
+			var yy := -deck_y - 0.3
+			while yy < -0.3:
+				xf.append(Transform3D(Basis.from_scale(Vector3(1.0, 1.35, 1.0)), Vector3(x, yy, z)))
+				yy += 0.2
+			z += 0.62
+	mm.instance_count = xf.size()
+	for i in xf.size():
+		mm.set_instance_transform(i, xf[i])
+	var mi := MultiMeshInstance3D.new()
+	mi.multimesh = mm
+	mi.material_override = Util.mat(Color(0.06, 0.06, 0.065), 0.85)
+	hut.add_child(mi)
 
 
 ## Realistische Figur (MakeHuman), schaut in lokale +X-Richtung (aufs Wasser).
@@ -395,10 +551,25 @@ func _palm(base: Vector3, seed_value: float) -> void:
 # ---------------------------------------------------------------- Wasser
 
 func _build_water_items() -> void:
-	# Rotes Rettungsboot neben der T2-Hütte
-	var boat := _node(7.5, 5.0, 0.1, 30.0)
-	_b(boat, Vector3(1.5, 0.45, 3.4), Vector3.ZERO, Util.mat(Color(0.85, 0.15, 0.2), 0.5))
-	_b(boat, Vector3(0.3, 0.5, 0.4), Vector3(0, 0.35, 1.6), _black)
+	# Rotes Schlauchboot (Rettungsboot) am weißen Steg, Bug nach Norden, Außenborder hinten
+	var boat := _node(11.4, 5.4, 0.12, 4.0)
+	var rubber := Util.mat(Color(0.82, 0.16, 0.2), 0.55)
+	for side: float in [-1.0, 1.0]:
+		var tube := CapsuleMesh.new()
+		tube.radius = 0.22
+		tube.height = 3.0
+		var t := MeshInstance3D.new()
+		t.mesh = tube
+		t.material_override = rubber
+		t.rotation.x = PI * 0.5
+		t.position = Vector3(side * 0.55, 0.0, 0.1)
+		boat.add_child(t)
+	Util.beam(boat, Vector3(-0.55, 0.0, -1.35), Vector3(0.55, 0.0, -1.35), 0.22, rubber)   # Bug
+	_b(boat, Vector3(1.1, 0.06, 2.8), Vector3(0, -0.15, 0.1), Util.mat(Color(0.35, 0.35, 0.37), 0.7))  # Boden
+	_b(boat, Vector3(1.0, 0.35, 0.06), Vector3(0, 0.0, 1.55), _wood_dark)                    # Spiegel
+	_b(boat, Vector3(0.28, 0.4, 0.35), Vector3(0, 0.35, 1.75), _black)                       # Außenborder
+	_b(boat, Vector3(0.08, 0.5, 0.1), Vector3(0, -0.05, 1.82), _black)
+	_b(boat, Vector3(1.0, 0.05, 0.3), Vector3(0, 0.1, -0.1), _wood_grey)                     # Sitzbank
 	# Gelbe Bojenleine (Abgrenzung zum Badebereich im Norden): ca. 2 m lange gelbe
 	# Schwimmzylinder, aneinandergekettet
 	var tube := CylinderMesh.new()
