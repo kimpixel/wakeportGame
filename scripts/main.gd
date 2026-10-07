@@ -102,6 +102,7 @@ func _ready() -> void:
 	npc.model_path = "res://assets/characters/guest_m.glb"
 	npc.shirt_color = Color(0.85, 0.85, 0.82)
 	npc.shorts_color = Color(0.1, 0.1, 0.12)
+	npc.board_design = 4               # "Dots" aus der Brett-Bibliothek
 	npc.start_pos = npc_start
 	npc.start_yaw = cable_t1.rotation.y
 	npc.dock_rect = Rect2(dc.x - 3.5, dc.y - 2.2, 7.0, 4.4)

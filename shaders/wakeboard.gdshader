@@ -14,6 +14,15 @@ uniform bool use_bottom_tex = false;
 // optionale Foto-Textur der Oberseite (von oben gesehen, gleiche Ausrichtung)
 uniform sampler2D top_tex : source_color, filter_linear_mipmap, repeat_disable;
 uniform bool use_top_tex = false;
+// Design aus der BoardLibrary: Muster (0 = Zeitung/Foto) und je drei Farben (Grund, Muster, Akzent)
+uniform int top_style = 0;
+uniform vec3 top_a : source_color = vec3(0.07, 0.075, 0.1);
+uniform vec3 top_b : source_color = vec3(0.86, 0.80, 0.66);
+uniform vec3 top_c : source_color = vec3(0.85, 0.15, 0.12);
+uniform int bottom_style = 0;
+uniform vec3 bottom_a : source_color = vec3(0.93, 0.88, 0.72);
+uniform vec3 bottom_b : source_color = vec3(0.30, 0.33, 0.36);
+uniform vec3 bottom_c : source_color = vec3(0.85, 0.15, 0.12);
 
 varying vec3 lp;
 varying float part;
@@ -74,10 +83,92 @@ vec3 clipping(vec2 p, vec2 c, vec2 h, float a, float seed) {
 	return vec3(inside, ink(q + h, seed), shade);
 }
 
+// Oberseite der Bibliotheks-Designs (x quer, z längs, Meter)
+vec3 top_pattern(int style, float x, float z) {
+	float az = abs(z);
+	if (style == 1) {          // Diagonal-Streifen über die Mitte, Spitzen in Akzentfarbe
+		vec3 c = top_a;
+		float d = fract((z * 0.8 + x) * 3.0);
+		if (az < 0.5) {
+			if (d < 0.3) c = top_b;
+			else if (abs(d - 0.36) < 0.025) c = top_c;
+		}
+		if (az > 0.62) c = top_c;
+		return c;
+	} else if (style == 2) {   // Farbverlauf längs, Chevrons an den Spitzen
+		vec3 c = mix(top_a, top_b, smoothstep(-half_len, half_len, z));
+		float tip = half_len - az;
+		float chev = fract((tip + abs(x) * 0.7) * 9.0);
+		if (tip < 0.28 && chev < 0.35) c = top_c;
+		return c;
+	} else if (style == 3) {   // Höhenlinien (Topo-Karte), Spitzen in Akzentfarbe
+		float f = sin(x * 17.0 + sin(z * 6.5) * 1.6) + sin(z * 10.0 + cos(x * 12.0) * 1.3) + 0.6 * sin((x + z) * 21.0);
+		bool line = abs(fract(f * 2.2) - 0.5) < 0.08;
+		vec3 base = az > 0.6 ? top_c : top_a;
+		return line ? top_b : base;
+	} else {                   // Rasterpunkte, zu den Spitzen größer; Querband in der Mitte
+		vec2 g = vec2(x, z) / 0.028;
+		vec2 f = fract(g) - 0.5;
+		float r = 0.08 + 0.36 * smoothstep(0.12, 0.66, az);
+		vec3 c = length(f) < r ? top_b : top_a;
+		if (az < 0.07) c = top_c;
+		return c;
+	}
+}
+
+// Unterseite der Bibliotheks-Designs (von unten gesehen: x gespiegelt)
+vec3 bottom_pattern(int style, float x, float z) {
+	float az = abs(z);
+	if (style == 1) {          // breites Querband mit zwei Linien
+		vec3 c = bottom_a;
+		if (az < 0.18) c = bottom_b;
+		if (abs(az - 0.23) < 0.015) c = bottom_c;
+		return c;
+	} else if (style == 2) {   // Verlauf längs mit Retro-Sonne in der Mitte
+		vec3 c = mix(bottom_a, bottom_b, smoothstep(-half_len, half_len, z));
+		float r = length(vec2(x, z));
+		if (r < 0.17 && !(z > 0.0 && fract(z * 28.0) < 0.3)) c = bottom_c;
+		return c;
+	} else if (style == 3) {   // drei Zickzack-Bänder quer
+		vec3 c = bottom_a;
+		float zig = abs(fract(x * 6.0) - 0.5) * 0.10;
+		for (int i = -1; i <= 1; i++) {
+			float zc = float(i) * 0.42 + zig - 0.025;
+			if (abs(z - zc) < (i == 0 ? 0.06 : 0.03)) c = (i == 0) ? bottom_b : bottom_c;
+		}
+		return c;
+	} else {                   // Karo an den Spitzen, Linie davor
+		vec3 c = bottom_a;
+		if (az > 0.47) {
+			vec2 k = floor(vec2(x, z) / 0.055);
+			c = mod(k.x + k.y, 2.0) < 1.0 ? bottom_b : bottom_a;
+		}
+		if (abs(az - 0.43) < 0.018) c = bottom_c;
+		return c;
+	}
+}
+
 void fragment() {
 	vec3 col;
 	float rough = 0.4;
-	if (part < 0.25) {
+	if (part < 0.25 && top_style != 0) {
+		// ---------------- Oberseite: Bibliotheks-Design + Inserts
+		col = top_pattern(top_style, lp.x, lp.z);
+		rough = 0.35;
+		float dmin = 1.0;
+		for (int k = 0; k < 7; k++) {
+			float zk = 0.17 + 0.033 * float(k);
+			dmin = min(dmin, length(vec2(lp.x, abs(lp.z) - zk)));
+		}
+		if (dmin < 0.0045) {
+			col = dmin < 0.0026 ? srgb(vec3(0.05)) : srgb(vec3(0.6, 0.6, 0.62));
+			rough = 0.3;
+		}
+	} else if (part > 0.75 && bottom_style != 0) {
+		// ---------------- Unterseite: Bibliotheks-Design
+		col = bottom_pattern(bottom_style, -lp.x, lp.z);
+		rough = 0.28;
+	} else if (part < 0.25) {
 		// ---------------- Oberseite
 		if (use_top_tex) {
 			vec2 uv = vec2(0.5 + lp.x / (2.0 * half_w), 0.5 + lp.z / (2.0 * half_len));

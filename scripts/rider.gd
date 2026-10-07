@@ -66,6 +66,7 @@ var vest_color := Color(1.0, 0.45, 0.05)
 var model_path := "res://assets/characters/rider.glb"
 var shirt_color := Color(0.22, 0.24, 0.28)
 var shorts_color := Color(0.15, 0.35, 0.7)
+var board_design := 0             # Brett aus der BoardLibrary
 var is_npc := false
 ## Test/Demo: Autopilot hält diese seitliche Spur (Meter neben dem Seil) und fährt Features direkt an
 var auto_lane := NAN
@@ -127,7 +128,7 @@ func _ready() -> void:
 	_board_pivot.position = Vector3(0.0, BOARD_Y, 0.0)
 	add_child(_board_pivot)
 	# Twin-Tip-Board mit Bindungsschuhen (scripts/wakeboard.gd)
-	_board_pivot.add_child(Wakeboard.new())
+	_board_pivot.add_child(BoardLibrary.make(board_design))
 
 	# Fahrer steht seitlich auf dem Brett: Schultern entlang der Brettachse, Brust zeigt nach +X
 	_body_pivot = Node3D.new()

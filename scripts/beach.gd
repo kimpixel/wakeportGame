@@ -156,11 +156,12 @@ func _build_t2_start() -> void:
 	# Steg zwischen Hütte und Startsteg
 	var link := Geo.rel_to_game(7.2, -2.0)
 	_b(dock, Vector3(1.6, 0.25, 1.8), Vector3(link.x, Lake.DOCK_Y - 0.12, link.y), _wood_dark)
-	# Wakeboards am Steg
+	# Wakeboards am Steg (Leihbretter aus der Brett-Bibliothek, mit Bindungen nach oben)
 	for i in 3:
-		var bp := c + Vector3(-2.0 + i * 0.5, 0.22, 1.8)
-		var bd := _b(dock, Vector3(0.42, 0.04, 1.35), bp, _black)
-		bd.rotation.y = 0.2 * i
+		var bd := BoardLibrary.make(i + 1)
+		bd.position = Vector3(c.x - 2.0 + i * 0.62, Lake.DOCK_Y + 0.002, c.z + 1.65)
+		bd.rotation.y = (i - 1) * 0.06
+		dock.add_child(bd)
 
 
 ## Realistische Figur (MakeHuman), schaut in lokale +X-Richtung (aufs Wasser).

@@ -82,41 +82,76 @@ static func foot_yaw(front: bool) -> float:
 	return DUCK if front else -DUCK
 
 
-func _init() -> void:
+static var _mesh_cache: ArrayMesh      # Form ist bei allen Brettern gleich -> ein Mesh für alle
+
+
+## design: Eintrag aus BoardLibrary (Muster und Farben); leer = Design 0.
+func _init(design: Dictionary = {}) -> void:
+	if design.is_empty():
+		design = BoardLibrary.design(0)
 	var mi := MeshInstance3D.new()
-	mi.mesh = _build_mesh()
+	if _mesh_cache == null:
+		_mesh_cache = _build_mesh()
+	mi.mesh = _mesh_cache
 	var mat := ShaderMaterial.new()
 	mat.shader = load("res://shaders/wakeboard.gdshader")
 	mat.set_shader_parameter("half_len", LENGTH * 0.5)
 	mat.set_shader_parameter("half_w", HALF_W)
-	for side: String in ["bottom", "top"]:
+	for side: String in ["top", "bottom"]:
+		var style: int = design.get(side + "_style", 0)
+		mat.set_shader_parameter(side + "_style", style)
+		for k: String in ["a", "b", "c"]:
+			if design.has(side + "_" + k):
+				mat.set_shader_parameter(side + "_" + k, design[side + "_" + k])
+		# Foto-Texturen gehören zum Zeitungs-Design (Stil 0)
 		var path := BOTTOM_TEX if side == "bottom" else TOP_TEX
-		if ResourceLoader.exists(path):
+		if style == 0 and ResourceLoader.exists(path):
 			mat.set_shader_parameter(side + "_tex", load(path))
 			mat.set_shader_parameter("use_" + side + "_tex", true)
 	mi.material_override = mat
 	add_child(mi)
 	if ResourceLoader.exists(BOOT_PATH):
 		var scene: PackedScene = load(BOOT_PATH)
-		var camo := ShaderMaterial.new()
-		camo.shader = load("res://shaders/camo.gdshader")
+		var panel: Material
+		if design.has("boot_panel"):
+			panel = _boot_mat(design["boot_panel"], 0.75)
+		else:
+			var camo := ShaderMaterial.new()
+			camo.shader = load("res://shaders/camo.gdshader")
+			if design.has("camo"):
+				for i in 4:
+					camo.set_shader_parameter("c%d" % (i + 1), design["camo"][i])
+			panel = camo
+		var upper: Material = _boot_mat(design["boot_upper"], 0.7) if design.has("boot_upper") else null
+		var accent: Material = _boot_mat(design["boot_accent"], 0.55) if design.has("boot_accent") else null
 		for front: bool in [true, false]:
 			var boot: Node3D = scene.instantiate()
 			# Schuh-Zehen zeigen im Modell nach -Z; hier zur Brust des Fahrers (+X), plus Duck-Winkel
 			boot.transform = Transform3D(Basis(Vector3.UP, -PI * 0.5 + foot_yaw(front)), boot_origin(front))
 			add_child(boot)
-			_apply_camo(boot, camo)
+			_style_boot(boot, {"camo": panel, "olive": upper, "orange": accent})
 
 
-func _apply_camo(n: Node, camo: Material) -> void:
+## Schuh-Material: beidseitig (man sieht oben in den Schaft hinein).
+static func _boot_mat(color: Color, rough: float) -> StandardMaterial3D:
+	var m := Util.mat(color, rough)
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	return m
+
+
+## Bindungsfarben: Materialien des Schuh-Modells nach Namen ersetzen (null = Original lassen).
+func _style_boot(n: Node, by_name: Dictionary) -> void:
 	if n is MeshInstance3D:
 		var mi := n as MeshInstance3D
 		for i in mi.mesh.get_surface_count():
 			var m := mi.mesh.surface_get_material(i)
-			if m and m.resource_name.begins_with("camo"):
-				mi.set_surface_override_material(i, camo)
+			if m == null:
+				continue
+			for prefix: String in by_name:
+				if m.resource_name.begins_with(prefix) and by_name[prefix] != null:
+					mi.set_surface_override_material(i, by_name[prefix])
 	for c in n.get_children():
-		_apply_camo(c, camo)
+		_style_boot(c, by_name)
 
 
 # ---------------------------------------------------------------- Mesh
