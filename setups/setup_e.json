@@ -17,8 +17,8 @@
     { "part": "transition_rail", "s": 114.4, "x": -5.0, "dir": "out" },
     { "part": "pyramid_series",  "s": 114.6, "x": 4.7,  "dir": "out" },
     { "part": "uprail",          "s": 73.6,  "x": -5.6, "dir": "in" },
-    { "part": "pipe_half",       "s": 63.6,  "x": -7.4, "dir": "out", "ramp_in": 0 },
-    { "part": "pipe_half",       "s": 63.6,  "x": -3.8, "dir": "out", "ramp_in": 0 },
+    { "part": "pipe_half",       "s": 68.0,  "x": -6.8, "dir": "out", "ramp_in": 0 },
+    { "part": "pipe_half",       "s": 68.0,  "x": -4.4, "dir": "out", "ramp_in": 0 },
     { "part": "spine_kicker",    "s": 68.6,  "x": 5.4 }
   ]
 }
