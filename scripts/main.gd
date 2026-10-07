@@ -15,6 +15,8 @@ extends Node3D
 ##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
 ##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
 ##   --game-time=SEK   Test: Spielzeit (normal 450 s); im Autotest läuft dann eine Runde mit Zeit
+##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, regen, dunst)
+##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
 
 const RESET_DELAY := 3.0
@@ -54,6 +56,10 @@ var _terminal_arg := ""
 var _start := {}                 # "T1"/"T2" -> {pos, yaw, dock, mast_b}
 var sfx: Sfx
 var ambient: Ambient
+var weather: Weather
+var _weather_arg := ""
+var _hour_arg := NAN
+var _day_arg := 0
 var start_screen: StartScreen
 var _screen_arg := false
 var _no_screen := false
@@ -244,6 +250,7 @@ func _ready() -> void:
 func _build_start_screen() -> void:
 	start_screen = StartScreen.new()
 	start_screen.features = features
+	start_screen.weather = weather
 	start_screen.cable_of = {"T1": cable_t1, "T2": cable}
 	start_screen.s_offset = _s_offset()
 	var names: Array = []
@@ -776,6 +783,12 @@ func _parse_args() -> void:
 			_view_arg = PackedFloat32Array(Array(arg.substr(7).split(",")).map(func(v: String) -> float: return v.to_float()))
 		elif arg.begins_with("--game-time="):
 			_game_time = arg.substr(12).to_float()
+		elif arg.begins_with("--weather="):
+			_weather_arg = arg.substr(10)
+		elif arg.begins_with("--hour="):
+			_hour_arg = arg.substr(7).to_float()
+		elif arg.begins_with("--day="):
+			_day_arg = arg.substr(6).to_int()
 		elif arg == "--no-screen":
 			_no_screen = true
 		elif arg == "--screen" or arg.begins_with("--screen="):
@@ -788,53 +801,37 @@ func _parse_args() -> void:
 # ---------------------------------------------------------------- Welt
 
 func _build_environment() -> void:
-	var sky_mat := ProceduralSkyMaterial.new()
-	sky_mat.sky_top_color = Color(0.22, 0.42, 0.78)
-	sky_mat.sky_horizon_color = Color(0.68, 0.78, 0.9)
-	sky_mat.ground_horizon_color = Color(0.6, 0.7, 0.75)
-	sky_mat.ground_bottom_color = Color(0.25, 0.32, 0.25)
-	var sky := Sky.new()
-	sky.sky_material = sky_mat
-
-	var env := Environment.new()
-	env.background_mode = Environment.BG_SKY
-	env.sky = sky
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	# Schatten nicht zu blau: Himmelslicht nur teilweise, Rest neutrales Grau
-	env.ambient_light_color = Color(0.62, 0.6, 0.55)
-	env.ambient_light_sky_contribution = 0.45
-	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
-	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.fog_enabled = true
-	env.fog_light_color = Color(0.7, 0.78, 0.88)
-	env.fog_density = 0.00022   # maximale Sichtweite, nur leichter Dunst am Horizont
-	var we := WorldEnvironment.new()
-	we.environment = env
-	add_child(we)
-
-	var sun := DirectionalLight3D.new()
-	# Echte Himmelsrichtung: Nachmittagssonne aus Süd-Südwest (Azimut 200°, 45° hoch)
-	var az := deg_to_rad(200.0)
-	var el := deg_to_rad(45.0)
-	var flat := Geo.rel_to_game(sin(az), cos(az))
-	var to_sun := Vector3(flat.x * cos(el), sin(el), flat.y * cos(el))
-	sun.basis = Basis.looking_at(-to_sun)
-	sun.shadow_enabled = true
-	sun.directional_shadow_max_distance = 200.0
-	add_child(sun)
-
-	# Browser (Compatibility-Renderer) belichtet deutlich heller – eigene Werte, damit es
-	# ungefähr so aussieht wie die Desktop-Version.
-	if RenderingServer.get_current_rendering_method() == "gl_compatibility":
-		sky_mat.sky_top_color = Color(0.08, 0.22, 0.6)
-		sky_mat.sky_horizon_color = Color(0.42, 0.55, 0.76)
-		env.fog_light_color = Color(0.5, 0.6, 0.75)
-		sky_mat.energy_multiplier = 0.8
-		env.ambient_light_energy = 0.3
-		env.tonemap_exposure = 0.8
-		sun.light_energy = 0.65
+	# Wetter, Jahreszeit und Uhrzeit (Sonnenstand aus der echten Lage des Sees, siehe Weather)
+	Geo.ensure_loaded()
+	weather = Weather.new()
+	add_child(weather)
+	var test := _test_log or _shot_path != "" or not _view_arg.is_empty() or _closeup != Vector3.INF
+	var cfg := ConfigFile.new()
+	var has_cfg := cfg.load(SETTINGS) == OK and cfg.has_section_key("weather", "live")
+	if not test and (not has_cfg or bool(cfg.get_value("weather", "live", true))):
+		weather.set_now()
+	elif not test:
+		weather.preset = weather.find_preset(str(cfg.get_value("weather", "preset", "sonnig")))
+		weather.day = int(cfg.get_value("weather", "day", 172))
+		weather.hour = float(cfg.get_value("weather", "hour", 14.5))
+	if _weather_arg != "":
+		weather.preset = weather.find_preset(_weather_arg)
+	if not is_nan(_hour_arg):
+		weather.hour = _hour_arg
+		weather.live = false
+	if _day_arg > 0:
+		weather.day = _day_arg
+		weather.live = false
+	weather.apply()
+	if not test:
+		weather.changed.connect(_save_weather)
 
 
-
-
-
+func _save_weather() -> void:
+	var cfg := ConfigFile.new()
+	cfg.load(SETTINGS)
+	cfg.set_value("weather", "live", weather.live)
+	cfg.set_value("weather", "preset", Weather.PRESETS[weather.preset]["id"])
+	cfg.set_value("weather", "day", weather.day)
+	cfg.set_value("weather", "hour", weather.hour)
+	cfg.save(SETTINGS)

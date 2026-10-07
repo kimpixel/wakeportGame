@@ -10,6 +10,7 @@ signal setup_chosen(idx: int)
 signal start_pressed
 
 var features: FeatureSet
+var weather: Weather
 var cable_of := {}               # "T1"/"T2" -> CableSystem
 var s_offset := {}               # wie FeatureSet.load_setup: s in der Setup-Datei = s_center - Versatz
 
@@ -65,6 +66,8 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_setup_opt = _choice(top, "Feature-Setup", setup_names)
 	_setup_opt.item_selected.connect(func(i: int) -> void: setup_chosen.emit(i))
 
+	_build_weather_row(root)
+
 	# oben: die Bahn live (Start links, Endmast rechts)
 	var lt := Label.new()
 	lt.text = "Feature oder Hack anklicken (← →)  –  Doppelklick: heranzoomen, ziehen: verschieben, Rad: Zoom, Rechtsklick: ganze Bahn   |   T Terminal   F Feature-Setup   Enter Start"
@@ -110,6 +113,62 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	go.custom_minimum_size = Vector2(320, 56)
 	go.pressed.connect(func() -> void: start_pressed.emit())
 	bottom.add_child(go)
+
+
+## Wetter, Datum, Uhrzeit und "Jetzt" (Datum/Uhrzeit vom Rechner, Wetter live vom See).
+func _build_weather_row(root: Control) -> void:
+	if weather == null:
+		return
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	root.add_child(row)
+	var w_opt := _choice(row, "Wetter", weather.preset_names())
+	w_opt.custom_minimum_size = Vector2(170, 36)
+	w_opt.item_selected.connect(func(i: int) -> void: weather.set_preset(i))
+	var date_l := Label.new()
+	var time_l := Label.new()
+	var day_s := _slider(row, "Datum", 1.0, 365.0, 1.0, date_l)
+	day_s.value_changed.connect(func(v: float) -> void:
+		if int(v) != weather.day:
+			weather.set_day(int(v)))
+	var hour_s := _slider(row, "Uhrzeit", 0.0, 24.0, 0.25, time_l)
+	hour_s.value_changed.connect(func(v: float) -> void:
+		if absf(v - weather.hour) > 0.01:
+			weather.set_hour(v))
+	var now := Button.new()
+	now.text = "Jetzt"
+	now.add_theme_font_size_override("font_size", 18)
+	now.custom_minimum_size = Vector2(90, 36)
+	now.tooltip_text = "Heute, jetzige Uhrzeit und aktuelles Wetter am See"
+	now.pressed.connect(weather.set_now)
+	row.add_child(now)
+	var update := func() -> void:
+		w_opt.select(weather.preset)
+		day_s.set_value_no_signal(weather.day)
+		hour_s.set_value_no_signal(weather.hour)
+		date_l.text = weather.date_text()
+		time_l.text = weather.time_text() + ("  (live)" if weather.live else "")
+	weather.changed.connect(update)
+	update.call()
+
+
+func _slider(parent: Control, title: String, lo: float, hi: float, step: float, value_label: Label) -> HSlider:
+	var l := Label.new()
+	l.text = title
+	l.add_theme_font_size_override("font_size", 18)
+	parent.add_child(l)
+	var sl := HSlider.new()
+	sl.min_value = lo
+	sl.max_value = hi
+	sl.step = step
+	sl.custom_minimum_size = Vector2(220, 24)
+	sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	sl.focus_mode = Control.FOCUS_NONE
+	parent.add_child(sl)
+	value_label.add_theme_font_size_override("font_size", 18)
+	value_label.custom_minimum_size = Vector2(130, 0)
+	parent.add_child(value_label)
+	return sl
 
 
 func _choice(parent: Control, title: String, names: Array) -> OptionButton:
