@@ -468,7 +468,7 @@ func _track_turn() -> void:
 	if pc.state == CableSystem.State.RUN:
 		_turn_active = false
 		if _turn_slow < SINK_TIME:
-			rider.award("Wende um die Boje" if _turn_around else "Saubere Wende", 250 if _turn_around else 120)
+			rider.award("Wende um die Boje" if _turn_around else "Saubere Wende", 30 if _turn_around else 15)
 		elif _test_log:
 			print("WENDE abgesoffen, %.1f s zu langsam" % _turn_slow)
 

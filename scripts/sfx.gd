@@ -9,6 +9,7 @@ extends Node
 ## Taste M schaltet den Ton stumm.
 
 const RATE := 22050
+const CHEER_MIN := 150      # ab so vielen Punkten jubelt der Startblock
 
 var rider: Rider
 var people: Array[Dictionary] = []   # aus Beach: Leute im Startblock
@@ -114,7 +115,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Jubel aus dem Startblock: der Steuermann ruft immer, Gäste manchmal mit.
 func _on_trick(trick: String, points: int) -> void:
-	if _voices.is_empty():
+	# Jubel nur für richtig gute Aktionen (Wenden und kleine Tricks bleiben still)
+	if _voices.is_empty() or points < CHEER_MIN:
 		return
 	var big := points >= 250 or trick.begins_with("360") or trick.begins_with("540")
 	for i in _voices.size():
