@@ -36,6 +36,7 @@ const POP_BASE := 2.2
 const SLIDE_FRICTION := 0.1     # Reibung Brett auf Feature-Oberfläche
 const POP_LOAD := 2.8
 const POP_ROPE := 1.8
+const ARM_REACH := 0.88         # Griff höchstens so weit weg (Anteil der Armlänge) – Arme leicht gebeugt
 const BOARD_HALF := 0.35
 
 const START_POS := Vector3(1.7, Lake.DOCK_Y, -10.0)   # auf dem Startsteg vor der T2-Hütte
@@ -105,6 +106,7 @@ var _body_pivot: Node3D
 var _arm_l: MeshInstance3D
 var _arm_r: MeshInstance3D
 var _human: Node3D
+var _ragdoll: Ragdoll
 var _rig: HumanRig
 var _handle: MeshInstance3D
 var _rope_mesh: ImmediateMesh
@@ -235,6 +237,8 @@ func reset() -> void:
 	crash_reason = ""
 	air_time = 0.0
 	_rope_dist = 0.0
+	if _ragdoll:
+		_ragdoll.stop()
 
 
 # ---------------------------------------------------------------- Helfer
@@ -753,6 +757,9 @@ func crash(reason: String) -> void:
 	attached = false
 	crash_reason = reason
 	_free_handle = pos + Vector3(0.0, HANDLE_HEIGHT, 0.0)
+	if _ragdoll:
+		# Körper fliegt mit dem bisherigen Schwung weiter (begrenzt), dann bremst das Wasser
+		_ragdoll.start(vel.limit_length(12.0), water.height_at(pos.x, pos.z), pos)
 	vel.y = 0.0
 	crashed.emit(reason)
 
@@ -764,6 +771,11 @@ func _step_crashed(delta: float) -> void:
 	vel.y = 0.0
 	pos.x += vel.x * delta
 	pos.z += vel.z * delta
+	if _ragdoll and _ragdoll.active:
+		# Fahrerposition (Kamera, Brett) folgt dem treibenden Körper
+		var c := _ragdoll.center()
+		pos.x = c.x
+		pos.z = c.z
 	pos.y = water.height_at(pos.x, pos.z) - 0.25
 
 
@@ -817,8 +829,12 @@ func _process(delta: float) -> void:
 	_body_pivot.rotation = Vector3(_lean_pitch, 0.0, _lean_roll)
 	_body_pivot.scale = Vector3(1.0, 1.0 - _crouch, 1.0)
 	_body_pivot.position.y = -0.3 if mode == Mode.CRASHED else 0.06
-	_board_pivot.rotation.z = 1.2 if mode == Mode.CRASHED \
-		else _lean_roll * (0.35 + 0.45 * _edge_vis) * (1.0 - 0.85 * _release_vis)
+	if _ragdoll and _ragdoll.active:
+		_board_on_feet()
+	else:
+		_board_pivot.position = Vector3(0.0, 0.03, 0.0)
+		_board_pivot.rotation = Vector3(0.0, 0.0, 1.2 if mode == Mode.CRASHED \
+			else _lean_roll * (0.35 + 0.45 * _edge_vis) * (1.0 - 0.85 * _release_vis))
 
 	# Griff, Arme, Seil
 	var anchor := cable.get_anchor_visual()
@@ -828,6 +844,10 @@ func _process(delta: float) -> void:
 		var hand := vpos + Vector3(0.0, HANDLE_HEIGHT * (1.0 - _crouch * 0.5), 0.0)
 		to_anchor = (anchor - hand).normalized()
 		handle_pos = hand + to_anchor * 0.35
+		if _rig:
+			# Realistischer Griff: vor der vorderen Hüfte, Arme fast gestreckt
+			var rb := global_transform.basis.orthonormalized()
+			handle_pos = vpos + rb * Vector3(0.2, 0.86 - 0.3 * _crouch, -0.2) + to_anchor * 0.5
 	else:
 		var off := _free_handle - anchor
 		off.y = 0.0
@@ -838,13 +858,13 @@ func _process(delta: float) -> void:
 		to_anchor = (anchor - handle_pos).normalized()
 	var bar_axis := to_anchor.cross(Vector3.UP)
 	bar_axis = bar_axis.normalized() if bar_axis.length() > 0.01 else Vector3.RIGHT
-	Util.place_beam(_handle, handle_pos - bar_axis * 0.22, handle_pos + bar_axis * 0.22)
-
 	_arm_l.visible = attached and _rig == null
 	_arm_r.visible = attached and _rig == null
 	if _rig and attached and mode != Mode.CRASHED:
-		_pose_arms(handle_pos, bar_axis)
-	if attached:
+		# Die Hände bestimmen, wo der Griff ist: nie weiter weg, als die Arme reichen
+		handle_pos = _pose_arms(handle_pos, bar_axis)
+	Util.place_beam(_handle, handle_pos - bar_axis * 0.22, handle_pos + bar_axis * 0.22)
+	if attached and _rig == null:     # Ersatzarme nur ohne Figur (place_beam macht sichtbar!)
 		var body := _body_pivot.global_transform
 		Util.place_beam(_arm_l, body * Vector3(0.0, 1.38, 0.17), handle_pos - bar_axis * 0.08)
 		Util.place_beam(_arm_r, body * Vector3(0.0, 1.38, -0.17), handle_pos + bar_axis * 0.08)
@@ -889,6 +909,7 @@ func _load_model() -> void:
 		_human = null
 		return
 	_rig = HumanRig.new(skel)
+	_ragdoll = Ragdoll.new(skel, self)
 	_body_pivot.visible = false
 	_tint_clothes(_human)
 	# Helm am Kopf-Knochen (die Impact-Weste ist das eng anliegende Oberteil, siehe _tint_clothes)
@@ -936,6 +957,10 @@ func _attach(bone: String, mesh: Mesh, offset: Vector3, scl: Vector3, mat: Mater
 ## Pose aus der Physik: Füße in den Bindungen, Becken/Oberkörper gegen den Seilzug,
 ## Knie federn je nach Belastung, Kopf schaut in Fahrtrichtung.
 func _pose_human() -> void:
+	if _ragdoll.active:
+		var c := _ragdoll.center()
+		_ragdoll.follow_water(water.height_at(c.x, c.z), c)
+		return
 	_human.rotation = Vector3(0.0, PI * 0.5, 0.0)
 	_human.position = Vector3(0.0, 0.06, 0.0)
 	_rig.begin()
@@ -962,13 +987,16 @@ func _pose_human() -> void:
 	var chest := rb * Vector3.RIGHT
 	var twist := 0.0
 	if rope_h.length() > 0.1 and attached:
-		twist = clampf(chest.signed_angle_to(rope_h.normalized(), Vector3.UP), -0.9, 0.9) * 0.6
+		twist = clampf(chest.signed_angle_to(rope_h.normalized(), Vector3.UP), -1.4, 1.4) * 0.75
 	var spine_w := Basis(Vector3.UP, twist) * (rb * Basis.from_euler(Vector3(_lean_pitch * 0.4, 0.0, _lean_roll * 0.4)) * rb.inverse())
 	_rig.bend_spine(to_skel.call(spine_w).get_rotation_quaternion())
 	# Beine: Knie Richtung Brust/Zehen, leicht nach außen
 	var knee_dir := chest * 1.0 + Vector3.UP * 0.3
 	_rig.leg("l", skel_inv * foot_front, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, -0.25)))
 	_rig.leg("r", skel_inv * foot_back, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, 0.25)))
+	# Füße flach in den Bindungen (Ruhe-Ausrichtung relativ zum Fahrer)
+	for fb: String in ["foot_l", "foot_r"]:
+		_rig.set_end_basis(fb, _rig.rest_global(fb).basis)
 	# Kopf: in Fahrtrichtung bzw. zum Seil
 	var look_dir := Vector3(vel.x, 0.0, vel.z)
 	if look_dir.length() < 1.0:
@@ -976,19 +1004,56 @@ func _pose_human() -> void:
 	_rig.look_at(skel_inv * (pelvis_world + Vector3.UP * 0.8 + look_dir.normalized() * 10.0))
 
 
-func _pose_arms(handle_pos: Vector3, bar_axis: Vector3) -> void:
+## Beim Sturz bleibt das Brett an den Füßen (Bindungen): Lage aus den Fuß-Knochen der Ragdoll.
+func _board_on_feet() -> void:
+	var skel_b := _rig.skeleton.global_transform.basis
+	var gl := _ragdoll.child_world("calf_l", "foot_l")
+	var gr := _ragdoll.child_world("calf_r", "foot_r")
+	var front := gl.origin
+	var back := gr.origin
+	# Sohlen-Normale: in der Ruhepose zeigt sie nach oben
+	var up_l := gl.basis * (_rig.rest_global("foot_l").basis.inverse() * (skel_b.inverse() * Vector3.UP))
+	var up_r := gr.basis * (_rig.rest_global("foot_r").basis.inverse() * (skel_b.inverse() * Vector3.UP))
+	var z := back - front
+	z = z.normalized() if z.length() > 0.01 else global_basis.z
+	var y := (up_l + up_r)
+	y = (y - z * y.dot(z)).normalized() if (y - z * y.dot(z)).length() > 0.01 else Vector3.UP
+	var b := Basis(y.cross(z), y, z)
+	_board_pivot.global_transform = Transform3D(b, (front + back) * 0.5 - y * 0.07)
+
+
+## Arme an den Griff. Die Armlänge ist die Grenze: Liegt der Wunsch-Griffpunkt weiter weg,
+## wird der Griff näher an den Körper geholt (Arme bleiben leicht gebeugt, nie überstreckt).
+## Gibt die tatsächliche Griffposition zurück.
+func _pose_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
 	var skel_inv := _rig.skeleton.global_transform.affine_inverse()
+	var skel := _rig.skeleton.global_transform
+	var sh_l := skel * _rig.global_pose("upperarm_l").origin
+	var sh_r := skel * _rig.global_pose("upperarm_r").origin
+	var reach := (_rig.rest_global("upperarm_l").origin.distance_to(_rig.rest_global("lowerarm_l").origin)
+		+ _rig.rest_global("lowerarm_l").origin.distance_to(_rig.rest_global("hand_l").origin)) * ARM_REACH
+	for i in 4:
+		var over := 0.0
+		var pull := Vector3.ZERO
+		for sh: Vector3 in [sh_l, sh_r]:
+			var end := handle_pos - bar_axis * 0.1 if sh.distance_to(handle_pos - bar_axis * 0.1) < sh.distance_to(handle_pos + bar_axis * 0.1) else handle_pos + bar_axis * 0.1
+			var d := sh.distance_to(end)
+			if d - reach > over:
+				over = d - reach
+				pull = (sh - end).normalized()
+		if over <= 0.0:
+			break
+		handle_pos += pull * over
 	var a := handle_pos - bar_axis * 0.1
 	var b := handle_pos + bar_axis * 0.1
-	# linke Hand (vordere Schulter, Richtung Nose) an das Griffende, das näher an der Nose liegt
-	var nose := forward()
-	var front := a if (a - global_position).dot(nose) > (b - global_position).dot(nose) else b
+	# Ellbogen nach unten und leicht nach außen (vom Körper weg)
+	var mid_sh := (sh_l + sh_r) * 0.5
+	# jede Hand an das Griffende, das näher an ihrer Schulter liegt (sonst überkreuzen die Arme)
+	var front := a if sh_l.distance_to(a) + sh_r.distance_to(b) < sh_l.distance_to(b) + sh_r.distance_to(a) else b
 	var back := b if front == a else a
-	var down_back := Vector3.DOWN * 0.6 - Vector3(rope_dir.x, 0.0, rope_dir.z) * 0.4
-	var sh_l := _rig.skeleton.global_transform * _rig.global_pose("upperarm_l").origin
-	var sh_r := _rig.skeleton.global_transform * _rig.global_pose("upperarm_r").origin
-	_rig.arm("l", skel_inv * front, skel_inv * (sh_l + down_back))
-	_rig.arm("r", skel_inv * back, skel_inv * (sh_r + down_back))
+	_rig.arm("l", skel_inv * front, skel_inv * (sh_l + Vector3.DOWN * 0.6 + (sh_l - mid_sh).normalized() * 0.25))
+	_rig.arm("r", skel_inv * back, skel_inv * (sh_r + Vector3.DOWN * 0.6 + (sh_r - mid_sh).normalized() * 0.25))
+	return handle_pos
 
 
 func _draw_rope(a: Vector3, b: Vector3) -> void:

@@ -60,7 +60,9 @@ blender -b --python tools/character/build_character.py -- rider assets/character
 
 Presets: `rider`, `operator`, `guest_f`, `guest_m`.
 
-Die Haltung wird im Spiel live aus der Physik berechnet, mit einer eigenen IK in `scripts/human_rig.gd`: Füße in den Bindungen, Hände am Griff, Oberkörper gegen den Seilzug.
+Die Haltung wird im Spiel live aus der Physik berechnet, mit einer eigenen IK in `scripts/human_rig.gd`: Füße in den Bindungen, Hände am Griff, Oberkörper gegen den Seilzug. Die Arme sind nie überstreckt: Liegt der Griff zu weit weg, holen die Hände ihn heran.
+
+Beim Sturz wird die Figur zur **Ragdoll** (`scripts/ragdoll.gd`): Physik-Knochen mit Gelenkgrenzen, Wasserdämpfung und Auftrieb an der Oberfläche. Das Brett bleibt an den Füßen.
 
 ## Lokal starten
 

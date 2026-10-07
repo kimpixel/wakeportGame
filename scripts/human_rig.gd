@@ -90,28 +90,50 @@ func look_at(target: Vector3, max_angle := 1.1) -> void:
 		rotate_global(b, q)
 
 
-## Zwei-Knochen-IK: upper -> lower -> end, Endpunkt auf target, Knie/Ellbogen Richtung pole.
-func two_bone(upper: String, lower: String, end: String, target: Vector3, pole: Vector3) -> void:
+## Zwei-Knochen-IK: upper -> lower -> end, Endpunkt auf target, Gelenk (Knie/Ellbogen)
+## zeigt Richtung pole. rest_joint_dir: wohin das Gelenk in der Ruhepose zeigt (Skelettraum,
+## Figur schaut nach +Z): Ellbogen nach hinten (-Z), Knie nach vorne (+Z).
+## Die Knochen werden als ganzes Koordinatensystem gedreht (Richtung + Gelenkachse) –
+## so knicken Ellbogen und Knie nur in ihre natürliche Richtung und nichts verdreht sich.
+func two_bone(upper: String, lower: String, end: String, target: Vector3, pole: Vector3, rest_joint_dir: Vector3) -> void:
 	var a := global_pose(upper).origin
-	var b := global_pose(lower).origin
-	var c := global_pose(end).origin
-	var l1 := a.distance_to(b)
-	var l2 := b.distance_to(c)
+	var l1 := rest_global(upper).origin.distance_to(rest_global(lower).origin)
+	var l2 := rest_global(lower).origin.distance_to(rest_global(end).origin)
 	var to_t := target - a
 	var d := clampf(to_t.length(), 0.01, (l1 + l2) * 0.999)
 	var dir := to_t.normalized()
-	# Winkel am oberen Gelenk (Kosinussatz)
 	var cos_a := clampf((l1 * l1 + d * d - l2 * l2) / (2.0 * l1 * d), -1.0, 1.0)
-	var bend_dir := (pole - a) - dir * (pole - a).dot(dir)
-	if bend_dir.length() < 0.001:
-		bend_dir = dir.cross(Vector3.RIGHT)
-	bend_dir = bend_dir.normalized()
-	var b_new := a + (dir * cos_a + bend_dir * sqrt(1.0 - cos_a * cos_a)) * l1
-	rotate_global(upper, _arc(b - a, b_new - a))
-	# unteres Glied auf das Ziel richten
-	var b2 := global_pose(lower).origin
-	var c2 := global_pose(end).origin
-	rotate_global(lower, _arc(c2 - b2, (a + dir * d) - b2))
+	var joint_dir := (pole - a) - dir * (pole - a).dot(dir)
+	if joint_dir.length() < 0.001:
+		joint_dir = dir.cross(Vector3.RIGHT)
+	joint_dir = joint_dir.normalized()
+	var b_new := a + (dir * cos_a + joint_dir * sqrt(1.0 - cos_a * cos_a)) * l1
+	var c_new := a + dir * d
+	# Ruhe-Koordinatensysteme der beiden Glieder
+	var ra := rest_global(upper)
+	var rb := rest_global(lower)
+	var rc := rest_global(end)
+	var up_rest := (rb.origin - ra.origin).normalized()
+	var lo_rest := (rc.origin - rb.origin).normalized()
+	var up_new := (b_new - a).normalized()
+	var lo_new := (c_new - b_new).normalized()
+	# Gelenkachse: Gliedrichtung x Gelenk-Zeigerichtung (in Ruhe und im Ziel gleich definiert)
+	var axis_rest := up_rest.cross(rest_joint_dir).normalized()
+	var axis_new := up_new.cross(joint_dir).normalized()
+	var q_up := _frame_rot(up_rest, axis_rest, up_new, axis_new)
+	var q_lo := _frame_rot(lo_rest, axis_rest, lo_new, axis_new)
+	set_global(upper, Transform3D(q_up * ra.basis, a))
+	set_global(lower, Transform3D(q_lo * rb.basis, b_new))
+	set_global(end, Transform3D(q_lo * rc.basis, c_new))
+
+
+## Drehung, die (Richtung d0, Achse h0) auf (d1, h1) abbildet.
+static func _frame_rot(d0: Vector3, h0: Vector3, d1: Vector3, h1: Vector3) -> Basis:
+	var h0o := (h0 - d0 * h0.dot(d0)).normalized()
+	var h1o := (h1 - d1 * h1.dot(d1)).normalized()
+	var b0 := Basis(d0, h0o, d0.cross(h0o))
+	var b1 := Basis(d1, h1o, d1.cross(h1o))
+	return b1 * b0.inverse()
 
 
 ## Endknochen (Fuß/Hand) auf eine globale Ausrichtung setzen (Basis im Skelettraum).
@@ -121,11 +143,11 @@ func set_end_basis(end: String, basis: Basis) -> void:
 
 
 func leg(side: String, foot_target: Vector3, knee_pole: Vector3) -> void:
-	two_bone("thigh_" + side, "calf_" + side, "foot_" + side, foot_target, knee_pole)
+	two_bone("thigh_" + side, "calf_" + side, "foot_" + side, foot_target, knee_pole, Vector3(0, 0, 1))
 
 
 func arm(side: String, hand_target: Vector3, elbow_pole: Vector3) -> void:
-	two_bone("upperarm_" + side, "lowerarm_" + side, "hand_" + side, hand_target, elbow_pole)
+	two_bone("upperarm_" + side, "lowerarm_" + side, "hand_" + side, hand_target, elbow_pole, Vector3(0, 0, -1))
 
 
 ## Vorwärtsrichtung des Kopfes in Knochen-Koordinaten (aus der Ruhepose: Figur schaut nach +Z).
