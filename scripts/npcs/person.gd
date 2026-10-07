@@ -50,6 +50,7 @@ func setup(model: String) -> bool:
 	match kind:
 		"operator":
 			_build_remote()
+			_attach_operator_gear()
 			if not path.is_empty():
 				global_position = path[0]
 				_wait = randf_range(2.0, 6.0)
@@ -106,6 +107,77 @@ func _build_remote() -> void:
 	var black := Util.mat(Color(0.08, 0.08, 0.09), 0.6)
 	Util.box(_remote, Vector3(0.03, 0.02, 0.03), Vector3(-0.07, 0.045, 0), black)
 	Util.box(_remote, Vector3(0.03, 0.02, 0.03), Vector3(0.07, 0.045, 0), black)
+
+
+## Steuermann-Look: Sonnenhut aus Stoff, verspiegelte Sonnenbrille, langer Vollbart (unten spitz).
+## Gebaut im Kopf-Koordinatensystem (Ursprung = Kopf-Knochen, +Y oben, +Z Gesicht).
+func _attach_operator_gear() -> void:
+	var att := BoneAttachment3D.new()
+	att.bone_name = "head"
+	_rig.skeleton.add_child(att)
+	var g := Node3D.new()
+	g.transform = Transform3D(_rig.rest_global("head").basis.orthonormalized().inverse(), Vector3.ZERO)
+	att.add_child(g)
+	# Sonnenhut (Bucket Hat): Krone und rundum abfallende Krempe, khakifarbener Stoff
+	var fabric := Util.mat(Color(0.62, 0.56, 0.4), 0.95)
+	var crown := CylinderMesh.new()
+	crown.top_radius = 0.082
+	crown.bottom_radius = 0.1
+	crown.height = 0.1
+	_mesh(g, crown, Vector3(0, 0.135, 0.005), fabric)
+	var brim := CylinderMesh.new()
+	brim.top_radius = 0.104
+	brim.bottom_radius = 0.165
+	brim.height = 0.035
+	brim.radial_segments = 32
+	_mesh(g, brim, Vector3(0, 0.073, 0.005), fabric)
+	var band := CylinderMesh.new()
+	band.top_radius = 0.1
+	band.bottom_radius = 0.1
+	band.height = 0.018
+	_mesh(g, band, Vector3(0, 0.095, 0.005), Util.mat(Color(0.3, 0.25, 0.18), 0.9))
+	# Verspiegelte Sonnenbrille: zwei Gläser, Steg, Bügel
+	var mirror := StandardMaterial3D.new()
+	mirror.albedo_color = Color(0.25, 0.35, 0.55)
+	mirror.metallic = 1.0
+	mirror.roughness = 0.05
+	var frame := Util.mat(Color(0.05, 0.05, 0.05), 0.4)
+	var lens := SphereMesh.new()
+	lens.radius = 0.024
+	lens.height = 0.03
+	for sx: float in [-1.0, 1.0]:
+		var l := _mesh(g, lens, Vector3(sx * 0.033, 0.035, 0.1), mirror)
+		l.scale = Vector3(1.15, 0.85, 0.35)
+		Util.beam(g, Vector3(sx * 0.058, 0.04, 0.095), Vector3(sx * 0.074, 0.04, 0.0), 0.004, frame)   # Bügel
+	Util.beam(g, Vector3(-0.012, 0.04, 0.104), Vector3(0.012, 0.04, 0.104), 0.004, frame)        # Steg
+	# Langer Vollbart: Backen und Kinn bedeckt, nach unten spitz zulaufend, dazu Schnurrbart
+	var hair := Util.mat(Color(0.32, 0.25, 0.18), 1.0)
+	var jaw := SphereMesh.new()
+	jaw.radius = 0.5
+	jaw.height = 1.0
+	var j := _mesh(g, jaw, Vector3(0, -0.03, 0.06), hair)
+	j.scale = Vector3(0.15, 0.13, 0.11)
+	var point := CylinderMesh.new()
+	point.top_radius = 0.06
+	point.bottom_radius = 0.004
+	point.height = 0.17
+	var pt := _mesh(g, point, Vector3(0, -0.15, 0.085), hair)
+	pt.rotation.x = -0.25
+	pt.scale = Vector3(1.0, 1.0, 0.75)
+	var stache := CapsuleMesh.new()
+	stache.radius = 0.012
+	stache.height = 0.07
+	var st := _mesh(g, stache, Vector3(0, 0.002, 0.108), hair)
+	st.rotation.z = PI * 0.5
+
+
+func _mesh(parent: Node3D, m: Mesh, pos: Vector3, mat: Material) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = m
+	mi.material_override = mat
+	mi.position = pos
+	parent.add_child(mi)
+	return mi
 
 
 func _move_operator(delta: float) -> void:

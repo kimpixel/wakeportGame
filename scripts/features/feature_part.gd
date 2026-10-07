@@ -30,6 +30,8 @@ var ramp_curve := 1.6          # Form der Auffahrten: 1 = gerade (A-Frame), > 1 
 var color := "white"           # Farbe des Körpers: white / grey
 var side_ramp := 0.0           # seitliche Transition auf der Seilseite (Breite in m, 0 = senkrechte Wand)
 var profile: Array = []         # Block: Längsprofil [[Abstand vom Anfang (m), Höhe], …] statt height/height_end
+var lip := ENTRY               # Höhe, auf der Auffahrten beginnen (ENTRY = unter Wasser, > 0 = sichtbare Kante)
+var side_curve := 2.0          # Form der seitlichen Auffahrt: 1 = gerade Schräge, 2 = konkav
 var body_curve := 1.0          # Block: Verlauf height -> height_end (1 = gerade, 2 = konkav wie die Transition Curb)
 var inner_v := 1.0             # +1/-1: in welche lokale v-Richtung das Seil liegt (setzt FeatureSet)
 
@@ -62,6 +64,8 @@ func setup(id: String, p: Dictionary) -> void:
 	ramp_curve = p.get("ramp_curve", ramp_curve)
 	side_ramp = p.get("side_ramp", side_ramp)
 	body_curve = p.get("body_curve", body_curve)
+	side_curve = p.get("side_curve", side_curve)
+	lip = p.get("lip", lip)
 	profile = p.get("profile", [])
 	if type == "pipe" or type == "ball":
 		width = radius * 2.0
@@ -165,9 +169,9 @@ func _profile_h(d: float) -> float:
 func _with_ramps(u: float, h: float) -> float:
 	var hl := length * 0.5
 	if ramp_in > 0.0 and u < -hl + ramp_in:
-		h = minf(h, lerpf(ENTRY, h, pow((u + hl) / ramp_in, ramp_curve)))
+		h = minf(h, lerpf(lip, h, pow((u + hl) / ramp_in, ramp_curve)))
 	if ramp_out > 0.0 and u > hl - ramp_out:
-		h = minf(h, lerpf(ENTRY, h, pow((hl - u) / ramp_out, ramp_curve)))
+		h = minf(h, lerpf(lip, h, pow((hl - u) / ramp_out, ramp_curve)))
 	return h
 
 
@@ -178,7 +182,7 @@ func _with_side_ramp(v: float, h: float) -> float:
 	var d := width * 0.5 - v * inner_v         # 0 an der Innenkante
 	if d >= side_ramp:
 		return h
-	return minf(h, lerpf(ENTRY, h, pow(clampf(d / side_ramp, 0.0, 1.0), 2.0)))
+	return minf(h, lerpf(lip, h, pow(clampf(d / side_ramp, 0.0, 1.0), side_curve)))
 
 
 ## Vorwärtsrichtung des Teils (Befahrrichtung) in Weltkoordinaten.
@@ -218,11 +222,22 @@ func height_at(x: float, z: float, collision := false) -> float:
 
 # ---------------------------------------------------------------- Grafik
 
+static var _shader: Shader
+
+static func _feature_shader() -> Shader:
+	if _shader == null:
+		_shader = load("res://shaders/feature.gdshader")
+	return _shader
+
+
 func _ready() -> void:
 	_inv = global_transform.affine_inverse()
-	var white := Util.mat(Color(0.93, 0.94, 0.93), 0.55)
+	# Kunststoff mit Gebrauchsspuren (Kratzer, Fahrspur, Algenrand an der Wasserlinie)
+	var white := ShaderMaterial.new()
+	white.shader = _feature_shader()
+	white.set_shader_parameter("half_width", width * 0.5)
 	if color == "grey":
-		white = Util.mat(Color(0.62, 0.64, 0.66), 0.45)
+		white.set_shader_parameter("base_color", Color(0.62, 0.64, 0.66))
 	match type:
 		"rail":
 			_build_rail(white)
@@ -296,7 +311,7 @@ func _build_heightfield(mat: Material, nu: int, nv: int, u_from := -INF, u_to :=
 	# Harte Kanten: jede Fläche bekommt eine eigene Glättungsgruppe, sonst rundet
 	# generate_normals() die Kanten zwischen Oberseite und Wänden ab (Ledges sähen rund aus).
 	# Nur geschwungene Oberseiten (Transitions, Kicker, Bump) werden in sich geglättet.
-	var curved := type in ["ramp", "transition", "bump", "pipe"] or side_ramp > 0.0 or body_curve > 1.0 \
+	var curved := type in ["ramp", "transition", "bump", "pipe"] or (side_ramp > 0.0 and side_curve > 1.0) or body_curve > 1.0 \
 		or (ramp_curve > 1.0 and (ramp_in > 0.0 or ramp_out > 0.0))
 	st.set_smooth_group(1 if curved else 0xFFFFFFFF)
 	# Oberseite

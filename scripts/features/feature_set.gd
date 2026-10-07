@@ -6,7 +6,7 @@ extends Node3D
 
 const PARTS_FILE := "res://setups/parts.json"
 const INDEX_FILE := "res://setups/index.json"
-const OVERRIDES := ["length", "width", "height", "height_end", "ramp_in", "ramp_out", "ramp_curve", "side_ramp", "curve", "radius", "center_y", "color", "name", "body", "inner_v", "article", "body_curve", "profile"]
+const OVERRIDES := ["length", "width", "height", "height_end", "ramp_in", "ramp_out", "ramp_curve", "side_ramp", "curve", "radius", "center_y", "color", "name", "body", "inner_v", "article", "body_curve", "profile", "side_curve", "lip"]
 
 var parts: Array[FeaturePart] = []
 var setup_name := ""

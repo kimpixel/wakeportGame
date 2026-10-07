@@ -12,8 +12,8 @@
   "pyramid_series":  { "name": "Pyramid Series",    "type": "group", "mirror": true, "parts": [
                        { "part": "py_aframe_rail", "s": 0.0, "x": -2.55 },
                        { "part": "py_pyramid",     "s": 0.0, "x": 0.0 } ] },
-  "py_aframe_rail":  { "name": "A-Frame Rail",      "type": "block", "length": 21.0, "width": 0.7, "height": 1.25, "ramp_in": 5.5, "ramp_out": 5.5, "ramp_curve": 1.0, "color": "grey" },
-  "py_pyramid":      { "name": "Pyramid",           "type": "block", "length": 16.0, "width": 4.4, "height": 0.95, "ramp_in": 5.0, "ramp_out": 5.0, "ramp_curve": 2.0, "side_ramp": 2.0 },
+  "py_aframe_rail":  { "name": "A-Frame Rail",      "type": "block", "length": 21.0, "width": 0.7, "height": 1.25, "ramp_in": 5.5, "ramp_out": 5.5, "ramp_curve": 1.0 },
+  "py_pyramid":      { "name": "Pyramid",           "type": "block", "length": 16.0, "width": 4.4, "height": 0.95, "ramp_in": 5.0, "ramp_out": 5.0, "ramp_curve": 1.0, "side_ramp": 2.0, "side_curve": 1.0, "lip": 0.12 },
   "transition_curb": { "name": "Transition Curb", "article": "den",   "type": "block", "length": 7.3,  "width": 3.0, "height": 0.35, "height_end": 1.1, "body_curve": 2.0, "ramp_in": 0.85, "ramp_curve": 1.0,
                        "_info": "kurze Auffahrt (0,85 m) + konkave Transition auf 1,1 m (6,45 m), hinten senkrecht – dort passt der Cheese Wedge als Abfahrt an (Plan 517931862 + Video)" },
   "ollie_box":       { "name": "Ollie Box",         "type": "block", "length": 8.2,  "width": 2.25, "height": 0.45, "ramp_in": 0.35, "ramp_out": 0.35, "ramp_curve": 1.0 },
@@ -23,7 +23,7 @@
   "down_ledge":      { "name": "Down Ledge",        "type": "block", "length": 12.0, "width": 0.6, "height": 1.15,
                        "profile": [[0.0, -0.1], [0.45, 0.25], [1.6, 1.15], [11.45, 0.6], [12.0, -0.1]],
                        "_info": "Rooftop: kleine Safety vorne, steil hoch, lang abfallend, hinten eine höhere, sehr steile Safety" },
-  "uprail":          { "name": "Up Rail",           "type": "block", "length": 10.0, "width": 0.6, "height": 0.45, "height_end": 1.1, "ramp_in": 1.5, "color": "grey" },
+  "uprail":          { "name": "Up Rail",           "type": "block", "length": 10.0, "width": 0.6, "height": 0.45, "height_end": 1.1, "ramp_in": 1.5 },
 
   "transition_rail": { "name": "Transition Rail",   "type": "transition", "length": 22.0, "width": 3.2, "height": 1.5, "ramp_in": 5.0, "ramp_out": 5.0 },
   "transition_rail_half": { "name": "1/2 Transition Rail", "type": "transition", "length": 11.0, "width": 3.2, "height": 1.5, "ramp_in": 5.0, "ramp_out": 0.0 },
