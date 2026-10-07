@@ -38,6 +38,16 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | P | – | Autopilot (fährt auch Features) |
 | M | – | Ton aus/an |
 
+**Auf dem Handy/Tablet** (im Browser, wird automatisch erkannt):
+
+| Geste | Funktion |
+|---|---|
+| Tippen | Anlage starten |
+| Handy nach links/rechts neigen | lenken (volle Neigung bei etwa 25°, hoch- und querformatig) |
+| Finger halten + loslassen | Absprung |
+
+Auf dem iPhone fragt Safari beim ersten Tippen nach der Erlaubnis für Bewegungs- und Ausrichtungssensoren. Ohne sie kann man nicht lenken.
+
 **Wende:** An jedem Wendepunkt liegen drei Bojen:
 - **Rote Boje** mittig unter dem Seil: hier rauskanten.
 - **Zwei weiße Bojen** links und rechts: um eine davon fährst du herum.

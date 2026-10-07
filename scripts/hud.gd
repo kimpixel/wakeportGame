@@ -9,6 +9,10 @@ Enter  Start     R  Neustart     + / -  Anlagentempo
 C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom
 P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus"""
 
+const HELP_MOBILE := """Handy neigen   lenken
+Finger halten + loslassen   Absprung
+Tippen   Start"""
+
 var _info: Label
 var _center: Label
 var _trick: Label
@@ -77,6 +81,10 @@ func set_center(text: String) -> void:
 func show_trick(text: String) -> void:
 	_trick.text = text
 	_trick_time = 2.0
+
+
+func set_help(text: String) -> void:
+	_help.text = text
 
 
 func toggle_help() -> void:

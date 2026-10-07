@@ -7,6 +7,8 @@ extends Node3D
 ##   --quit=SEK        nach SEK Sekunden Simulationszeit beenden
 ##   --shot=PFAD.png   Screenshot speichern (mit --shot-time=SEK) und beenden
 ##   --cam=side|orbit  Kameramodus beim Start
+##   --mobile          Handy-Steuerung erzwingen (mit --tilt=GRAD feste Neigung)
+##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
 
 const RESET_DELAY := 3.0
 
@@ -15,6 +17,8 @@ var cable: CableSystem
 var rider: Rider
 var cam: ChaseCamera
 var hud: Hud
+var mobile: MobileInput
+var _touch_started := false     # dieser Finger hat die Anlage gestartet (kein Sprung)
 
 var cable_t1: CableSystem
 var features: FeatureSet
@@ -41,6 +45,7 @@ var _cam_arg := ""
 var _view_arg := PackedFloat32Array()
 var _lane_arg := NAN
 var _crash_at := -1.0          # Test: Sturz zu dieser Zeit auslösen
+var _touch_at: Array[float] = []   # Test: Finger auf den Bildschirm
 var _closeup := Vector3.INF     # Testkamera relativ zum Fahrer
 var _closeup_look := Vector3(0, 1.1, 0)   # Blickpunkt relativ zum Fahrer (optional 4.-6. Wert)
 var _elapsed := 0.0
@@ -129,6 +134,13 @@ func _ready() -> void:
 
 	hud = Hud.new()
 	add_child(hud)
+	# Handy/Tablet: Tippen = Start bzw. Sprung, Neigen = lenken
+	mobile = MobileInput.new()
+	add_child(mobile)
+	if mobile.active:
+		hud.set_help(Hud.HELP_MOBILE)
+		mobile.touch_down.connect(_on_touch_down)
+		mobile.touch_up.connect(_on_touch_up)
 	var sfx := Sfx.new()
 	sfx.rider = rider
 	sfx.people = beach.people
@@ -148,6 +160,22 @@ func _ready() -> void:
 
 
 # ---------------------------------------------------------------- Ablauf
+
+## Finger auf den Bildschirm: steht die Anlage, startet sie (ohne Sprung);
+## sonst wird wie mit der Leertaste der Sprung aufgeladen.
+func _on_touch_down() -> void:
+	if cable.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED:
+		cable.start()
+		_touch_started = true
+	else:
+		Input.action_press("jump")
+
+
+## Finger weg: Absprung (falls geladen).
+func _on_touch_up() -> void:
+	_touch_started = false
+	Input.action_release("jump")
+
 
 ## Bojen sind Hindernisse: wer dagegen fährt, stürzt.
 func _check_buoy(r: Rider) -> void:
@@ -180,6 +208,14 @@ func _physics_process(delta: float) -> void:
 				cable.start()
 
 	_elapsed += delta
+	for i in _touch_at.size():
+		var t := _touch_at[i]
+		if t > 0.0 and _elapsed >= t:
+			_touch_at[i] = -(t + 0.4)
+			_fake_touch(true)
+		elif t < 0.0 and _elapsed >= -t:
+			_touch_at[i] = 0.0
+			_fake_touch(false)
 	if _crash_at > 0.0 and _elapsed >= _crash_at:
 		_crash_at = -1.0
 		rider.crash("Teststurz")
@@ -197,6 +233,16 @@ func _physics_process(delta: float) -> void:
 		get_tree().quit()
 
 
+func _fake_touch(pressed: bool) -> void:
+	var e := InputEventScreenTouch.new()
+	e.pressed = pressed
+	e.position = Vector2(400, 300)
+	Input.parse_input_event(e)
+	print("TOUCH ", "down" if pressed else "up", " t=%.1f carrier=%s rider=%s pos=%s steer=%.2f" % [
+		_elapsed, cable.state_text(), Rider.Mode.keys()[rider.mode], rider.pos.snapped(Vector3.ONE * 0.1),
+		Input.get_axis("steer_left", "steer_right")])
+
+
 func _process(_delta: float) -> void:
 	if _closeup != Vector3.INF:
 		cam.set_process(false)
@@ -210,7 +256,12 @@ func _process(_delta: float) -> void:
 	hud.set_info(info, rider.tension_smooth / Rider.CRASH_TENSION)
 	hud.set_board(rider.board_state_text())
 	if rider.mode != Rider.Mode.CRASHED:
-		hud.set_center("ENTER drücken zum Starten" if cable.state == CableSystem.State.IDLE else "")
+		if cable.state == CableSystem.State.IDLE:
+			hud.set_center("Tippen zum Starten" if mobile.active else "ENTER drücken zum Starten")
+		elif mobile.active and not mobile.tilt_available:
+			hud.set_center("Neigungssensor nicht verfügbar –\nBewegungssensoren im Browser erlauben")
+		else:
+			hud.set_center("")
 
 	if _shot_path != "" and not _shot_taken and _elapsed >= _shot_time:
 		_shot_taken = true
@@ -347,6 +398,9 @@ func _parse_args() -> void:
 			_shot_time = arg.substr(12).to_float()
 		elif arg.begins_with("--crash-at="):
 			_crash_at = arg.substr(11).to_float()
+		elif arg.begins_with("--touch-at="):
+			for v in arg.substr(11).split(","):
+				_touch_at.append(v.to_float())
 		elif arg.begins_with("--closeup="):
 			var c := arg.substr(10).split(",")
 			_closeup = Vector3(c[0].to_float(), c[1].to_float(), c[2].to_float())
