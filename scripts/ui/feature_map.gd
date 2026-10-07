@@ -1,17 +1,16 @@
 class_name FeatureMap
 extends Control
-## Draufsicht auf alle Features einer Anlage wie die Feature-Pläne: Seil senkrecht,
-## unten der Startsteg, oben der Endmast, rechts = rechts in Fahrtrichtung zum Endmast.
+## Draufsicht auf die echte 3D-Szene einer Anlage (Kamera senkrecht von oben, wie die
+## Feature-Pläne ausgerichtet: unten der Startsteg, oben der Endmast). Darüber nur die
+## Markierung des gewählten bzw. überfahrenen Features/Hacks und sein Name.
 ## Teile, die (fast) aneinanderstoßen, bilden einen "Hack" und werden zusammen ausgewählt.
 ## Maus: Klick wählt aus, Doppelklick zoomt auf den Hack, Ziehen verschiebt, Rad zoomt.
 
 signal hack_selected(parts: Array)
 
 const HACK_GAP := 0.8            # so nah (m) beieinander gilt als Hack
-const COL_WATER := Color(0.1, 0.42, 0.5)
-const COL_GRID := Color(1, 1, 1, 0.07)
-const COL_CABLE := Color(0.08, 0.08, 0.1)
 const COL_SEL := Color(1.0, 0.82, 0.2)
+const CAM_HEIGHT := 120.0
 
 var cable: CableSystem
 var hacks: Array = []            # Array von Arrays mit FeatureParts (nach s sortiert)
@@ -25,11 +24,35 @@ var _dragged := false
 var _whole := false
 var _zoomed := -1                # auf diesen Hack gezoomt (bleibt beim Ändern der Fenstergröße)
 var s_offset := 0.0              # Beschriftung in Setup-Metern (T1: Teile sind um diesen Versatz verschoben)
+var _vp: SubViewport
+var _cam: Camera3D
+var _overlay: Control
 
 
 func _ready() -> void:
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	# echte Szene: eigene Kamera in derselben 3D-Welt wie das Spiel
+	var box := SubViewportContainer.new()
+	box.stretch = true
+	box.set_anchors_preset(Control.PRESET_FULL_RECT)
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(box)
+	_vp = SubViewport.new()
+	_vp.world_3d = get_tree().root.find_world_3d()
+	_vp.msaa_3d = Viewport.MSAA_4X
+	box.add_child(_vp)
+	_cam = Camera3D.new()
+	_cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	_cam.near = 1.0
+	_cam.far = CAM_HEIGHT + 60.0
+	_vp.add_child(_cam)
+	_cam.current = true
+	_overlay = Control.new()
+	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_overlay.draw.connect(_draw_overlay)
+	add_child(_overlay)
 	resized.connect(func() -> void:
 		if _zoomed >= 0:
 			zoom_to(_zoomed)
@@ -240,82 +263,42 @@ func _gui_input(event: InputEvent) -> void:
 # ---------------------------------------------------------------- Zeichnen
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, size), COL_WATER)
+	# Kamera auf den aktuellen Ausschnitt; die Markierungen zeichnet das Overlay darüber
+	if cable == null or _cam == null:
+		return
+	var sx := Vector2((_pan.y - size.y * 0.5) / _zoom, (size.x * 0.5 - _pan.x) / _zoom)   # Bildmitte in (s, x)
+	_cam.size = size.y / _zoom
+	var b := cable.global_basis.orthonormalized()
+	_cam.global_transform = Transform3D(Basis(b.x, -b.z, Vector3.UP),
+		cable.global_transform * Vector3(sx.y, 0.0, cable.mast_a_z - sx.x) + Vector3.UP * CAM_HEIGHT)
+	_overlay.queue_redraw()
+
+
+func _draw_overlay() -> void:
 	if cable == null:
 		return
 	var font := get_theme_default_font()
-	var length := cable.mast_a_z - cable.mast_b_z
-	# Raster alle 10 m mit Beschriftung entlang des Seils
-	var step := 10.0 if _zoom > 2.5 else 20.0
-	var s := fposmod(s_offset, step)
-	while s <= length + 0.1:
-		var a := _to_screen(Vector2(s, -40.0))
-		var b := _to_screen(Vector2(s, 40.0))
-		draw_line(a, b, COL_GRID, 1.0)
-		draw_string(font, _to_screen(Vector2(s, 0.0)) + Vector2(4, -3), "%d m" % roundi(s - s_offset), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(1, 1, 1, 0.45))
-		s += step
-	var xs := [-30.0, -20.0, -10.0, 10.0, 20.0, 30.0]
-	if _zoom > 12.0:
-		xs = range(-30, 31).filter(func(v: int) -> bool: return v != 0)
-	for x in xs:
-		draw_line(_to_screen(Vector2(0.0, float(x))), _to_screen(Vector2(length, float(x))), COL_GRID, 1.0)
-	# Seil, Masten, Wendepunkte, Startplatz
-	draw_line(_to_screen(Vector2(0, 0)), _to_screen(Vector2(length, 0)), COL_CABLE, 2.0)
-	for m in [0.0, length]:
-		draw_circle(_to_screen(Vector2(m, 0)), 6.0, Color(0.85, 0.85, 0.8))
-	for tz in [cable.turn_a_z, cable.turn_b_z]:
-		draw_circle(_to_screen(Vector2(cable.mast_a_z - tz, 0)), 3.5, Color(1.0, 0.4, 0.3))
-	var start := _to_screen(Vector2(cable.mast_a_z - cable.start_z, 0))
-	draw_rect(Rect2(start - Vector2(5, 5), Vector2(10, 10)), Color(0.95, 0.95, 0.95))
-	draw_string(font, start + Vector2(10, 5), "Start", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
-	# Features
 	for i in hacks.size():
-		var hi := i == selected
-		var ho := i == _hover
+		if i != selected and i != _hover:
+			continue
+		var col := COL_SEL if i == selected else Color(1, 1, 1, 0.85)
 		for p: FeaturePart in hacks[i]:
-			_draw_part(p, hi, ho)
-	for i in hacks.size():
-		if i == selected or i == _hover or _zoom >= 7.0:
-			var txt := hack_name(hacks[i])
-			var w := font.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x
-			var c := _to_screen(_center(hacks[i])) + Vector2(-w * 0.5, 26)
-			c.x = clampf(c.x, 4.0, size.x - w - 4.0)
-			var col := COL_SEL if i == selected else Color(1, 1, 1, 0.9 if i == _hover else 0.6)
-			draw_string_outline(font, c, txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, 4, Color(0, 0, 0, 0.7))
-			draw_string(font, c, txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, col)
-
-
-func _draw_part(p: FeaturePart, sel: bool, hover: bool) -> void:
-	var pts := PackedVector2Array()
-	for q in _polys[p]:
-		pts.append(_to_screen(q))
-	var fill := Color(0.95, 0.95, 0.93)
-	match p.type:
-		"rail":
-			fill = Color(0.2, 0.2, 0.22) if p.rail_color != "grey" else Color(0.6, 0.62, 0.65)
-		"ball":
-			fill = Color(0.1, 0.2, 0.75)
-		"transition":
-			fill = Color(0.85, 0.87, 0.9)
-		_:
-			if p.color == "grey":
-				fill = Color(0.65, 0.67, 0.7)
-	if hover and not sel:
-		fill = fill.lerp(COL_SEL, 0.3)
-	if p.type == "ball":
-		draw_circle(_to_screen(_center([p])), maxf(p.radius * _zoom, 3.0), fill)
-	else:
-		draw_colored_polygon(pts, fill)
-		var outline := pts.duplicate()
-		outline.append(pts[0])
-		draw_polyline(outline, COL_SEL if sel else Color(0, 0, 0, 0.6), 2.0 if sel else 1.0)
-	# Pfeil in Fahrtrichtung (wie in den Plänen: von der Auffahrt zum Ende)
-	if p.type != "ball" and p.type != "bump" and p.length * _zoom > 14.0:
-		var a := _to_screen((_polys[p][0] + _polys[p][1]) * 0.25 + (_polys[p][2] + _polys[p][3]) * 0.25)
-		var dir_l := cable.transform.affine_inverse().basis * (p.global_basis * Vector3(0, 0, -1))
-		var d := Vector2(dir_l.x, dir_l.z).normalized()
-		var half := minf(p.length * _zoom * 0.3, 14.0)
-		var col := Color(0.1, 0.1, 0.1, 0.8) if p.type != "rail" else Color(1, 1, 1, 0.8)
-		draw_line(a - d * half, a + d * half, col, 2.0)
-		draw_line(a + d * half, a + d * half - d.rotated(0.5) * 6.0, col, 2.0)
-		draw_line(a + d * half, a + d * half - d.rotated(-0.5) * 6.0, col, 2.0)
+			var pts := PackedVector2Array()
+			for q in _footprint(p, 0.25):
+				pts.append(_to_screen(q))
+			pts.append(pts[0])
+			_overlay.draw_polyline(pts, col, 2.5 if i == selected else 1.5, true)
+		var txt := hack_name(hacks[i])
+		var w := font.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x
+		var r := Rect2()
+		var first := true
+		for p: FeaturePart in hacks[i]:
+			for q in _polys[p]:
+				var sp := _to_screen(q)
+				r = Rect2(sp, Vector2.ZERO) if first else r.expand(sp)
+				first = false
+		var c := Vector2(r.get_center().x - w * 0.5, r.end.y + 22.0)
+		c.x = clampf(c.x, 4.0, size.x - w - 4.0)
+		c.y = clampf(c.y, 18.0, size.y - 6.0)
+		_overlay.draw_string_outline(font, c, txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 5, Color(0, 0, 0, 0.75))
+		_overlay.draw_string(font, c, txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, col)

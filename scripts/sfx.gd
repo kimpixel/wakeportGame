@@ -1,8 +1,9 @@
 class_name Sfx
 extends Node
-## Einfache Soundeffekte, komplett beim Start synthetisiert (keine Audiodateien nötig):
-##  * "Yeah!" / "Wooo!" bei Punkten – das rufen die Leute im T2-Startblock (Steuermann und
-##    Gäste), räumlich vom Startsteg aus zu hören (Formant-Synthese, klingt etwas comichaft)
+## Soundeffekte (bis auf den Jubel beim Start synthetisiert):
+##  * Jubel bei Punkten – das rufen die Leute im Startblock (Steuermann und Gäste), räumlich
+##    vom Startsteg aus zu hören. Aufnahmen aus assets/sounds/positiv/*.wav (einfach weitere
+##    WAVs dazulegen); fehlt der Ordner, gibt es synthetische "Yeah!"/"Wooo!"-Rufe
 ##  * Whoosh beim Absprung, Platschen bei der Landung, großer Platscher beim Sturz
 ##  * Wasserrauschen abhängig vom Tempo, Grind-Geräusch auf Rails/Boxen
 ##  * Vögel im Wald
@@ -10,11 +11,13 @@ extends Node
 
 const RATE := 22050
 const CHEER_MIN := 200      # ab so vielen Punkten jubelt der Startblock
+const CHEER_DIR := "res://assets/sounds/positiv"
 
 var rider: Rider
 var people: Array[Dictionary] = []   # aus Beach: Leute im Startblock
 
 var _yeah: Array[AudioStreamWAV] = []
+var _cheers: Array[AudioStream] = []     # aufgenommene Jubelrufe
 var _woo: AudioStreamWAV
 var _whoosh: AudioStreamWAV
 var _splash: AudioStreamWAV
@@ -37,6 +40,11 @@ var _muted := false
 func _ready() -> void:
 	_yeah = [_make_voice("yeah", 1.0), _make_voice("yeah", 1.12), _make_voice("yeah", 0.9)]
 	_woo = _make_voice("woo", 1.05)
+	for f in ResourceLoader.list_directory(CHEER_DIR):
+		if f.get_extension().to_lower() == "wav":
+			var a := load(CHEER_DIR.path_join(f)) as AudioStream
+			if a:
+				_cheers.append(a)
 	_whoosh = _make_whoosh()
 	_splash = _make_splash(0.55, 0.5)
 	_crash = _make_splash(1.4, 1.0)
@@ -119,12 +127,19 @@ func _on_trick(trick: String, points: int) -> void:
 	if _voices.is_empty() or points < CHEER_MIN:
 		return
 	var big := points >= 250 or trick.begins_with("360") or trick.begins_with("540")
+	var pool := _cheers.duplicate()
+	pool.shuffle()
 	for i in _voices.size():
 		if i > 0 and randf() > 0.55:
 			continue
 		var v := _voices[i]
-		v.stream = _woo if big else _yeah.pick_random()
-		v.pitch_scale = float(people[i]["pitch"]) * randf_range(0.96, 1.04)
+		if not pool.is_empty():
+			# Aufnahmen: jeder ruft etwas anderes, Tonhöhe nur leicht variiert
+			v.stream = pool.pop_back()
+			v.pitch_scale = randf_range(0.96, 1.04)
+		else:
+			v.stream = _woo if big else _yeah.pick_random()
+			v.pitch_scale = float(people[i]["pitch"]) * randf_range(0.96, 1.04)
 		# Gäste setzen einen Tick später ein
 		if i == 0:
 			v.play()

@@ -68,7 +68,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	left.size_flags_stretch_ratio = 1.0
 	mid.add_child(left)
 	var lt := Label.new()
-	lt.text = "Draufsicht – Feature oder Hack anklicken   (Doppelklick: heranzoomen, ziehen: verschieben, Rad: Zoom, Rechtsklick: Übersicht/ganze Anlage)"
+	lt.text = "Feature oder Hack anklicken  –  Doppelklick: heranzoomen, ziehen: verschieben, Rad: Zoom, Rechtsklick: Übersicht"
 	lt.add_theme_font_size_override("font_size", 14)
 	lt.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
 	left.add_child(lt)
