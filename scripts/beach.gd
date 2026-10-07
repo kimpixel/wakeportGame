@@ -461,9 +461,9 @@ func _build_t1_start() -> void:
 	var dw := func(l: Vector3) -> Vector3: return dock.global_transform * l
 	_operator("T1", [dw.call(Vector3(-1.5, 0.15, -2.6)), dw.call(Vector3(-1.6, 0.15, 0.5)),
 		dw.call(Vector3(-0.6, 0.15, 2.6)), dw.call(Vector3(1.2, 0.15, 2.7))], people_t1)
-	# wartender Fahrer am T1-Steg: sitzt an der Seekante
+	# wartender Fahrer am T1-Steg: sitzt an der Seekante, links am Rand (nicht im Weg des Startenden)
 	var east := dock.global_basis.x
-	waiting_spots.append({"pos": dw.call(Vector3(2.2, 0.15, 1.6)), "face": east, "kind": "wait_sit"})
+	waiting_spots.append({"pos": dw.call(Vector3(2.2, 0.15, -1.0)), "face": east, "kind": "wait_sit"})
 
 
 # ---------------------------------------------------------------- Hauptgebäude
