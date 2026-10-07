@@ -16,7 +16,7 @@ enum Mode { WATER, AIR, CRASHED }
 
 const MASS := 80.0
 const GRAVITY := 9.81
-const ROPE_LENGTH := 14.0       # Zugseil Griff bis Carrier
+const ROPE_LENGTH := 16.0       # Zugseil Griff bis Carrier
 const ROPE_STIFFNESS := 2600.0
 const ROPE_DAMPING := 250.0
 const HANDLE_HEIGHT := 1.0
