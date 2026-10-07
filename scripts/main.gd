@@ -14,9 +14,22 @@ extends Node3D
 ##   --screen[=NAME]   Startbildschirm erzwingen (NAME: Feature/Hack auswählen, z. B. "hack");
 ##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
 ##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
+##   --game-time=SEK   Test: Spielzeit (normal 450 s); im Autotest läuft dann eine Runde mit Zeit
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
 
 const RESET_DELAY := 3.0
+
+# Spielregeln: eine Runde dauert 7:30, es zählen die Punkte in dieser Zeit. Danach wird man
+# nur noch zum Start gebracht. Abkürzungen kosten Zeit.
+const GAME_TIME := 450.0
+const SKIP_PENALTY := 180.0     # Leertaste nach Sturz: Handle sofort da
+const RESET_PENALTY := 300.0    # R: zurück zum Startsteg
+var _session := false           # Runde läuft (Zeit zählt)
+var _game_time := GAME_TIME    # Test: --game-time=SEK
+var _time_left := GAME_TIME
+var _finishing := false         # Zeit um, Carrier bringt den Fahrer zum Start
+var _final_score := 0
+var _last_result := ""
 
 var water: Water
 var cable: CableSystem
@@ -155,6 +168,7 @@ func _ready() -> void:
 		if _test_log:
 			print("HANDLE GEGRIFFEN at ", rider.pos.snapped(Vector3.ONE * 0.1)))
 	rider.trick_landed.connect(_on_trick)
+	rider.skipped.connect(func() -> void: _penalty(SKIP_PENALTY))
 
 	cam = ChaseCamera.new()
 	cam.far = 6000.0
@@ -210,7 +224,10 @@ func _ready() -> void:
 	if _test_log:
 		rider.autopilot = true
 		rider.auto_lane = _lane_arg
-		pc.start()
+		if _game_time != GAME_TIME:
+			_start_run()
+		else:
+			pc.start()
 	# Das Spiel beginnt mit dem Startbildschirm (Testläufe gehen direkt ins Spiel)
 	if not _screen_arg and not _no_screen and not _test_log and _shot_path == "" and _view_arg.is_empty() and _closeup == Vector3.INF:
 		_screen_arg = true
@@ -253,7 +270,10 @@ func _build_start_screen() -> void:
 var _autopilot_before := false
 
 func _open_start_screen() -> void:
+	_session = false
+	_finishing = false
 	_reset()
+	start_screen.set_result(_last_result)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	hud.visible = false
 	get_viewport().disable_3d = true
@@ -380,7 +400,7 @@ func _on_touch_down() -> void:
 	if start_screen.visible:
 		return
 	if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED:
-		pc.start()
+		_start_run()
 		_touch_started = true
 	else:
 		Input.action_press("jump")
@@ -422,6 +442,7 @@ func _physics_process(delta: float) -> void:
 	_track_turn()
 	_recover(rider, pc, delta)
 
+	_step_session(delta)
 	_elapsed += delta
 	for i in _touch_at.size():
 		var t := _touch_at[i]
@@ -449,6 +470,66 @@ func _physics_process(delta: float) -> void:
 				Rider.Mode.keys()[npc.mode], npc.horizontal_speed() * 3.6, nc.laps])
 	if _quit_after > 0.0 and _elapsed >= _quit_after:
 		get_tree().quit()
+
+
+# ---------------------------------------------------------------- Spielzeit
+
+## Start vom Steg: eine neue Runde beginnt (Punkte auf 0, volle Zeit).
+func _start_run() -> void:
+	if not _session:
+		_session = true
+		_finishing = false
+		_time_left = _game_time
+		rider.score = 0
+	pc.start()
+
+
+func _step_session(delta: float) -> void:
+	if not _session or start_screen.visible:
+		return
+	if not _finishing:
+		_time_left -= delta
+		if _time_left <= 0.0:
+			_time_up()
+	elif pc.state == CableSystem.State.DONE or pc.state == CableSystem.State.IDLE:
+		_end_session()
+
+
+func _penalty(sec: float) -> void:
+	if not _session or _finishing:
+		return
+	_time_left -= sec
+	hud.show_trick("Strafzeit −%d:%02d" % [int(sec) / 60, int(sec) % 60])
+	if _time_left <= 0.0:
+		_time_up()
+
+
+## Zeit um: die Punkte stehen fest, der Operator bringt den Fahrer zum Start.
+func _time_up() -> void:
+	if _test_log:
+		print("ZEIT UM at t=%.1f score=%d" % [_elapsed, rider.score])
+	_time_left = 0.0
+	_finishing = true
+	_final_score = rider.score
+	pc.finish()
+	hud.show_trick("Zeit um!  %d Punkte" % _final_score)
+
+
+func _end_session() -> void:
+	if _test_log:
+		print("RUNDE ENDE at t=%.1f" % _elapsed)
+	_session = false
+	_finishing = false
+	_last_result = "Letzte Runde: %d Punkte" % _final_score
+	hud.show_trick("Ende!  %d Punkte" % _final_score)
+	get_tree().create_timer(3.0).timeout.connect(func() -> void:
+		if not start_screen.visible:
+			_open_start_screen())
+
+
+static func _clock(sec: float) -> String:
+	var s := maxi(ceili(sec), 0)
+	return "%d:%02d" % [s / 60, s % 60]
 
 
 ## Bergung (2-Mast-Prinzip, niemand muss zurück zum Start): Wer die Handle verloren hat,
@@ -495,9 +576,12 @@ func _process(_delta: float) -> void:
 		hud.visible = false
 		var rp := rider.visual_position()
 		cam.look_at_from_position(rp + rider.global_basis * _closeup, rp + rider.global_basis * _closeup_look)
-	var info := "Fahrer: %d km/h\nAnlage %s: %s  (Tempo %d km/h)\nWenden: %d     Punkte: %d\nKamera: %s%s\nSeilzug: %d N" % [
-		roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
-		pc.laps, rider.score, cam.mode_name(), "   [AUTOPILOT]" if rider.autopilot else "",
+	var clock := "Zeit: %s" % _clock(_time_left if _session else _game_time)
+	if _finishing:
+		clock = "Zeit um – zurück zum Start"
+	var info := "%s\nFahrer: %d km/h\nAnlage %s: %s  (Tempo %d km/h)\nWenden: %d     Punkte: %d\nKamera: %s%s\nSeilzug: %d N" % [
+		clock, roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
+		pc.laps, _final_score if _finishing else rider.score, cam.mode_name(), "   [AUTOPILOT]" if rider.autopilot else "",
 		roundi(rider.tension_smooth)]
 	hud.set_info(info, rider.tension_smooth / Rider.CRASH_TENSION)
 	hud.set_board(rider.board_state_text())
@@ -536,8 +620,12 @@ func _take_shot() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("start"):
 		if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED:
-			pc.start()
+			_start_run()
 	elif event.is_action_pressed("reset"):
+		if _finishing:
+			_end_session()
+		else:
+			_penalty(RESET_PENALTY)
 		_reset()
 	elif event.is_action_pressed("speed_up"):
 		pc.change_speed(2.0)
@@ -686,6 +774,8 @@ func _parse_args() -> void:
 			_lane_arg = arg.substr(7).to_float()
 		elif arg.begins_with("--view="):
 			_view_arg = PackedFloat32Array(Array(arg.substr(7).split(",")).map(func(v: String) -> float: return v.to_float()))
+		elif arg.begins_with("--game-time="):
+			_game_time = arg.substr(12).to_float()
 		elif arg == "--no-screen":
 			_no_screen = true
 		elif arg == "--screen" or arg.begins_with("--screen="):

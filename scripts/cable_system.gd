@@ -5,7 +5,8 @@ extends Node3D
 ## Der Schlitten (Carrier) sitzt fest auf EINEM Strang. Der Motor kehrt die Laufrichtung
 ## an jedem Ende um, dadurch pendelt der Carrier hin und her. Am Carrier hängt das Zugseil.
 
-enum State { IDLE, START, RUN, BRAKE, PAUSE, STOPPING, FETCH, HOLD }
+enum State { IDLE, START, RUN, BRAKE, PAUSE, STOPPING, FETCH, HOLD, DONE }
+## DONE: Spielzeit vorbei, der Fahrer wurde zum Start (Wendepunkt am Ufer) gebracht.
 ## FETCH: nach Sturz/Seilverlust fährt der Operator den Carrier (und damit die Handle) auf die
 ##        Höhe des Fahrers; HOLD: dort wartet er, bis der Fahrer die Handle greift.
 const FETCH_SPEED := 2.5
@@ -29,6 +30,8 @@ var decel := 3.5               # spät und kräftig bremsen, damit das Seil lang
 var pause_time := 0.15
 
 var fetch_z := 0.0       # Ziel beim Holen der Handle (lokales z)
+var finishing := false   # Spielzeit vorbei: nur noch zum Start (Ufer-Wendepunkt) fahren
+var _brake_z := NAN      # vorzeitige Wende (Spielende auf dem Weg zum Endmast)
 var s := 0.0             # Carrier-Position entlang z
 var v := 0.0             # Geschwindigkeit (mit Vorzeichen) entlang z
 var dir := -1.0          # -1 = Richtung Endmast, +1 = Richtung Ufer
@@ -183,9 +186,21 @@ func hold_at(z: float) -> void:
 	state = State.HOLD
 
 
+## Spielzeit vorbei: Wer Richtung Endmast fährt, wendet sofort; dann zum Ufer-Wendepunkt
+## und dort anhalten (DONE).
+func finish() -> void:
+	finishing = true
+	if dir < 0.0 and (state == State.START or state == State.RUN):
+		_brake_z = s + dir * maxf(v * v / (2.0 * decel), 1.0)
+		state = State.BRAKE
+
+
 ## Fahrer hat die Handle: weiter in Richtung des nächstgelegenen Wendepunkts.
 func resume() -> void:
-	dir = -1.0 if absf(s - turn_b_z) < absf(s - turn_a_z) else 1.0
+	# Wasserstart immer zum weiter entfernten Wendepunkt (am Spielende: zum Start)
+	dir = -1.0 if absf(s - turn_b_z) > absf(s - turn_a_z) else 1.0
+	if finishing:
+		dir = 1.0
 	_after_turn = false
 	state = State.START
 
@@ -197,6 +212,8 @@ func reset() -> void:
 	dir = -1.0
 	laps = 0
 	state = State.IDLE
+	finishing = false
+	_brake_z = NAN
 
 
 func change_speed(kmh: float) -> void:
@@ -257,10 +274,16 @@ func step(delta: float, rider_vz: float, rope_slack: float) -> void:
 			v = 0.0
 			_pause_t -= delta
 			if _pause_t <= 0.0:
-				dir = -dir
-				laps += 1
-				_after_turn = true
-				state = State.START
+				_brake_z = NAN
+				if finishing and dir > 0.0:
+					state = State.DONE             # am Start angekommen
+				else:
+					dir = -dir
+					laps += 1
+					_after_turn = true
+					state = State.START
+		State.DONE:
+			v = 0.0
 	s += v * delta
 	if state == State.BRAKE and _remaining() < 0.0:
 		s = _target()
@@ -268,6 +291,8 @@ func step(delta: float, rider_vz: float, rope_slack: float) -> void:
 
 
 func _target() -> float:
+	if dir < 0.0 and not is_nan(_brake_z):
+		return _brake_z
 	return turn_b_z if dir < 0.0 else turn_a_z
 
 
@@ -305,6 +330,7 @@ func state_text() -> String:
 		State.STOPPING: return "Not-Stopp"
 		State.FETCH: return "Operator bringt die Handle"
 		State.HOLD: return "Wartet auf den Fahrer"
+		State.DONE: return "Ende – zurück am Start"
 	return ""
 
 

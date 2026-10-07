@@ -5,7 +5,8 @@ const HELP := """A / D   Kante: lenken   (in der Luft: drehen)
 W   Kante belasten: mehr Grip, weite Bögen, mehr Zug
 S   Kante lösen = Driften: Brett rutscht quer, dreht schneller (gut für die Wende)
 Leertaste halten + loslassen   Absprung
-Enter  Start     R  Neustart     + / -  Anlagentempo
+Enter  Start (Runde 7:30)     R  zurück zum Steg (−5:00)     + / -  Anlagentempo
+Nach Sturz:  W halten = zur Handle schwimmen     Leertaste = sofort weiter (−3:00)
 C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom
 P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus
 Vor dem Start:   T  Terminal (T1/T2)     F  Feature-Setup     Tab  Feature-Übersicht"""
@@ -29,14 +30,14 @@ func _ready() -> void:
 	_info.position = Vector2(16, 12)
 
 	_bar = ProgressBar.new()
-	_bar.position = Vector2(16, 150)
+	_bar.position = Vector2(16, 178)
 	_bar.size = Vector2(280, 14)
 	_bar.max_value = 1.0
 	_bar.show_percentage = false
 	add_child(_bar)
 
 	_board = _label(22)
-	_board.position = Vector2(16, 170)
+	_board.position = Vector2(16, 198)
 	_board.add_theme_color_override("font_color", Color(0.5, 0.95, 1.0))
 
 	_center = _label(36)

@@ -19,6 +19,7 @@ var _map: FeatureMap
 var _preview: FeaturePreview
 var _title: Label
 var _details: Label
+var _result: Label
 var _terminal := "T2"
 var _terminals: Array = []
 
@@ -52,8 +53,13 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	var head := Label.new()
 	head.text = "Wakeport Raunheim"
 	head.add_theme_font_size_override("font_size", 28)
-	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(head)
+	_result = Label.new()
+	_result.add_theme_font_size_override("font_size", 22)
+	_result.add_theme_color_override("font_color", FeatureMap.COL_SEL)
+	_result.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	top.add_child(_result)
 	_terminal_opt = _choice(top, "Terminal", terminal_names)
 	_terminal_opt.item_selected.connect(func(i: int) -> void: terminal_chosen.emit(_terminals[i]))
 	_setup_opt = _choice(top, "Feature-Setup", setup_names)
@@ -188,3 +194,8 @@ func _input(event: InputEvent) -> void:
 		_:
 			return
 	get_viewport().set_input_as_handled()
+
+
+## Ergebnis der letzten Runde oben in der Leiste.
+func set_result(text: String) -> void:
+	_result.text = text

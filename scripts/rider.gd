@@ -14,6 +14,7 @@ signal trick_landed(trick_name: String, points: int)
 signal bumped                    # kleines "Ups": über eine Boje oder einen Steg gerumpelt
 signal rope_lost(reason: String) # Handle verloren (kein Sturz): ausgleiten, absinken, schwimmen
 signal grabbed                   # nach dem Schwimmen die Handle wieder gegriffen
+signal skipped                   # Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
 
 ## Bergung nach Sturz/Seilverlust (2-Mast-Anlage: niemand muss zurück zum Start):
 ## der Operator bringt die Handle auf die Höhe des Fahrers, der schwimmt hin und greift sie.
@@ -515,8 +516,14 @@ func _swim(delta: float) -> void:
 	if _ragdoll and _ragdoll.active:
 		_ragdoll.stop()                    # aus der Rückenlage in die Schwimmlage
 	if not autopilot and Input.is_action_just_pressed("jump"):
-		cable.hold_at((cable.transform.affine_inverse() * pos).z)
+		# direkt unter das Seil (dort steht kein Feature), Handle ist sofort da
+		var l := cable.transform.affine_inverse() * pos
+		l.x = 0.0
+		pos = cable.transform * l
+		pos.y = water.height_at(pos.x, pos.z)
+		cable.hold_at(l.z)
 		_free_handle = pos
+		skipped.emit()
 		_grab()
 		return
 	var to := _free_handle - pos
