@@ -29,6 +29,7 @@ var rail_color := "grey"
 var ramp_curve := 1.6          # Form der Auffahrten: 1 = gerade (A-Frame), > 1 = konkav (Transition)
 var color := "white"           # Farbe des Körpers: white / grey
 var side_ramp := 0.0           # seitliche Transition auf der Seilseite (Breite in m, 0 = senkrechte Wand)
+var profile: Array = []         # Block: Längsprofil [[Abstand vom Anfang (m), Höhe], …] statt height/height_end
 var body_curve := 1.0          # Block: Verlauf height -> height_end (1 = gerade, 2 = konkav wie die Transition Curb)
 var inner_v := 1.0             # +1/-1: in welche lokale v-Richtung das Seil liegt (setzt FeatureSet)
 
@@ -61,6 +62,7 @@ func setup(id: String, p: Dictionary) -> void:
 	ramp_curve = p.get("ramp_curve", ramp_curve)
 	side_ramp = p.get("side_ramp", side_ramp)
 	body_curve = p.get("body_curve", body_curve)
+	profile = p.get("profile", [])
 	if type == "pipe" or type == "ball":
 		width = radius * 2.0
 	if type == "ball":
@@ -99,6 +101,8 @@ func height_local(u: float, v: float, collision := false) -> float:
 		"block":
 			if absf(v) > width * 0.5:
 				return NONE
+			if not profile.is_empty():
+				return _with_side_ramp(v, _profile_h(u + hl))
 			# Verlauf über den Körper (ohne Auffahrten): z. B. Transition Curb konkav von 0,35 auf 1,1 m
 			var tb := clampf((u + hl - ramp_in) / maxf(length - ramp_in - ramp_out, 0.01), 0.0, 1.0)
 			return _with_side_ramp(v, _with_ramps(u, lerpf(height, height_end, pow(tb, body_curve))))
@@ -143,6 +147,18 @@ func height_local(u: float, v: float, collision := false) -> float:
 			var top_r := top / maxf(length, width)
 			return lerpf(ENTRY, height, clampf((1.0 - d) / maxf(1.0 - top_r, 0.01), 0.0, 1.0))
 	return NONE
+
+
+## Höhe aus dem Längsprofil (lineare Abschnitte zwischen den Stützpunkten).
+func _profile_h(d: float) -> float:
+	var prev: Array = profile[0]
+	for k in range(1, profile.size()):
+		var pt: Array = profile[k]
+		if d <= float(pt[0]):
+			var span := maxf(float(pt[0]) - float(prev[0]), 0.001)
+			return lerpf(float(prev[1]), float(pt[1]), clampf((d - float(prev[0])) / span, 0.0, 1.0))
+		prev = pt
+	return float(prev[1])
 
 
 ## Übergangsrampen an Anfang/Ende (geschwungen, wie die "Transitions" der echten Features).
@@ -256,7 +272,7 @@ func _ready() -> void:
 			# Rail nur auf dem flachen Oberteil: beginnt und endet dort, wo die schrägen Auffahrten oben ankommen
 			Util.beam(self, Vector3(rx, height + 0.02, hl - ramp_in), Vector3(rx, height + 0.02, -hl + ramp_out), 0.07, black)
 		_:
-			_build_heightfield(white, 24, 12 if side_ramp > 0.0 else 2)
+			_build_heightfield(white, 24 if profile.is_empty() else int(length * 8.0), 12 if side_ramp > 0.0 else 2)
 
 
 ## Allgemeine Form: Oberfläche aus height_local() + senkrechte Wände bis unter Wasser.
