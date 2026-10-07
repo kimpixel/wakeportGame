@@ -1,9 +1,9 @@
 class_name StartScreen
 extends CanvasLayer
-## Startbildschirm: Terminal und Feature-Setup wählen, links die Draufsicht auf alle Features
-## der Anlage (anklickbar, zusammenstehende Teile = Hack), rechts das gewählte Feature in 3D.
-## Unten "Spiel starten". Dient auch zum Prüfen der Features und Hacks.
-## Läuft weiter, während das Spiel pausiert ist.
+## Startbildschirm: Terminal und Feature-Setup wählen, oben die Bahn live in der echten
+## Szene (Features anklickbar, zusammenstehende Teile = Hack, auf beiden Anlagen fährt ein
+## Fahrer), unten das gewählte Feature bzw. der Hack in 3D. Dient auch zum Prüfen der Features.
+## Tastatur: T Terminal, F Feature-Setup, ←/→ Feature, Enter Spiel starten.
 
 signal terminal_chosen(terminal: String)
 signal setup_chosen(idx: int)
@@ -59,39 +59,40 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_setup_opt = _choice(top, "Feature-Setup", setup_names)
 	_setup_opt.item_selected.connect(func(i: int) -> void: setup_chosen.emit(i))
 
-	# Mitte: Karte | Detail
-	var mid := HSplitContainer.new()
-	mid.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_child(mid)
-	var left := VBoxContainer.new()
-	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left.size_flags_stretch_ratio = 1.0
-	mid.add_child(left)
+	# oben: die Bahn live (Start links, Endmast rechts)
 	var lt := Label.new()
-	lt.text = "Feature oder Hack anklicken  –  Doppelklick: heranzoomen, ziehen: verschieben, Rad: Zoom, Rechtsklick: Übersicht"
+	lt.text = "Feature oder Hack anklicken (← →)  –  Doppelklick: heranzoomen, ziehen: verschieben, Rad: Zoom, Rechtsklick: ganze Bahn   |   T Terminal   F Feature-Setup   Enter Start"
 	lt.add_theme_font_size_override("font_size", 14)
 	lt.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
-	left.add_child(lt)
+	root.add_child(lt)
 	_map = FeatureMap.new()
 	_map.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_map.size_flags_stretch_ratio = 1.15
 	_map.hack_selected.connect(_on_hack)
-	left.add_child(_map)
+	root.add_child(_map)
 
-	var right := VBoxContainer.new()
-	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	mid.add_child(right)
+	# unten: gewähltes Feature in 3D | Name und Maße
+	var low := HBoxContainer.new()
+	low.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	low.add_theme_constant_override("separation", 16)
+	root.add_child(low)
+	_preview = FeaturePreview.new()
+	_preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_preview.size_flags_stretch_ratio = 1.3
+	low.add_child(_preview)
+	var info := VBoxContainer.new()
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	low.add_child(info)
 	_title = Label.new()
-	_title.add_theme_font_size_override("font_size", 20)
+	_title.add_theme_font_size_override("font_size", 22)
 	_title.add_theme_color_override("font_color", FeatureMap.COL_SEL)
 	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	right.add_child(_title)
-	_preview = FeaturePreview.new()
-	_preview.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	right.add_child(_preview)
+	info.add_child(_title)
 	_details = Label.new()
-	_details.add_theme_font_size_override("font_size", 13)
+	_details.add_theme_font_size_override("font_size", 14)
 	_details.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
-	right.add_child(_details)
+	_details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.add_child(_details)
 
 	# unten: Start
 	var bottom := HBoxContainer.new()
@@ -126,7 +127,6 @@ func refresh(terminal: String, setup_idx: int, focus := -1) -> void:
 	_terminal_opt.select(_terminals.find(terminal))
 	_setup_opt.select(setup_idx)
 	var c: CableSystem = cable_of[terminal]
-	_map.s_offset = float(s_offset.get(terminal, 0.0))
 	_map.set_parts(c, features.parts_of(c))
 	if _map.hacks.is_empty():
 		_title.text = "Keine Features an " + terminal
@@ -159,7 +159,32 @@ func _on_hack(parts: Array) -> void:
 			h = 0.0
 			for pt: Array in p.profile:
 				h = maxf(h, float(pt[1]))
-		lines.append("%s  –  s %.1f m, x %.1f m, %s   |   %.1f × %.1f m, h %.2f m" % [
+		lines.append("%s
+    s %.1f m, x %.1f m, %s,  %.1f × %.1f m, h %.2f m" % [
 			p.display_name, p.s_center - float(s_offset.get(_terminal, 0.0)), p.x_center, "zum Endmast" if dir_l.z < 0.0 else "zum Ufer",
 			p.length, p.width, h])
 	_details.text = "\n".join(lines)
+
+
+# ---------------------------------------------------------------- Tastatur
+
+func _input(event: InputEvent) -> void:
+	if not visible or not (event is InputEventKey) or not event.pressed or event.is_echo():
+		return
+	var k := (event as InputEventKey).physical_keycode
+	match k:
+		KEY_T:
+			terminal_chosen.emit(_terminals[(_terminals.find(_terminal) + 1) % _terminals.size()])
+		KEY_F:
+			setup_chosen.emit((_setup_opt.selected + 1) % _setup_opt.item_count)
+		KEY_RIGHT, KEY_D:
+			_map.select_step(1)
+			_map.zoom_to(_map.selected)
+		KEY_LEFT, KEY_A:
+			_map.select_step(-1)
+			_map.zoom_to(_map.selected)
+		KEY_ENTER, KEY_KP_ENTER, KEY_TAB:
+			start_pressed.emit()
+		_:
+			return
+	get_viewport().set_input_as_handled()

@@ -223,20 +223,30 @@ func _build_start_screen() -> void:
 	start_screen.visible = false
 	add_child(start_screen)
 	start_screen.terminal_chosen.connect(func(t: String) -> void:
+		_reset()
 		_select_terminal(t)
+		pc.start()
 		start_screen.refresh(terminal, _setup_idx))
 	start_screen.setup_chosen.connect(func(i: int) -> void:
+		_reset()
 		_select_setup(i)
+		pc.start()
 		start_screen.refresh(terminal, _setup_idx))
 	start_screen.start_pressed.connect(_close_start_screen)
 
 
-## Startbildschirm zeigen: Fahrer zurück an den Steg, Spiel pausiert.
+## Startbildschirm zeigen. Die Bahn läuft live weiter: auf der eigenen Anlage fährt der
+## Autopilot (wie der NPC auf der anderen), die Spielkamera wird so lange nicht gerendert.
+var _autopilot_before := false
+
 func _open_start_screen() -> void:
 	_reset()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	get_tree().paused = true
 	hud.visible = false
+	get_viewport().disable_3d = true
+	_autopilot_before = rider.autopilot
+	rider.autopilot = true
+	pc.start()
 	start_screen.visible = true
 	start_screen.refresh(terminal, _setup_idx)
 
@@ -244,7 +254,8 @@ func _open_start_screen() -> void:
 func _close_start_screen() -> void:
 	start_screen.visible = false
 	hud.visible = true
-	get_tree().paused = false
+	get_viewport().disable_3d = false
+	rider.autopilot = _autopilot_before
 	_reset()
 	cam.snap()
 
@@ -403,7 +414,7 @@ func _physics_process(delta: float) -> void:
 		_crash_t += delta
 		if _crash_t > RESET_DELAY:
 			_reset()
-			if _test_log:
+			if _test_log or start_screen.visible:
 				pc.start()
 
 	_elapsed += delta

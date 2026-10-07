@@ -1,29 +1,29 @@
 class_name FeatureMap
 extends Control
-## Draufsicht auf die echte 3D-Szene einer Anlage (Kamera senkrecht von oben, wie die
-## Feature-Pläne ausgerichtet: unten der Startsteg, oben der Endmast). Darüber nur die
-## Markierung des gewählten bzw. überfahrenen Features/Hacks und sein Name.
+## Die Bahn in der echten 3D-Szene, live (die Fahrer fahren weiter): Start links, Endmast
+## rechts, leicht schräg von der Seite gesehen. Darüber nur die Markierung des gewählten
+## bzw. überfahrenen Features/Hacks und sein Name.
 ## Teile, die (fast) aneinanderstoßen, bilden einen "Hack" und werden zusammen ausgewählt.
-## Maus: Klick wählt aus, Doppelklick zoomt auf den Hack, Ziehen verschiebt, Rad zoomt.
+## Maus: Klick wählt aus, Doppelklick zoomt auf den Hack, Ziehen verschiebt, Rad zoomt,
+## Rechtsklick zeigt wieder die ganze Bahn.
 
 signal hack_selected(parts: Array)
 
 const HACK_GAP := 0.8            # so nah (m) beieinander gilt als Hack
 const COL_SEL := Color(1.0, 0.82, 0.2)
-const CAM_HEIGHT := 120.0
+const TILT := deg_to_rad(40.0)   # Blick schräg von oben (90° = senkrecht)
+const CAM_DIST := 160.0
 
 var cable: CableSystem
 var hacks: Array = []            # Array von Arrays mit FeatureParts (nach s sortiert)
 var selected := -1
 var _hover := -1
 var _polys: Dictionary = {}      # FeaturePart -> PackedVector2Array in (s, x)
-var _zoom := 5.0                 # Pixel pro Meter
-var _pan := Vector2.ZERO         # Bildschirmposition von (s=0, x=0); s zeigt nach oben
+var _center_sx := Vector2.ZERO   # Bildmitte auf dem Wasser in (s, x)
+var _span := 150.0               # sichtbare Breite in m
 var _press := Vector2.INF
 var _dragged := false
-var _whole := false
 var _zoomed := -1                # auf diesen Hack gezoomt (bleibt beim Ändern der Fenstergröße)
-var s_offset := 0.0              # Beschriftung in Setup-Metern (T1: Teile sind um diesen Versatz verschoben)
 var _vp: SubViewport
 var _cam: Camera3D
 var _overlay: Control
@@ -44,8 +44,9 @@ func _ready() -> void:
 	box.add_child(_vp)
 	_cam = Camera3D.new()
 	_cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	_cam.keep_aspect = Camera3D.KEEP_WIDTH
 	_cam.near = 1.0
-	_cam.far = CAM_HEIGHT + 60.0
+	_cam.far = CAM_DIST * 2.0
 	_vp.add_child(_cam)
 	_cam.current = true
 	_overlay = Control.new()
@@ -57,7 +58,7 @@ func _ready() -> void:
 		if _zoomed >= 0:
 			zoom_to(_zoomed)
 		else:
-			fit(_whole))
+			fit())
 
 
 ## Neue Anlage bzw. neues Setup anzeigen.
@@ -70,44 +71,38 @@ func set_parts(c: CableSystem, parts: Array[FeaturePart]) -> void:
 	hacks.sort_custom(func(a: Array, b: Array) -> bool: return _center(a).x < _center(b).x)
 	selected = -1
 	_hover = -1
-	_zoomed = -1
 	fit()
 
 
-## Alle Features (und den Startplatz) ins Bild; whole: die ganze Anlage von Mast zu Mast.
-func fit(whole := false) -> void:
-	if cable == null or size.x < 10.0:
+## Ganze Bahn ins Bild: vom Startsteg bis zum Endmast.
+func fit() -> void:
+	if cable == null:
 		return
-	var length := cable.mast_a_z - cable.mast_b_z
-	var r := Rect2(Vector2(cable.mast_a_z - cable.start_z, 0.0), Vector2.ZERO)
-	if whole or _polys.is_empty():
-		r = Rect2(0.0, -20.0, length, 40.0)
-	else:
-		for poly: PackedVector2Array in _polys.values():
-			for q in poly:
-				r = r.expand(q)
-		r = r.grow(6.0)
-	_view(r)
+	var s0 := cable.mast_a_z - cable.start_z - 8.0
+	var s1 := cable.mast_a_z - cable.mast_b_z + 4.0
+	_view(Rect2(s0, -14.0, s1 - s0, 28.0))
 
 
 ## Ausschnitt r (in s, x) einpassen.
 func _view(r: Rect2) -> void:
-	_zoom = minf((size.x - 30.0) / r.size.y, (size.y - 30.0) / r.size.x)
-	var c := r.get_center()
-	_pan = Vector2(size.x * 0.5 - c.y * _zoom, size.y * 0.5 + c.x * _zoom)
+	_center_sx = r.get_center()
+	var aspect := size.x / maxf(size.y, 1.0)
+	# Breite: s-Ausdehnung; die x-Ausdehnung erscheint durch die Neigung um sin(TILT) gestaucht
+	_span = maxf(r.size.x, r.size.y * sin(TILT) * aspect)
+	_zoomed = -1
 	queue_redraw()
 
 
 ## Auf einen Hack zoomen.
 func zoom_to(idx: int) -> void:
-	_zoomed = idx
 	var r := Rect2()
 	var first := true
 	for p: FeaturePart in hacks[idx]:
 		for q in _polys[p]:
 			r = Rect2(q, Vector2.ZERO) if first else r.expand(q)
 			first = false
-	_view(r.grow(4.0))
+	_view(r.grow(5.0))
+	_zoomed = idx
 
 
 func select(idx: int) -> void:
@@ -115,6 +110,13 @@ func select(idx: int) -> void:
 	queue_redraw()
 	if idx >= 0:
 		hack_selected.emit(hacks[idx])
+
+
+## Nächstes/voriges Feature bzw. Hack (Tastatur).
+func select_step(step: int) -> void:
+	if hacks.is_empty():
+		return
+	select(posmod(selected + step, hacks.size()))
 
 
 static func hack_name(hack: Array) -> String:
@@ -198,15 +200,32 @@ func _center(hack: Array) -> Vector2:
 	return c / (hack.size() * 4.0)
 
 
+
+
+## (s, x) auf dem Wasser -> Welt
+func _world(sx: Vector2, y := 0.0) -> Vector3:
+	return cable.global_transform * Vector3(sx.y, y, cable.mast_a_z - sx.x)
+
+
 func _to_screen(sx: Vector2) -> Vector2:
-	return _pan + Vector2(sx.y, -sx.x) * _zoom
+	return _cam.unproject_position(_world(sx))
+
+
+## Meter pro Pixel (waagerecht)
+func _mpp() -> float:
+	return _span / maxf(size.x, 1.0)
+
+
+## Bildschirm-Verschiebung (Pixel) -> Verschiebung auf dem Wasser in (s, x)
+func _ground(px: Vector2) -> Vector2:
+	return Vector2(px.x, px.y / sin(TILT)) * _mpp()
 
 
 func _hack_at(pos: Vector2) -> int:
 	for i in hacks.size():
 		for p: FeaturePart in hacks[i]:
 			var pts := PackedVector2Array()
-			for q in _footprint(p, maxf(0.3, 4.0 / _zoom)):       # kleine Teile gut treffbar
+			for q in _footprint(p, maxf(0.3, 6.0 * _mpp())):       # kleine Teile gut treffbar
 				pts.append(_to_screen(q))
 			if Geometry2D.is_point_in_polygon(pos, pts):
 				return i
@@ -220,10 +239,11 @@ func _gui_input(event: InputEvent) -> void:
 		var mb := event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_WHEEL_UP or mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			if mb.pressed:
-				var f := 1.15 if mb.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / 1.15
-				var new_zoom := clampf(_zoom * f, 1.0, 80.0)
-				_pan = mb.position - (mb.position - _pan) * (new_zoom / _zoom)
-				_zoom = new_zoom
+				var f := 1.0 / 1.15 if mb.button_index == MOUSE_BUTTON_WHEEL_UP else 1.15
+				# der Punkt unter der Maus bleibt stehen
+				_center_sx += _ground(mb.position - size * 0.5) * (1.0 - f)
+				_span = clampf(_span * f, 6.0, 400.0)
+				_zoomed = -1
 				queue_redraw()
 			accept_event()
 		elif mb.button_index == MOUSE_BUTTON_LEFT:
@@ -242,15 +262,14 @@ func _gui_input(event: InputEvent) -> void:
 				_press = Vector2.INF
 			accept_event()
 		elif mb.button_index == MOUSE_BUTTON_RIGHT and mb.pressed:
-			_whole = not _whole if _zoomed < 0 else false
-			_zoomed = -1
-			fit(_whole)
+			fit()
 	elif event is InputEventMouseMotion:
 		var mm := event as InputEventMouseMotion
 		if _press != Vector2.INF and (mm.button_mask & MOUSE_BUTTON_MASK_LEFT):
 			if _dragged or mm.position.distance_to(_press) > 4.0:
 				_dragged = true
-				_pan += mm.relative
+				_center_sx -= _ground(mm.relative)
+				_zoomed = -1
 				queue_redraw()
 		else:
 			var h := _hack_at(mm.position)
@@ -262,16 +281,28 @@ func _gui_input(event: InputEvent) -> void:
 
 # ---------------------------------------------------------------- Zeichnen
 
+func _process(_delta: float) -> void:
+	# live: die Markierungen jedes Bild nachziehen (die Fenstergröße kann sich ändern)
+	if is_visible_in_tree():
+		_place_camera()
+		_overlay.queue_redraw()
+
+
 func _draw() -> void:
-	# Kamera auf den aktuellen Ausschnitt; die Markierungen zeichnet das Overlay darüber
+	_place_camera()
+	_overlay.queue_redraw()
+
+
+## Kamera schräg von der rechten Seite (in Fahrtrichtung zum Endmast): Bild nach rechts = s,
+## Bild nach unten = rechts in Fahrtrichtung.
+func _place_camera() -> void:
 	if cable == null or _cam == null:
 		return
-	var sx := Vector2((_pan.y - size.y * 0.5) / _zoom, (size.x * 0.5 - _pan.x) / _zoom)   # Bildmitte in (s, x)
-	_cam.size = size.y / _zoom
-	var b := cable.global_basis.orthonormalized()
-	_cam.global_transform = Transform3D(Basis(b.x, -b.z, Vector3.UP),
-		cable.global_transform * Vector3(sx.y, 0.0, cable.mast_a_z - sx.x) + Vector3.UP * CAM_HEIGHT)
-	_overlay.queue_redraw()
+	var target := _world(_center_sx)
+	var away := cable.global_basis.orthonormalized() * Vector3.RIGHT          # +x = Bild unten
+	var fwd := (-away * cos(TILT) + Vector3.DOWN * sin(TILT)).normalized()
+	_cam.size = _span
+	_cam.global_transform = Transform3D(Basis.looking_at(fwd, Vector3.UP), target - fwd * CAM_DIST)
 
 
 func _draw_overlay() -> void:
@@ -282,21 +313,19 @@ func _draw_overlay() -> void:
 		if i != selected and i != _hover:
 			continue
 		var col := COL_SEL if i == selected else Color(1, 1, 1, 0.85)
+		var r := Rect2()
+		var first := true
 		for p: FeaturePart in hacks[i]:
 			var pts := PackedVector2Array()
 			for q in _footprint(p, 0.25):
-				pts.append(_to_screen(q))
+				var sp := _to_screen(q)
+				pts.append(sp)
+				r = Rect2(sp, Vector2.ZERO) if first else r.expand(sp)
+				first = false
 			pts.append(pts[0])
 			_overlay.draw_polyline(pts, col, 2.5 if i == selected else 1.5, true)
 		var txt := hack_name(hacks[i])
 		var w := font.get_string_size(txt, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x
-		var r := Rect2()
-		var first := true
-		for p: FeaturePart in hacks[i]:
-			for q in _polys[p]:
-				var sp := _to_screen(q)
-				r = Rect2(sp, Vector2.ZERO) if first else r.expand(sp)
-				first = false
 		var c := Vector2(r.get_center().x - w * 0.5, r.end.y + 22.0)
 		c.x = clampf(c.x, 4.0, size.x - w - 4.0)
 		c.y = clampf(c.y, 18.0, size.y - 6.0)
