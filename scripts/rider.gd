@@ -60,6 +60,10 @@ var start_yaw := 0.0
 var dock_rect := Rect2(Lake.DOCK_MIN, Lake.DOCK_MAX - Lake.DOCK_MIN)
 var mast_b := Vector3(0.0, 0.0, Lake.MAST_B_Z)
 var vest_color := Color(1.0, 0.45, 0.05)
+## Realistisches Modell (MakeHuman, siehe tools/character). Leer = einfache Klötzchen-Figur.
+var model_path := "res://assets/characters/rider.glb"
+var shirt_color := Color(0.22, 0.24, 0.28)
+var shorts_color := Color(0.15, 0.35, 0.7)
 var is_npc := false
 ## Test/Demo: Autopilot hält diese seitliche Spur (Meter neben dem Seil) und fährt Features direkt an
 var auto_lane := NAN
@@ -100,6 +104,8 @@ var _board_pivot: Node3D
 var _body_pivot: Node3D
 var _arm_l: MeshInstance3D
 var _arm_r: MeshInstance3D
+var _human: Node3D
+var _rig: HumanRig
 var _handle: MeshInstance3D
 var _rope_mesh: ImmediateMesh
 var _rope_mat: StandardMaterial3D
@@ -110,7 +116,7 @@ var _slide_spray: CPUParticles3D
 # ---------------------------------------------------------------- Aufbau
 
 func _ready() -> void:
-	var board_mat := Util.mat(Color(0.08, 0.08, 0.1), 0.4)
+	var board_mat := Util.mat(Color(0.1, 0.32, 0.55), 0.35)
 	var bind_mat := Util.mat(Color(0.85, 0.1, 0.1), 0.6)
 	var pants := Util.mat(Color(0.15, 0.18, 0.3))
 	var vest := Util.mat(vest_color, 0.6)
@@ -120,9 +126,33 @@ func _ready() -> void:
 	_board_pivot = Node3D.new()
 	_board_pivot.position = Vector3(0.0, 0.03, 0.0)
 	add_child(_board_pivot)
-	Util.box(_board_pivot, Vector3(0.43, 0.04, 1.35), Vector3.ZERO, board_mat)
-	Util.box(_board_pivot, Vector3(0.26, 0.1, 0.15), Vector3(0.0, 0.06, 0.26), bind_mat)
-	Util.box(_board_pivot, Vector3(0.26, 0.1, 0.15), Vector3(0.0, 0.06, -0.26), bind_mat)
+	# Twin-Tip-Board: flache Kapsel = abgerundete Spitzen, dazu Bindungen (Boots) und Finnen
+	var deck := CapsuleMesh.new()
+	deck.radius = 0.215
+	deck.height = 1.38
+	deck.radial_segments = 24
+	deck.rings = 6
+	var board_mi := MeshInstance3D.new()
+	board_mi.mesh = deck
+	board_mi.material_override = board_mat
+	board_mi.rotation.x = PI * 0.5
+	board_mi.scale = Vector3(1.0, 1.0, 0.1)
+	_board_pivot.add_child(board_mi)
+	var boot := Util.mat(Color(0.08, 0.08, 0.09), 0.6)
+	for bz: float in [-0.25, 0.25]:
+		var boot_mesh := CapsuleMesh.new()
+		boot_mesh.radius = 0.065
+		boot_mesh.height = 0.3
+		var boot_mi := MeshInstance3D.new()
+		boot_mi.mesh = boot_mesh
+		boot_mi.material_override = boot
+		boot_mi.rotation = Vector3(0.0, PI * 0.5, PI * 0.5)    # liegt quer zum Brett (Fuß zeigt zur Brust)
+		boot_mi.scale = Vector3(1.0, 1.0, 1.25)
+		boot_mi.position = Vector3(0.02, 0.085, bz)
+		_board_pivot.add_child(boot_mi)
+		Util.box(_board_pivot, Vector3(0.2, 0.03, 0.34), Vector3(0.0, 0.03, bz), bind_mat)
+	for fz: float in [-0.6, 0.6]:
+		Util.box(_board_pivot, Vector3(0.012, 0.04, 0.07), Vector3(0.0, -0.035, fz), boot)
 
 	# Fahrer steht seitlich auf dem Brett: Schultern entlang der Brettachse, Brust zeigt nach +X
 	_body_pivot = Node3D.new()
@@ -136,6 +166,7 @@ func _ready() -> void:
 	_arm_l = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.045, skin)
 	_arm_r = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.045, skin)
 	_handle = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.025, black)
+	_load_model()
 	for n: Node3D in [_arm_l, _arm_r, _handle]:
 		n.top_level = true
 
@@ -781,6 +812,8 @@ func _process(delta: float) -> void:
 	_lean_pitch = lerpf(_lean_pitch, clampf(target_pitch, -0.6, 0.6), k)
 	_crouch = lerpf(_crouch, target_crouch, k)
 
+	if _rig:
+		_pose_human()
 	_body_pivot.rotation = Vector3(_lean_pitch, 0.0, _lean_roll)
 	_body_pivot.scale = Vector3(1.0, 1.0 - _crouch, 1.0)
 	_body_pivot.position.y = -0.3 if mode == Mode.CRASHED else 0.06
@@ -807,8 +840,10 @@ func _process(delta: float) -> void:
 	bar_axis = bar_axis.normalized() if bar_axis.length() > 0.01 else Vector3.RIGHT
 	Util.place_beam(_handle, handle_pos - bar_axis * 0.22, handle_pos + bar_axis * 0.22)
 
-	_arm_l.visible = attached
-	_arm_r.visible = attached
+	_arm_l.visible = attached and _rig == null
+	_arm_r.visible = attached and _rig == null
+	if _rig and attached and mode != Mode.CRASHED:
+		_pose_arms(handle_pos, bar_axis)
 	if attached:
 		var body := _body_pivot.global_transform
 		Util.place_beam(_arm_l, body * Vector3(0.0, 1.38, 0.17), handle_pos - bar_axis * 0.08)
@@ -835,6 +870,125 @@ func board_state_text() -> String:
 	if _edge > 0.3:
 		return "KANTE belastet – maximaler Grip"
 	return ""
+
+
+# ---------------------------------------------------------------- Realistisches Modell
+
+func _load_model() -> void:
+	if model_path == "" or not ResourceLoader.exists(model_path):
+		return
+	var scene: PackedScene = load(model_path)
+	_human = scene.instantiate()
+	# Modell schaut nach +Z; der Fahrer steht seitlich: Brust zeigt nach +X (lokal)
+	_human.rotation.y = PI * 0.5
+	_human.position.y = 0.06
+	add_child(_human)
+	var skel := HumanRig.find_skeleton(_human)
+	if skel == null:
+		_human.queue_free()
+		_human = null
+		return
+	_rig = HumanRig.new(skel)
+	_body_pivot.visible = false
+	_tint_clothes(_human)
+	# Helm am Kopf-Knochen (die Impact-Weste ist das eng anliegende Oberteil, siehe _tint_clothes)
+	var helmet := SphereMesh.new()
+	helmet.radius = 0.125
+	helmet.height = 0.14
+	helmet.is_hemisphere = true
+	_attach("head", helmet, Vector3(0.0, 0.085, 0.0), Vector3(1.0, 1.05, 1.15), Util.mat(Color(0.12, 0.12, 0.13), 0.35))
+
+
+## Kleidung einfärben: T-Shirt als Rashguard, Hose als Boardshorts.
+func _tint_clothes(n: Node) -> void:
+	if n is MeshInstance3D:
+		var mi := n as MeshInstance3D
+		var lname := String(mi.name).to_lower()
+		var tint := Color.WHITE
+		if "shirt" in lname or "top" in lname:
+			tint = vest_color.lerp(Color.BLACK, 0.25)     # Oberteil = Impact-Weste
+		elif "pants" in lname or "shorts" in lname:
+			tint = shorts_color
+		if tint != Color.WHITE:
+			for si in mi.mesh.get_surface_count():
+				var m := mi.get_active_material(si)
+				if m is StandardMaterial3D:
+					var d := (m as StandardMaterial3D).duplicate() as StandardMaterial3D
+					d.albedo_color = tint
+					mi.set_surface_override_material(si, d)
+	for c in n.get_children():
+		_tint_clothes(c)
+
+
+## Hängt ein Mesh an einen Knochen; offset/scale in Skelett-Achsen der Ruhepose.
+func _attach(bone: String, mesh: Mesh, offset: Vector3, scl: Vector3, mat: Material) -> void:
+	var att := BoneAttachment3D.new()
+	att.bone_name = bone
+	_rig.skeleton.add_child(att)
+	var rest := _rig.rest_global(bone).basis.orthonormalized()
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.material_override = mat
+	mi.transform = Transform3D(rest.inverse() * Basis.from_scale(scl), rest.inverse() * offset)
+	att.add_child(mi)
+
+
+## Pose aus der Physik: Füße in den Bindungen, Becken/Oberkörper gegen den Seilzug,
+## Knie federn je nach Belastung, Kopf schaut in Fahrtrichtung.
+func _pose_human() -> void:
+	_human.rotation = Vector3(0.0, PI * 0.5, 0.0)
+	_human.position = Vector3(0.0, 0.06, 0.0)
+	_rig.begin()
+	if mode == Mode.CRASHED:
+		_human.rotation = Vector3(0.0, PI * 0.5, 1.45)        # liegt im Wasser
+		_human.position = Vector3(0.6, -0.25, 0.0)
+		return
+	var skel_inv := _rig.skeleton.global_transform.affine_inverse()
+	var rb := global_transform.basis.orthonormalized()
+	var board := _board_pivot.global_transform
+	var foot_front := board * Vector3(0.0, 0.07, -0.25)    # linker Fuß Richtung Nose
+	var foot_back := board * Vector3(0.0, 0.07, 0.25)
+	var mid := (foot_front + foot_back) * 0.5
+	var hip_h := 0.84 - 0.32 * _crouch
+	var lean_local := Vector3(-sin(_lean_roll) * 0.55, hip_h * cos(_lean_roll) * cos(_lean_pitch), sin(_lean_pitch) * 0.4)
+	var pelvis_world := mid + rb * lean_local
+	# Becken- und Oberkörperneigung (Welt -> Skelettraum)
+	var skel_b := _rig.skeleton.global_transform.basis.orthonormalized()
+	var lean_w := rb * Basis.from_euler(Vector3(_lean_pitch * 0.5, 0.0, _lean_roll * 0.6)) * rb.inverse()
+	var to_skel := func(bw: Basis) -> Basis: return skel_b.inverse() * bw * skel_b
+	_rig.set_pelvis(skel_inv * pelvis_world, to_skel.call(lean_w))
+	# Oberkörper zum Seil drehen und etwas weiter zurücklehnen
+	var rope_h := Vector3(rope_dir.x, 0.0, rope_dir.z)
+	var chest := rb * Vector3.RIGHT
+	var twist := 0.0
+	if rope_h.length() > 0.1 and attached:
+		twist = clampf(chest.signed_angle_to(rope_h.normalized(), Vector3.UP), -0.9, 0.9) * 0.6
+	var spine_w := Basis(Vector3.UP, twist) * (rb * Basis.from_euler(Vector3(_lean_pitch * 0.4, 0.0, _lean_roll * 0.4)) * rb.inverse())
+	_rig.bend_spine(to_skel.call(spine_w).get_rotation_quaternion())
+	# Beine: Knie Richtung Brust/Zehen, leicht nach außen
+	var knee_dir := chest * 1.0 + Vector3.UP * 0.3
+	_rig.leg("l", skel_inv * foot_front, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, -0.25)))
+	_rig.leg("r", skel_inv * foot_back, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, 0.25)))
+	# Kopf: in Fahrtrichtung bzw. zum Seil
+	var look_dir := Vector3(vel.x, 0.0, vel.z)
+	if look_dir.length() < 1.0:
+		look_dir = rope_h if rope_h.length() > 0.1 else forward()
+	_rig.look_at(skel_inv * (pelvis_world + Vector3.UP * 0.8 + look_dir.normalized() * 10.0))
+
+
+func _pose_arms(handle_pos: Vector3, bar_axis: Vector3) -> void:
+	var skel_inv := _rig.skeleton.global_transform.affine_inverse()
+	var a := handle_pos - bar_axis * 0.1
+	var b := handle_pos + bar_axis * 0.1
+	# linke Hand (vordere Schulter, Richtung Nose) an das Griffende, das näher an der Nose liegt
+	var nose := forward()
+	var front := a if (a - global_position).dot(nose) > (b - global_position).dot(nose) else b
+	var back := b if front == a else a
+	var down_back := Vector3.DOWN * 0.6 - Vector3(rope_dir.x, 0.0, rope_dir.z) * 0.4
+	var sh_l := _rig.skeleton.global_transform * _rig.global_pose("upperarm_l").origin
+	var sh_r := _rig.skeleton.global_transform * _rig.global_pose("upperarm_r").origin
+	_rig.arm("l", skel_inv * front, skel_inv * (sh_l + down_back))
+	_rig.arm("r", skel_inv * back, skel_inv * (sh_r + down_back))
 
 
 func _draw_rope(a: Vector3, b: Vector3) -> void:

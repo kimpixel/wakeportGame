@@ -91,6 +91,9 @@ func _ready() -> void:
 	npc.is_npc = true
 	npc.autopilot = true
 	npc.vest_color = Color(0.15, 0.45, 0.95)
+	npc.model_path = "res://assets/characters/guest_m.glb"
+	npc.shirt_color = Color(0.85, 0.85, 0.82)
+	npc.shorts_color = Color(0.1, 0.1, 0.12)
 	npc.start_pos = npc_start
 	npc.start_yaw = cable_t1.rotation.y
 	npc.dock_rect = Rect2(dc.x - 3.5, dc.y - 2.2, 7.0, 4.4)

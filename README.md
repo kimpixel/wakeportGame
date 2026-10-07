@@ -50,6 +50,13 @@ Solange der Carrier noch nicht zurückzieht, schwingst du quer zum Seil um ihn h
 
 Funktioniert am besten in Chrome, Edge oder Firefox am PC. Einmal ins Bild klicken, damit Tastatur und Maus reagieren.
 
+## Figuren
+
+Fahrer, NPC, Steuermann und Gäste sind realistische Menschen aus **MakeHuman** (MPFB für Blender, alle Assets CC0). Erzeugt werden sie per Skript:
+
+\
+Presets: , , , . Die Haltung wird im Spiel live aus der Physik berechnet (eigene IK in ): Füße in den Bindungen, Hände am Griff, Oberkörper gegen den Seilzug.
+
 ## Lokal starten
 
 1. [Godot 4.7](https://godotengine.org/download) herunterladen.

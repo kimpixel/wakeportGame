@@ -124,7 +124,8 @@ func _build_t2_start() -> void:
 	# Steuermann ("Hebler") vorne an der Kante, schaut aufs Wasser, mit gelber Fernsteuerung
 	# (ca. 30 cm lang, 10 cm dick) in beiden Händen vor dem Bauch
 	var remote_at := Vector3(1.85, 1.08, -1.5)
-	_person(hut, Vector3(1.55, 0.0, -1.5), Color(0.1, 0.1, 0.12), false, remote_at)
+	if not _human_figure(hut, "res://assets/characters/operator.glb", Vector3(1.55, 0.0, -1.5), false, remote_at):
+		_person(hut, Vector3(1.55, 0.0, -1.5), Color(0.1, 0.1, 0.12), false, remote_at)
 	_b(hut, Vector3(0.1, 0.3, 0.12), remote_at, Util.mat(Color(1.0, 0.82, 0.05), 0.5))
 	_b(hut, Vector3(0.02, 0.06, 0.06), remote_at + Vector3(0.06, 0.08, 0.0), Util.mat(Color(0.85, 0.1, 0.1)))   # Not-Aus
 	_b(hut, Vector3(0.02, 0.04, 0.04), remote_at + Vector3(0.06, -0.03, -0.03), _black)                      # Taster
@@ -137,7 +138,9 @@ func _build_t2_start() -> void:
 	var guests := rng.randi_range(0, 3)
 	for gi in guests:
 		var gz := -0.6 + gi * 0.75
-		_person(hut, Vector3(-1.75, 0.45, gz), shirts[gi], true)
+		var model := "res://assets/characters/guest_f.glb" if gi % 2 == 0 else "res://assets/characters/guest_m.glb"
+		if not _human_figure(hut, model, Vector3(-1.75, 0.45, gz), true):
+			_person(hut, Vector3(-1.75, 0.45, gz), shirts[gi], true)
 		people.append({"pos": hut.global_transform * Vector3(-1.6, 1.15, gz), "pitch": rng.randf_range(1.0, 1.35)})
 	_b(hut, Vector3(0.6, 1.0, 0.1), Vector3(-2.55, 1.6, -1.5), Util.mat(Color(0.8, 0.15, 0.12)))  # Rettungsring-Tafel
 
@@ -158,6 +161,44 @@ func _build_t2_start() -> void:
 		var bp := c + Vector3(-2.0 + i * 0.5, 0.22, 1.8)
 		var bd := _b(dock, Vector3(0.42, 0.04, 1.35), bp, _black)
 		bd.rotation.y = 0.2 * i
+
+
+## Realistische Figur (MakeHuman), schaut in lokale +X-Richtung (aufs Wasser).
+## sitting: sitzt auf Höhe base.y (Bank), Hände auf den Oberschenkeln;
+## sonst stehend, Hände bei hands_at (z. B. an der Fernsteuerung).
+func _human_figure(parent: Node3D, path: String, base: Vector3, sitting: bool, hands_at := Vector3.INF) -> bool:
+	if not ResourceLoader.exists(path):
+		return false
+	var fig: Node3D = (load(path) as PackedScene).instantiate()
+	fig.rotation.y = PI * 0.5                       # Modell schaut nach +Z -> lokal +X
+	fig.position = Vector3(base.x, 0.0, base.z) if sitting else base
+	parent.add_child(fig)
+	var skel := HumanRig.find_skeleton(fig)
+	if skel == null:
+		return false
+	var rig := HumanRig.new(skel)
+	var w := func(local: Vector3) -> Vector3: return rig.to_skel(parent.global_transform * local)
+	var fwd := Vector3(1, 0, 0)                     # Blickrichtung im Hütten-Raum
+	if sitting:
+		var pelvis := Vector3(base.x + 0.05, base.y + 0.12, base.z)
+		rig.set_pelvis(w.call(pelvis), Basis.IDENTITY)
+		rig.bend_spine(Quaternion(Vector3(0, 0, 1), 0.0))
+		for side: String in ["l", "r"]:
+			var dz := -0.12 if side == "l" else 0.12
+			var foot := Vector3(base.x + 0.5, 0.09, base.z + dz * 1.4)
+			rig.leg(side, w.call(foot), w.call(pelvis + fwd * 1.2 + Vector3(0, 0.6, dz)))
+			var hand := pelvis + fwd * 0.32 + Vector3(0, 0.12, dz * 1.3)
+			rig.arm(side, w.call(hand), w.call(pelvis + Vector3(-0.2, 0.2, dz * 4.0)))
+	else:
+		var rest_pelvis := rig.rest_global("pelvis").origin
+		rig.set_pelvis(rest_pelvis, Basis.IDENTITY)
+		if hands_at != Vector3.INF:
+			for side: String in ["l", "r"]:
+				var dz := -0.06 if side == "l" else 0.06
+				var hand := hands_at + Vector3(-0.04, -0.06, dz)
+				rig.arm(side, w.call(hand), w.call(base + Vector3(-0.1, 0.9, dz * 8.0)))
+	rig.look_at(w.call(base + fwd * 20.0 + Vector3(0, 1.5, 0)), 0.6)
+	return true
 
 
 ## Einfache Figur, schaut in lokale +X-Richtung (aufs Wasser). sitting: sitzt auf Höhe base.y.
