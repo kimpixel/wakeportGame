@@ -149,11 +149,18 @@ func _ready() -> void:
 
 # ---------------------------------------------------------------- Ablauf
 
+## Bojen sind Hindernisse: wer dagegen fährt, stürzt.
+func _check_buoy(r: Rider) -> void:
+	if r.mode != Rider.Mode.CRASHED and buoys.hits(r.pos, 0.25):
+		r.crash("Gegen die Boje gefahren!")
+
+
 func _physics_process(delta: float) -> void:
 	water.step(delta)
 	cable.step(delta, rider.vel.z if rider.attached else 0.0, rider.rope_slack())
 	cable_t1.step(delta, cable_t1.local_vz(npc.vel) if npc.attached else 0.0, npc.rope_slack())
 	npc.step(delta)
+	_check_buoy(npc)
 	if npc.mode == Rider.Mode.CRASHED:
 		_npc_crash_t += delta
 		if _npc_crash_t > 4.0:
@@ -162,6 +169,7 @@ func _physics_process(delta: float) -> void:
 			cable_t1.reset()
 			cable_t1.start()
 	rider.step(delta)
+	_check_buoy(rider)
 	_track_turn()
 
 	if rider.mode == Rider.Mode.CRASHED:

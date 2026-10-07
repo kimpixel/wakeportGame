@@ -8,12 +8,15 @@ extends Node3D
 const RED_BEFORE := 20.0       # rote Boje so weit vor dem Wendepunkt des Carriers
 const WHITE_BEFORE := 4.0      # weiße Bojen kurz vor dem Wendepunkt ...
 const WHITE_SIDE := 7.0        # ... so weit links/rechts vom Seil
+const SIZE := 0.75             # Bojengröße (1 = ursprüngliche Größe)
+const HIT_HEIGHT := 0.6        # darüber springt man hinweg
 
 var water: Water
 
 ## Pro Wendepunkt: {"cable", "end" (+1 = Endmast, -1 = Ufer), "red": Vector3, "whites": [Vector3, Vector3]}
 var turns: Array[Dictionary] = []
 var _floats: Array[Node3D] = []
+var _radius: Array[float] = []
 
 
 func add_cable(cable: CableSystem) -> void:
@@ -35,10 +38,21 @@ func _place(cable: CableSystem, s: float, x: float, mat: Material, r: float) -> 
 	var buoy := Node3D.new()
 	buoy.position = p
 	add_child(buoy)
-	Util.sphere(buoy, r, Vector3(0, 0.05, 0), mat)
-	Util.beam(buoy, Vector3(0, r, 0), Vector3(0, r + 0.25, 0), 0.03, mat)   # kleiner Stab obendrauf
+	r *= SIZE
+	Util.sphere(buoy, r, Vector3(0, 0.05 * SIZE, 0), mat)
+	Util.beam(buoy, Vector3(0, r, 0), Vector3(0, r + 0.25 * SIZE, 0), 0.03 * SIZE, mat)   # kleiner Stab obendrauf
 	_floats.append(buoy)
+	_radius.append(r)
 	return p
+
+
+## Hindernis: trifft ein Fahrer (Brett-Radius r) eine Boje auf dem Wasser?
+func hits(p: Vector3, r: float) -> bool:
+	for i in _floats.size():
+		var b := _floats[i].position
+		if p.y < b.y + HIT_HEIGHT and Vector2(p.x - b.x, p.z - b.z).length() < _radius[i] + r:
+			return true
+	return false
 
 
 func _process(_delta: float) -> void:
