@@ -11,6 +11,9 @@ uniform float half_w = 0.215;
 // optionale Foto-Textur der Unterseite (von unten gesehen, Länge senkrecht im Bild)
 uniform sampler2D bottom_tex : source_color, filter_linear_mipmap, repeat_disable;
 uniform bool use_bottom_tex = false;
+// optionale Foto-Textur der Oberseite (von oben gesehen, gleiche Ausrichtung)
+uniform sampler2D top_tex : source_color, filter_linear_mipmap, repeat_disable;
+uniform bool use_top_tex = false;
 
 varying vec3 lp;
 varying float part;
@@ -76,49 +79,56 @@ void fragment() {
 	float rough = 0.4;
 	if (part < 0.25) {
 		// ---------------- Oberseite
-		col = srgb(vec3(0.07, 0.075, 0.1));
-		rough = 0.35;
-		float paper = 0.0;
-		float tinte = 0.0;
-		float light = 1.0;
-		// Spitzen: Collage, an beiden Enden gespiegelt
-		float sg = sign(lp.z);
-		vec2 P = vec2(lp.x * sg, half_len - abs(lp.z));      // y = Abstand von der Spitze
-		float seed0 = sg > 0.0 ? 10.0 : 0.0;
-		vec3 c1 = clipping(P, vec2(-0.09, 0.09), vec2(0.15, 0.12), 0.10, seed0 + 1.0);
-		vec3 c2 = clipping(P, vec2(0.11, 0.07), vec2(0.13, 0.12), -0.16, seed0 + 2.0);
-		vec3 c3 = clipping(P, vec2(0.02, 0.20), vec2(0.18, 0.055), 0.06, seed0 + 3.0);
-		vec3 c4 = clipping(P, vec2(-0.16, 0.22), vec2(0.07, 0.05), -0.28, seed0 + 4.0);
-		vec3 c5 = clipping(P, vec2(0.17, 0.21), vec2(0.06, 0.045), 0.22, seed0 + 5.0);
-		vec3 cs[5] = vec3[5](c1, c2, c4, c5, c3);
-		for (int i = 0; i < 5; i++) {
-			if (cs[i].x > 0.5) {
-				paper = 1.0;
-				tinte = cs[i].y;
-				light = cs[i].z;
+		if (use_top_tex) {
+			vec2 uv = vec2(0.5 + lp.x / (2.0 * half_w), 0.5 + lp.z / (2.0 * half_len));
+			vec4 t = texture(top_tex, uv);
+			col = mix(srgb(vec3(0.07, 0.075, 0.1)), t.rgb, t.a);
+			rough = 0.4;
+		} else {
+			col = srgb(vec3(0.07, 0.075, 0.1));
+			rough = 0.35;
+			float paper = 0.0;
+			float tinte = 0.0;
+			float light = 1.0;
+			// Spitzen: Collage, an beiden Enden gespiegelt
+			float sg = sign(lp.z);
+			vec2 P = vec2(lp.x * sg, half_len - abs(lp.z));      // y = Abstand von der Spitze
+			float seed0 = sg > 0.0 ? 10.0 : 0.0;
+			vec3 c1 = clipping(P, vec2(-0.09, 0.09), vec2(0.15, 0.12), 0.10, seed0 + 1.0);
+			vec3 c2 = clipping(P, vec2(0.11, 0.07), vec2(0.13, 0.12), -0.16, seed0 + 2.0);
+			vec3 c3 = clipping(P, vec2(0.02, 0.20), vec2(0.18, 0.055), 0.06, seed0 + 3.0);
+			vec3 c4 = clipping(P, vec2(-0.16, 0.22), vec2(0.07, 0.05), -0.28, seed0 + 4.0);
+			vec3 c5 = clipping(P, vec2(0.17, 0.21), vec2(0.06, 0.045), 0.22, seed0 + 5.0);
+			vec3 cs[5] = vec3[5](c1, c2, c4, c5, c3);
+			for (int i = 0; i < 5; i++) {
+				if (cs[i].x > 0.5) {
+					paper = 1.0;
+					tinte = cs[i].y;
+					light = cs[i].z;
+				}
 			}
-		}
-		// Mitte: Raute aus gefalteten Zeitungsseiten
-		float rh = abs(lp.x) / 0.085 + abs(lp.z) / 0.2;
-		if (rh < 1.0) {
-			paper = 1.0;
-			tinte = ink(vec2(lp.x + 0.085, lp.z + 0.2), 7.0);
-			light = (lp.x < 0.0 ? 0.86 : 0.97) - smoothstep(0.93, 1.0, rh) * 0.25;
-		}
-		if (paper > 0.5) {
-			vec3 pc = srgb(vec3(0.86, 0.80, 0.66)) * light;
-			col = mix(pc, srgb(vec3(0.16, 0.14, 0.12)), tinte);
-			rough = 0.6;
-		}
-		// Inserts auf der Mittellinie (zwei Gruppen für die Bindungen)
-		float dmin = 1.0;
-		for (int k = 0; k < 7; k++) {
-			float zk = 0.17 + 0.033 * float(k);
-			dmin = min(dmin, length(vec2(lp.x, abs(lp.z) - zk)));
-		}
-		if (dmin < 0.0045) {
-			col = dmin < 0.0026 ? srgb(vec3(0.05)) : srgb(vec3(0.6, 0.6, 0.62));
-			rough = 0.3;
+			// Mitte: Raute aus gefalteten Zeitungsseiten
+			float rh = abs(lp.x) / 0.085 + abs(lp.z) / 0.2;
+			if (rh < 1.0) {
+				paper = 1.0;
+				tinte = ink(vec2(lp.x + 0.085, lp.z + 0.2), 7.0);
+				light = (lp.x < 0.0 ? 0.86 : 0.97) - smoothstep(0.93, 1.0, rh) * 0.25;
+			}
+			if (paper > 0.5) {
+				vec3 pc = srgb(vec3(0.86, 0.80, 0.66)) * light;
+				col = mix(pc, srgb(vec3(0.16, 0.14, 0.12)), tinte);
+				rough = 0.6;
+			}
+			// Inserts auf der Mittellinie (zwei Gruppen für die Bindungen)
+			float dmin = 1.0;
+			for (int k = 0; k < 7; k++) {
+				float zk = 0.17 + 0.033 * float(k);
+				dmin = min(dmin, length(vec2(lp.x, abs(lp.z) - zk)));
+			}
+			if (dmin < 0.0045) {
+				col = dmin < 0.0026 ? srgb(vec3(0.05)) : srgb(vec3(0.6, 0.6, 0.62));
+				rough = 0.3;
+			}
 		}
 	} else if (part < 0.75) {
 		// ---------------- Kante

@@ -20,6 +20,7 @@ const OUTLINE := [
 ]
 # Eigene Unterseiten-Textur (nur lokal, nicht im Repo/Export): siehe tools/board/make_texture.gd
 const BOTTOM_TEX := "res://assets/board/custom/bottom.png"
+const TOP_TEX := "res://assets/board/custom/top.png"
 const ROCKER := 0.068          # Aufbiegung an den Spitzen
 const THICK := 0.016           # Dicke in der Mitte
 const STANCE := 0.27           # halber Abstand der Bindungen
@@ -84,11 +85,13 @@ func _init() -> void:
 	mat.shader = load("res://shaders/wakeboard.gdshader")
 	mat.set_shader_parameter("half_len", LENGTH * 0.5)
 	mat.set_shader_parameter("half_w", HALF_W)
-	if FileAccess.file_exists(BOTTOM_TEX):
-		var img := Image.load_from_file(ProjectSettings.globalize_path(BOTTOM_TEX))
-		img.generate_mipmaps()
-		mat.set_shader_parameter("bottom_tex", ImageTexture.create_from_image(img))
-		mat.set_shader_parameter("use_bottom_tex", true)
+	for side: String in ["bottom", "top"]:
+		var path := BOTTOM_TEX if side == "bottom" else TOP_TEX
+		if FileAccess.file_exists(path):
+			var img := Image.load_from_file(ProjectSettings.globalize_path(path))
+			img.generate_mipmaps()
+			mat.set_shader_parameter(side + "_tex", ImageTexture.create_from_image(img))
+			mat.set_shader_parameter("use_" + side + "_tex", true)
 	mi.material_override = mat
 	add_child(mi)
 	if ResourceLoader.exists(BOOT_PATH):
