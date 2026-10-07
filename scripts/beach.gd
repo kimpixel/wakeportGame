@@ -19,6 +19,11 @@ var people: Array[Dictionary] = []
 ## Wie people, für den T1-Startsteg (dort steht nur der Steuermann).
 var people_t1: Array[Dictionary] = []
 
+## Laufwege der Steuermänner (Welt, als Kette begehbar) – die Figuren baut Ambient.
+var operator_paths := {}            # "T1"/"T2" -> Array[Vector3]
+## Plätze für wartende Fahrer: {"pos": Vector3 (Welt), "face": Vector3 (Blickrichtung), "kind": "wait_stand"/"wait_sit"}
+var waiting_spots: Array[Dictionary] = []
+
 ## Feste Hindernisse auf dem Wasser (weißer Steg, Holzsteg): wer dagegen fährt, stürzt.
 ## Jeder Eintrag: {"a": Vector2, "b": Vector2 (Mittellinie, Spiel-x/z), "half_w": float, "top": float}
 var obstacles: Array[Dictionary] = []
@@ -190,7 +195,14 @@ func _build_t2_start() -> void:
 	_b(hut, Vector3(0.12, 0.45, 0.35), Vector3(HUT_BACK + 0.12, 1.5, -2.4), _wood_grey)   # Schaltkasten
 	_tire_wall(hut, y)
 	# Steuermann ("Hebler") vorne an der Kante, schaut aufs Wasser
-	_operator(hut, Vector3(1.55, 0.0, -1.5), people)
+	# Steuermann: läuft zwischen Hütte, Treppe und Startsteg, Blick immer auf dem Fahrer
+	var hw := func(l: Vector3) -> Vector3: return hut.global_transform * l
+	var dock_w := func(de: float, dn: float) -> Vector3:
+		var g := Geo.rel_to_game(de, dn)
+		return Vector3(g.x, Lake.DOCK_Y, g.y)
+	_operator("T2", [hw.call(Vector3(0.2, 0.0, -1.2)), hw.call(Vector3(1.55, 0.0, -1.5)), hw.call(Vector3(2.2, 0.0, -0.3)),
+		hw.call(Vector3(2.75, 0.0, 0.0)), hw.call(Vector3(3.95, Lake.DOCK_Y - HUT_DECK_Y, 0.0)),
+		dock_w.call(8.6, -0.6), dock_w.call(9.0, 1.4)], people)
 	# Gäste auf der Bank – je nach Session 0 bis 3
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
@@ -237,6 +249,11 @@ func _build_t2_start() -> void:
 		bd.transform = Transform3D(stand, Vector3(0.2, Wakeboard.LENGTH * 0.5 + 0.03, -0.55 + i * 0.55))
 		rack.add_child(bd)
 	_build_white_dock()
+	var east2 := Vector3(Geo.rel_to_game(1, 0).x - Geo.rel_to_game(0, 0).x, 0.0, Geo.rel_to_game(1, 0).y - Geo.rel_to_game(0, 0).y).normalized()
+	var st := Geo.rel_to_game(11.6, 1.6)
+	waiting_spots.append({"pos": Vector3(st.x, Lake.DOCK_Y, st.y), "face": east2, "kind": "wait_stand"})
+	var si := Geo.rel_to_game(10.5, 5.6)
+	waiting_spots.append({"pos": Vector3(si.x, 0.18, si.y), "face": east2, "kind": "wait_sit"})
 
 
 ## Hindernis-Abfrage: trifft ein Fahrer (Brett-Radius r) an p einen Steg? Darüber springen geht.
@@ -337,15 +354,9 @@ func _tire_wall(hut: Node3D, deck_y: float) -> void:
 ## Steuermann ("Hebler") an base (lokal, schaut nach +X aufs Wasser) mit der gelben
 ## Fernsteuerung (ca. 30 cm lang, 10 cm dick): quer vor dem Bauch, an beiden Enden gehalten,
 ## Not-Aus und Taster oben. Seine Stimme kommt in die Liste crowd (Jubel bei Punkten).
-func _operator(parent: Node3D, base: Vector3, crowd: Array[Dictionary]) -> void:
-	var remote_at := base + Vector3(0.3, 1.08, 0.0)
-	if not _human_figure(parent, "res://assets/characters/operator.glb", base, false, remote_at, 0.12):
-		_person(parent, base, Color(0.1, 0.1, 0.12), false, remote_at)
-	_b(parent, Vector3(0.1, 0.07, 0.3), remote_at, Util.mat(Color(1.0, 0.82, 0.05), 0.5))
-	_b(parent, Vector3(0.05, 0.03, 0.05), remote_at + Vector3(0.0, 0.05, 0.0), Util.mat(Color(0.85, 0.1, 0.1)))   # Not-Aus
-	_b(parent, Vector3(0.03, 0.02, 0.03), remote_at + Vector3(0.0, 0.045, -0.07), _black)                       # Taster
-	_b(parent, Vector3(0.03, 0.02, 0.03), remote_at + Vector3(0.0, 0.045, 0.07), _black)
-	crowd.append({"pos": parent.global_transform * (base + Vector3(0, 1.6, 0)), "pitch": 0.92})
+func _operator(terminal: String, path: Array[Vector3], crowd: Array[Dictionary]) -> void:
+	operator_paths[terminal] = path
+	crowd.append({"pos": path[1] + Vector3(0, 1.6, 0), "pitch": 0.92})
 
 
 ## Realistische Figur (MakeHuman), schaut in lokale +X-Richtung (aufs Wasser).
@@ -447,7 +458,12 @@ func _build_t1_start() -> void:
 	_b(jet, Vector3(1.1, 0.5, 2.9), Vector3.ZERO, _white)
 	_b(jet, Vector3(0.9, 0.3, 1.0), Vector3(0, 0.35, 0.2), Util.mat(Color(0.1, 0.2, 0.35)))
 	# Steuermann für T1 am landseitigen Ende des Stegs
-	_operator(dock, Vector3(-1.5, 0.15, -2.6), people_t1)
+	var dw := func(l: Vector3) -> Vector3: return dock.global_transform * l
+	_operator("T1", [dw.call(Vector3(-1.5, 0.15, -2.6)), dw.call(Vector3(-1.6, 0.15, 0.5)),
+		dw.call(Vector3(-0.6, 0.15, 2.6)), dw.call(Vector3(1.2, 0.15, 2.7))], people_t1)
+	# wartender Fahrer am T1-Steg: sitzt an der Seekante
+	var east := dock.global_basis.x
+	waiting_spots.append({"pos": dw.call(Vector3(2.2, 0.15, 1.6)), "face": east, "kind": "wait_sit"})
 
 
 # ---------------------------------------------------------------- Hauptgebäude

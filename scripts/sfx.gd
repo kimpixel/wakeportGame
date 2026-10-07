@@ -86,6 +86,18 @@ func _player(db: float) -> AudioStreamPlayer:
 	return p
 
 
+## Kurzes Platschen an einer Stelle im See (z. B. Hecht taucht auf/ab).
+func splash_at(pos: Vector3, pitch := 1.4) -> void:
+	var p := AudioStreamPlayer3D.new()
+	p.stream = _splash
+	p.pitch_scale = pitch * randf_range(0.9, 1.1)
+	p.unit_size = 8.0
+	add_child(p)
+	p.global_position = pos
+	p.play()
+	p.finished.connect(p.queue_free)
+
+
 func _play(p: AudioStreamPlayer, stream: AudioStream, pitch: float) -> void:
 	p.stream = stream
 	p.pitch_scale = pitch

@@ -36,6 +36,7 @@ var _terminal_menu: OptionButton
 var _terminal_arg := ""
 var _start := {}                 # "T1"/"T2" -> {pos, yaw, dock, mast_b}
 var sfx: Sfx
+var ambient: Ambient
 
 var cable_t1: CableSystem
 var features: FeatureSet
@@ -171,6 +172,16 @@ func _ready() -> void:
 	sfx.rider = rider
 	sfx.people = beach.people
 	add_child(sfx)
+	# Leben am See: laufende Steuermänner, wartende Fahrer, SUPs, Hecht
+	ambient = Ambient.new()
+	ambient.beach = beach
+	ambient.water = water
+	ambient.features = features
+	ambient.sfx = sfx
+	ambient.player = rider
+	add_child(ambient)
+	ambient.build()
+	ambient.pike_hit.connect(func() -> void: hud.show_trick("Hecht erwischt!"))
 	_apply_terminal(_initial_terminal())
 	if _view_arg.size() == 6:
 		# Testansicht: feste Kamera (x,y,z -> Blickpunkt x,y,z)
@@ -224,6 +235,7 @@ func _apply_terminal(t: String) -> void:
 	_terminal_menu.select(TERMINALS.find(t))
 	# Jubel kommt aus dem Startblock der eigenen Anlage
 	sfx.set_people(beach.people if t == "T2" else beach.people_t1)
+	ambient.set_watch(rider if t == "T2" else npc, rider if t == "T1" else npc)
 	pc.reset()
 	nc.reset()
 	nc.start()
