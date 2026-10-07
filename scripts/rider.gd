@@ -113,7 +113,6 @@ var _handle: MeshInstance3D
 var _rope_mesh: ImmediateMesh
 var _rope_mat: StandardMaterial3D
 var _spray: CPUParticles3D
-var _slide_spray: CPUParticles3D
 
 
 # ---------------------------------------------------------------- Aufbau
@@ -154,14 +153,16 @@ func _ready() -> void:
 	rope_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(rope_mi)
 
+	# Gischt an der Kante, auf der gefahren wird (Lage/Richtung jedes Frame in _update_spray)
 	_spray = CPUParticles3D.new()
-	_spray.amount = 90
+	_spray.amount = 120
 	_spray.lifetime = 0.7
 	_spray.local_coords = false
+	_spray.top_level = true
 	_spray.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_spray.emission_box_extents = Vector3(0.2, 0.02, 0.15)
-	_spray.direction = Vector3(0.0, 1.0, 0.5)
-	_spray.spread = 35.0
+	_spray.emission_box_extents = Vector3(0.03, 0.02, 0.35)   # entlang der Kante
+	_spray.direction = Vector3(1.0, 0.9, 0.0)
+	_spray.spread = 18.0
 	_spray.initial_velocity_min = 1.5
 	_spray.initial_velocity_max = 3.5
 	_spray.gravity = Vector3(0.0, -9.8, 0.0)
@@ -174,26 +175,9 @@ func _ready() -> void:
 	drop.rings = 3
 	drop.material = Util.mat(Color(0.95, 0.97, 1.0), 0.3)
 	_spray.mesh = drop
-	_spray.position = Vector3(0.0, 0.05, 0.5)
 	_spray.emitting = false
 	add_child(_spray)
 
-	_slide_spray = CPUParticles3D.new()
-	_slide_spray.amount = 160
-	_slide_spray.lifetime = 0.6
-	_slide_spray.local_coords = false
-	_slide_spray.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_slide_spray.emission_box_extents = Vector3(0.05, 0.02, 0.6)
-	_slide_spray.spread = 25.0
-	_slide_spray.initial_velocity_min = 2.0
-	_slide_spray.initial_velocity_max = 5.0
-	_slide_spray.gravity = Vector3(0.0, -9.8, 0.0)
-	_slide_spray.scale_amount_min = 0.8
-	_slide_spray.scale_amount_max = 2.0
-	_slide_spray.mesh = drop
-	_slide_spray.position = Vector3(0.0, 0.05, 0.0)
-	_slide_spray.emitting = false
-	add_child(_slide_spray)
 
 
 func reset() -> void:
@@ -845,18 +829,45 @@ func _process(delta: float) -> void:
 		Util.place_beam(_arm_r, body * Vector3(0.0, 1.38, -0.17), handle_pos + bar_axis * 0.08)
 	_draw_rope(handle_pos, anchor)
 
-	_spray.emitting = mode == Mode.WATER and speed > 3.0 and not _in_dock(pos.x, pos.z) and pos.y < 0.2
-	_spray.initial_velocity_max = 1.5 + speed * 0.35
-	_spray.direction = Vector3(-signf(_lean_roll) * 0.8, 1.0, 0.5)
-
-	# Drift: das quer rutschende Brett schiebt eine Gischtwand zur Seite
-	var drifting := mode == Mode.WATER and pos.y < 0.2 and speed > 3.0 and _release_vis > 0.3 and absf(slip) > 0.6
-	_slide_spray.emitting = drifting
-	_slide_spray.direction = Vector3(signf(slip), 0.8, 0.0)
-	_slide_spray.initial_velocity_max = 2.0 + absf(slip) * 2.0
+	_update_spray(speed)
 
 
 ## Kurzer Zustandstext für das HUD.
+## Gischt kommt aus der Kante, auf der gefahren wird: wer quer zum Seilzug nach links schneidet,
+## fährt auf der rechten Kante – die Gischt spritzt nach rechts weg (und umgekehrt).
+## Je schneller man seitlich schneidet, desto höher und weiter. Beim Driften (Kante gelöst)
+## greift keine Kante – dann gibt es keine Gischt.
+func _update_spray(speed: float) -> void:
+	var on_water := mode == Mode.WATER and speed > 3.0 and not _in_dock(pos.x, pos.z) and pos.y < 0.2
+	if not on_water or _release > 0.3:
+		_spray.emitting = false
+		return
+	var v := Vector3(vel.x, 0.0, vel.z)
+	var travel := v.normalized()
+	# seitliche Geschwindigkeit quer zur Achse der Seilbahn (Linie des Carriers)
+	var axis := cable.global_transform.basis.z
+	axis = Vector3(axis.x, 0.0, axis.z).normalized()
+	var lat := v - axis * v.dot(axis)
+	var cut := lat.length()
+	var side := -lat / cut if cut > 0.3 else travel.cross(Vector3.UP)
+	var w := clampf((cut - 0.3) / 1.5, 0.0, 1.0)        # 0 = geradeaus, 1 = kräftig geschnitten
+	# Lage: an der Kante auf der Gischtseite, etwas hinter der Brettmitte, knapp über dem Wasser
+	var board := _board_pivot.global_position
+	var at := board + side * 0.2 - travel * 0.25
+	at.y = water.height_at(at.x, at.z) + 0.03
+	# Ausrichtung: lokales X = zur Gischtseite, Z = entlang der Kante
+	var bx := side
+	var bz := bx.cross(Vector3.UP).normalized()
+	_spray.global_transform = Transform3D(Basis(bx, Vector3.UP, bz), at)
+	var dir := side * (0.2 + 1.3 * w) + Vector3.UP * (0.7 + 0.3 * w) - travel * (0.6 - 0.4 * w)
+	_spray.direction = Basis(bx, Vector3.UP, bz).inverse() * dir.normalized()
+	_spray.initial_velocity_min = 0.8 + w * 1.5 + cut * 0.3
+	_spray.initial_velocity_max = 1.6 + w * 2.5 + cut * 0.6 + speed * 0.08
+	_spray.scale_amount_min = 0.5 + 0.3 * w
+	_spray.scale_amount_max = 1.0 + 1.0 * w
+	_spray.emitting = true
+
+
 func board_state_text() -> String:
 	if mode != Mode.WATER:
 		return ""
