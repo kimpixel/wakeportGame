@@ -8,10 +8,12 @@ extends Node3D
 ##  * Grafik per Shader (Oberseite schwarz mit Zeitungscollage, Unterseite creme)
 ##  * Bindungen: hohe Schuhe aus assets/board/boot.glb (tools/board/build_boot.py)
 
-const LENGTH := 1.42
-const HALF_W := 0.215          # halbe Breite in der Mitte
-# Umriss, gemessen am Produktfoto: (Abstand vom Brettende, halbe Breite) in Metern.
-# Das Brett wird zu den Spitzen schmaler und endet in einem flachen Bogen.
+const LENGTH := 1.49           # 149er Board
+const HALF_W := 0.22           # halbe Breite in der Mitte (Seitenverhältnis wie auf dem Foto)
+# Umriss, gemessen am Produktfoto: (Abstand vom Brettende, halbe Breite), Bezugsmaß 1.42 × 0.43 m;
+# wird auf LENGTH/HALF_W skaliert. Das Brett wird zu den Spitzen schmaler und endet in einem flachen Bogen.
+const OUTLINE_LEN := 1.42
+const OUTLINE_HALF_W := 0.215
 const OUTLINE := [
 	[0.0, 0.0235], [0.003, 0.042], [0.007, 0.063], [0.014, 0.0865], [0.021, 0.1025],
 	[0.028, 0.1167], [0.042, 0.1377], [0.055, 0.1428], [0.083, 0.1503], [0.111, 0.1579],
@@ -35,12 +37,13 @@ const NX := 20
 
 
 static func half_width(z: float) -> float:
-	var d := LENGTH * 0.5 - absf(z)
+	var d := (LENGTH * 0.5 - absf(z)) * OUTLINE_LEN / LENGTH
+	var sw := HALF_W / OUTLINE_HALF_W
 	for k in range(1, OUTLINE.size()):
 		var b: Array = OUTLINE[k]
 		if d <= b[0]:
 			var a: Array = OUTLINE[k - 1]
-			return lerpf(a[1], b[1], (d - a[0]) / (b[0] - a[0]))
+			return lerpf(a[1], b[1], (d - a[0]) / (b[0] - a[0])) * sw
 	return HALF_W
 
 
