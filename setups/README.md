@@ -18,7 +18,7 @@ Vor dem Start wählst du das Setup oben rechts aus (oder mit F). Für ein neues 
 | **1/2 Transition Rail** | `transition_rail_half` (11 m, eine Auffahrt). Für zwei gespiegelt nebeneinander legst du mit `inner_v` (+1/−1) fest, auf welcher Seite die Transition liegt. |
 | **Pyramid Series** | Gruppe mit `mirror`: Das A-Frame Rail steht immer außen (weg vom Seil), egal auf welcher Seite. |
 | **Transition Curb** | `transition_curb` (7,3 × 3 m): kurze Auffahrt (0,85 m), dann eine konkave Transition von 0,35 auf 1,1 m (`body_curve`), hinten senkrecht. Oft kombiniert mit einem `cheese_wedge` direkt am hohen Ende als Abfahrt (Wedge-Mitte 5,65 m hinter der Curb-Mitte, gleiche Spur, Gegenrichtung `dir`). Einzeln ist das hohe Ende eine Kante zum Abspringen. |
-| **Down Ledge (Rooftop)** | `down_ledge`: lange, schmale Ledge mit Längsprofil (`profile`): kleine Safety vorne, steil hoch auf 1,15 m, lang abfallend, hinten eine höhere, sehr steile Safety. |
+| **Down Ledge (Rooftop)** | `down_ledge`: lange, schmale Ledge mit Längsprofil (`profile`): kleine Safety vorne, steil hoch auf 1,9 m, lang abfallend, hinten eine höhere, sehr steile Safety. |
 | **Ollie Box** | `ollie_box` (8,2 × 2,25 m) und `ollie_box_half`, an beiden Enden kurze Auffahrten; daneben meist die `ollie_ledge` (0,7 m breit, Endstücke als Auffahrt). Maße nach „Feature Setup Terminal 1.png“. |
 | **Ball** | `ball`: blauer Gummiball, 1 m Durchmesser, treibt hoch auf dem Wasser. Nur mit einem Sprung zu überwinden – wer dagegen fährt oder darauf landet, stürzt. |
 
@@ -62,7 +62,7 @@ Physik und Grafik nutzen dieselbe Form. Was du hier einträgst, ist also genau s
 ## Fahrverhalten an den Features
 
 - **Mit Auffahrt** (Kicker, Wedge, Pyramid, Curb, Transitions, Pipe-Rampe) fährst du direkt aus dem Wasser hoch.
-- **Ohne Auffahrt** (Ollie Box, Ledges, Add-on Rail) musst du vorher mit der Leertaste abspringen. Fährst du seitlich oder von hinten dagegen, stürzt du.
+- **Ohne Auffahrt** (Ollie Box, Ledges) musst du vorher mit der Leertaste abspringen. Fährst du seitlich oder von hinten dagegen, stürzt du.
 - **Auf dem Feature** rutscht das Brett. Mit A/D drehst du es quer für einen Boardslide.
 - **Punkte für Slides** gibt es beim Verlassen des Features: „50-50“ längs, „Boardslide“ quer.
 

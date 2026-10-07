@@ -7,7 +7,6 @@
     { "part": "ollie_ledge",     "s": 115.1, "x": -3.7, "dir": "out" },
     { "part": "kicker_l",        "s": 67.3,  "x": -6.0, "dir": "in", "yaw": -5 },
     { "part": "down_ledge",      "s": 118.6, "x": 7.4,  "dir": "in" },
-    { "part": "add_on_rail",     "s": 113.4, "x": 7.4,  "dir": "in" },
     { "part": "cheese_wedge",    "s": 128.7, "x": 5.5,  "dir": "in" },
     { "part": "cheese_wedge",    "s": 128.7, "x": 9.3,  "dir": "in" },
     { "part": "transition_curb", "s": 79.4,  "x": 7.4,  "dir": "in" },
