@@ -79,6 +79,8 @@ Presets: `rider`, `operator`, `guest_f`, `guest_m`.
 
 Die Haltung wird im Spiel live aus der Physik berechnet, mit einer eigenen IK in `scripts/human_rig.gd`: Füße in den Bindungen, Hände am Griff, Oberkörper gegen den Seilzug. Die Arme sind nie überstreckt: Liegt der Griff zu weit weg, holen die Hände ihn heran.
 
+**Einflugschneise:** Der Wakeport liegt direkt im Landeanflug auf Frankfurt (Betriebsrichtung 07). Alle ein, zwei Minuten kommt ein Jet aus Westsüdwest über den Strand, überfliegt den See im 3°-Gleitpfad in rund 260 m Höhe (Fahrwerk draußen, Lichter an) – Mittelstrecke, Langstrecke oder Jumbo – und ist entsprechend laut (mit Dopplereffekt).
+
 **Wetter, Jahreszeit und Uhrzeit** stellst du im Startscreen ein (Wetter, Datum, Uhrzeit). Die Sonne steht dabei wie in echt am Raunheimer Waldsee (50,01° N, 8,48° E, deutsche Zeit mit Sommerzeit): Mittagssonne im Süden, im Sommer lange Abende, im Winter tief stehende Sonne, nachts Mondlicht und Sterne. Wetter: Sonnig, Heiter, Bewölkt, Bedeckt, Regen, Dunst. **Jetzt** übernimmt das heutige Datum und die Uhrzeit (läuft dann mit) und holt das aktuelle Wetter am See von open-meteo.com. Die Wahl wird gespeichert.
 
 **Spielregeln:** Eine Runde dauert **7:30** (Uhr oben links), sie beginnt mit dem Start vom Steg. Es zählen die Punkte in dieser Zeit. Danach bringt dich der Operator nur noch zum Start, dann kommt der Startscreen mit deinem Ergebnis. Wer stürzt, muss zur Handle schwimmen und verliert Zeit, je weiter weg vom Seil desto mehr. Große Sprünge sind also ein Risiko. Abkürzungen kosten Strafzeit: Leertaste nach einem Sturz −3:00 (dafür bist du sofort direkt unter dem Seil und fährst weiter), R zurück zum Steg −5:00. Der Wasserstart geht immer Richtung des weiter entfernten Wendepunkts.

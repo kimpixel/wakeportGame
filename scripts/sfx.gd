@@ -331,6 +331,25 @@ func _make_water_loop() -> AudioStreamWAV:
 	return _to_wav(_normalize(s, 0.7), true)
 
 
+## Düsenjet im Landeanflug: tiefes Grollen, breites Rauschen und das Pfeifen der Triebwerke.
+func make_jet_loop() -> AudioStreamWAV:
+	var n := RATE * 3
+	var raw := _noise(n, 57)
+	var low := _lowpass(_lowpass(raw, 0.02), 0.05)
+	var mid := _lowpass(raw, 0.25)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	for i in n:
+		var t := float(i) / RATE
+		var whine := sin(TAU * 2380.0 * t + 0.6 * sin(TAU * 0.7 * t)) * 0.035 + sin(TAU * 3710.0 * t) * 0.02
+		s[i] = low[i] * 3.0 + (mid[i] - low[i]) * 0.55 + whine
+	var fade := RATE / 5
+	for i in fade:
+		var k := float(i) / fade
+		s[n - fade + i] = lerpf(s[n - fade + i], s[i], k)
+	return _to_wav(_normalize(s, 0.85), true)
+
+
 func _make_grind_loop() -> AudioStreamWAV:
 	var n := RATE
 	var s := _noise(n, 33)

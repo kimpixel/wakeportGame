@@ -17,6 +17,7 @@ extends Node3D
 ##   --game-time=SEK   Test: Spielzeit (normal 450 s); im Autotest läuft dann eine Runde mit Zeit
 ##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, regen, dunst)
 ##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30
+##   --plane=S         Test: sofort ein Jet im Anflug, S m vor dem See (negativ) bzw. danach
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
 
 const RESET_DELAY := 3.0
@@ -57,6 +58,8 @@ var _start := {}                 # "T1"/"T2" -> {pos, yaw, dock, mast_b}
 var sfx: Sfx
 var ambient: Ambient
 var weather: Weather
+var airplanes: Airplanes
+var _plane_arg := NAN
 var _weather_arg := ""
 var _hour_arg := NAN
 var _day_arg := 0
@@ -216,6 +219,13 @@ func _ready() -> void:
 	ambient.player = rider
 	add_child(ambient)
 	ambient.build()
+	# Einflugschneise Frankfurt: Jets im Landeanflug über dem See
+	airplanes = Airplanes.new()
+	airplanes.jet_sound = sfx.make_jet_loop()
+	add_child(airplanes)
+	if not is_nan(_plane_arg):
+		airplanes.spawn_at(_plane_arg)
+	cam.doppler_tracking = Camera3D.DOPPLER_TRACKING_IDLE_STEP
 	ambient.pike_hit.connect(func() -> void: hud.show_trick("Hecht erwischt!"))
 	_apply_terminal(_initial_terminal())
 	_build_start_screen()
@@ -789,6 +799,8 @@ func _parse_args() -> void:
 			_hour_arg = arg.substr(7).to_float()
 		elif arg.begins_with("--day="):
 			_day_arg = arg.substr(6).to_int()
+		elif arg.begins_with("--plane="):
+			_plane_arg = arg.substr(8).to_float()
 		elif arg == "--no-screen":
 			_no_screen = true
 		elif arg == "--screen" or arg.begins_with("--screen="):
