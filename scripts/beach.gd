@@ -16,6 +16,8 @@ var _north_yaw := 0.0
 ## Leute im T2-Startblock (Steuermann/"Hebler" + Gäste). Von dort kommt der Jubel.
 ## Jeder Eintrag: {"pos": Vector3 (Kopfhöhe, Welt), "pitch": Stimmlage}
 var people: Array[Dictionary] = []
+## Wie people, für den T1-Startsteg (dort steht nur der Steuermann).
+var people_t1: Array[Dictionary] = []
 
 ## Feste Hindernisse auf dem Wasser (weißer Steg, Holzsteg): wer dagegen fährt, stürzt.
 ## Jeder Eintrag: {"a": Vector2, "b": Vector2 (Mittellinie, Spiel-x/z), "half_w": float, "top": float}
@@ -187,16 +189,8 @@ func _build_t2_start() -> void:
 	_b(hut, Vector3(0.05, 0.08, 0.05), ext_mi.position + Vector3(0, 0.29, 0), _black)
 	_b(hut, Vector3(0.12, 0.45, 0.35), Vector3(HUT_BACK + 0.12, 1.5, -2.4), _wood_grey)   # Schaltkasten
 	_tire_wall(hut, y)
-	# Steuermann ("Hebler") vorne an der Kante, schaut aufs Wasser, mit gelber Fernsteuerung
-	# (ca. 30 cm lang, 10 cm dick) in beiden Händen vor dem Bauch
-	var remote_at := Vector3(1.85, 1.08, -1.5)
-	if not _human_figure(hut, "res://assets/characters/operator.glb", Vector3(1.55, 0.0, -1.5), false, remote_at):
-		_person(hut, Vector3(1.55, 0.0, -1.5), Color(0.1, 0.1, 0.12), false, remote_at)
-	_b(hut, Vector3(0.1, 0.3, 0.12), remote_at, Util.mat(Color(1.0, 0.82, 0.05), 0.5))
-	_b(hut, Vector3(0.02, 0.06, 0.06), remote_at + Vector3(0.06, 0.08, 0.0), Util.mat(Color(0.85, 0.1, 0.1)))   # Not-Aus
-	_b(hut, Vector3(0.02, 0.04, 0.04), remote_at + Vector3(0.06, -0.03, -0.03), _black)                      # Taster
-	_b(hut, Vector3(0.02, 0.04, 0.04), remote_at + Vector3(0.06, -0.03, 0.03), _black)
-	people.append({"pos": hut.global_transform * Vector3(1.55, 1.6, -1.5), "pitch": 0.92})
+	# Steuermann ("Hebler") vorne an der Kante, schaut aufs Wasser
+	_operator(hut, Vector3(1.55, 0.0, -1.5), people)
 	# Gäste auf der Bank – je nach Session 0 bis 3
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
@@ -340,10 +334,24 @@ func _tire_wall(hut: Node3D, deck_y: float) -> void:
 	hut.add_child(mi)
 
 
+## Steuermann ("Hebler") an base (lokal, schaut nach +X aufs Wasser) mit der gelben
+## Fernsteuerung (ca. 30 cm lang, 10 cm dick): quer vor dem Bauch, an beiden Enden gehalten,
+## Not-Aus und Taster oben. Seine Stimme kommt in die Liste crowd (Jubel bei Punkten).
+func _operator(parent: Node3D, base: Vector3, crowd: Array[Dictionary]) -> void:
+	var remote_at := base + Vector3(0.3, 1.08, 0.0)
+	if not _human_figure(parent, "res://assets/characters/operator.glb", base, false, remote_at, 0.12):
+		_person(parent, base, Color(0.1, 0.1, 0.12), false, remote_at)
+	_b(parent, Vector3(0.1, 0.07, 0.3), remote_at, Util.mat(Color(1.0, 0.82, 0.05), 0.5))
+	_b(parent, Vector3(0.05, 0.03, 0.05), remote_at + Vector3(0.0, 0.05, 0.0), Util.mat(Color(0.85, 0.1, 0.1)))   # Not-Aus
+	_b(parent, Vector3(0.03, 0.02, 0.03), remote_at + Vector3(0.0, 0.045, -0.07), _black)                       # Taster
+	_b(parent, Vector3(0.03, 0.02, 0.03), remote_at + Vector3(0.0, 0.045, 0.07), _black)
+	crowd.append({"pos": parent.global_transform * (base + Vector3(0, 1.6, 0)), "pitch": 0.92})
+
+
 ## Realistische Figur (MakeHuman), schaut in lokale +X-Richtung (aufs Wasser).
 ## sitting: sitzt auf Höhe base.y (Bank), Hände auf den Oberschenkeln;
 ## sonst stehend, Hände bei hands_at (z. B. an der Fernsteuerung).
-func _human_figure(parent: Node3D, path: String, base: Vector3, sitting: bool, hands_at := Vector3.INF) -> bool:
+func _human_figure(parent: Node3D, path: String, base: Vector3, sitting: bool, hands_at := Vector3.INF, hand_spread := 0.06) -> bool:
 	if not ResourceLoader.exists(path):
 		return false
 	var fig: Node3D = (load(path) as PackedScene).instantiate()
@@ -371,9 +379,11 @@ func _human_figure(parent: Node3D, path: String, base: Vector3, sitting: bool, h
 		rig.set_pelvis(rest_pelvis, Basis.IDENTITY)
 		if hands_at != Vector3.INF:
 			for side: String in ["l", "r"]:
-				var dz := -0.06 if side == "l" else 0.06
-				var hand := hands_at + Vector3(-0.04, -0.06, dz)
-				rig.arm(side, w.call(hand), w.call(base + Vector3(-0.1, 0.9, dz * 8.0)))
+				# beide Hände umgreifen die Enden (Faust wie am Griff), Daumen zur Mitte
+				var dz := -hand_spread if side == "l" else hand_spread
+				var grip_at := hands_at + Vector3(0.0, 0.0, dz)
+				var to_center: Vector3 = rig.skeleton.global_transform.basis.inverse() * (parent.global_basis * Vector3(0, 0, -signf(dz)))
+				rig.grip(side, w.call(grip_at), to_center, w.call(base + Vector3(-0.1, 0.9, dz * 6.0)))
 	rig.look_at(w.call(base + fwd * 20.0 + Vector3(0, 1.5, 0)), 0.6)
 	return true
 
@@ -436,6 +446,8 @@ func _build_t1_start() -> void:
 	dock.add_child(jet)
 	_b(jet, Vector3(1.1, 0.5, 2.9), Vector3.ZERO, _white)
 	_b(jet, Vector3(0.9, 0.3, 1.0), Vector3(0, 0.35, 0.2), Util.mat(Color(0.1, 0.2, 0.35)))
+	# Steuermann für T1 am landseitigen Ende des Stegs
+	_operator(dock, Vector3(-1.5, 0.15, -2.6), people_t1)
 
 
 # ---------------------------------------------------------------- Hauptgebäude

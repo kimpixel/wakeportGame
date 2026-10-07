@@ -8,6 +8,7 @@ extends Node3D
 ##   --shot=PFAD.png   Screenshot speichern (mit --shot-time=SEK) und beenden
 ##   --cam=side|orbit  Kameramodus beim Start
 ##   --setup=ID        Feature-Setup aus setups/index.json (z. B. 2026-09, a, b)
+##   --terminal=T1|T2  an welcher Anlage man fährt (der NPC fährt an der anderen)
 ##   --mobile          Handy-Steuerung erzwingen (mit --tilt=GRAD feste Neigung)
 ##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
 
@@ -25,6 +26,16 @@ var _setup_menu: OptionButton
 var _setup_arg := ""
 const SETTINGS := "user://settings.cfg"
 var _touch_started := false     # dieser Finger hat die Anlage gestartet (kein Sprung)
+
+## Welche Anlage fährt der Spieler? Der NPC fährt immer an der anderen.
+const TERMINALS := ["T2", "T1"]
+var terminal := "T2"
+var pc: CableSystem              # Anlage des Spielers
+var nc: CableSystem              # Anlage des NPC
+var _terminal_menu: OptionButton
+var _terminal_arg := ""
+var _start := {}                 # "T1"/"T2" -> {pos, yaw, dock, mast_b}
+var sfx: Sfx
 
 var cable_t1: CableSystem
 var features: FeatureSet
@@ -112,21 +123,20 @@ func _ready() -> void:
 	npc.shirt_color = Color(0.85, 0.85, 0.82)
 	npc.shorts_color = Color(0.1, 0.1, 0.12)
 	npc.board_design = 4               # "Dots" aus der Brett-Bibliothek
-	npc.start_pos = npc_start
-	npc.start_yaw = cable_t1.rotation.y
-	npc.dock_rect = Rect2(dc.x - 3.5, dc.y - 2.2, 7.0, 4.4)
-	npc.mast_b = Geo.masts["t1_end"]
 	add_child(npc)
-	npc.reset()
+	# Startplätze beider Anlagen (Startsteg, Blickrichtung, Steg-Fläche, Endmast)
+	_start["T2"] = {"pos": Rider.START_POS, "yaw": 0.0, "dock": Rect2(Lake.DOCK_MIN, Lake.DOCK_MAX - Lake.DOCK_MIN),
+		"mast_b": Vector3(0.0, 0.0, Lake.MAST_B_Z)}
+	_start["T1"] = {"pos": npc_start, "yaw": cable_t1.rotation.y, "dock": Rect2(dc.x - 3.5, dc.y - 2.2, 7.0, 4.4),
+		"mast_b": Geo.masts["t1_end"]}
 	npc.crashed.connect(func(reason: String) -> void:
-		cable_t1.emergency_stop()
+		nc.emergency_stop()
 		if _test_log:
-			var l := cable_t1.transform.affine_inverse() * npc.pos
-			print("NPC CRASH: ", reason, " local x=%.2f s=%.2f y=%.2f" % [l.x, cable_t1.mast_a_z - l.z, npc.pos.y]))
+			var l := nc.transform.affine_inverse() * npc.pos
+			print("NPC CRASH: ", reason, " local x=%.2f s=%.2f y=%.2f" % [l.x, nc.mast_a_z - l.z, npc.pos.y]))
 	npc.trick_landed.connect(func(trick: String, pts: int) -> void:
 		if _test_log:
 			print("NPC TRICK: ", trick, " +", pts))
-	cable_t1.start()
 	rider.crashed.connect(_on_crashed)
 	rider.trick_landed.connect(_on_trick)
 
@@ -144,22 +154,24 @@ func _ready() -> void:
 
 	hud = Hud.new()
 	add_child(hud)
+	_terminal_menu = hud.add_menu_choice("Terminal  (T wechseln)", ["T2 (Strand, große Hütte)", "T1 (Lounge-Steg)"], 0, _on_terminal_menu)
 	var names: Array = []
 	for e: Dictionary in _setups:
 		names.append(e["name"])
-	_setup_menu = hud.add_setup_menu(names, _setup_idx, _select_setup)
+	_setup_menu = hud.add_menu_choice("Feature-Setup  (F wechseln)", names, _setup_idx, _select_setup)
 	# Handy/Tablet: Tippen = Start bzw. Sprung, Neigen = lenken
 	mobile = MobileInput.new()
 	add_child(mobile)
-	mobile.ui_blockers = [_setup_menu.get_parent(), _setup_menu.get_popup()]
+	mobile.ui_blockers = [_setup_menu.get_parent(), _setup_menu.get_popup(), _terminal_menu.get_popup()]
 	if mobile.active:
 		hud.set_help(Hud.HELP_MOBILE)
 		mobile.touch_down.connect(_on_touch_down)
 		mobile.touch_up.connect(_on_touch_up)
-	var sfx := Sfx.new()
+	sfx = Sfx.new()
 	sfx.rider = rider
 	sfx.people = beach.people
 	add_child(sfx)
+	_apply_terminal(_initial_terminal())
 	if _view_arg.size() == 6:
 		# Testansicht: feste Kamera (x,y,z -> Blickpunkt x,y,z)
 		cam.set_process(false)
@@ -171,7 +183,63 @@ func _ready() -> void:
 	if _test_log:
 		rider.autopilot = true
 		rider.auto_lane = _lane_arg
-		cable.start()
+		pc.start()
+
+
+# ---------------------------------------------------------------- Terminal
+
+func _initial_terminal() -> String:
+	var want := _terminal_arg
+	if want == "":
+		var cfg := ConfigFile.new()
+		if cfg.load(SETTINGS) == OK:
+			want = cfg.get_value("game", "terminal", "T2")
+	return want if want in TERMINALS else "T2"
+
+
+func _on_terminal_menu(idx: int) -> void:
+	_select_terminal(TERMINALS[idx])
+
+
+## Spieler an die andere Anlage (nur solange seine Anlage steht); der NPC wechselt mit.
+func _select_terminal(t: String) -> void:
+	if t == terminal or pc.state != CableSystem.State.IDLE or rider.mode == Rider.Mode.CRASHED:
+		_terminal_menu.select(TERMINALS.find(terminal))
+		return
+	_apply_terminal(t)
+	hud.show_trick("Terminal " + t)
+	var cfg := ConfigFile.new()
+	cfg.load(SETTINGS)
+	cfg.set_value("game", "terminal", t)
+	cfg.save(SETTINGS)
+
+
+func _apply_terminal(t: String) -> void:
+	terminal = t
+	var other := "T1" if t == "T2" else "T2"
+	pc = cable if t == "T2" else cable_t1
+	nc = cable_t1 if t == "T2" else cable
+	_place_rider(rider, pc, _start[t])
+	_place_rider(npc, nc, _start[other])
+	_terminal_menu.select(TERMINALS.find(t))
+	# Jubel kommt aus dem Startblock der eigenen Anlage
+	sfx.set_people(beach.people if t == "T2" else beach.people_t1)
+	pc.reset()
+	nc.reset()
+	nc.start()
+	_npc_crash_t = 0.0
+	_reset()
+	cam.snap()
+
+
+func _place_rider(r: Rider, c: CableSystem, s: Dictionary) -> void:
+	r.cable = c
+	r.start_pos = s["pos"]
+	r.start_yaw = s["yaw"]
+	r.dock_rect = s["dock"]
+	r.mast_b = s["mast_b"]
+	r.forget_features()
+	r.reset()
 
 
 # ---------------------------------------------------------------- Feature-Setups
@@ -191,7 +259,7 @@ func _initial_setup() -> int:
 
 ## Anderes Feature-Setup aufbauen (nur solange die Anlage steht).
 func _select_setup(idx: int) -> void:
-	if cable.state != CableSystem.State.IDLE or idx == _setup_idx:
+	if pc.state != CableSystem.State.IDLE or idx == _setup_idx:
 		_setup_menu.select(_setup_idx)
 		return
 	_setup_idx = idx
@@ -199,8 +267,8 @@ func _select_setup(idx: int) -> void:
 	rider.forget_features()
 	npc.forget_features()
 	npc.reset()
-	cable_t1.reset()
-	cable_t1.start()
+	nc.reset()
+	nc.start()
 	_npc_crash_t = 0.0
 	_setup_menu.select(idx)
 	hud.show_trick("Setup: " + str(_setups[idx]["name"]))
@@ -215,8 +283,8 @@ func _select_setup(idx: int) -> void:
 ## Finger auf den Bildschirm: steht die Anlage, startet sie (ohne Sprung);
 ## sonst wird wie mit der Leertaste der Sprung aufgeladen.
 func _on_touch_down() -> void:
-	if cable.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED:
-		cable.start()
+	if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED:
+		pc.start()
 		_touch_started = true
 	else:
 		Input.action_press("jump")
@@ -238,7 +306,7 @@ func _check_buoy(r: Rider) -> void:
 	var id := r.get_instance_id()
 	if buoys.run_over(r.pos, 0.25, id):
 		r.ups()
-	var on := beach.obstacle_hit(r.pos, 0.25) and not Lake.in_dock(r.pos.x, r.pos.z)
+	var on := beach.obstacle_hit(r.pos, 0.25) and not r.in_dock(r.pos.x, r.pos.z)
 	if on and not _on_steg.get(id, false):
 		r.ups()
 	_on_steg[id] = on
@@ -246,8 +314,8 @@ func _check_buoy(r: Rider) -> void:
 
 func _physics_process(delta: float) -> void:
 	water.step(delta)
-	cable.step(delta, rider.vel.z if rider.attached else 0.0, rider.rope_slack())
-	cable_t1.step(delta, cable_t1.local_vz(npc.vel) if npc.attached else 0.0, npc.rope_slack())
+	pc.step(delta, pc.local_vz(rider.vel) if rider.attached else 0.0, rider.rope_slack())
+	nc.step(delta, nc.local_vz(npc.vel) if npc.attached else 0.0, npc.rope_slack())
 	npc.step(delta)
 	_check_buoy(npc)
 	if npc.mode == Rider.Mode.CRASHED:
@@ -255,8 +323,8 @@ func _physics_process(delta: float) -> void:
 		if _npc_crash_t > 4.0:
 			_npc_crash_t = 0.0
 			npc.reset()
-			cable_t1.reset()
-			cable_t1.start()
+			nc.reset()
+			nc.start()
 	rider.step(delta)
 	_check_buoy(rider)
 	_track_turn()
@@ -266,7 +334,7 @@ func _physics_process(delta: float) -> void:
 		if _crash_t > RESET_DELAY:
 			_reset()
 			if _test_log:
-				cable.start()
+				pc.start()
 
 	_elapsed += delta
 	for i in _touch_at.size():
@@ -285,11 +353,11 @@ func _physics_process(delta: float) -> void:
 		_log_t += delta
 		if _log_t >= 1.0:
 			_log_t = 0.0
-			print("t=%5.1f carrier=%-17s s=%7.1f v=%5.2f | rider %-7s pos=(%6.1f,%5.2f,%7.1f) %5.1f km/h T=%5.0f N Tmax=%5.0f laps=%d score=%d | NPC %s %4.1f km/h T1-Wenden %d" % [
-				_elapsed, cable.state_text(), cable.s, cable.v, Rider.Mode.keys()[rider.mode],
+			print("t=%5.1f carrier=%-17s s=%7.1f v=%5.2f | rider %-7s pos=(%6.1f,%5.2f,%7.1f) %5.1f km/h T=%5.0f N Tmax=%5.0f laps=%d score=%d | NPC %s %4.1f km/h NPC-Wenden %d" % [
+				_elapsed, pc.state_text(), pc.s, pc.v, Rider.Mode.keys()[rider.mode],
 				rider.pos.x, rider.pos.y, rider.pos.z, rider.horizontal_speed() * 3.6,
-				rider.tension_smooth, _max_tension, cable.laps, rider.score,
-				Rider.Mode.keys()[npc.mode], npc.horizontal_speed() * 3.6, cable_t1.laps])
+				rider.tension_smooth, _max_tension, pc.laps, rider.score,
+				Rider.Mode.keys()[npc.mode], npc.horizontal_speed() * 3.6, nc.laps])
 	if _quit_after > 0.0 and _elapsed >= _quit_after:
 		get_tree().quit()
 
@@ -300,7 +368,7 @@ func _fake_touch(pressed: bool) -> void:
 	e.position = Vector2(400, 300)
 	Input.parse_input_event(e)
 	print("TOUCH ", "down" if pressed else "up", " t=%.1f carrier=%s rider=%s pos=%s steer=%.2f" % [
-		_elapsed, cable.state_text(), Rider.Mode.keys()[rider.mode], rider.pos.snapped(Vector3.ONE * 0.1),
+		_elapsed, pc.state_text(), Rider.Mode.keys()[rider.mode], rider.pos.snapped(Vector3.ONE * 0.1),
 		Input.get_axis("steer_left", "steer_right")])
 
 
@@ -310,15 +378,15 @@ func _process(_delta: float) -> void:
 		hud.visible = false
 		var rp := rider.visual_position()
 		cam.look_at_from_position(rp + rider.global_basis * _closeup, rp + rider.global_basis * _closeup_look)
-	var info := "Fahrer: %d km/h\nAnlage: %s  (Tempo %d km/h)\nWenden: %d     Punkte: %d\nKamera: %s%s\nSeilzug: %d N" % [
-		roundi(rider.horizontal_speed() * 3.6), cable.state_text(), roundi(cable.max_speed * 3.6),
-		cable.laps, rider.score, cam.mode_name(), "   [AUTOPILOT]" if rider.autopilot else "",
+	var info := "Fahrer: %d km/h\nAnlage %s: %s  (Tempo %d km/h)\nWenden: %d     Punkte: %d\nKamera: %s%s\nSeilzug: %d N" % [
+		roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
+		pc.laps, rider.score, cam.mode_name(), "   [AUTOPILOT]" if rider.autopilot else "",
 		roundi(rider.tension_smooth)]
 	hud.set_info(info, rider.tension_smooth / Rider.CRASH_TENSION)
 	hud.set_board(rider.board_state_text())
-	hud.show_setup_menu(cable.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED)
+	hud.show_setup_menu(pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED)
 	if rider.mode != Rider.Mode.CRASHED:
-		if cable.state == CableSystem.State.IDLE:
+		if pc.state == CableSystem.State.IDLE:
 			hud.set_center("Tippen zum Starten" if mobile.active else "ENTER drücken zum Starten")
 		elif mobile.active and not mobile.tilt_available:
 			hud.set_center("Neigungssensor nicht verfügbar –\nBewegungssensoren im Browser erlauben")
@@ -335,18 +403,20 @@ func _process(_delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("start"):
-		if cable.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED:
-			cable.start()
+		if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED:
+			pc.start()
 	elif event.is_action_pressed("reset"):
 		_reset()
 	elif event.is_action_pressed("speed_up"):
-		cable.change_speed(2.0)
+		pc.change_speed(2.0)
 	elif event.is_action_pressed("speed_down"):
-		cable.change_speed(-2.0)
+		pc.change_speed(-2.0)
 	elif event.is_action_pressed("camera"):
 		cam.cycle_mode()
 	elif event.is_action_pressed("autopilot"):
 		rider.autopilot = not rider.autopilot
+	elif event.is_action_pressed("next_terminal"):
+		_select_terminal("T1" if terminal == "T2" else "T2")
 	elif event.is_action_pressed("next_setup"):
 		_select_setup((_setup_idx + 1) % _setups.size())
 	elif event.is_action_pressed("help"):
@@ -358,9 +428,9 @@ func _unhandled_input(event: InputEvent) -> void:
 ## SINK_TIME unter SINK_SPEED);
 ## Bonus, wenn man außen um eine der weißen Bojen herumgefahren ist.
 func _track_turn() -> void:
-	if cable.state == CableSystem.State.BRAKE and not _turn_active and rider.attached and rider.mode != Rider.Mode.CRASHED:
+	if pc.state == CableSystem.State.BRAKE and not _turn_active and rider.attached and rider.mode != Rider.Mode.CRASHED:
 		_turn_active = true
-		_turn_end = 1.0 if cable.dir < 0.0 else -1.0
+		_turn_end = 1.0 if pc.dir < 0.0 else -1.0
 		_turn_slow = 0.0
 		_turn_around = false
 	if not _turn_active:
@@ -370,13 +440,13 @@ func _track_turn() -> void:
 		return
 	if rider.mode == Rider.Mode.WATER and rider.horizontal_speed() < SINK_SPEED:
 		_turn_slow += get_physics_process_delta_time()
-	var local := cable.transform.affine_inverse() * rider.pos
-	var s := cable.mast_a_z - local.z
-	var s_turn := cable.mast_a_z - (cable.turn_b_z if _turn_end > 0.0 else cable.turn_a_z)
+	var local := pc.transform.affine_inverse() * rider.pos
+	var s := pc.mast_a_z - local.z
+	var s_turn := pc.mast_a_z - (pc.turn_b_z if _turn_end > 0.0 else pc.turn_a_z)
 	var s_white := s_turn - _turn_end * TurnBuoys.WHITE_BEFORE
 	if (s - s_white) * _turn_end > 0.0 and absf(local.x) > TurnBuoys.WHITE_SIDE - 0.5:
 		_turn_around = true
-	if cable.state == CableSystem.State.RUN:
+	if pc.state == CableSystem.State.RUN:
 		_turn_active = false
 		if _turn_slow < SINK_TIME:
 			rider.award("Wende um die Boje" if _turn_around else "Saubere Wende", 250 if _turn_around else 120)
@@ -387,13 +457,13 @@ func _track_turn() -> void:
 func _reset() -> void:
 	_turn_active = false
 	rider.reset()
-	cable.reset()
+	pc.reset()
 	water.clear_wake()
 	_crash_t = 0.0
 
 
 func _on_crashed(reason: String) -> void:
-	cable.emergency_stop()
+	pc.emergency_stop()
 	hud.set_center("%s\nNeustart in %d s  (oder R)" % [reason, int(RESET_DELAY)])
 	if _test_log:
 		print("CRASH: ", reason, " at ", rider.pos)
@@ -421,6 +491,7 @@ func _setup_input() -> void:
 	_bind("autopilot", [KEY_P], [], [])
 	_bind("help", [KEY_H, KEY_F1], [], [])
 	_bind("next_setup", [KEY_F], [], [])
+	_bind("next_terminal", [KEY_T], [], [])
 	_bind("mute", [KEY_M], [], [])
 	_bind("cam_left", [], [], [[JOY_AXIS_RIGHT_X, -1.0]])
 	_bind("cam_right", [], [], [[JOY_AXIS_RIGHT_X, 1.0]])
@@ -463,6 +534,8 @@ func _parse_args() -> void:
 			_shot_time = arg.substr(12).to_float()
 		elif arg.begins_with("--crash-at="):
 			_crash_at = arg.substr(11).to_float()
+		elif arg.begins_with("--terminal="):
+			_terminal_arg = arg.substr(11).to_upper()
 		elif arg.begins_with("--setup="):
 			_setup_arg = arg.substr(8)
 		elif arg.begins_with("--touch-at="):

@@ -380,6 +380,11 @@ func _feature_ahead(ignore: FeaturePart = null) -> bool:
 	return false
 
 
+## Steht (x, z) auf dem Startsteg der eigenen Anlage?
+func in_dock(x: float, z: float) -> bool:
+	return _in_dock(x, z)
+
+
 func _in_dock(x: float, z: float) -> bool:
 	return dock_rect.has_point(Vector2(x, z))
 

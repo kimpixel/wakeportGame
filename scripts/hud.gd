@@ -7,7 +7,8 @@ S   Kante lösen = Driften: Brett rutscht quer, dreht schneller (gut für die We
 Leertaste halten + loslassen   Absprung
 Enter  Start     R  Neustart     + / -  Anlagentempo
 C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom
-P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus     F  Feature-Setup (vor dem Start)"""
+P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus
+Vor dem Start:   T  Terminal (T1/T2)     F  Feature-Setup"""
 
 const HELP_MOBILE := """Handy neigen   lenken
 Finger halten + loslassen   Absprung
@@ -84,17 +85,20 @@ func show_trick(text: String) -> void:
 	_trick_time = 2.0
 
 
-## Auswahl des Feature-Setups (nur vor dem Start sichtbar). Liefert die Auswahlbox.
-func add_setup_menu(names: Array, current: int, on_select: Callable) -> OptionButton:
-	var box := VBoxContainer.new()
-	box.anchor_left = 1.0
-	box.anchor_right = 1.0
-	box.offset_left = -330
-	box.offset_right = -16
-	box.offset_top = 12
-	add_child(box)
+## Auswahl vor dem Start (Terminal, Feature-Setup), oben rechts. Liefert die Auswahlbox.
+func add_menu_choice(title_text: String, names: Array, current: int, on_select: Callable) -> OptionButton:
+	if _setup_box == null:
+		var vb := VBoxContainer.new()
+		vb.anchor_left = 1.0
+		vb.anchor_right = 1.0
+		vb.offset_left = -330
+		vb.offset_right = -16
+		vb.offset_top = 12
+		add_child(vb)
+		_setup_box = vb
+	var box := _setup_box
 	var title := _label(18)
-	title.text = "Feature-Setup  (F wechseln)"
+	title.text = title_text
 	title.reparent(box)
 	var opt := OptionButton.new()
 	opt.add_theme_font_size_override("font_size", 20)
@@ -105,7 +109,6 @@ func add_setup_menu(names: Array, current: int, on_select: Callable) -> OptionBu
 	opt.item_selected.connect(on_select)
 	opt.focus_mode = Control.FOCUS_NONE         # Tastatur bleibt beim Spiel
 	box.add_child(opt)
-	_setup_box = box
 	return opt
 
 

@@ -43,15 +43,7 @@ func _ready() -> void:
 	for i in 4:
 		_chirps.append(_make_chirp(i))
 
-	# Pro Person im Startblock eine Stimme (laut gerufen, trägt weit übers Wasser)
-	for person: Dictionary in people:
-		var v := AudioStreamPlayer3D.new()
-		v.unit_size = 45.0
-		v.volume_db = 4.0
-		v.max_db = 6.0
-		add_child(v)
-		v.global_position = person["pos"]
-		_voices.append(v)
+	set_people(people)
 	_fx = _player(-4.0)
 	_water = _player(-80.0)
 	_water.stream = _make_water_loop()
@@ -68,6 +60,23 @@ func _ready() -> void:
 	rider.crashed.connect(func(_r: String) -> void: _play(_fx, _crash, 1.0))
 	# "Ups" über Boje/Steg: kurzes, helles Plopp
 	rider.bumped.connect(func() -> void: _play(_fx, _thud, randf_range(1.6, 1.9)))
+
+
+## Leute im Startblock des Spieler-Terminals: pro Person eine Stimme
+## (laut gerufen, trägt weit übers Wasser). Beim Terminalwechsel neu gesetzt.
+func set_people(list: Array[Dictionary]) -> void:
+	for v in _voices:
+		v.queue_free()
+	_voices.clear()
+	people = list
+	for person: Dictionary in people:
+		var v := AudioStreamPlayer3D.new()
+		v.unit_size = 45.0
+		v.volume_db = 4.0
+		v.max_db = 6.0
+		add_child(v)
+		v.global_position = person["pos"]
+		_voices.append(v)
 
 
 func _player(db: float) -> AudioStreamPlayer:
