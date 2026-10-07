@@ -5,7 +5,10 @@ extends Node3D
 ## Der Schlitten (Carrier) sitzt fest auf EINEM Strang. Der Motor kehrt die Laufrichtung
 ## an jedem Ende um, dadurch pendelt der Carrier hin und her. Am Carrier hängt das Zugseil.
 
-enum State { IDLE, START, RUN, BRAKE, PAUSE, STOPPING }
+enum State { IDLE, START, RUN, BRAKE, PAUSE, STOPPING, FETCH, HOLD }
+## FETCH: nach Sturz/Seilverlust fährt der Operator den Carrier (und damit die Handle) auf die
+##        Höhe des Fahrers; HOLD: dort wartet er, bis der Fahrer die Handle greift.
+const FETCH_SPEED := 2.5
 
 const CARRIER_HANG := 0.45                # Zugseil hängt so weit unter dem Stahlseil
 const MARKER_COUNT := 12
@@ -25,6 +28,7 @@ var accel := 1.4
 var decel := 3.5               # spät und kräftig bremsen, damit das Seil lange zieht
 var pause_time := 0.15
 
+var fetch_z := 0.0       # Ziel beim Holen der Handle (lokales z)
 var s := 0.0             # Carrier-Position entlang z
 var v := 0.0             # Geschwindigkeit (mit Vorzeichen) entlang z
 var dir := -1.0          # -1 = Richtung Endmast, +1 = Richtung Ufer
@@ -163,6 +167,21 @@ func emergency_stop() -> void:
 		state = State.STOPPING
 
 
+## Handle zum Fahrer bringen: Carrier fährt auf Höhe z (lokal) und wartet dort.
+func fetch(z: float) -> void:
+	if state == State.HOLD:
+		return
+	fetch_z = clampf(z, turn_b_z, turn_a_z)
+	state = State.FETCH
+
+
+## Fahrer hat die Handle: weiter in Richtung des nächstgelegenen Wendepunkts.
+func resume() -> void:
+	dir = -1.0 if absf(s - turn_b_z) < absf(s - turn_a_z) else 1.0
+	_after_turn = false
+	state = State.START
+
+
 func reset() -> void:
 	s = start_z
 	_prev_s = s
@@ -216,6 +235,16 @@ func step(delta: float, rider_vz: float, rope_slack: float) -> void:
 			else:
 				spd = maxf(spd - spd * spd / (2.0 * remaining) * delta, 0.05)
 				v = spd * dir
+		State.FETCH:
+			var rem := fetch_z - s
+			var want := signf(rem) * minf(FETCH_SPEED, sqrt(2.0 * decel * 0.5 * absf(rem)))
+			v = move_toward(v, want, decel * delta)
+			if absf(rem) < 0.05 and absf(v) < 0.15:
+				s = fetch_z
+				v = 0.0
+				state = State.HOLD
+		State.HOLD:
+			v = 0.0
 		State.PAUSE:
 			v = 0.0
 			_pause_t -= delta
@@ -266,6 +295,8 @@ func state_text() -> String:
 		State.BRAKE: return "Bremst zur Wende"
 		State.PAUSE: return "Wende"
 		State.STOPPING: return "Not-Stopp"
+		State.FETCH: return "Operator bringt die Handle"
+		State.HOLD: return "Wartet auf den Fahrer"
 	return ""
 
 

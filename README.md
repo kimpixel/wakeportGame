@@ -33,7 +33,8 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | S | LT | Kante lösen = **Driften**: Brett rutscht quer, dreht schneller (gut für die Wende) |
 | Leertaste halten + loslassen | A | Absprung |
 | Enter | Start | Anlage starten |
-| R | Back | Neustart |
+| R | Back | zurück zum Startsteg |
+| W / Leertaste halten | A | nach Sturz oder Seilverlust: zur Handle schwimmen |
 | + / − | Steuerkreuz ↑/↓ | Tempo der Anlage (16–40 km/h) |
 | C | Y | Kamera: Verfolger, Orbit oder Ufer |
 | T | – | Terminal T1/T2 (vor dem Start) |
@@ -76,6 +77,8 @@ blender -b --python tools/character/build_character.py -- rider assets/character
 Presets: `rider`, `operator`, `guest_f`, `guest_m`.
 
 Die Haltung wird im Spiel live aus der Physik berechnet, mit einer eigenen IK in `scripts/human_rig.gd`: Füße in den Bindungen, Hände am Griff, Oberkörper gegen den Seilzug. Die Arme sind nie überstreckt: Liegt der Griff zu weit weg, holen die Hände ihn heran.
+
+**Sturz und Bergung wie an der echten 2-Mast-Anlage – niemand muss zurück zum Start:** Wer zu viel Zug bekommt, verliert die Handle (kein Sturz), gleitet aus und sinkt ins Wasser. Nach einem Sturz oder Seilverlust fährt der Operator den Carrier so, dass die Handle auf deiner Höhe neben der Seillinie liegt. Dann schwimmst du hin (W/Leertaste halten, am Handy Finger halten), greifst die Handle und es geht mit einem Deep-Water-Start weiter, immer Richtung des nächstgelegenen Wendepunkts. NPC und Autopilot machen das selbst. Nur wer an Land oder im Steg landet, startet am Steg neu (oder mit R).
 
 Beim Sturz wird die Figur zur **Ragdoll** (`scripts/ragdoll.gd`): Physik-Knochen mit Gelenkgrenzen, Wasserdämpfung und Auftrieb an der Oberfläche. Die Weste dreht den Fahrer auf den Rücken, das Brett bleibt an den Füßen. Am Griff bilden die Hände eine Faust um die Stange (Finger darüber, Daumen darunter).
 

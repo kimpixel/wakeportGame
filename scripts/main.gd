@@ -13,6 +13,7 @@ extends Node3D
 ##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
 ##   --screen[=NAME]   Startbildschirm erzwingen (NAME: Feature/Hack auswählen, z. B. "hack");
 ##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
+##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
 
 const RESET_DELAY := 3.0
@@ -71,6 +72,7 @@ var _cam_arg := ""
 var _view_arg := PackedFloat32Array()
 var _lane_arg := NAN
 var _crash_at := -1.0          # Test: Sturz zu dieser Zeit auslösen
+var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
 var _touch_at: Array[float] = []   # Test: Finger auf den Bildschirm
 var _closeup := Vector3.INF     # Testkamera relativ zum Fahrer
 var _closeup_look := Vector3(0, 1.1, 0)   # Blickpunkt relativ zum Fahrer (optional 4.-6. Wert)
@@ -138,8 +140,8 @@ func _ready() -> void:
 		"mast_b": Vector3(0.0, 0.0, Lake.MAST_B_Z)}
 	_start["T1"] = {"pos": npc_start, "yaw": cable_t1.rotation.y, "dock": Rect2(dc.x - 3.5, dc.y - 2.2, 7.0, 4.4),
 		"mast_b": Geo.masts["t1_end"]}
+	npc.grabbed.connect(func() -> void: nc.resume())
 	npc.crashed.connect(func(reason: String) -> void:
-		nc.emergency_stop()
 		if _test_log:
 			var l := nc.transform.affine_inverse() * npc.pos
 			print("NPC CRASH: ", reason, " local x=%.2f s=%.2f y=%.2f" % [l.x, nc.mast_a_z - l.z, npc.pos.y]))
@@ -147,6 +149,11 @@ func _ready() -> void:
 		if _test_log:
 			print("NPC TRICK: ", trick, " +", pts))
 	rider.crashed.connect(_on_crashed)
+	rider.rope_lost.connect(_on_crashed)
+	rider.grabbed.connect(func() -> void:
+		pc.resume()
+		if _test_log:
+			print("HANDLE GEGRIFFEN at ", rider.pos.snapped(Vector3.ONE * 0.1)))
 	rider.trick_landed.connect(_on_trick)
 
 	cam = ChaseCamera.new()
@@ -409,23 +416,11 @@ func _physics_process(delta: float) -> void:
 	nc.step(delta, nc.local_vz(npc.vel) if npc.attached else 0.0, npc.rope_slack())
 	npc.step(delta)
 	_check_buoy(npc)
-	if npc.mode == Rider.Mode.CRASHED:
-		_npc_crash_t += delta
-		if _npc_crash_t > 4.0:
-			_npc_crash_t = 0.0
-			npc.reset()
-			nc.reset()
-			nc.start()
+	_recover(npc, nc, delta)
 	rider.step(delta)
 	_check_buoy(rider)
 	_track_turn()
-
-	if rider.mode == Rider.Mode.CRASHED:
-		_crash_t += delta
-		if _crash_t > RESET_DELAY:
-			_reset()
-			if _test_log or start_screen.visible:
-				pc.start()
+	_recover(rider, pc, delta)
 
 	_elapsed += delta
 	for i in _touch_at.size():
@@ -439,6 +434,9 @@ func _physics_process(delta: float) -> void:
 	if _crash_at > 0.0 and _elapsed >= _crash_at:
 		_crash_at = -1.0
 		rider.crash("Teststurz")
+	if _letgo_at > 0.0 and _elapsed >= _letgo_at:
+		_letgo_at = -1.0
+		rider.let_go("Test: Seil verloren")
 	_max_tension = maxf(_max_tension, rider.tension_smooth)
 	if _test_log:
 		_log_t += delta
@@ -451,6 +449,34 @@ func _physics_process(delta: float) -> void:
 				Rider.Mode.keys()[npc.mode], npc.horizontal_speed() * 3.6, nc.laps])
 	if _quit_after > 0.0 and _elapsed >= _quit_after:
 		get_tree().quit()
+
+
+## Bergung (2-Mast-Prinzip, niemand muss zurück zum Start): Wer die Handle verloren hat,
+## bekommt sie vom Operator auf seine Höhe gebracht und schwimmt hin (siehe Rider._swim).
+## Nur wer an Land oder im Steg gelandet ist (oder ewig nicht hinkommt), startet neu am Steg.
+var _lost_t := {}
+
+func _recover(r: Rider, c: CableSystem, delta: float) -> void:
+	var id := r.get_instance_id()
+	if r.attached:
+		_lost_t[id] = 0.0
+		return
+	var t: float = _lost_t.get(id, 0.0) + delta
+	_lost_t[id] = t
+	var stranded := not Lake.in_lake(r.pos.x, r.pos.z, 0.0) or r.in_dock(r.pos.x, r.pos.z)
+	if (stranded and t > RESET_DELAY) or t > 120.0:
+		_lost_t[id] = 0.0
+		if r == rider:
+			_reset()
+			if _test_log or start_screen.visible:
+				pc.start()
+		else:
+			r.reset()
+			c.reset()
+			c.start()
+		return
+	if not stranded:
+		c.fetch((c.transform.affine_inverse() * r.pos).z)
 
 
 func _fake_touch(pressed: bool) -> void:
@@ -476,7 +502,15 @@ func _process(_delta: float) -> void:
 	hud.set_info(info, rider.tension_smooth / Rider.CRASH_TENSION)
 	hud.set_board(rider.board_state_text())
 	hud.show_setup_menu(pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED)
-	if rider.mode != Rider.Mode.CRASHED:
+	if not rider.attached:
+		var swim_key := "Finger halten" if mobile.active else "W oder Leertaste halten"
+		if pc.state == CableSystem.State.HOLD:
+			hud.set_center("%s: zur Handle schwimmen%s" % [swim_key, "" if mobile.active else "\n(R = zurück zum Steg)"])
+		elif pc.state == CableSystem.State.FETCH:
+			hud.set_center("Der Operator bringt dir die Handle …")
+		else:
+			hud.set_center("")
+	elif rider.mode != Rider.Mode.CRASHED:
 		if pc.state == CableSystem.State.IDLE:
 			hud.set_center("Tippen zum Starten" if mobile.active else "ENTER drücken zum Starten")
 		elif mobile.active and not mobile.tilt_available:
@@ -562,8 +596,7 @@ func _reset() -> void:
 
 
 func _on_crashed(reason: String) -> void:
-	pc.emergency_stop()
-	hud.set_center("%s\nNeustart in %d s  (oder R)" % [reason, int(RESET_DELAY)])
+	hud.show_trick(reason)
 	if _test_log:
 		print("CRASH: ", reason, " at ", rider.pos)
 
@@ -632,6 +665,8 @@ func _parse_args() -> void:
 			_shot_path = arg.substr(7)
 		elif arg.begins_with("--shot-time="):
 			_shot_time = arg.substr(12).to_float()
+		elif arg.begins_with("--letgo-at="):
+			_letgo_at = arg.substr(11).to_float()
 		elif arg.begins_with("--crash-at="):
 			_crash_at = arg.substr(11).to_float()
 		elif arg.begins_with("--terminal="):

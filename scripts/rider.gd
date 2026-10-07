@@ -12,6 +12,15 @@ extends Node3D
 signal crashed(reason: String)
 signal trick_landed(trick_name: String, points: int)
 signal bumped                    # kleines "Ups": über eine Boje oder einen Steg gerumpelt
+signal rope_lost(reason: String) # Handle verloren (kein Sturz): ausgleiten, absinken, schwimmen
+signal grabbed                   # nach dem Schwimmen die Handle wieder gegriffen
+
+## Bergung nach Sturz/Seilverlust (2-Mast-Anlage: niemand muss zurück zum Start):
+## der Operator bringt die Handle auf die Höhe des Fahrers, der schwimmt hin und greift sie.
+const SINK_SPEED := 1.0          # so langsam ohne Seil -> man sinkt ins Wasser
+const SETTLE_TIME := 1.5         # so lange nach dem Sturz treibt man, bevor man schwimmen kann
+const SWIM_SPEED := 1.1          # Rückenschwimmen mit Brett an den Füßen (m/s)
+const GRAB_DIST := 1.0
 
 const UPS_TIME := 0.45
 var _ups := 0.0                  # Restzeit des "Ups"-Wacklers
@@ -77,6 +86,8 @@ var is_npc := false
 var auto_lane := NAN
 var score := 0
 var crash_reason := ""
+var swimming := false            # schwimmt gerade zur Handle
+var _crash_t := 0.0
 var air_time := 0.0
 
 var _steer := 0.0
@@ -201,6 +212,8 @@ func reset() -> void:
 	crash_reason = ""
 	air_time = 0.0
 	_rope_dist = 0.0
+	swimming = false
+	_crash_t = 0.0
 	if _ragdoll:
 		_ragdoll.stop()
 
@@ -431,17 +444,101 @@ func step(delta: float) -> void:
 	_read_input(delta)
 	if mode == Mode.CRASHED:
 		_step_crashed(delta)
+		_update_free_handle(delta)
 		return
 	var rope_force := _rope_force(delta)
-	if mode == Mode.WATER and tension_smooth > CRASH_TENSION:
-		crash("Seil aus der Hand gerissen!")
-		return
+	if mode == Mode.WATER and attached and tension_smooth > CRASH_TENSION:
+		let_go("Seil aus der Hand gerissen!")
+		rope_force = Vector3.ZERO
 	if mode == Mode.WATER:
 		_step_water(delta, rope_force)
 	else:
 		_step_air(delta, rope_force)
 	if mode != Mode.CRASHED:
 		_check_bounds()
+	if not attached:
+		# ohne Seil gleitet man aus und sinkt dann ins Wasser
+		if mode == Mode.WATER and horizontal_speed() < SINK_SPEED:
+			_sink()
+		_update_free_handle(delta)
+
+
+## Handle verloren (zu viel Zug): kein Sturz – man lässt los und gleitet aus.
+func let_go(reason: String) -> void:
+	if not attached:
+		return
+	attached = false
+	tension = 0.0
+	tension_smooth = 0.0
+	crash_reason = reason
+	_free_handle = pos + Vector3(0.0, HANDLE_HEIGHT, 0.0) + forward() * 0.3
+	rope_lost.emit(reason)
+
+
+## Ausgeglitten: ins Wasser sinken (Rückenlage in der Weste), dann zur Handle schwimmen.
+func _sink() -> void:
+	mode = Mode.CRASHED
+	_crash_t = 0.0
+	if _ragdoll:
+		_ragdoll.start(vel * 0.5, water.height_at(pos.x, pos.z), pos)
+	vel.y = 0.0
+
+
+## Die lose Handle wird vom Carrier übers Wasser gezogen und landet neben der Seillinie,
+## auf der Seite des Fahrers.
+func _update_free_handle(delta: float) -> void:
+	var anchor := cable.get_anchor()
+	var side_x := (cable.transform.affine_inverse() * pos).x
+	var side := cable.global_basis.x.normalized() * (1.2 if side_x >= 0.0 else -1.2)
+	var target := Vector3(anchor.x, 0.0, anchor.z) + side
+	var h := Vector3(_free_handle.x, 0.0, _free_handle.z)
+	h = h.move_toward(target, maxf(3.0, absf(cable.v) + 1.0) * delta)
+	_free_handle = Vector3(h.x, water.height_at(h.x, h.z) + 0.05, h.z)
+
+
+## Schwimmen zur Handle (Autopilot/NPC von selbst, sonst W/Leertaste bzw. Finger halten).
+## Liegt die Handle bereit und ist nah genug: greifen.
+func _swim(delta: float) -> void:
+	swimming = false
+	if _crash_t < SETTLE_TIME or not Lake.in_lake(pos.x, pos.z, 0.0):
+		return
+	var to := _free_handle - pos
+	to.y = 0.0
+	var d := to.length()
+	if d < GRAB_DIST and cable.state == CableSystem.State.HOLD:
+		_grab()
+		return
+	var want := autopilot or Input.is_action_pressed("edge") or Input.is_action_pressed("jump")
+	if not want or d < 0.3:
+		return
+	swimming = true
+	var sv := to / d * SWIM_SPEED
+	if _ragdoll and _ragdoll.active:
+		_ragdoll.swim(sv, delta)
+	else:
+		vel.x = sv.x
+		vel.z = sv.z
+
+
+## Handle gegriffen: im Wasser sitzend (Deep-Water-Start) wieder ans Seil.
+func _grab() -> void:
+	if _ragdoll:
+		_ragdoll.stop()
+	mode = Mode.WATER
+	attached = true
+	swimming = false
+	crash_reason = ""
+	vel = Vector3.ZERO
+	pos.y = water.height_at(pos.x, pos.z)
+	var a := cable.get_anchor() - pos
+	yaw = _aligned_yaw(atan2(-a.x, -a.z))
+	_prev_pos = pos
+	_prev_yaw = yaw
+	tension = 0.0
+	tension_smooth = 0.0
+	_rope_dist = 0.0
+	_load = 0.0
+	grabbed.emit()
 
 
 func _read_input(delta: float) -> void:
@@ -639,6 +736,9 @@ func _step_water(delta: float, rope: Vector3) -> void:
 		var grip_mult := 1.0 + 0.9 * _edge - 0.75 * _release
 		f_lat = -(GRIP_QUAD * grip_mult * vs * absf(vs) + (GRIP_LIN * grip_mult + plow) * vs)
 	slip = vs
+	# ohne Seil: Brett verliert schnell den Auftrieb, man sinkt nach 2–3 s ein
+	if not attached and not on_dock:
+		f_long -= 0.9 * MASS * vl
 
 	var force := Vector3(rope.x, 0.0, rope.z) + f * f_long + r * f_lat
 	vel.x += force.x / MASS * delta
@@ -790,9 +890,11 @@ func crash(reason: String) -> void:
 	if mode == Mode.CRASHED:
 		return
 	mode = Mode.CRASHED
+	_crash_t = 0.0
+	if attached:
+		_free_handle = pos + Vector3(0.0, HANDLE_HEIGHT, 0.0)
 	attached = false
 	crash_reason = reason
-	_free_handle = pos + Vector3(0.0, HANDLE_HEIGHT, 0.0)
 	if _ragdoll:
 		# Körper fliegt mit dem bisherigen Schwung weiter (begrenzt), dann bremst das Wasser
 		_ragdoll.start(vel.limit_length(12.0), water.height_at(pos.x, pos.z), pos)
@@ -801,6 +903,10 @@ func crash(reason: String) -> void:
 
 
 func _step_crashed(delta: float) -> void:
+	_crash_t += delta
+	_swim(delta)
+	if mode != Mode.CRASHED:
+		return
 	var k := exp(-1.5 * delta)
 	vel.x *= k
 	vel.z *= k
@@ -892,11 +998,6 @@ func _process(delta: float) -> void:
 			var rb := global_transform.basis.orthonormalized()
 			handle_pos = vpos + rb * Vector3(0.2, 0.86 - 0.3 * _crouch, -0.2) + to_anchor * 0.5
 	else:
-		var off := _free_handle - anchor
-		off.y = 0.0
-		if off.length() > ROPE_LENGTH * 0.85:
-			_free_handle = anchor + off.normalized() * ROPE_LENGTH * 0.85
-		_free_handle.y = water.height_at(_free_handle.x, _free_handle.z) + 0.05
 		handle_pos = _free_handle
 		to_anchor = (anchor - handle_pos).normalized()
 	var bar_axis := to_anchor.cross(Vector3.UP)

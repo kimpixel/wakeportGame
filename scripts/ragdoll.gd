@@ -172,6 +172,17 @@ func step(delta: float) -> void:
 	sp.apply_impulse(-push * torque / 0.3 * delta, -u * 0.15)
 
 
+## Schwimmen: der treibende Körper bewegt sich (in Rückenlage) mit Geschwindigkeit v übers Wasser.
+func swim(v: Vector3, delta: float) -> void:
+	if not active:
+		return
+	var k := 1.0 - exp(-delta * 12.0)
+	for pb in _bones:
+		var lv := pb.linear_velocity
+		var h := Vector3(lv.x, 0.0, lv.z).lerp(Vector3(v.x, 0.0, v.z), k)
+		pb.linear_velocity = Vector3(h.x, lv.y, h.z)
+
+
 ## Wasserebene folgt der Welle an der aktuellen Stelle.
 func follow_water(water_y: float, at: Vector3) -> void:
 	if active:
