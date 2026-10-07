@@ -207,7 +207,8 @@ func _ready() -> void:
 			var black := Util.mat(Color(0.06, 0.06, 0.07), 0.35)
 			var hl := length * 0.5
 			var rx := width * 0.5 - 0.1
-			Util.beam(self, Vector3(rx, height + 0.02, hl - ramp_in * 0.15), Vector3(rx, height + 0.02, -hl + ramp_out * 0.15), 0.07, black)
+			# Rail nur auf dem flachen Oberteil: beginnt und endet dort, wo die schrägen Auffahrten oben ankommen
+			Util.beam(self, Vector3(rx, height + 0.02, hl - ramp_in), Vector3(rx, height + 0.02, -hl + ramp_out), 0.07, black)
 		_:
 			_build_heightfield(white, 24, 2)
 

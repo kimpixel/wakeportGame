@@ -41,7 +41,8 @@ func _ready() -> void:
 	_build_environment()
 	Geo.ensure_loaded()
 	add_child(Terrain.new())
-	add_child(Beach.new())
+	var beach := Beach.new()
+	add_child(beach)
 
 	water = Water.new()
 	add_child(water)
@@ -109,7 +110,7 @@ func _ready() -> void:
 	add_child(hud)
 	var sfx := Sfx.new()
 	sfx.rider = rider
-	sfx.npc = npc
+	sfx.people = beach.people
 	add_child(sfx)
 	if _view_arg.size() == 6:
 		# Testansicht: feste Kamera (x,y,z -> Blickpunkt x,y,z)

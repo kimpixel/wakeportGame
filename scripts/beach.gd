@@ -13,6 +13,10 @@ var _black: StandardMaterial3D
 var _blue: StandardMaterial3D
 var _north_yaw := 0.0
 
+## Leute im T2-Startblock (Steuermann/"Hebler" + Gäste). Von dort kommt der Jubel.
+## Jeder Eintrag: {"pos": Vector3 (Kopfhöhe, Welt), "pitch": Stimmlage}
+var people: Array[Dictionary] = []
+
 
 func _ready() -> void:
 	Geo.ensure_loaded()
@@ -117,6 +121,21 @@ func _build_t2_start() -> void:
 	roof.position.y = 0.05
 	_b(hut, Vector3(1.6, 0.45, 3.0), Vector3(-1.8, 0.23, 0.5), _wood)                # Bank
 	_b(hut, Vector3(0.9, 1.6, 1.2), Vector3(2.0, 0.8, 2.5), _wood_grey)              # Spind
+	# Steuerpult mit Hebel, davor der Steuermann (schaut aufs Wasser)
+	_b(hut, Vector3(0.6, 1.0, 1.1), Vector3(2.3, 0.5, -1.5), _wood_grey)
+	_b(hut, Vector3(0.5, 0.04, 0.9), Vector3(2.25, 1.02, -1.5), _black)
+	Util.beam(hut, Vector3(2.2, 1.02, -1.3), Vector3(2.05, 1.35, -1.3), 0.025, Util.mat(Color(0.85, 0.1, 0.1)))
+	_person(hut, Vector3(1.55, 0.0, -1.5), Color(0.1, 0.1, 0.12), false)
+	people.append({"pos": hut.global_transform * Vector3(1.55, 1.6, -1.5), "pitch": 0.92})
+	# Gäste auf der Bank – je nach Session 0 bis 3
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var shirts := [Color(0.9, 0.3, 0.2), Color(0.2, 0.5, 0.85), Color(0.95, 0.85, 0.2), Color(0.3, 0.7, 0.4)]
+	var guests := rng.randi_range(0, 3)
+	for gi in guests:
+		var gz := -0.6 + gi * 0.75
+		_person(hut, Vector3(-1.75, 0.45, gz), shirts[gi], true)
+		people.append({"pos": hut.global_transform * Vector3(-1.6, 1.15, gz), "pitch": rng.randf_range(1.0, 1.35)})
 	_b(hut, Vector3(0.6, 1.0, 0.1), Vector3(-2.55, 1.6, -1.5), Util.mat(Color(0.8, 0.15, 0.12)))  # Rettungsring-Tafel
 
 	# Schwimmende Startstege (entspricht Lake.DOCK_*, darauf startet der Fahrer)
@@ -136,6 +155,23 @@ func _build_t2_start() -> void:
 		var bp := c + Vector3(-2.0 + i * 0.5, 0.22, 1.8)
 		var bd := _b(dock, Vector3(0.42, 0.04, 1.35), bp, _black)
 		bd.rotation.y = 0.2 * i
+
+
+## Einfache Figur, schaut in lokale +X-Richtung (aufs Wasser). sitting: sitzt auf Höhe base.y.
+func _person(parent: Node3D, base: Vector3, shirt: Color, sitting: bool) -> void:
+	var skin := Util.mat(Color(0.88, 0.68, 0.52))
+	var pants := Util.mat(Color(0.2, 0.22, 0.3))
+	var hip := base + Vector3(0, 0.0 if sitting else 0.85, 0)
+	for side: float in [-0.12, 0.12]:
+		if sitting:
+			Util.beam(parent, hip + Vector3(0.05, 0.05, side), hip + Vector3(0.45, 0.05, side), 0.07, pants)
+			Util.beam(parent, hip + Vector3(0.45, 0.05, side), Vector3(base.x + 0.5, base.y - 0.45, base.z + side), 0.06, pants)
+		else:
+			Util.beam(parent, Vector3(base.x, base.y, base.z + side), hip + Vector3(0, 0, side), 0.07, pants)
+	_b(parent, Vector3(0.24, 0.6, 0.4), hip + Vector3(0, 0.33, 0), Util.mat(shirt))
+	Util.sphere(parent, 0.12, hip + Vector3(0, 0.78, 0), skin)
+	for side: float in [-0.24, 0.24]:
+		Util.beam(parent, hip + Vector3(0, 0.6, side), hip + Vector3(0.25 if not sitting else 0.2, 0.2, side * 1.1), 0.045, skin)
 
 
 # ---------------------------------------------------------------- T1-Start

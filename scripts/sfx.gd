@@ -1,16 +1,17 @@
 class_name Sfx
 extends Node
 ## Einfache Soundeffekte, komplett beim Start synthetisiert (keine Audiodateien nötig):
-##  * "Yeah!" / "Wooo!" bei Punkten (Formant-Synthese – klingt bewusst etwas comichaft)
+##  * "Yeah!" / "Wooo!" bei Punkten – das rufen die Leute im T2-Startblock (Steuermann und
+##    Gäste), räumlich vom Startsteg aus zu hören (Formant-Synthese, klingt etwas comichaft)
 ##  * Whoosh beim Absprung, Platschen bei der Landung, großer Platscher beim Sturz
 ##  * Wasserrauschen abhängig vom Tempo, Grind-Geräusch auf Rails/Boxen
-##  * Vögel im Wald, NPC-Jubel von T1 (räumlich)
+##  * Vögel im Wald
 ## Taste M schaltet den Ton stumm.
 
 const RATE := 22050
 
 var rider: Rider
-var npc: Rider
+var people: Array[Dictionary] = []   # aus Beach: Leute im Startblock
 
 var _yeah: Array[AudioStreamWAV] = []
 var _woo: AudioStreamWAV
@@ -20,11 +21,10 @@ var _thud: AudioStreamWAV
 var _crash: AudioStreamWAV
 var _chirps: Array[AudioStreamWAV] = []
 
-var _voice: AudioStreamPlayer
+var _voices: Array[AudioStreamPlayer3D] = []
 var _fx: AudioStreamPlayer
 var _water: AudioStreamPlayer
 var _grind: AudioStreamPlayer
-var _npc_voice: AudioStreamPlayer3D
 var _bird: AudioStreamPlayer3D
 
 var _prev_mode := Rider.Mode.WATER
@@ -43,7 +43,15 @@ func _ready() -> void:
 	for i in 4:
 		_chirps.append(_make_chirp(i))
 
-	_voice = _player(-2.0)
+	# Pro Person im Startblock eine Stimme (laut gerufen, trägt weit übers Wasser)
+	for person: Dictionary in people:
+		var v := AudioStreamPlayer3D.new()
+		v.unit_size = 45.0
+		v.volume_db = 4.0
+		v.max_db = 6.0
+		add_child(v)
+		v.global_position = person["pos"]
+		_voices.append(v)
 	_fx = _player(-4.0)
 	_water = _player(-80.0)
 	_water.stream = _make_water_loop()
@@ -51,10 +59,6 @@ func _ready() -> void:
 	_grind = _player(-80.0)
 	_grind.stream = _make_grind_loop()
 	_grind.play()
-	_npc_voice = AudioStreamPlayer3D.new()
-	_npc_voice.unit_size = 25.0
-	_npc_voice.volume_db = -4.0
-	add_child(_npc_voice)
 	_bird = AudioStreamPlayer3D.new()
 	_bird.unit_size = 30.0
 	_bird.volume_db = -14.0
@@ -62,8 +66,6 @@ func _ready() -> void:
 
 	rider.trick_landed.connect(_on_trick)
 	rider.crashed.connect(func(_r: String) -> void: _play(_fx, _crash, 1.0))
-	if npc:
-		npc.trick_landed.connect(_on_npc_trick)
 
 
 func _player(db: float) -> AudioStreamPlayer:
@@ -87,17 +89,22 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # ---------------------------------------------------------------- Ereignisse
 
+## Jubel aus dem Startblock: der Steuermann ruft immer, Gäste manchmal mit.
 func _on_trick(trick: String, points: int) -> void:
+	if _voices.is_empty():
+		return
 	var big := points >= 250 or trick.begins_with("360") or trick.begins_with("540")
-	_play(_voice, _woo if big else _yeah.pick_random(), randf_range(0.95, 1.08))
-
-
-func _on_npc_trick(_trick: String, _points: int) -> void:
-	if randf() < 0.6:
-		_npc_voice.global_position = npc.global_position + Vector3(0, 1.5, 0)
-		_npc_voice.stream = _yeah.pick_random()
-		_npc_voice.pitch_scale = randf_range(1.1, 1.3)   # andere Stimme
-		_npc_voice.play()
+	for i in _voices.size():
+		if i > 0 and randf() > 0.55:
+			continue
+		var v := _voices[i]
+		v.stream = _woo if big else _yeah.pick_random()
+		v.pitch_scale = float(people[i]["pitch"]) * randf_range(0.96, 1.04)
+		# Gäste setzen einen Tick später ein
+		if i == 0:
+			v.play()
+		else:
+			get_tree().create_timer(randf_range(0.05, 0.3)).timeout.connect(v.play)
 
 
 func _process(delta: float) -> void:
