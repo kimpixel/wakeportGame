@@ -83,6 +83,10 @@ const FLIP_LAND_TOL := 0.7      # rad: so schief darf man nach einem Überschlag
 const FLIP_POINTS := 300
 const PRESS_ANG := 0.22         # rad: Brett beim Press gekippt
 const PRESS_BONUS := 100.0
+const SLIDE_TURN := 4.5         # rad/s: so schnell dreht das Brett auf dem Slider
+const LOCK_ANGLE := deg_to_rad(35.0)   # bis zu diesem Winkel zur Feature-Achse bleibt man eingeloggt
+const LOCK_RATE := 8.0          # 1/s: seitliches Wegrutschen wird so schnell abgebaut
+const LOCK_PULL := 4.0          # 1/s: Zug zur Slide-Spur
 const BOARD_Y := 0.012          # Unterkante Brettmitte über der Fahrerposition
 const ARM_REACH := 0.88         # Griff höchstens so weit weg (Anteil der Armlänge) – Arme leicht gebeugt
 const BOARD_HALF := 0.35
@@ -138,6 +142,7 @@ var _edge := 0.0                # Kante belasten (nur Autopilot/NPC; Spieler: no
 var test_pitch := 0.0           # Test: ↑/↓ in der Luft halten (auch mit Autopilot)
 var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), ↓ = -1
 var _flip := 0.0                # Überschlag im Sprung (rad, + = Frontroll)
+var _flip_lock := false         # ↑/↓ war beim Abheben schon gedrückt (z. B. Press vom Slider) -> erst loslassen
 var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
 var _press_nose_t := 0.0
@@ -852,12 +857,14 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var force := Vector3(rope.x, 0.0, rope.z) + f * f_long + r * f_lat
 	vel.x += force.x / MASS * delta
 	vel.z += force.z / MASS * delta
+	if on_feature:
+		_slide_lock(delta)
 
 	# Lenken über die Kante
 	# flaches (driftendes) Brett lässt sich schneller herumdrehen, belastete Kante zieht weite Bögen
 	var turn := TURN_RATE * clampf(0.6 + speed / 7.0, 0.6, 1.4) * (1.0 + 0.8 * _release - 0.3 * _edge)
 	if on_feature:
-		turn = 2.5   # auf dem Feature dreht man das Brett frei (z. B. in den Boardslide)
+		turn = SLIDE_TURN   # auf dem Feature dreht man das Brett frei und schnell (z. B. in den Boardslide)
 	yaw -= _steer * turn * delta
 	# Wasserstart: solange das Brett nicht gleitet, dreht es sich in Zugrichtung
 	if speed < 2.5 and tension > 30.0 and not on_feature:
@@ -889,6 +896,32 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	if not on_dock and not on_feature:
 		water.emit_wake(pos, clampf(speed / 8.0, 0.0, 1.2), delta, get_instance_id())
 	_track_slide(delta, on_feature)
+
+
+## Einloggen auf dem Slider: Solange die Fahrtrichtung nur wenig von der Längsachse des Features
+## abweicht, richtet das System sie aus und zieht zur Slide-Spur (Auto-Rutschen). Erst bei
+## großem Winkel (z. B. starker seitlicher Seilzug) rutscht man ab. Die Brettstellung (quer für
+## den Boardslide) bleibt frei.
+func _slide_lock(delta: float) -> void:
+	var part := features.part_at(pos.x, pos.z) if features else null
+	if part == null or not part.is_slide():
+		return
+	var vh := Vector3(vel.x, 0.0, vel.z)
+	var sp := vh.length()
+	if sp < 0.5:
+		return
+	var ax := part.lock_axis()
+	var along := vh.dot(ax)
+	if absf(along) / sp < cos(LOCK_ANGLE):
+		return
+	var dir := ax * signf(along)
+	var lateral := vh - dir * vh.dot(dir)
+	vh -= lateral * minf(LOCK_RATE * delta, 1.0)
+	vel.x = vh.x
+	vel.z = vh.z
+	var corr := part.lock_offset(pos) * minf(LOCK_PULL * delta, 1.0)
+	pos.x += corr.x
+	pos.z += corr.z
 
 
 ## Punkte für Slides: wer eine Weile auf Box/Rail/Pipe rutscht, bekommt sie beim Verlassen.
@@ -998,6 +1031,7 @@ func _enter_air() -> void:
 	_raley = false
 	_popped = false
 	_flip = 0.0
+	_flip_lock = absf(_pitch_in) > 0.1
 
 
 func _step_air(delta: float, rope: Vector3) -> void:
@@ -1018,7 +1052,9 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	_spin_accum += wrapf(yaw - old_yaw, -PI, PI)
 	# ↑/↓: Frontroll/Backroll (Überschlag um die Brettlängsachse). Losgelassen läuft die
 	# Drehung zur nächsten ganzen Umdrehung aus (bzw. zurück, wenn kaum angefangen).
-	if absf(_pitch_in) > 0.1:
+	if _flip_lock and absf(_pitch_in) <= 0.1:
+		_flip_lock = false
+	if absf(_pitch_in) > 0.1 and not _flip_lock:
 		_flip += _pitch_in * FLIP_RATE * delta
 	else:
 		_flip = move_toward(_flip, roundf(_flip / TAU) * TAU, FLIP_RATE * 0.7 * delta)

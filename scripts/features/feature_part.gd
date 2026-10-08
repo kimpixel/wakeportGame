@@ -84,6 +84,33 @@ func is_slide() -> bool:
 	return type in ["block", "rail", "pipe", "transition"]
 
 
+## Einloggen beim Slide: Längsachse des Teils (Welt, waagerecht).
+func lock_axis() -> Vector3:
+	var a := global_basis.z
+	a.y = 0.0
+	return a.normalized()
+
+
+## Einloggen beim Slide: seitliche Korrektur (Welt) zur Slide-Spur – Rail/Pipe mittig, beim
+## Transition Rail aufs Rail (nur wenn man in dessen Nähe ist), auf breiten Boxen nur weg vom Rand.
+func lock_offset(world: Vector3) -> Vector3:
+	var v := (_inv * world).x
+	var target := v
+	match type:
+		"rail", "pipe":
+			target = 0.0
+		"transition":
+			var rail := -inner_v * (width * 0.5 - TR_FLAT * 0.5)
+			if absf(v - rail) < 0.6:
+				target = rail
+		_:
+			var m := maxf(width * 0.5 - 0.3, 0.0)
+			target = clampf(v, -m, m)
+	var side := global_basis.x
+	side.y = 0.0
+	return side.normalized() * (target - v)
+
+
 ## Bevorzugte Fahrspur über das Teil (seitlicher Abstand zum Seil): Mitte bzw. beim
 ## Transition Rail direkt am Rail.
 func lane_x() -> float:
