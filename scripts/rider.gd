@@ -139,6 +139,7 @@ var _steer := 0.0
 var slip := 0.0                 # Quergeschwindigkeit des Bretts (m/s) – > 0 = rutscht nach rechts
 
 var _edge := 0.0                # Kante belasten (nur Autopilot/NPC; Spieler: normaler Grip)
+var _jump_block := false        # Sprungtaste startete gerade die Anlage -> zählt nicht als Sprung
 var test_pitch := 0.0           # Test: ↑/↓ in der Luft halten (auch mit Autopilot)
 var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), ↓ = -1
 var _flip := 0.0                # Überschlag im Sprung (rad, + = Frontroll)
@@ -665,6 +666,12 @@ func _read_input(delta: float) -> void:
 		_release = Input.get_action_strength("release")
 
 	var held := (Input.is_action_pressed("jump") and not autopilot) or _npc_charge > 0.0
+	# Leertaste hat gerade die Anlage gestartet: erst loslassen, bevor sie wieder lädt
+	if _jump_block:
+		if held:
+			held = false
+		else:
+			_jump_block = false
 	if held:
 		if mode == Mode.WATER:
 			_load = minf(_load + delta / 0.5, 1.0)
@@ -994,6 +1001,12 @@ func _part_name(x: float, z: float) -> String:
 	if p == null:
 		return "das Hindernis"
 	return p.article + " " + p.display_name
+
+
+## Die gerade gedrückte Sprungtaste (Leertaste/Finger) startete etwas anderes -> kein Sprung daraus.
+func block_jump() -> void:
+	_jump_block = true
+	_load = 0.0
 
 
 ## Test: voll aufgeladen abspringen.

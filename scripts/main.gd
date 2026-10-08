@@ -43,6 +43,7 @@ var rider: Rider
 var cam: ChaseCamera
 var hud: Hud
 var mobile: MobileInput
+var touch_pad: TouchPad         # nur am Handy
 var _setups: Array = []          # aus setups/index.json
 var _setup_idx := 0
 var _setup_menu: OptionButton
@@ -218,6 +219,11 @@ func _ready() -> void:
 		hud.set_help(Hud.HELP_MOBILE)
 		mobile.touch_down.connect(_on_touch_down)
 		mobile.touch_up.connect(_on_touch_up)
+		# virtuelle Tasten ▲ ▼ DRIFT und Menü ☰
+		touch_pad = TouchPad.new()
+		add_child(touch_pad)
+		mobile.pad = touch_pad
+		touch_pad.menu_action.connect(_on_pad_menu)
 	sfx = Sfx.new()
 	sfx.rider = rider
 	sfx.people = beach.people
@@ -311,11 +317,17 @@ func _open_start_screen() -> void:
 	pc.start()
 	start_screen.visible = true
 	start_screen.refresh(terminal, _setup_idx)
+	if touch_pad:
+		mobile.release_pad()
+		touch_pad.close_menu()
+		touch_pad.visible = false
 
 
 func _close_start_screen() -> void:
 	start_screen.visible = false
 	hud.visible = true
+	if touch_pad:
+		touch_pad.visible = true
 	get_viewport().disable_3d = false
 	rider.autopilot = _autopilot_before
 	_reset()
@@ -438,6 +450,23 @@ func _on_touch_down() -> void:
 		_touch_started = true
 	else:
 		Input.action_press("jump")
+
+
+## Menü der virtuellen Tasten (Handy).
+func _on_pad_menu(id: String) -> void:
+	match id:
+		"help":
+			hud.toggle_help()
+		"reset":
+			if _finishing:
+				_end_session()
+			else:
+				_penalty(RESET_PENALTY)
+			_reset()
+		"home":
+			_open_start_screen()
+		"mute":
+			AudioServer.set_bus_mute(0, not AudioServer.is_bus_mute(0))
 
 
 ## Finger weg: Absprung (falls geladen).
@@ -626,7 +655,8 @@ func _process(_delta: float) -> void:
 		roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
 		pc.laps, cam.mode_name(), "   ·   AUTOPILOT" if rider.autopilot else ""])
 	hud.set_board(rider.board_state_text())
-	hud.show_setup_menu(pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED)
+	# Terminal/Setup wählt man am Handy nur auf der Startseite
+	hud.show_setup_menu(pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED and not mobile.active)
 	if not rider.attached:
 		var skip := "Tippen: sofort weiterfahren" if mobile.active \
 			else "↑ halten: zur Handle schwimmen     Leertaste: sofort weiterfahren\n(R = zurück zum Steg)"
@@ -638,7 +668,7 @@ func _process(_delta: float) -> void:
 			hud.set_center("")
 	elif rider.mode != Rider.Mode.CRASHED:
 		if pc.state == CableSystem.State.IDLE:
-			hud.set_center("Tippen zum Starten" if mobile.active else "ENTER drücken zum Starten")
+			hud.set_center("Tippen zum Starten" if mobile.active else "LEERTASTE drücken zum Starten")
 		elif mobile.active and not mobile.tilt_available:
 			hud.set_center("Neigungssensor nicht verfügbar –\nBewegungssensoren im Browser erlauben")
 		else:
@@ -662,6 +692,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("start"):
 		if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED:
 			_start_run()
+			rider.block_jump()
 	elif event.is_action_pressed("reset"):
 		if _finishing:
 			_end_session()
@@ -745,7 +776,7 @@ func _setup_input() -> void:
 	# Strg (zur Not Alt): Kante lösen = Driften
 	_bind("release", [KEY_CTRL, KEY_ALT], [], [[JOY_AXIS_TRIGGER_LEFT, 1.0]])
 	_bind("jump", [KEY_SPACE], [JOY_BUTTON_A], [])
-	_bind("start", [KEY_ENTER, KEY_KP_ENTER], [JOY_BUTTON_START], [])
+	_bind("start", [KEY_SPACE], [JOY_BUTTON_START], [])
 	_bind("reset", [KEY_R], [JOY_BUTTON_BACK], [])
 	_bind("speed_up", [KEY_PAGEUP], [JOY_BUTTON_DPAD_UP], [], [KEY_PLUS, KEY_KP_ADD])
 	_bind("speed_down", [KEY_PAGEDOWN], [JOY_BUTTON_DPAD_DOWN], [], [KEY_MINUS, KEY_KP_SUBTRACT])

@@ -32,7 +32,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | ↑ / ↓ (W / S) | linker Stick ↕ | In der Luft: **Frontroll / Backroll**. Halten dreht, loslassen dreht zur nächsten ganzen Umdrehung aus. Schief landen = Sturz. Auf dem Slider: **Nosepress / Tailpress** |
 | Strg (zur Not Alt) | LT | Kante lösen = **Driften**: Brett rutscht quer, dreht schneller (gut für die Wende) |
 | Leertaste halten + loslassen | A | Absprung: langsam ein **Ollie**, über 35 km/h automatisch ein **Raley** |
-| Enter | Start | Anlage starten |
+| Leertaste | Start | Anlage starten (die Taste löst dabei keinen Sprung aus) |
 | R | Back | zurück zum Startsteg (kostet 5:00 Spielzeit) |
 | ↑ halten | – | nach Sturz oder Seilverlust: zur Handle schwimmen (Bauchlage, Brett hinten oben) |
 | Leertaste | A | nach Sturz oder Seilverlust: sofort weiterfahren, direkt unter dem Seil (kostet 3:00 Spielzeit) |
@@ -51,7 +51,10 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 |---|---|
 | Tippen | Anlage starten |
 | Handy nach links/rechts neigen | lenken (volle Neigung bei etwa 25°, hoch- und querformatig) |
-| Finger halten + loslassen | Absprung |
+| Finger halten + loslassen | Absprung (schnell: Raley) |
+| ▲ / ▼ (unten rechts) | in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress, nach Sturz ▲ halten = zur Handle schwimmen |
+| DRIFT (unten links) | Kante lösen = Driften |
+| ☰ (oben links) | Menü: Hilfe, Zurück zum Steg (−5:00), Startseite, Ton |
 
 Auf dem iPhone fragt Safari beim ersten Tippen nach der Erlaubnis für Bewegungs- und Ausrichtungssensoren. Ohne sie kann man nicht lenken.
 

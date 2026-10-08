@@ -7,15 +7,17 @@ const HELP := """← / →   lenken   (in der Luft, beim Raley und auf dem Slide
 ↑ / ↓   in der Luft: Frontroll / Backroll     auf dem Slider: Nosepress / Tailpress
 Strg (oder Alt)   Kante lösen = Driften: Brett rutscht quer, dreht schneller (gut für die Wende)
 Leertaste halten + loslassen   Absprung (langsam: Ollie, über 35 km/h: Raley)
-Enter  Start (Runde 7:30)     R  zurück zum Steg (−5:00)     + / -  Anlagentempo
+Leertaste  Start (Runde 7:30)     R  zurück zum Steg (−5:00)     + / -  Anlagentempo
 Nach Sturz:  ↑ halten = zur Handle schwimmen     Leertaste = sofort weiter (−3:00)
 C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom
 P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus
 Vor dem Start:   T  Terminal (T1/T2)     F  Feature-Setup     Tab  Feature-Übersicht"""
 
-const HELP_MOBILE := """Handy neigen   lenken
-Finger halten + loslassen   Absprung
-Tippen   Start"""
+const HELP_MOBILE := """Tippen   Start          Handy neigen   lenken
+Finger halten + loslassen   Absprung (schnell: Raley)
+▲ / ▼   in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress
+DRIFT   Kante lösen          Nach Sturz: ▲ halten = schwimmen, Tippen = sofort weiter
+☰   Menü: Hilfe, Zurück zum Steg, Startseite, Ton"""
 
 const ACCENT := Color(0.55, 0.82, 0.22)          # Wakeport-Grün
 const PANEL := Color(0.05, 0.07, 0.09, 0.66)
@@ -32,6 +34,7 @@ var _board: Label
 var _debug: Label
 var _trick_time := 0.0
 var _setup_box: Control
+var _mobile_help := false
 
 var _time_label: Label
 var _time_value: Label
@@ -269,16 +272,18 @@ func show_setup_menu(on: bool) -> void:
 		_setup_box.visible = on
 
 
+## Handy: eigener Hilfetext, ein-/ausblenden übers Menü (☰) statt H.
 func set_help(text: String) -> void:
 	_help.text = text
-	# Handy: kurze Hilfe immer sichtbar (keine H-Taste)
-	_help.visible = true
+	_help.visible = false
 	_help_hint.visible = false
+	_mobile_help = true
+	_debug.visible = false        # Handy: Platz für die Tasten
 
 
 func toggle_help() -> void:
 	_help.visible = not _help.visible
-	_help_hint.visible = not _help.visible
+	_help_hint.visible = not _help.visible and not _mobile_help
 
 
 func set_board(text: String) -> void:

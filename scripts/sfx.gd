@@ -144,7 +144,7 @@ func _play(p: AudioStreamPlayer, stream: AudioStream, pitch: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("mute"):
-		_muted = not _muted
+		_muted = not AudioServer.is_bus_mute(0)
 		AudioServer.set_bus_mute(0, _muted)
 
 

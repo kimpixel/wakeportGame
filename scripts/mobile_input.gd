@@ -18,6 +18,8 @@ var debug_roll := NAN         # Test: feste Neigung in Grad (--tilt=…)
 var _touches := 0
 var ui_blockers: Array = []     # Bedienelemente (z. B. Setup-Menü): Finger darauf starten/springen nicht
 var _pressed := ""            # Lenk-Aktion, die dieses Modul gerade hält
+var pad: TouchPad             # virtuelle Tasten (▲ ▼ DRIFT ☰)
+var _on_pad := {}             # Finger-Index -> gedrückte PadButton
 
 # Läuft im Browser: hört auf deviceorientation (auf iOS erst nach Erlaubnis, die beim ersten
 # Antippen erfragt wird – das muss direkt im Touch-Ereignis passieren) und liefert die Neigung
@@ -89,6 +91,9 @@ func _input(event: InputEvent) -> void:
 	var t := event as InputEventScreenTouch
 	if t == null:
 		return
+	if _pad_touch(t):
+		get_viewport().set_input_as_handled()
+		return
 	if t.pressed and _over_ui(t.position):
 		return
 	if t.pressed:
@@ -100,6 +105,41 @@ func _input(event: InputEvent) -> void:
 		if _touches == 0:
 			touch_up.emit()
 	get_viewport().set_input_as_handled()
+
+
+## Finger auf einer virtuellen Taste: Aktion halten bzw. Menü-Befehl beim Loslassen.
+## Bei offenem Menü schluckt das Pad alle Finger (kein Sprung). Liefert true, wenn behandelt.
+func _pad_touch(t: InputEventScreenTouch) -> bool:
+	if pad == null:
+		return false
+	if not t.pressed:
+		if not _on_pad.has(t.index):
+			return false
+		var b: TouchPad.PadButton = _on_pad[t.index]
+		_on_pad.erase(t.index)
+		b.set_down(false)
+		if b.action != "":
+			Input.action_release(b.action)
+		else:
+			pad.trigger(b.id)
+		return true
+	var hit := pad.button_at(t.position)
+	if hit == null:
+		return pad.is_menu_open()
+	_on_pad[t.index] = hit
+	hit.set_down(true)
+	if hit.action != "":
+		Input.action_press(hit.action)
+	return true
+
+
+## Alle vom Pad gehaltenen Aktionen loslassen (z. B. beim Öffnen der Startseite).
+func release_pad() -> void:
+	for b: TouchPad.PadButton in _on_pad.values():
+		b.set_down(false)
+		if b.action != "":
+			Input.action_release(b.action)
+	_on_pad.clear()
 
 
 ## Liegt der Finger auf einem sichtbaren Bedienelement (oder ist dessen Popup offen)?
