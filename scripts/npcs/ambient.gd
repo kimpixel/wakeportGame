@@ -58,6 +58,11 @@ func build() -> void:
 	_build_pike()
 
 
+## Steuermann einer Anlage ("T1"/"T2") oder null.
+func operator(t: String) -> Node3D:
+	return _operators.get(t, null)
+
+
 ## Wer schaut auf wen: die Steuermänner auf den Fahrer ihrer Anlage, die Wartenden auf den Spieler.
 func set_watch(t2_rider: Node3D, t1_rider: Node3D) -> void:
 	if _operators.has("T2"):

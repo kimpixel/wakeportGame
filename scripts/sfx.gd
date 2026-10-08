@@ -1,7 +1,7 @@
 class_name Sfx
 extends Node
 ## Soundeffekte (bis auf den Jubel beim Start synthetisiert):
-##  * Jubel bei Punkten – das rufen die Leute im Startblock (Steuermann und Gäste), räumlich
+##  * Jubel bei Punkten – ruft nur der Steuermann der eigenen Anlage, räumlich
 ##    vom Startsteg aus zu hören. Aufnahmen aus assets/sounds/positiv/*.wav (einfach weitere
 ##    WAVs dazulegen); fehlt der Ordner, gibt es synthetische "Yeah!"/"Wooo!"-Rufe
 ##  * Whoosh beim Absprung, großer Platscher beim Sturz (synthetisch)
@@ -19,6 +19,7 @@ const LANDING_DIR := "res://assets/sounds/landing"      # Brett landet auf dem W
 
 var rider: Rider
 var people: Array[Dictionary] = []   # aus Beach: Leute im Startblock
+var operator: Node3D                 # Steuermann der eigenen Anlage (ruft den Jubel)
 
 var _yeah: Array[AudioStreamWAV] = []
 var _cheers: Array[AudioStream] = []     # aufgenommene Jubelrufe
@@ -147,30 +148,22 @@ func _unhandled_input(event: InputEvent) -> void:
 
 # ---------------------------------------------------------------- Ereignisse
 
-## Jubel aus dem Startblock: der Steuermann ruft immer, Gäste manchmal mit.
+## Jubel: nur der Steuermann der eigenen Anlage ruft (Stimme folgt ihm, wenn er herumläuft).
 func _on_trick(trick: String, points: int) -> void:
 	# Jubel nur für richtig gute Aktionen (Wenden und kleine Tricks bleiben still)
 	if _voices.is_empty() or points < CHEER_MIN:
 		return
 	var big := points >= 250 or trick.begins_with("360") or trick.begins_with("540")
-	var pool := _cheers.duplicate()
-	pool.shuffle()
-	for i in _voices.size():
-		if i > 0 and randf() > 0.55:
-			continue
-		var v := _voices[i]
-		if not pool.is_empty():
-			# Aufnahmen: jeder ruft etwas anderes, Tonhöhe nur leicht variiert
-			v.stream = pool.pop_back()
-			v.pitch_scale = randf_range(0.96, 1.04)
-		else:
-			v.stream = _woo if big else _yeah.pick_random()
-			v.pitch_scale = float(people[i]["pitch"]) * randf_range(0.96, 1.04)
-		# Gäste setzen einen Tick später ein
-		if i == 0:
-			v.play()
-		else:
-			get_tree().create_timer(randf_range(0.05, 0.3)).timeout.connect(v.play)
+	var v := _voices[0]
+	if operator:
+		v.global_position = operator.global_position + Vector3.UP * 1.6
+	if not _cheers.is_empty():
+		v.stream = _cheers.pick_random()         # Aufnahme, Tonhöhe nur leicht variiert
+		v.pitch_scale = randf_range(0.96, 1.04)
+	else:
+		v.stream = _woo if big else _yeah.pick_random()
+		v.pitch_scale = float(people[0]["pitch"]) * randf_range(0.96, 1.04)
+	v.play()
 
 
 func _process(delta: float) -> void:

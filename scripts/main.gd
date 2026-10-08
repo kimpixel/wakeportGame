@@ -355,6 +355,7 @@ func _apply_terminal(t: String) -> void:
 	_terminal_menu.select(TERMINALS.find(t))
 	# Jubel kommt aus dem Startblock der eigenen Anlage
 	sfx.set_people(beach.people if t == "T2" else beach.people_t1)
+	sfx.operator = ambient.operator(t)
 	ambient.set_watch(rider if t == "T2" else npc, rider if t == "T1" else npc)
 	pc.reset()
 	nc.reset()
