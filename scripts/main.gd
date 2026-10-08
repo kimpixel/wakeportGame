@@ -535,12 +535,15 @@ func _place_rider(r: Rider, c: CableSystem, s: Dictionary) -> void:
 
 ## Alle Features stehen so viel weiter draußen als in den Setup-Dateien (mehr Platz zur Ufer-Wende).
 const FEATURE_SHIFT := 10.0
+## Zusätzlich je Anlage in die Mitte gerückt: im Schnitt aller Setups gleich viel Platz zwischen
+## roter Boje und erstem bzw. letztem Feature (vorher vorne ~19 m, hinten ~42 m).
+const CENTER_SHIFT := {"T1": 10.5, "T2": 12.5}
 
 ## Die Setups sind ab dem T2-Startsteg gemessen. Der T1-Steg liegt weiter draußen am Seil –
 ## dort rücken die Teile um den Unterschied nach hinten (gleicher Anlauf auf beiden Anlagen).
 func _s_offset() -> Dictionary:
-	return {"T2": FEATURE_SHIFT,
-		"T1": FEATURE_SHIFT + (cable.start_z - cable_t1.start_z) - (cable.mast_a_z - cable_t1.mast_a_z)}
+	return {"T2": FEATURE_SHIFT + float(CENTER_SHIFT["T2"]),
+		"T1": FEATURE_SHIFT + float(CENTER_SHIFT["T1"]) + (cable.start_z - cable_t1.start_z) - (cable.mast_a_z - cable_t1.mast_a_z)}
 
 
 ## Start-Setup: --setup=ID, sonst das zuletzt gewählte, sonst das erste (aktuellste).

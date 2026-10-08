@@ -112,7 +112,8 @@ Fallstricke:
 Koordinaten: Seil T2 entlang −z vom Startmast (z = 0). `s` = Abstand vom Startmast entlang des
 Seils, `x` = seitlich (+ rechts mit Blick zum Endmast). Lage: 50,0122 N, 8,4773 E. Seeseite der
 Bahn = lokal −x der Anlage. Alle Features stehen im Spiel 10 m weiter draußen als in den
-Setup-Dateien (`FEATURE_SHIFT`), Endmasten 35 m weiter (`END_EXTEND`), rote Bojen 27 m vor dem
+Setup-Dateien (`FEATURE_SHIFT`) plus Mittenausgleich je Anlage (`CENTER_SHIFT`: T1 10,5 m, T2 12,5 m – im
+Schnitt gleich viel Platz vorne und hinten), Endmasten 35 m weiter (`END_EXTEND`), rote Bojen 27 m vor dem
 Wendepunkt.
 
 ## Festgelegte Regeln und Entscheidungen
