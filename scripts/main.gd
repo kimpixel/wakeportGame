@@ -883,15 +883,12 @@ func _build_environment() -> void:
 	Geo.ensure_loaded()
 	weather = Weather.new()
 	add_child(weather)
-	var test := _test_log or _shot_path != "" or not _view_arg.is_empty() or _closeup != Vector3.INF
-	var cfg := ConfigFile.new()
-	var has_cfg := cfg.load(SETTINGS) == OK and cfg.has_section_key("weather", "live")
-	if not test and (not has_cfg or bool(cfg.get_value("weather", "live", true))):
-		weather.set_now()
-	elif not test:
-		weather.preset = weather.find_preset(str(cfg.get_value("weather", "preset", "sonnig")))
-		weather.day = int(cfg.get_value("weather", "day", 172))
-		weather.hour = float(cfg.get_value("weather", "hour", 14.5))
+	# Jeder Start: Sommertag 10:30, sonnig (nie Nacht). Änderungen in den Einstellungen gelten
+	# nur für diese Sitzung; "Jetzt" holt bei Bedarf die echte Uhrzeit und das Wetter.
+	weather.preset = weather.find_preset("sonnig")
+	weather.day = 172
+	weather.hour = 10.5
+	weather.live = false
 	if _weather_arg != "":
 		weather.preset = weather.find_preset(_weather_arg)
 	if not is_nan(_hour_arg):
@@ -901,15 +898,4 @@ func _build_environment() -> void:
 		weather.day = _day_arg
 		weather.live = false
 	weather.apply()
-	if not test:
-		weather.changed.connect(_save_weather)
 
-
-func _save_weather() -> void:
-	var cfg := ConfigFile.new()
-	cfg.load(SETTINGS)
-	cfg.set_value("weather", "live", weather.live)
-	cfg.set_value("weather", "preset", Weather.PRESETS[weather.preset]["id"])
-	cfg.set_value("weather", "day", weather.day)
-	cfg.set_value("weather", "hour", weather.hour)
-	cfg.save(SETTINGS)
