@@ -87,6 +87,8 @@ Fallstricke:
 - Mehrzeilige GDScript-Änderungen mit Edit/Write statt bash-heredoc/`node -e`: `\\` am Zeilenende
   wird dort leicht zu einem wörtlichen `\n` oder verschluckt.
 - „ERROR: BUG: Unreferenced static string“ beim Beenden ist Engine-Rauschen.
+- **Audio-Busse nur in `default_bus_layout.tres`** anlegen – zur Laufzeit angelegte Busse sind in der
+  Web-Version stumm (Ton am Handy war komplett weg). Web-Probleme zeigen Headless-Tests nicht.
 
 ## Architektur (wichtigste Dateien)
 
