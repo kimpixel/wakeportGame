@@ -140,13 +140,16 @@ Punkte (Konstanten oben in `rider.gd`):
 Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten):
 - ←/→ (A/D) lenken; in der Luft, beim Raley und auf dem Slider drehen (Slider dreht schnell).
 - ↑/↓ (W/S): in der Luft **Frontroll/Backroll**; auf dem Slider **Nose-/Tailpress** (kippt entlang
-  der Brettlänge, also quer bei quergestelltem Brett); nach Sturz ↑ = schwimmen.
+  der Brettlänge, also quer bei quergestelltem Brett).
   Wer beim Abheben ↑/↓ noch hält (Press vom Slider), bekommt keinen Überschlag, bis er loslässt.
 - Leertaste: halten + loslassen = Sprung; startet auch die Anlage (dann ohne Sprung). Kein Enter.
+  **Nach Sturz: Leertaste halten = schwimmen, Strg = sofort weiter (−3:00), R = Steg (−5:00)** –
+  angezeigt in einem Panel mit Zeitkosten (`Hud.show_recovery`).
 - Strg (zur Not Alt): Driften (Kante lösen). „Maximaler Grip“ gibt es nicht mehr.
 - R, + / −, C, P, H, M, Tab (Startseite) wie in der README. **Keine Tasten T/F** mehr (Terminal/Setup nur auf der Startseite).
 
-Steuerung Handy: Neigen = lenken, Tippen/Halten = Start/Sprung, ▲ ▼ DRIFT als virtuelle Tasten,
+Steuerung Handy: Neigen = lenken, Tippen = Start, **Springen nur mit der SPRUNG-Taste (links)**,
+rechts DRIFT über ▲ ▼; nach Sturz Bildschirm halten = schwimmen, DRIFT = sofort weiter;
 ☰-Menü (Weiter, Hilfe, Zurück zum Steg, Startseite, Ton). Terminal/Setup nur auf der Startseite.
 **Mobil-Code strikt isolieren**: nur Aktionen loslassen, die er selbst gedrückt hat, nichts
 global; Web-Audio-Hacks nur auf Touch-Geräten (früher hakte sonst die Desktop-Tastatur).

@@ -546,16 +546,16 @@ func _select_setup(idx: int) -> void:
 
 # ---------------------------------------------------------------- Ablauf
 
-## Finger auf den Bildschirm: steht die Anlage, startet sie (ohne Sprung);
-## sonst wird wie mit der Leertaste der Sprung aufgeladen.
+## Finger auf den Bildschirm: steht die Anlage, startet sie; nach einem Sturz heißt
+## Halten schwimmen. Gesprungen wird am Handy nur mit der SPRUNG-Taste.
 func _on_touch_down() -> void:
 	if start_screen.visible:
 		return
 	if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED:
 		_start_run()
 		_touch_started = true
-	else:
-		Input.action_press("jump")
+	elif not rider.attached:
+		Input.action_press("swim")
 
 
 ## Menü der virtuellen Tasten (Handy).
@@ -575,12 +575,12 @@ func _on_pad_menu(id: String) -> void:
 			AudioServer.set_bus_mute(0, not AudioServer.is_bus_mute(0))
 
 
-## Finger weg: Absprung (falls geladen).
+## Finger weg: nicht mehr schwimmen.
 func _on_touch_up() -> void:
 	if start_screen.visible:
 		return
 	_touch_started = false
-	Input.action_release("jump")
+	Input.action_release("swim")
 
 
 ## Über Bojen und Stege fährt man einfach drüber: die Boje wird unter Wasser gedrückt,
@@ -772,15 +772,23 @@ func _process(_delta: float) -> void:
 	# Terminal/Setup wählt man am Handy nur auf der Startseite
 	hud.show_setup_menu(pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED and not mobile.active)
 	if not rider.attached:
-		var skip := "Tippen: sofort weiterfahren" if mobile.active \
-			else "↑ halten: zur Handle schwimmen     Leertaste: sofort weiterfahren\n(R = zurück zum Steg)"
-		if pc.state == CableSystem.State.HOLD:
-			hud.set_center(skip)
-		elif pc.state == CableSystem.State.FETCH:
-			hud.set_center("Der Operator bringt dir die Handle …\n" + skip)
+		hud.set_center("")
+		if pc.state == CableSystem.State.HOLD or pc.state == CableSystem.State.FETCH:
+			var title := "STURZ  –  der Operator bringt dir die Handle" if pc.state == CableSystem.State.FETCH 				else "STURZ  –  die Handle liegt bereit"
+			var free := _free_ride() or not _session
+			var swim := "ca. %d s" % roundi(rider.swim_time())
+			if mobile.active:
+				hud.show_recovery(title, [["Bildschirm halten", "Zur Handle schwimmen", swim, false],
+					["DRIFT", "Sofort weiterfahren", "keine Strafzeit" if free else "−3:00", not free],
+					["☰", "Zurück zum Steg", "keine Strafzeit" if free else "−5:00", not free]])
+			else:
+				hud.show_recovery(title, [["LEERTASTE halten", "Zur Handle schwimmen", swim, false],
+					["STRG", "Sofort weiterfahren", "keine Strafzeit" if free else "−3:00", not free],
+					["R", "Zurück zum Steg", "keine Strafzeit" if free else "−5:00", not free]])
 		else:
-			hud.set_center("")
+			hud.show_recovery("", [])
 	elif rider.mode != Rider.Mode.CRASHED:
+		hud.show_recovery("", [])
 		if pc.state == CableSystem.State.IDLE:
 			hud.set_center("Tippen zum Starten" if mobile.active else "LEERTASTE drücken zum Starten")
 		elif mobile.active and not mobile.tilt_available:
@@ -886,6 +894,7 @@ func _setup_input() -> void:
 	# Strg (zur Not Alt): Kante lösen = Driften
 	_bind("release", [KEY_CTRL, KEY_ALT], [], [[JOY_AXIS_TRIGGER_LEFT, 1.0]])
 	_bind("jump", [KEY_SPACE], [JOY_BUTTON_A], [])
+	_bind("swim", [], [], [])          # Handy: Bildschirm halten nach einem Sturz
 	_bind("start", [KEY_SPACE], [JOY_BUTTON_START], [])
 	_bind("reset", [KEY_R], [JOY_BUTTON_BACK], [])
 	_bind("speed_up", [KEY_PAGEUP], [JOY_BUTTON_DPAD_UP], [], [KEY_PLUS, KEY_KP_ADD])

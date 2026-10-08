@@ -8,15 +8,15 @@ const HELP := """← / →   lenken   (in der Luft, beim Raley und auf dem Slide
 Strg (oder Alt)   Kante lösen = Driften: Brett rutscht quer, dreht schneller (gut für die Wende)
 Leertaste halten + loslassen   Absprung (langsam: Ollie, über 40 km/h, voll aufgeladen und ohne Feature voraus: Raley)
 Leertaste  Start (Runde 7:30)     R  zurück zum Steg (−5:00)     + / -  Anlagentempo
-Nach Sturz:  ↑ halten = zur Handle schwimmen     Leertaste = sofort weiter (−3:00)
+Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−3:00)     R = Steg (−5:00)
 C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom
 P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus
 Tab  Startseite (Terminal, Feature-Setup, Einstellungen)"""
 
 const HELP_MOBILE := """Tippen   Start          Handy neigen   lenken
-Finger halten + loslassen   Absprung (schnell: Raley)
+SPRUNG (links) halten + loslassen   Absprung (schnell: Raley)
 ▲ / ▼   in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress
-DRIFT   Kante lösen          Nach Sturz: ▲ halten = schwimmen, Tippen = sofort weiter
+DRIFT   Kante lösen          Nach Sturz: Bildschirm halten = schwimmen, DRIFT = sofort weiter (−3:00)
 ☰   Menü: Hilfe, Zurück zum Steg, Startseite, Ton"""
 
 const ACCENT := Color(0.55, 0.82, 0.22)          # Wakeport-Grün
@@ -35,6 +35,10 @@ var _debug: Label
 var _trick_time := 0.0
 var _setup_box: Control
 var _mobile_help := false
+var _recovery: PanelContainer     # nach einem Sturz: was jetzt geht und was es kostet
+var _rec_title: Label
+var _rec_grid: GridContainer
+var _rec_key := ""
 
 var _time_label: Label
 var _time_value: Label
@@ -88,6 +92,8 @@ func _ready() -> void:
 	_help_hint.offset_top = -34
 	_help_hint.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
 
+	_build_recovery()
+
 	# Technik-Angaben klein unten rechts
 	_debug = _label(14)
 	_debug.anchor_left = 1.0
@@ -103,6 +109,89 @@ func _ready() -> void:
 	_debug.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 	_debug.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
 	_debug.add_theme_constant_override("outline_size", 4)
+
+
+## Panel nach einem Sturz (unten in der Mitte): Titel und je Zeile Taste – Aktion – Zeitkosten.
+func _build_recovery() -> void:
+	_recovery = PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.05, 0.07, 0.09, 0.9)
+	sb.set_corner_radius_all(16)
+	sb.border_width_bottom = 3
+	sb.border_color = ACCENT
+	sb.content_margin_left = 22
+	sb.content_margin_right = 22
+	sb.content_margin_top = 14
+	sb.content_margin_bottom = 16
+	_recovery.add_theme_stylebox_override("panel", sb)
+	_recovery.anchor_left = 0.5
+	_recovery.anchor_right = 0.5
+	_recovery.anchor_top = 1.0
+	_recovery.anchor_bottom = 1.0
+	_recovery.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_recovery.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_recovery.offset_bottom = -36
+	_recovery.visible = false
+	add_child(_recovery)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 10)
+	_recovery.add_child(v)
+	_rec_title = Label.new()
+	_rec_title.add_theme_font_override("font", _font)
+	_rec_title.add_theme_font_size_override("font_size", 26)
+	_rec_title.add_theme_color_override("font_color", ACCENT)
+	_rec_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(_rec_title)
+	_rec_grid = GridContainer.new()
+	_rec_grid.columns = 3
+	_rec_grid.add_theme_constant_override("h_separation", 18)
+	_rec_grid.add_theme_constant_override("v_separation", 8)
+	v.add_child(_rec_grid)
+
+
+## Nach einem Sturz anzeigen. rows: [[Taste, Aktion, Kosten, teuer?], …]; leerer Titel = ausblenden.
+func show_recovery(title: String, rows: Array) -> void:
+	if title == "":
+		_recovery.visible = false
+		_rec_key = ""
+		return
+	_recovery.visible = true
+	_rec_title.text = title
+	var key := str(rows)
+	if key == _rec_key:
+		return
+	_rec_key = key
+	for c in _rec_grid.get_children():
+		c.queue_free()
+	for row: Array in rows:
+		var k := Label.new()
+		k.text = " %s " % row[0]
+		k.add_theme_font_override("font", _font)
+		k.add_theme_font_size_override("font_size", 22)
+		k.add_theme_color_override("font_color", Color(0.04, 0.07, 0.03))
+		var kb := StyleBoxFlat.new()
+		kb.bg_color = Color(1, 1, 1, 0.92)
+		kb.set_corner_radius_all(8)
+		kb.content_margin_left = 8
+		kb.content_margin_right = 8
+		kb.content_margin_top = 2
+		kb.content_margin_bottom = 2
+		k.add_theme_stylebox_override("normal", kb)
+		k.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_rec_grid.add_child(k)
+		var a := Label.new()
+		a.text = row[1]
+		a.add_theme_font_override("font", _font)
+		a.add_theme_font_size_override("font_size", 24)
+		a.add_theme_color_override("font_color", Color.WHITE)
+		_rec_grid.add_child(a)
+		var c := Label.new()
+		c.text = row[2]
+		c.add_theme_font_override("font", _font)
+		c.add_theme_font_size_override("font_size", 24)
+		c.add_theme_color_override("font_color", WARN if row[3] else ACCENT)
+		c.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		_rec_grid.add_child(c)
 
 
 ## Leiste oben: Zeit | Seilzug | Punkte
@@ -278,6 +367,11 @@ func set_help(text: String) -> void:
 	_help.visible = false
 	_help_hint.visible = false
 	_mobile_help = true
+	# Sturz-Panel in die Mitte (unten sind die Tasten)
+	_recovery.anchor_top = 0.58
+	_recovery.anchor_bottom = 0.58
+	_recovery.offset_bottom = 0
+	_recovery.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_debug.visible = false        # Handy: Platz für die Tasten
 
 
@@ -297,6 +391,14 @@ func _process(delta: float) -> void:
 	var k := minf(1.0, (vw - 16.0) / maxf(_top_bar.size.x, 1.0))
 	_top_bar.pivot_offset = Vector2(_top_bar.size.x * 0.5, 0.0)
 	_top_bar.scale = Vector2(k, k)
+	# Sturz-Panel: groß genug zum Lesen (Handy: größer), aber nie breiter als der Bildschirm
+	if _recovery.visible:
+		var vs := get_viewport().get_visible_rect().size
+		var want := clampf(vs.y / 720.0, 1.0, 3.0) * (1.35 if _mobile_help else 1.0)
+		var fit := (vs.x * (0.72 if _mobile_help else 1.0) - 24.0) / maxf(_recovery.size.x, 1.0)   # Handy: Platz für die Tasten
+		var rk := minf(want, fit)
+		_recovery.pivot_offset = Vector2(_recovery.size.x * 0.5, _recovery.size.y * (0.5 if _mobile_help else 1.0))
+		_recovery.scale = Vector2(rk, rk)
 	_trick_time -= delta
 	_trick.visible = _trick_time > 0.0
 	# Punkte zählen hoch, kurzes "Aufpoppen"

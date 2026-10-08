@@ -607,6 +607,12 @@ func _update_free_handle(delta: float) -> void:
 	_free_handle = Vector3(h.x, water.height_at(h.x, h.z) + 0.05, h.z)
 
 
+## Geschätzte Schwimmzeit bis zur Handle (s), für die Anzeige nach einem Sturz.
+func swim_time() -> float:
+	var d := Vector3(_free_handle.x - pos.x, 0.0, _free_handle.z - pos.z).length()
+	return d / SWIM_SPEED + SETTLE_TIME
+
+
 ## Schwimmen zur Handle in Bauchlage (Autopilot/NPC von selbst, sonst W halten).
 ## Leertaste (bzw. Tippen): sofort weiterfahren – Handle ist direkt da.
 ## Liegt die Handle bereit und ist nah genug: greifen.
@@ -616,8 +622,8 @@ func _swim(delta: float) -> void:
 		return
 	if _ragdoll and _ragdoll.active:
 		_ragdoll.stop()                    # aus der Rückenlage in die Schwimmlage
-	if not autopilot and Input.is_action_just_pressed("jump"):
-		# direkt unter das Seil (dort steht kein Feature), Handle ist sofort da
+	if not autopilot and Input.is_action_just_pressed("release"):
+		# Strg (Handy: DRIFT): sofort weiter – direkt unter das Seil (dort steht kein Feature), Handle ist sofort da
 		var l := cable.transform.affine_inverse() * pos
 		l.x = 0.0
 		pos = cable.transform * l
@@ -635,7 +641,8 @@ func _swim(delta: float) -> void:
 		return
 	if d > 0.3:
 		yaw = lerp_angle(yaw, atan2(-to.x, -to.z), clampf(delta * 2.0, 0.0, 1.0))
-	var want := autopilot or Input.is_action_pressed("pitch_front")
+	# Leertaste halten (Handy: Bildschirm halten) = schwimmen, ↑ geht auch
+	var want := autopilot or Input.is_action_pressed("jump") or Input.is_action_pressed("swim") 		or Input.is_action_pressed("pitch_front")
 	if not want or d < 0.3:
 		return
 	swimming = true
@@ -652,6 +659,7 @@ func _grab() -> void:
 	attached = true
 	swimming = false
 	crash_reason = ""
+	block_jump()                  # die zum Schwimmen gehaltene Leertaste ist kein Sprung
 	vel = Vector3.ZERO
 	pos.y = water.height_at(pos.x, pos.z)
 	var a := cable.get_anchor() - pos

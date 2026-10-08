@@ -1,8 +1,9 @@
 class_name TouchPad
 extends CanvasLayer
 ## Virtuelle Tasten fürs Handy (nur sichtbar, wenn MobileInput aktiv ist):
-##  * unten rechts ▲ / ▼  (in der Luft Frontroll/Backroll, auf dem Slider Nose-/Tailpress, ▲ = schwimmen)
-##  * unten links DRIFT   (Kante lösen)
+##  * unten links SPRUNG (halten = aufladen, loslassen = abspringen; Tippen auf den Bildschirm springt nicht)
+##  * rechts DRIFT (Kante lösen; nach einem Sturz: sofort weiter) und darunter ▲ / ▼
+##    (in der Luft Frontroll/Backroll, auf dem Slider Nose-/Tailpress)
 ##  * oben links ☰        Menü: Weiter, Hilfe, Zurück zum Steg, Startseite, Ton
 ## Die Finger verteilt MobileInput: wer eine Taste trifft, drückt sie; alle anderen Finger
 ## springen bzw. starten wie bisher. Stil wie die HUD-Leiste.
@@ -59,6 +60,8 @@ func _ready() -> void:
 	var drift := _add("DRIFT", "release")
 	drift.font_size = 26
 	_add("☰", "", "menu")
+	var jump := _add("SPRUNG", "jump")
+	jump.font_size = 24
 
 	# Menü: abgedunkelter Hintergrund, Tasten untereinander
 	_menu = ColorRect.new()
@@ -105,11 +108,14 @@ func _layout() -> void:
 	var down: PadButton = _buttons[1]
 	var drift: PadButton = _buttons[2]
 	var menu: PadButton = _buttons[3]
+	var jump: PadButton = _buttons[4]
 	for b: PadButton in [up, down, drift]:
 		b.size = Vector2(s, s)
+	jump.size = Vector2(s, s) * 1.25
 	up.position = Vector2(vp.x - m - s, vp.y - m - s * 2.15)
 	down.position = Vector2(vp.x - m - s, vp.y - m - s)
-	drift.position = Vector2(m, vp.y - m - s)
+	drift.position = Vector2(vp.x - m - s, vp.y - m - s * 3.3)
+	jump.position = Vector2(m, vp.y - m - jump.size.y)
 	menu.size = Vector2(s * 0.62, s * 0.62)
 	menu.position = Vector2(m, m)
 	var w := minf(560.0 * _scale, vp.x - 2.0 * m)
@@ -120,6 +126,14 @@ func _layout() -> void:
 	var total := Vector2(w, h * 5.0 + 4.0 * 14.0 * _scale)
 	_menu_box.position = (vp - total) * 0.5
 	_menu_box.size = total
+
+
+func _main_buttons() -> Array[PadButton]:
+	var out: Array[PadButton] = []
+	for b in _buttons:
+		if b.get_parent() != _menu_box:
+			out.append(b)
+	return out
 
 
 func _menu_buttons() -> Array[PadButton]:
@@ -137,7 +151,7 @@ func is_menu_open() -> bool:
 func button_at(pos: Vector2) -> PadButton:
 	if not visible:
 		return null
-	var list: Array[PadButton] = _menu_buttons() if _menu.visible else _buttons.slice(0, 4)
+	var list: Array[PadButton] = _menu_buttons() if _menu.visible else _main_buttons()
 	for b in list:
 		if b.get_global_rect().grow(8.0 * _scale).has_point(pos):
 			return b
