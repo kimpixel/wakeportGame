@@ -12,7 +12,7 @@ extends Node
 ## Taste M schaltet den Ton stumm.
 
 const RATE := 22050
-const CHEER_MIN := 200      # ab so vielen Punkten jubelt der Startblock
+const CHEER_MIN := 300      # ab so vielen Punkten jubelt der Startblock
 const CHEER_PAUSE := 3.0    # Sekunden Ruhe nach einem Ruf
 const CHEER_DIR := "res://assets/sounds/positiv"
 const HIT_DIR := "res://assets/sounds/feature_hit"      # Brett trifft ein Feature (Aufnahmen)
@@ -160,7 +160,7 @@ func _on_trick(trick: String, points: int) -> void:
 	if _voices[0].playing or now - _last_cheer < CHEER_PAUSE:
 		return
 	_last_cheer = now
-	var big := points >= 250 or trick.begins_with("360") or trick.begins_with("540")
+	var big := points >= 600 or trick.contains("Combo")
 	var v := _voices[0]
 	if operator:
 		v.global_position = operator.global_position + Vector3.UP * 1.6

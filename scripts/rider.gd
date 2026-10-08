@@ -61,6 +61,14 @@ const SPIN_RATE := 7.5
 const AIR_ASSIST := 5.0         # Brett dreht in der Luft langsam zur Flugrichtung
 const POP_BASE := 2.2
 const SLIDE_FRICTION := 0.1     # Reibung Brett auf Feature-Oberfläche
+# Punkte: Slides sind mehr wert als Drehungen, Kombinationen am meisten
+const SLIDE_BASE := 150.0
+const SLIDE_PER_S := 150.0
+const BOARDSLIDE_BONUS := 100.0
+const SLIDE_FACTOR := {"rail": 1.5, "pipe": 1.5, "transition": 1.3, "block": 1.0}
+const AIR_PER_S := 50.0
+const SPIN_PER_180 := 50
+const COMBO_WINDOW := 3.0       # s Zeit für den nächsten Trick, damit die Kombination weiterläuft
 const POP_LOAD := 2.8
 const POP_ROPE := 1.8
 const BOARD_Y := 0.012          # Unterkante Brettmitte über der Fahrerposition
@@ -130,6 +138,8 @@ var _crouch := 0.0
 var _free_handle := Vector3.ZERO
 var _rope_dist := 0.0
 var _slide_time := 0.0
+var _combo := 0                  # Tricks in der laufenden Kombination
+var _combo_t := 0.0             # Restzeit bis die Kombination verfällt
 var _slide_part: FeaturePart
 var _line: FeaturePart          # Feature, das der Autopilot gerade anfährt
 var _line_popped := false
@@ -497,6 +507,7 @@ func step(delta: float) -> void:
 	if mode != Mode.CRASHED:
 		_check_bounds()
 	_check_sink(delta)
+	_tick_combo(delta)
 	if not attached:
 		# ohne Seil gleitet man aus und sinkt dann ins Wasser
 		if mode == Mode.WATER and horizontal_speed() < SINK_SPEED:
@@ -517,6 +528,7 @@ func _check_sink(delta: float) -> void:
 	if sink_level >= 1.0:
 		sink_level = 0.0
 		_getup = 0.0
+		_combo = 0
 		sank.emit()
 
 
@@ -535,6 +547,7 @@ func let_go(reason: String) -> void:
 ## Ausgeglitten: ins Wasser sinken und in die Schwimmlage gehen.
 func _sink() -> void:
 	mode = Mode.CRASHED
+	_combo = 0
 	_crash_t = SETTLE_TIME
 	vel.y = 0.0
 
@@ -862,14 +875,34 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 		var vh := Vector3(vel.x, 0.0, vel.z)
 		var across := vh.length() > 1.0 and absf(vh.normalized().dot(forward())) < 0.6
 		var trick := ("Boardslide" if across else "50-50") + " – " + _slide_part.display_name
-		var pts := int(_slide_time * 120.0) + (60 if across else 0)
-		score += pts
-		trick_landed.emit(trick, pts)
+		var pts := (SLIDE_BASE + _slide_time * SLIDE_PER_S + (BOARDSLIDE_BONUS if across else 0.0)) 			* float(SLIDE_FACTOR.get(_slide_part.type, 1.0))
+		_score_trick(trick, int(pts))
 	_slide_time = 0.0
 	_slide_part = null
 
 
 ## Punkte von außen vergeben (z. B. für eine saubere Wende) – löst auch den Jubel aus.
+## Trick werten: innerhalb einer Kombination (nächster Trick, bevor COMBO_WINDOW abläuft)
+## zählt jeder Trick mehrfach – der 2. doppelt, der 3. dreifach …
+func _score_trick(trick_name: String, base: int) -> void:
+	_combo += 1
+	_combo_t = COMBO_WINDOW
+	var pts := base * _combo
+	if _combo > 1:
+		trick_name += "   Combo x%d" % _combo
+	score += pts
+	trick_landed.emit(trick_name, pts)
+
+
+## Die Kombination läuft nur ab, während man normal im Wasser fährt (nicht in der Luft / auf dem Feature).
+func _tick_combo(delta: float) -> void:
+	if _combo == 0 or mode != Mode.WATER or _slide_part != null:
+		return
+	_combo_t -= delta
+	if _combo_t <= 0.0:
+		_combo = 0
+
+
 func award(trick_name: String, points: int) -> void:
 	score += points
 	trick_landed.emit(trick_name, points)
@@ -950,9 +983,7 @@ func _land(surf: float) -> void:
 	var half_turns := int(round(absf(_spin_accum) / PI))
 	if air_time > 0.5 or half_turns > 0:
 		var trick_name := "Air" if half_turns == 0 else str(half_turns * 180)
-		var pts := int(air_time * 100.0) + half_turns * 150
-		score += pts
-		trick_landed.emit(trick_name, pts)
+		_score_trick(trick_name, int(air_time * AIR_PER_S) + half_turns * SPIN_PER_180)
 
 
 func crash(reason: String) -> void:
@@ -960,6 +991,7 @@ func crash(reason: String) -> void:
 		return
 	mode = Mode.CRASHED
 	_crash_t = 0.0
+	_combo = 0
 	if attached:
 		_free_handle = pos + Vector3(0.0, HANDLE_HEIGHT, 0.0)
 	attached = false
