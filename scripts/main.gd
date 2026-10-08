@@ -120,7 +120,7 @@ func _ready() -> void:
 	cable_t1 = CableSystem.new()
 	cable_t1.place_between(Geo.masts["t1_start"], Geo.masts["t1_end"])
 	var dc := Geo.rel_to_game(21.9, -29.5)
-	var npc_start := Vector3(dc.x + 1.5, Lake.DOCK_Y, dc.y)
+	var npc_start := Vector3(dc.x + 1.5, Lake.DOCK_T1_Y, dc.y)
 	var npc_local_z := (cable_t1.transform.affine_inverse() * npc_start).z
 	cable_t1.start_z = npc_local_z - 9.0
 	cable_t1.turn_a_z = npc_local_z - 16.0

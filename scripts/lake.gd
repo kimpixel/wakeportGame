@@ -14,6 +14,7 @@ const MAST_B_RADIUS := 3.0     # Kollisionsradius des Endmasts samt Plattform
 const DOCK_MIN := Vector2(-1.2, -12.5)
 const DOCK_MAX := Vector2(4.6, -7.4)
 const DOCK_Y := 0.28
+const DOCK_T1_Y := 0.33       # Oberkante des T1-Schwimmstegs (höher gebaut)
 
 static func in_dock(x: float, z: float) -> bool:
 	return x > DOCK_MIN.x and x < DOCK_MAX.x and z > DOCK_MIN.y and z < DOCK_MAX.y

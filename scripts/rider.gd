@@ -467,7 +467,7 @@ func _aligned_yaw(target: float) -> float:
 func _obstacle_height(x: float, z: float, collision := false) -> float:
 	var h := features.height_at(x, z, collision) if features else FeaturePart.NONE
 	if _in_dock(x, z):
-		h = maxf(h, Lake.DOCK_Y)
+		h = maxf(h, start_pos.y)
 	return h
 
 
@@ -793,7 +793,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var speed := vh.length()
 	var vl := vh.dot(f)
 	var vs := vh.dot(r)
-	var on_dock := _in_dock(pos.x, pos.z) and pos.y > Lake.DOCK_Y - 0.05
+	var on_dock := _in_dock(pos.x, pos.z) and pos.y > start_pos.y - 0.05
 	var feat_h := features.height_at(pos.x, pos.z) if features else FeaturePart.NONE
 	var on_feature := feat_h > 0.05 and pos.y > feat_h - 0.1
 

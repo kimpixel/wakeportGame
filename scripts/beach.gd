@@ -448,7 +448,7 @@ func _build_t1_start() -> void:
 	_railing(self, top + Vector3(0, 0, 0.75), bottom + Vector3(0, 0, 0.75), _wood)
 
 	# Schwimmsteg mit Jetski
-	var dock := _node(21.9, -29.5, 0.18)
+	var dock := _node(21.9, -29.5, Lake.DOCK_T1_Y - 0.15)
 	_b(dock, Vector3(4.4, 0.3, 7.0), Vector3.ZERO, _wood)
 	_b(dock, Vector3(4.6, 0.32, 0.25), Vector3(0, -0.02, 3.5), _blue)
 	_b(dock, Vector3(0.25, 0.32, 7.0), Vector3(2.2, -0.02, 0), _blue)
