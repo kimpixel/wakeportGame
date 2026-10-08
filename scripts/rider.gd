@@ -144,6 +144,7 @@ var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), 
 var _flip := 0.0                # Überschlag im Sprung (rad, + = Frontroll)
 var _flip_lock := false         # ↑/↓ war beim Abheben schon gedrückt (z. B. Press vom Slider) -> erst loslassen
 var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
+var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Oberkörper vor)
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
 var _press_nose_t := 0.0
 var _press_tail_t := 0.0
@@ -1021,6 +1022,7 @@ func _clear_air_pose() -> void:
 	_raley = false
 	_raley_ang = 0.0
 	_flip = 0.0
+	_tuck = 0.0
 	_press_vis = 0.0
 
 
@@ -1212,6 +1214,14 @@ func _process(delta: float) -> void:
 		var s := _air_phase()
 		raley_target = RALEY_MAX * smoothstep(0.0, 0.35, s) * (1.0 - smoothstep(0.6, 0.9, s))
 	_raley_ang = lerpf(_raley_ang, raley_target, 1.0 - exp(-delta * 10.0))
+	# Frontroll kompakt: während der Drehung eingerollt, kurz vor dem Ende wieder öffnen
+	var tuck_target := 0.0
+	if mode == Mode.AIR and _flip > 0.2:
+		tuck_target = clampf(absf(wrapf(_flip, -PI, PI)) / 0.6, 0.0, 1.0)
+	_tuck = lerpf(_tuck, tuck_target, 1.0 - exp(-delta * 14.0))
+	if _tuck > 0.01:
+		target_crouch = maxf(target_crouch, _tuck)
+		_crouch = maxf(_crouch, _tuck * 0.95)
 	var press_target := _pitch_in if (mode == Mode.WATER and _slide_part != null) else 0.0
 	_press_vis = lerpf(_press_vis, press_target, 1.0 - exp(-delta * 10.0))
 	var k := 1.0 - exp(-delta * 8.0)
@@ -1591,7 +1601,7 @@ func _pose_stand() -> void:
 	var twist := 0.0
 	if rope_h.length() > 0.1 and attached:
 		twist = clampf(chest.signed_angle_to(rope_h.normalized(), Vector3.UP), -1.4, 1.4) * 0.75 * (1.0 - _raley_ang / RALEY_MAX)   # Raley: Körper gerade gestreckt
-	var spine_w := Basis(Vector3.UP, twist) * (rb * Basis.from_euler(Vector3(_lean_pitch * 0.4, 0.0, _lean_roll * 0.4)) * rb.inverse())
+	var spine_w := Basis(Vector3.UP, twist) * (rb * Basis.from_euler(Vector3(_lean_pitch * 0.4, 0.0, _lean_roll * 0.4 - 1.4 * _tuck)) * rb.inverse())   # eingerollt: Brust zu den Knien
 	_rig.bend_spine(to_skel.call(spine_w).get_rotation_quaternion())
 	# Beine: Knie Richtung Brust/Zehen, leicht nach außen
 	var knee_dir := chest * 1.0 + rb * Vector3.UP * 0.3
