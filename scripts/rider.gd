@@ -73,7 +73,8 @@ const POP_LOAD := 2.8
 const POP_ROPE := 1.8
 # Raley: wer beim Absprung besonders schnell ist (Anschneiden), schwingt mit gestrecktem Körper
 # um den Griff nach hinten oben – Brett höher als der Kopf, Brust zum Wasser. Langsamer = Ollie.
-const RALEY_SPEED := 35.0 / 3.6
+const RALEY_SPEED := 40.0 / 3.6
+const RALEY_LOAD := 0.95        # nur mit voll aufgeladenem Sprung (Leertaste lange halten)
 const RALEY_MAX := 2.8          # rad: so weit schwingen Beine und Brett um den Griff (≈160°, Brett über dem Kopf)
 const RALEY_TORSO := 0.55       # Anteil davon für Becken/Oberkörper – der Rest wird Hohlkreuz
 const RALEY_POINTS := 150
@@ -1020,7 +1021,10 @@ func _pop() -> void:
 	var lift := POP_BASE + POP_LOAD * _load + POP_ROPE * clampf((tension_smooth - 150.0) / 600.0, 0.0, 1.0)
 	lift *= clampf(horizontal_speed() / 6.0, 0.3, 1.0)
 	vel.y = maxf(vel.y, 0.0) + lift
-	var fast := horizontal_speed() > RALEY_SPEED and attached
+	# Raley nur mit viel Power: sehr schnell, voll aufgeladen und kein Feature voraus
+	# (wer schräg auf ein Feature springt, macht einen normalen Sprung)
+	var fast := horizontal_speed() > RALEY_SPEED and _load >= RALEY_LOAD and attached \
+		and not (features and _feature_ahead())
 	_enter_air()
 	_popped = true
 	if fast:

@@ -6,7 +6,7 @@ extends CanvasLayer
 const HELP := """← / →   lenken   (in der Luft, beim Raley und auf dem Slider: drehen)
 ↑ / ↓   in der Luft: Frontroll / Backroll     auf dem Slider: Nosepress / Tailpress
 Strg (oder Alt)   Kante lösen = Driften: Brett rutscht quer, dreht schneller (gut für die Wende)
-Leertaste halten + loslassen   Absprung (langsam: Ollie, über 35 km/h: Raley)
+Leertaste halten + loslassen   Absprung (langsam: Ollie, über 40 km/h, voll aufgeladen und ohne Feature voraus: Raley)
 Leertaste  Start (Runde 7:30)     R  zurück zum Steg (−5:00)     + / -  Anlagentempo
 Nach Sturz:  ↑ halten = zur Handle schwimmen     Leertaste = sofort weiter (−3:00)
 C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom

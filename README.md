@@ -31,7 +31,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | ← / → (A / D) | linker Stick ↔ | Über die Kante lenken. In der Luft, beim Raley und auf dem Slider: drehen |
 | ↑ / ↓ (W / S) | linker Stick ↕ | In der Luft: **Frontroll / Backroll**. Halten dreht, loslassen dreht zur nächsten ganzen Umdrehung aus. Schief landen = Sturz. Auf dem Slider: **Nosepress / Tailpress** |
 | Strg (zur Not Alt) | LT | Kante lösen = **Driften**: Brett rutscht quer, dreht schneller (gut für die Wende) |
-| Leertaste halten + loslassen | A | Absprung: langsam ein **Ollie**, über 35 km/h automatisch ein **Raley** |
+| Leertaste halten + loslassen | A | Absprung: langsam ein **Ollie**, über 40 km/h, voll aufgeladen und ohne Feature voraus automatisch ein **Raley** |
 | Leertaste | Start | Anlage starten (die Taste löst dabei keinen Sprung aus) |
 | R | Back | zurück zum Startsteg (kostet 5:00 Spielzeit) |
 | ↑ halten | – | nach Sturz oder Seilverlust: zur Handle schwimmen (Bauchlage, Brett hinten oben) |
