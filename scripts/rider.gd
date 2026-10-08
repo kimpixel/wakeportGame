@@ -74,7 +74,8 @@ const POP_ROPE := 1.8
 # Raley: wer beim Absprung besonders schnell ist (Anschneiden), schwingt mit gestrecktem Körper
 # um den Griff nach hinten oben – Brett höher als der Kopf, Brust zum Wasser. Langsamer = Ollie.
 const RALEY_SPEED := 35.0 / 3.6
-const RALEY_MAX := 1.9          # rad: so weit schwingt der Körper um den Griff (≈110°)
+const RALEY_MAX := 2.8          # rad: so weit schwingen Beine und Brett um den Griff (≈160°, Brett über dem Kopf)
+const RALEY_TORSO := 0.55       # Anteil davon für Becken/Oberkörper – der Rest wird Hohlkreuz
 const RALEY_POINTS := 150
 const BOARD_Y := 0.012          # Unterkante Brettmitte über der Fahrerposition
 const ARM_REACH := 0.88         # Griff höchstens so weit weg (Anteil der Armlänge) – Arme leicht gebeugt
@@ -137,6 +138,7 @@ var _spin_accum := 0.0
 var _raley := false            # aktueller Sprung ist ein Raley
 var _raley_side := -1.0        # Schwung zur Seite (lokal ±X), weg vom Seil
 var _raley_ang := 0.0          # sichtbarer Schwungwinkel
+var _raley_chest := Vector3.RIGHT   # Brustrichtung der Figur (Welt)
 var _auto_t := 0.0
 var _prev_pos := START_POS
 var _prev_yaw := 0.0
@@ -928,6 +930,13 @@ func _part_name(x: float, z: float) -> String:
 	return p.article + " " + p.display_name
 
 
+## Test: voll aufgeladen abspringen.
+func test_jump() -> void:
+	_load = 1.0
+	_pop()
+	_load = 0.0
+
+
 func _pop() -> void:
 	var lift := POP_BASE + POP_LOAD * _load + POP_ROPE * clampf((tension_smooth - 150.0) / 600.0, 0.0, 1.0)
 	lift *= clampf(horizontal_speed() / 6.0, 0.3, 1.0)
@@ -1078,7 +1087,9 @@ func _process(delta: float) -> void:
 			target_crouch = 0.3
 			if _raley:
 				# gestreckt durch die Luft, zur Landung wieder Knie ran
-				target_crouch = lerpf(0.1, 0.5, smoothstep(0.7, 0.95, _air_phase()))
+				# Knie gebeugt, damit das Brett flach über dem Kopf liegt; zur Landung wieder ran
+				var s := _air_phase()
+				target_crouch = lerpf(0.55, 0.5, smoothstep(0.7, 0.95, s)) * smoothstep(0.0, 0.25, s)
 		Mode.WATER:
 			# Körper lehnt sich gegen den Seilzug, beim Carven zusätzlich in die Kurve
 			# Kante belastet: tiefer in die Knie, stärker gegen das Seil gelehnt.
@@ -1101,7 +1112,8 @@ func _process(delta: float) -> void:
 	if mode == Mode.AIR and _raley:
 		var s := _air_phase()
 		# Schwung nimmt ab, sobald gedreht wird (Raley und Spin vertragen sich nicht)
-		raley_target = RALEY_MAX * smoothstep(0.0, 0.35, s) * (1.0 - smoothstep(0.6, 0.9, s)) 			* clampf(1.0 - absf(_spin_accum) / 1.2, 0.0, 1.0)
+		raley_target = RALEY_MAX * smoothstep(0.0, 0.35, s) * (1.0 - smoothstep(0.6, 0.9, s)) \
+			* clampf(1.0 - (absf(_spin_accum) - 0.8) / 1.0, 0.0, 1.0)
 	_raley_ang = lerpf(_raley_ang, raley_target, 1.0 - exp(-delta * 10.0))
 	var k := 1.0 - exp(-delta * 8.0)
 	_edge_vis = lerpf(_edge_vis, _edge, k)
@@ -1115,7 +1127,7 @@ func _process(delta: float) -> void:
 	if _rig:
 		_pose_human()
 	_body_pivot.rotation = Vector3(_lean_pitch, 0.0, _lean_roll)
-	_body_pivot.scale = Vector3(1.0, 1.0 - 0.5 * _crouch, 1.0)
+	_body_pivot.scale = Vector3(1.0, 1.0 - 0.5 * _crouch * (1.0 - _raley_ang / RALEY_MAX), 1.0)   # beim Raley nicht stauchen
 	_body_pivot.position.y = -0.3 if mode == Mode.CRASHED else 0.06
 	if _ragdoll and _ragdoll.active:
 		_board_on_feet()
@@ -1142,6 +1154,14 @@ func _process(delta: float) -> void:
 			handle_pos = vpos + rb * Vector3(0.2, 0.86 - 0.34 * _crouch, -0.2) + to_anchor * 0.5
 			if _getup < 1.0:
 				handle_pos = _dw_handle.lerp(handle_pos, smoothstep(0.0, 1.0, _getup))
+			if _raley_ang > 0.001:
+				# Raley: Griff vor Brust/Kopf Richtung Seil, Arme angewinkelt
+				var sk := _rig.skeleton.global_transform
+				var chest := sk * _rig.global_pose("spine_03").origin
+				var head := sk * _rig.global_pose("head").origin
+				# vor dem Gesicht: über den Kopf hinaus (Körperachse) und zur Bauchseite, Arme angewinkelt
+				var front := head + (head - chest).normalized() * 0.2 + _raley_chest * 0.3
+				handle_pos = handle_pos.lerp(front, smoothstep(0.0, 0.5, _raley_ang / RALEY_MAX))
 	else:
 		handle_pos = _free_handle
 		to_anchor = (anchor - handle_pos).normalized()
@@ -1447,7 +1467,11 @@ func _pose_stand() -> void:
 	var pelvis_world := mid + rb * lean_local
 	# Becken- und Oberkörperneigung (Welt -> Skelettraum)
 	var skel_b := _rig.skeleton.global_transform.basis.orthonormalized()
-	var lean_w := rb * Basis.from_euler(Vector3(_lean_pitch * 0.5, 0.0, _lean_roll * 0.6)) * rb.inverse()
+	var rb0 := global_transform.basis.orthonormalized()
+	# Raley: Becken/Oberkörper schwingen nur teilweise mit (Hohlkreuz, Kopf Richtung Griff)
+	var torso_q := Quaternion.IDENTITY.slerp((rb * rb0.inverse()).get_rotation_quaternion(), RALEY_TORSO)
+	_raley_chest = Basis(torso_q) * rb0 * Vector3.RIGHT     # Brust-/Bauchseite (für den Griff beim Raley)
+	var lean_w := Basis(torso_q) * rb0 * Basis.from_euler(Vector3(_lean_pitch * 0.5, 0.0, _lean_roll * 0.6)) * rb0.inverse()
 	var to_skel := func(bw: Basis) -> Basis: return skel_b.inverse() * bw * skel_b
 	_rig.set_pelvis(skel_inv * pelvis_world, to_skel.call(lean_w))
 	# Oberkörper zum Seil drehen und etwas weiter zurücklehnen
@@ -1455,25 +1479,25 @@ func _pose_stand() -> void:
 	var chest := rb * Vector3.RIGHT
 	var twist := 0.0
 	if rope_h.length() > 0.1 and attached:
-		twist = clampf(chest.signed_angle_to(rope_h.normalized(), Vector3.UP), -1.4, 1.4) * 0.75
+		twist = clampf(chest.signed_angle_to(rope_h.normalized(), Vector3.UP), -1.4, 1.4) * 0.75 * (1.0 - _raley_ang / RALEY_MAX)   # Raley: Körper gerade gestreckt
 	var spine_w := Basis(Vector3.UP, twist) * (rb * Basis.from_euler(Vector3(_lean_pitch * 0.4, 0.0, _lean_roll * 0.4)) * rb.inverse())
 	_rig.bend_spine(to_skel.call(spine_w).get_rotation_quaternion())
 	# Beine: Knie Richtung Brust/Zehen, leicht nach außen
-	var knee_dir := chest * 1.0 + Vector3.UP * 0.3
+	var knee_dir := chest * 1.0 + rb * Vector3.UP * 0.3
 	_rig.leg("l", skel_inv * foot_front, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, -Wakeboard.STANCE)))
 	_rig.leg("r", skel_inv * foot_back, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, Wakeboard.STANCE)))
 	# Füße flach in den Bindungen (Ruhe-Ausrichtung relativ zum Fahrer)
 	# Füße in den Bindungen: kippen mit dem Brett, Duck-Stance wie die Schuhe
-	var board_rel := board.basis.orthonormalized() * rb.inverse()
+	var board_rel := board.basis.orthonormalized() * rb0.inverse()     # Ruhelage gilt zum ungedrehten Fahrer
 	for front: bool in [true, false]:
 		var fb := "foot_l" if front else "foot_r"
-		var w := board_rel * Basis(rb * Vector3.UP, Wakeboard.foot_yaw(front))
+		var w := board_rel * Basis(rb0 * Vector3.UP, Wakeboard.foot_yaw(front))
 		_rig.set_end_basis(fb, skel_b.inverse() * w * skel_b * _rig.rest_global(fb).basis)
 	# Kopf: in Fahrtrichtung bzw. zum Seil
 	var look_dir := Vector3(vel.x, 0.0, vel.z)
 	if look_dir.length() < 1.0:
 		look_dir = rope_h if rope_h.length() > 0.1 else forward()
-	_rig.look_at(skel_inv * (pelvis_world + Vector3.UP * 0.8 + look_dir.normalized() * 10.0))
+	_rig.look_at(skel_inv * (pelvis_world + rb * Vector3.UP * 0.8 + look_dir.normalized() * 10.0))
 
 
 ## Bindungsschäfte knicken mit den Schienbeinen (links = vorderer Fuß, rechts = hinterer).

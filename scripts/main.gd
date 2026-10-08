@@ -14,6 +14,7 @@ extends Node3D
 ##   --screen[=NAME]   Startbildschirm erzwingen (NAME: Feature/Hack auswählen, z. B. "hack");
 ##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
 ##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
+##   --jump-at=SEK     Test: zu dieser Zeit voll aufgeladen abspringen
 ##   --game-time=SEK   Test: Spielzeit (normal 450 s); im Autotest läuft dann eine Runde mit Zeit
 ##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, regen, dunst)
 ##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30
@@ -96,6 +97,7 @@ var _view_arg := PackedFloat32Array()
 var _lane_arg := NAN
 var _crash_at := -1.0          # Test: Sturz zu dieser Zeit auslösen
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
+var _jump_at := -1.0           # Test: zu dieser Zeit abspringen
 var _touch_at: Array[float] = []   # Test: Finger auf den Bildschirm
 var _closeup := Vector3.INF     # Testkamera relativ zum Fahrer
 var _closeup_look := Vector3(0, 1.1, 0)   # Blickpunkt relativ zum Fahrer (optional 4.-6. Wert)
@@ -489,6 +491,9 @@ func _physics_process(delta: float) -> void:
 	if _letgo_at > 0.0 and _elapsed >= _letgo_at:
 		_letgo_at = -1.0
 		rider.let_go("Test: Seil verloren")
+	if _jump_at > 0.0 and _elapsed >= _jump_at and rider.mode == Rider.Mode.WATER:
+		_jump_at = -1.0
+		rider.test_jump()
 	_max_tension = maxf(_max_tension, rider.tension_smooth)
 	if _test_log:
 		_log_t += delta
@@ -784,6 +789,8 @@ func _parse_args() -> void:
 			_shot_path = arg.substr(7)
 		elif arg.begins_with("--shot-time="):
 			_shot_time = arg.substr(12).to_float()
+		elif arg.begins_with("--jump-at="):
+			_jump_at = arg.substr(10).to_float()
 		elif arg.begins_with("--letgo-at="):
 			_letgo_at = arg.substr(11).to_float()
 		elif arg.begins_with("--crash-at="):
