@@ -55,6 +55,7 @@ var settings := GameSettings.new()
 var terrain: Terrain
 var _free := false              # Freies Fahren: keine Zeit, keine Strafzeit
 var _npc_on := true
+var _swum := false              # seit dem Sturz schon geschwommen (Panel aus)
 var _msaa_default := Viewport.MSAA_DISABLED
 var _touch_started := false     # dieser Finger hat die Anlage gestartet (kein Sprung)
 
@@ -771,9 +772,15 @@ func _process(_delta: float) -> void:
 	hud.set_board(rider.board_state_text())
 	# Terminal/Setup wählt man am Handy nur auf der Startseite
 	hud.show_setup_menu(pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED and not mobile.active)
+	if rider.attached:
+		_swum = false
+	elif rider.swimming:
+		_swum = true                # wer losschwimmt, braucht das Panel nicht mehr
 	if not rider.attached:
 		hud.set_center("")
-		if pc.state == CableSystem.State.HOLD or pc.state == CableSystem.State.FETCH:
+		if _swum:
+			hud.show_recovery("", [])
+		elif pc.state == CableSystem.State.HOLD or pc.state == CableSystem.State.FETCH:
 			var title := "STURZ  –  der Operator bringt dir die Handle" if pc.state == CableSystem.State.FETCH 				else "STURZ  –  die Handle liegt bereit"
 			var free := _free_ride() or not _session
 			var swim := "ca. %d s" % roundi(rider.swim_time())
