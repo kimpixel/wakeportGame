@@ -159,6 +159,11 @@ Tricks/Optik:
 - Slider **einloggen** (Auto-Rutschen): bis 35° Abweichung richtet das System die Fahrtrichtung
   entlang des Features aus und zieht zur Spur; erst darüber rutscht man ab.
 - Sprung aufladen: stufenlos tiefer in die Knie.
+- Sprunghöhe gedämpft (`POP_SCALE` 0.8, Ollie ca. 0,8 m); an der Rampe kommt der Absprung nicht voll
+  obendrauf (`POP_ON_RAMP`), Rampenkante wirft mit `RAMP_LAUNCH` 0.85 ab.
+- **Glattes Plastik** (`"slick"` in parts.json): Pyramid oben, Transition des Transition Rails – kein
+  Slide, keine Punkte, man rutscht in der bisherigen Richtung weiter und kann nicht lenken. Das Rail
+  im Transition Rail bleibt slidebar.
 
 Features/Setups:
 - **Hack** = mehrere Features, die zusammenstehen (≤ 0,8 m). Gängige Kombinationen heißen **nicht**

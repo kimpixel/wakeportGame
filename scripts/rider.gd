@@ -71,6 +71,9 @@ const SPIN_PER_180 := 50
 const COMBO_WINDOW := 3.0       # s Zeit für den nächsten Trick, damit die Kombination weiterläuft
 const POP_LOAD := 2.8
 const POP_ROPE := 1.8
+const POP_SCALE := 0.8          # Sprunghöhe insgesamt (Ollie): Verhältnis Tempo/Höhe
+const POP_ON_RAMP := 0.35       # Absprung an der Rampe: Anteil des schwächeren Schubs
+const RAMP_LAUNCH := 0.85       # Abwurf von der Rampenkante (Anteil der Steiggeschwindigkeit)
 # Raley: wer beim Absprung besonders schnell ist (Anschneiden), schwingt mit gestrecktem Körper
 # um den Griff nach hinten oben – Brett höher als der Kopf, Brust zum Wasser. Langsamer = Ollie.
 const RALEY_SPEED := 40.0 / 3.6
@@ -870,16 +873,27 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	if not attached and not on_dock:
 		f_long -= 0.9 * MASS * vl
 
+	# Glattes Plastik (Pyramid oben, Transition): kein Slide, man rutscht in der bisherigen
+	# Richtung weiter und kann nicht lenken
+	var slick_part := features.part_at(pos.x, pos.z) if (features and on_feature) else null
+	var slick := slick_part != null and slick_part.is_slick_at(pos)
+	var dir_before := Vector3(vel.x, 0.0, vel.z).normalized()
 	var force := Vector3(rope.x, 0.0, rope.z) + f * f_long + r * f_lat
 	vel.x += force.x / MASS * delta
 	vel.z += force.z / MASS * delta
-	if on_feature:
+	if slick and dir_before != Vector3.ZERO:
+		var keep := dir_before * maxf(Vector3(vel.x, 0.0, vel.z).dot(dir_before), 0.0)
+		vel.x = keep.x
+		vel.z = keep.z
+	elif on_feature:
 		_slide_lock(delta)
 
 	# Lenken über die Kante
 	# flaches (driftendes) Brett lässt sich schneller herumdrehen, belastete Kante zieht weite Bögen
 	var turn := TURN_RATE * clampf(0.6 + speed / 7.0, 0.6, 1.4) * (1.0 + 0.8 * _release - 0.3 * _edge)
-	if on_feature:
+	if slick:
+		turn = 0.0          # auf glattem Plastik greift keine Kante – lenken geht nicht
+	elif on_feature:
 		turn = SLIDE_TURN   # auf dem Feature dreht man das Brett frei und schnell (z. B. in den Boardslide)
 	yaw -= _steer * turn * delta
 	# Wasserstart: solange das Brett nicht gleitet, dreht es sich in Zugrichtung
@@ -903,6 +917,8 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	if y_ball > surf + 0.03 and (vel.y > 0.8 or surf < old_y - 0.2):
 		pos.y = y_ball
 		vel.y += ay * delta
+		if vel.y > 0.0:
+			vel.y *= RAMP_LAUNCH          # Rampe wirft etwas flacher ab
 		_enter_air()
 	else:
 		# begrenzt, damit Kanten in der Oberfläche keine Katapult-Sprünge erzeugen
@@ -911,7 +927,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 
 	if not on_dock and not on_feature:
 		water.emit_wake(pos, clampf(speed / 8.0, 0.0, 1.2), delta, get_instance_id())
-	_track_slide(delta, on_feature)
+	_track_slide(delta, on_feature and not slick)
 
 
 ## Einloggen auf dem Slider: Solange die Fahrtrichtung nur wenig von der Längsachse des Features
@@ -1028,8 +1044,11 @@ func test_jump() -> void:
 
 func _pop() -> void:
 	var lift := POP_BASE + POP_LOAD * _load + POP_ROPE * clampf((tension_smooth - 150.0) / 600.0, 0.0, 1.0)
-	lift *= clampf(horizontal_speed() / 6.0, 0.3, 1.0)
-	vel.y = maxf(vel.y, 0.0) + lift
+	lift *= clampf(horizontal_speed() / 6.0, 0.3, 1.0) * POP_SCALE
+	# An der Rampe kommt der Absprung nicht voll obendrauf: der stärkere zählt, vom
+	# schwächeren nur ein Teil (sonst katapultiert Kicker + Ollie viel zu hoch)
+	var up := maxf(vel.y, 0.0)
+	vel.y = maxf(up, lift) + POP_ON_RAMP * minf(up, lift)
 	# Raley nur mit viel Power: sehr schnell, voll aufgeladen und kein Feature voraus
 	# (wer schräg auf ein Feature springt, macht einen normalen Sprung)
 	var fast := horizontal_speed() > RALEY_SPEED and _load >= RALEY_LOAD and attached \

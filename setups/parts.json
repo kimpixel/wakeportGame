@@ -13,7 +13,7 @@
                        { "part": "py_aframe_rail", "s": 0.0, "x": -2.55 },
                        { "part": "py_pyramid",     "s": 0.0, "x": 0.0 } ] },
   "py_aframe_rail":  { "name": "A-Frame Rail",      "type": "block", "length": 21.0, "width": 0.7, "height": 1.25, "ramp_in": 5.5, "ramp_out": 5.5, "ramp_curve": 1.0 },
-  "py_pyramid":      { "name": "Pyramid",           "type": "block", "length": 16.0, "width": 4.4, "height": 0.95, "ramp_in": 5.0, "ramp_out": 5.0, "ramp_curve": 1.0, "side_ramp": 2.0, "side_curve": 1.0, "lip": 0.12 },
+  "py_pyramid":      { "name": "Pyramid",           "type": "block", "length": 16.0, "width": 4.4, "height": 0.95, "ramp_in": 5.0, "ramp_out": 5.0, "ramp_curve": 1.0, "side_ramp": 2.0, "side_curve": 1.0, "lip": 0.12, "slick": "all" },
   "transition_curb": { "name": "Transition Curb", "article": "den",   "type": "block", "length": 7.3,  "width": 3.0, "height": 0.35, "height_end": 1.1, "body_curve": 2.0, "ramp_in": 0.85, "ramp_curve": 1.0,
                        "_info": "kurze Auffahrt (0,85 m) + konkave Transition auf 1,1 m (6,45 m), hinten senkrecht – dort passt der Cheese Wedge als Abfahrt an (Plan 517931862 + Video)" },
   "ollie_box":       { "name": "Ollie Box",         "type": "block", "length": 8.2,  "width": 2.25, "height": 0.45, "ramp_in": 0.35, "ramp_out": 0.35, "ramp_curve": 1.0 },
@@ -25,8 +25,8 @@
                        "_info": "Rooftop: kleine flache Safety vorne, lang hoch bis zur Spitze, lang abfallend, hinten hohe, fast senkrechte Safety" },
   "uprail":          { "name": "Up Rail",           "type": "block", "length": 7.5,  "width": 0.6, "height": 0.45, "height_end": 1.1, "ramp_in": 1.1 },
 
-  "transition_rail": { "name": "Transition Rail",   "type": "transition", "length": 22.0, "width": 3.2, "height": 1.5, "ramp_in": 5.0, "ramp_out": 5.0 },
-  "transition_rail_half": { "name": "1/2 Transition Rail", "type": "transition", "length": 11.0, "width": 3.2, "height": 1.5, "ramp_in": 5.0, "ramp_out": 0.0 },
+  "transition_rail": { "name": "Transition Rail",   "type": "transition", "length": 22.0, "width": 3.2, "height": 1.5, "ramp_in": 5.0, "ramp_out": 5.0, "slick": "transition" },
+  "transition_rail_half": { "name": "1/2 Transition Rail", "type": "transition", "length": 11.0, "width": 3.2, "height": 1.5, "ramp_in": 5.0, "ramp_out": 0.0, "slick": "transition" },
   "pro_rail":        { "name": "Pro Rail",          "type": "rail",  "length": 12.0, "height": 0.8,  "radius": 0.05, "ramp_in": 2.5, "color": "grey" },
 
   "plaza_kicker":    { "name": "Plaza Kicker", "article": "den",      "type": "block", "length": 9.0,  "width": 3.0, "height": 1.0, "ramp_in": 3.5 },

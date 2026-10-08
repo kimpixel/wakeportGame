@@ -15,6 +15,9 @@ const TR_RAIL_R := 0.14        # Radius des Rails im Transition Rail
 const TR_RAIL_UP := 0.07       # so weit schaut es aus dem flachen Abschluss heraus
 
 var part_id := ""
+## Glatte Plastikfläche: dort wird nicht geslidet, man rutscht nur geradeaus weiter (kein Lenken).
+## "all" = ganze Oberseite (Pyramid), "transition" = Transition, aber nicht das Rail.
+var slick := ""
 var display_name := ""
 var group_name := ""          # gehört zu einem Modul aus mehreren Teilen (z. B. Pyramid Series)
 var article := "die"           # für Meldungen: "Gegen die Pipe" / "Gegen den Ball"
@@ -72,6 +75,7 @@ func setup(id: String, p: Dictionary) -> void:
 	side_curve = p.get("side_curve", side_curve)
 	lip = p.get("lip", lip)
 	profile = p.get("profile", [])
+	slick = p.get("slick", "")
 	if type == "pipe" or type == "ball":
 		width = radius * 2.0
 	if type == "ball":
@@ -82,6 +86,17 @@ func setup(id: String, p: Dictionary) -> void:
 ## Gleitet man auf diesem Teil (Box, Rail, Pipe) oder ist es eine Absprungrampe?
 func is_slide() -> bool:
 	return type in ["block", "rail", "pipe", "transition"]
+
+
+## Steht man an dieser Stelle auf glattem Plastik (kein Slide, nur Rutschen, kein Lenken)?
+func is_slick_at(world: Vector3) -> bool:
+	match slick:
+		"all":
+			return true
+		"transition":
+			var w := -(_inv * world).x * inner_v               # > 0 Richtung Rail
+			return absf(w - (width * 0.5 - TR_FLAT * 0.5)) > TR_FLAT * 0.5 + TR_RAIL_R
+	return false
 
 
 ## Einloggen beim Slide: Längsachse des Teils (Welt, waagerecht).
