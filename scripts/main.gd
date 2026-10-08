@@ -49,6 +49,9 @@ var _setup_idx := 0
 var _setup_menu: OptionButton
 var _setup_arg := ""
 const SETTINGS := "user://settings.cfg"
+# Anlage (Einstellungen auf der Startseite, gespeichert): Seillänge und Tempo der eigenen Anlage
+var _rope_len := Rider.ROPE_LENGTH
+var _speed_kmh := 30.0
 var _touch_started := false     # dieser Finger hat die Anlage gestartet (kein Sprung)
 
 ## Welche Anlage fährt der Spieler? Der NPC fährt immer an der anderen.
@@ -245,6 +248,8 @@ func _ready() -> void:
 		airplanes.spawn_at(_plane_arg)
 	cam.doppler_tracking = Camera3D.DOPPLER_TRACKING_IDLE_STEP
 	ambient.pike_hit.connect(func() -> void: hud.show_trick("Hecht erwischt!"))
+	if not _test_log:
+		_load_anlage()          # Tests laufen immer mit Standardwerten
 	_apply_terminal(_initial_terminal())
 	_build_start_screen()
 	if _view_arg.size() == 6:
@@ -299,6 +304,12 @@ func _build_start_screen() -> void:
 		pc.start()
 		start_screen.refresh(terminal, _setup_idx))
 	start_screen.start_pressed.connect(_close_start_screen)
+	start_screen.set_anlage(_rope_len, _speed_kmh)
+	start_screen.anlage_changed.connect(func(rope_m: float, speed_kmh: float) -> void:
+		_rope_len = rope_m
+		_speed_kmh = speed_kmh
+		_apply_anlage()
+		_save_anlage())
 
 
 ## Startbildschirm zeigen. Die Bahn läuft live weiter: auf der eigenen Anlage fährt der
@@ -365,6 +376,30 @@ func _select_terminal(t: String) -> void:
 	cfg.save(SETTINGS)
 
 
+## Seillänge und Tempo gelten für die eigene Anlage; der NPC fährt mit Standardwerten.
+func _apply_anlage() -> void:
+	rider.rope_length = _rope_len
+	pc.max_speed = _speed_kmh / 3.6
+	npc.rope_length = Rider.ROPE_LENGTH
+	nc.max_speed = 30.0 / 3.6
+
+
+func _load_anlage() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS) != OK:
+		return
+	_rope_len = clampf(float(cfg.get_value("anlage", "rope", _rope_len)), StartScreen.ROPE_MIN, StartScreen.ROPE_MAX)
+	_speed_kmh = clampf(float(cfg.get_value("anlage", "speed", _speed_kmh)), StartScreen.SPEED_MIN, StartScreen.SPEED_MAX)
+
+
+func _save_anlage() -> void:
+	var cfg := ConfigFile.new()
+	cfg.load(SETTINGS)
+	cfg.set_value("anlage", "rope", _rope_len)
+	cfg.set_value("anlage", "speed", _speed_kmh)
+	cfg.save(SETTINGS)
+
+
 func _apply_terminal(t: String) -> void:
 	terminal = t
 	var other := "T1" if t == "T2" else "T2"
@@ -372,6 +407,7 @@ func _apply_terminal(t: String) -> void:
 	nc = cable_t1 if t == "T2" else cable
 	_place_rider(rider, pc, _start[t])
 	_place_rider(npc, nc, _start[other])
+	_apply_anlage()
 	_terminal_menu.select(TERMINALS.find(t))
 	# Jubel kommt aus dem Startblock der eigenen Anlage
 	sfx.set_people(beach.people if t == "T2" else beach.people_t1)
@@ -702,10 +738,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		else:
 			_penalty(RESET_PENALTY)
 		_reset()
-	elif event.is_action_pressed("speed_up"):
-		pc.change_speed(2.0)
-	elif event.is_action_pressed("speed_down"):
-		pc.change_speed(-2.0)
+	elif event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down"):
+		pc.change_speed(2.0 if event.is_action_pressed("speed_up") else -2.0)
+		_speed_kmh = pc.max_speed * 3.6
+		start_screen.set_anlage(_rope_len, _speed_kmh)
+		_save_anlage()
 	elif event.is_action_pressed("camera"):
 		cam.cycle_mode()
 	elif event.is_action_pressed("autopilot"):

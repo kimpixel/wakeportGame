@@ -43,7 +43,7 @@ enum Mode { WATER, AIR, CRASHED }
 
 const MASS := 80.0
 const GRAVITY := 9.81
-const ROPE_LENGTH := 16.0       # Zugseil Griff bis Carrier
+const ROPE_LENGTH := 16.0       # Zugseil Griff bis Carrier (Standard)
 const ROPE_STIFFNESS := 2600.0
 const ROPE_DAMPING := 250.0
 const HANDLE_HEIGHT := 1.0
@@ -110,6 +110,7 @@ var autopilot := false
 
 ## Pro Fahrer einstellbar (der NPC auf T1 bekommt eigene Werte, vor add_child setzen)
 var start_pos := START_POS
+var rope_length := ROPE_LENGTH  # einstellbar (Startseite, Einstellungen)
 var start_yaw := 0.0
 var dock_rect := Rect2(Lake.DOCK_MIN, Lake.DOCK_MAX - Lake.DOCK_MIN)
 var mast_b := Vector3(0.0, 0.0, Lake.MAST_B_Z)
@@ -293,7 +294,7 @@ func right() -> Vector3:
 
 
 func rope_slack() -> float:
-	return maxf(ROPE_LENGTH - _rope_dist, 0.0) if attached else 0.0
+	return maxf(rope_length - _rope_dist, 0.0) if attached else 0.0
 
 
 ## Fährt parallel zum Seil auf einer seitlichen Spur (lokales x der Anlage).
@@ -367,7 +368,7 @@ func _turn_input(speed: float) -> bool:
 		var anchor := cable.get_anchor()
 		var to_c := Vector3(anchor.x - pos.x, 0.0, anchor.z - pos.z)
 		var dz := anchor.y - pos.y - HANDLE_HEIGHT
-		var reach := sqrt(maxf(ROPE_LENGTH * ROPE_LENGTH - dz * dz, 1.0))
+		var reach := sqrt(maxf(rope_length * rope_length - dz * dz, 1.0))
 		var c_yaw := atan2(-to_c.x, -to_c.z)                 # Blick zum Carrier
 		var vel_yaw := atan2(-vel.x, -vel.z)
 		var t1 := c_yaw + PI * 0.5
@@ -809,7 +810,7 @@ func _rope_force(delta: float) -> Vector3:
 		return Vector3.ZERO
 	rope_dir = d / dist
 	_rope_dist = dist
-	var stretch := dist - ROPE_LENGTH
+	var stretch := dist - rope_length
 	if stretch > 0.0:
 		var ext_rate := (cable.get_velocity() - vel).dot(rope_dir)
 		tension = maxf(ROPE_STIFFNESS * stretch + ROPE_DAMPING * ext_rate, 0.0)
@@ -1710,7 +1711,7 @@ func _draw_rope(a: Vector3, b: Vector3) -> void:
 	_rope_mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, _rope_mat)
 	var chord := a.distance_to(b)
 	# Durchhang einer Parabel mit gleicher Bogenlänge wie das (lose) Seil
-	var slack := maxf(ROPE_LENGTH - chord, 0.0)
+	var slack := maxf(rope_length - chord, 0.0)
 	var sag := sqrt(3.0 * chord * slack / 8.0)
 	for i in 21:
 		var t := i / 20.0

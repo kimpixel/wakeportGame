@@ -3,18 +3,23 @@ extends CanvasLayer
 ## Startseite im Stil der HUD-Leiste, für Desktop und Handy (passt sich der Bildschirmgröße an).
 ## Im Hintergrund läuft die echte Szene: die Kamera schwenkt langsam um den See, auf beiden
 ## Anlagen fährt ein Fahrer. Darüber das Menü: Terminal, Feature-Setup, Einstellungen (Wetter,
-## Datum, Uhrzeit) und "Spiel starten". Tastatur: Leertaste Spiel starten, Esc schließt ein Popup.
+## Datum, Uhrzeit, Seillänge, Anlagen-Tempo) und "Spiel starten". Tastatur: Leertaste Spiel starten, Esc schließt ein Popup.
 ## Features & Hacks (alle aus allen Setups, Detail in 3D) ist gebaut, steht aber nicht im Menü –
 ## vorgesehen für einen späteren Setup-Builder (Test: --screen=@liste).
 
 signal terminal_chosen(terminal: String)
 signal setup_chosen(idx: int)
 signal start_pressed
+signal anlage_changed(rope_m: float, speed_kmh: float)
 
 const BASE_SHORT := 740.0        # so viele Einheiten hat die kurze Bildschirmseite mindestens
 const BASE_LONG := 1200.0        # … und die lange
 const ORBIT_SPEED := 0.09        # Tempo des Kameraschwenks (Phase rad/s)
 const SEL := Color(1.0, 0.82, 0.2)
+const ROPE_MIN := 12.0           # m Seillänge (Griff bis Carrier)
+const ROPE_MAX := 22.0
+const SPEED_MIN := 16.0          # km/h Anlagen-Tempo
+const SPEED_MAX := 40.0
 
 var features: FeatureSet
 var weather: Weather
@@ -41,6 +46,10 @@ var _detail: PanelContainer
 var _detail_title: Label
 var _detail_text: Label
 var _preview: FeaturePreview
+var _rope_s: HSlider
+var _speed_s: HSlider
+var _rope_l: Label
+var _speed_l: Label
 var _font: Font
 var _k := 1.0
 
@@ -396,6 +405,7 @@ func _build_settings() -> void:
 	now.tooltip_text = "Heute, aktuelle Uhrzeit und Wetter am See"
 	now.pressed.connect(weather.set_now)
 	c.add_child(now)
+	_build_anlage(c)
 	var ok := _button("FERTIG", 24, true)
 	ok.pressed.connect(_close_popups)
 	v.add_child(ok)
@@ -408,6 +418,44 @@ func _build_settings() -> void:
 		time_l.text = "UHRZEIT   " + weather.time_text() + ("   (live)" if weather.live else "")
 	weather.changed.connect(update)
 	update.call()
+
+
+## Anlage: Seillänge (Griff bis Carrier) und Tempo der eigenen Anlage.
+func _build_anlage(c: VBoxContainer) -> void:
+	c.add_child(_label("", 6))
+	c.add_child(_small("ANLAGE"))
+	_rope_l = _small("")
+	c.add_child(_rope_l)
+	_rope_s = _slider(ROPE_MIN, ROPE_MAX, 0.5)
+	c.add_child(_rope_s)
+	_speed_l = _small("")
+	c.add_child(_speed_l)
+	_speed_s = _slider(SPEED_MIN, SPEED_MAX, 1.0)
+	c.add_child(_speed_s)
+	var changed := func(_v: float) -> void:
+		_show_anlage()
+		anlage_changed.emit(_rope_s.value, _speed_s.value)
+	_rope_s.value_changed.connect(changed)
+	_speed_s.value_changed.connect(changed)
+	var std := _button("Standard  (16 m, 30 km/h)", 18)
+	std.pressed.connect(func() -> void:
+		set_anlage(Rider.ROPE_LENGTH, 30.0)
+		anlage_changed.emit(_rope_s.value, _speed_s.value))
+	c.add_child(std)
+
+
+## Werte der Anlage anzeigen (ohne Signal), z. B. nach dem Laden oder nach +/− im Spiel.
+func set_anlage(rope_m: float, speed_kmh: float) -> void:
+	if _rope_s == null:
+		return
+	_rope_s.set_value_no_signal(rope_m)
+	_speed_s.set_value_no_signal(speed_kmh)
+	_show_anlage()
+
+
+func _show_anlage() -> void:
+	_rope_l.text = "SEILLÄNGE   %.1f m" % _rope_s.value
+	_speed_l.text = "ANLAGEN-TEMPO   %d km/h" % roundi(_speed_s.value)
 
 
 func _slider(lo: float, hi: float, step: float) -> HSlider:
