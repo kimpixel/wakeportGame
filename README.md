@@ -41,6 +41,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | Maus / Mausrad | rechter Stick | Umsehen / Zoom |
 | P | – | Autopilot (fährt auch Features) |
 | M | – | Ton aus/an |
+| F3 | – | Debug: Fangzonen der Slider einblenden (gelb). Wer im Sprung in diese Zone kommt, gleitet aufs Rail |
 
 **Auf dem Handy/Tablet** (im Browser, wird automatisch erkannt):
 

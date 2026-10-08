@@ -10,7 +10,7 @@ Leertaste halten + loslassen   Absprung (langsam: Ollie, über 40 km/h, voll auf
 Leertaste  Start (Runde 7:30)     R  zurück zum Steg (−5:00)     + / -  Anlagentempo
 Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−3:00)     R = Steg (−5:00)
 C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom
-P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus
+P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus     F3  Hitboxen (Debug)
 Tab  Startseite (Terminal, Feature-Setup, Einstellungen)"""
 
 const HELP_MOBILE := """Tippen   Start          Handy neigen   lenken
