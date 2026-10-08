@@ -317,6 +317,14 @@ func _chunk_add(chunks: Dictionary, x: float, z: float, art: int, t: Transform3D
 	chunks[key][1].append(c)
 
 
+## Baumdichte (Grafikqualität): nur ein Teil der Bäume wird gezeichnet (0..1).
+func set_tree_density(f: float) -> void:
+	for c in get_children():
+		if c is MultiMeshInstance3D:
+			var mm := (c as MultiMeshInstance3D).multimesh
+			mm.visible_instance_count = -1 if f >= 0.999 else int(mm.instance_count * f)
+
+
 ## Ein MultiMesh pro Kachel und Baumart (kachelweise Sichtbarkeitsprüfung der Kamera).
 func _add_multimesh(mesh: Mesh, transforms: Array, colors: Array) -> void:
 	var center := Vector3.ZERO

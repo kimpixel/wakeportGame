@@ -25,6 +25,7 @@ var _dir := Vector3.FORWARD       # Flugrichtung (waagerecht)
 var _origin := Vector3.ZERO       # Punkt der Anfluglinie über dem See (Höhe 0)
 var _planes: Array[Dictionary] = []
 var _next := 25.0
+var rate := 1                     # Einstellungen: 0 aus, 1 normal, 2 Rush Hour
 var _t := 0.0
 
 
@@ -44,8 +45,9 @@ func _process(delta: float) -> void:
 	_t += delta
 	_next -= delta
 	if _next <= 0.0:
-		_next = randf_range(65.0, 140.0)
-		_spawn()
+		_next = randf_range(20.0, 45.0) if rate == 2 else randf_range(65.0, 140.0)
+		if rate > 0:
+			_spawn()
 	var slope := tan(deg_to_rad(GLIDE))
 	for i in range(_planes.size() - 1, -1, -1):
 		var p: Dictionary = _planes[i]
@@ -91,6 +93,7 @@ func _spawn() -> void:
 	add_child(node)
 	if jet_sound:
 		var snd := AudioStreamPlayer3D.new()
+		snd.bus = Sfx.BUS_PLANES
 		snd.stream = jet_sound
 		snd.unit_size = 90.0 * (1.3 if int(type["engines"]) == 4 else 1.0) * (1.0 if float(type["len"]) < 50.0 else 1.25)
 		snd.max_distance = 8000.0

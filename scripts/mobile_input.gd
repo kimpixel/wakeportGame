@@ -9,7 +9,9 @@ extends Node
 signal touch_down
 signal touch_up
 
-const MAX_TILT := 25.0        # Grad Neigung für vollen Lenkausschlag
+const MAX_TILT := 25.0        # Grad Neigung für vollen Lenkausschlag (Standard)
+var max_tilt := MAX_TILT      # einstellbar (Neigungs-Empfindlichkeit)
+var invert := false           # Neigung umkehren
 const DEADZONE := 3.0         # Grad um die Mitte ohne Wirkung
 
 var active := false
@@ -172,7 +174,9 @@ func _process(_delta: float) -> void:
 			roll = float(v)
 	if not tilt_available:
 		return          # ohne Sensor nichts anfassen (Tastatur/Gamepad bleiben unberührt)
-	var mag := clampf((absf(roll) - DEADZONE) / (MAX_TILT - DEADZONE), 0.0, 1.0)
+	if invert:
+		roll = -roll
+	var mag := clampf((absf(roll) - DEADZONE) / (max_tilt - DEADZONE), 0.0, 1.0)
 	var want := ""
 	if mag > 0.0:
 		want = "steer_right" if roll > 0.0 else "steer_left"

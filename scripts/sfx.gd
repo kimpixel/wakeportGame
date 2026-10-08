@@ -49,7 +49,31 @@ var _bird_t := 3.0
 var _muted := false
 
 
+## Lautstärke-Kanäle (Einstellungen): Effekte, Jubel, Flugzeuge – alle laufen in den Master.
+const BUS_FX := "Effekte"
+const BUS_CHEER := "Jubel"
+const BUS_PLANES := "Flugzeuge"
+
+
+static func setup_buses() -> void:
+	for n: String in [BUS_FX, BUS_CHEER, BUS_PLANES]:
+		if AudioServer.get_bus_index(n) < 0:
+			AudioServer.add_bus()
+			var i := AudioServer.bus_count - 1
+			AudioServer.set_bus_name(i, n)
+			AudioServer.set_bus_send(i, "Master")
+
+
+## Lautstärke eines Kanals (0..1).
+static func set_volume(bus: String, v: float) -> void:
+	setup_buses()
+	var i := AudioServer.get_bus_index(bus)
+	AudioServer.set_bus_volume_db(i, linear_to_db(maxf(v, 0.0001)))
+	AudioServer.set_bus_mute(i, v <= 0.001)
+
+
 func _ready() -> void:
+	setup_buses()
 	_yeah = [_make_voice("yeah", 1.0), _make_voice("yeah", 1.12), _make_voice("yeah", 0.9)]
 	_woo = _make_voice("woo", 1.05)
 	_cheers = _load_dir(CHEER_DIR)
@@ -72,6 +96,7 @@ func _ready() -> void:
 	_grind.stream = _make_grind_loop()
 	_grind.play()
 	_bird = AudioStreamPlayer3D.new()
+	_bird.bus = BUS_FX
 	_bird.unit_size = 30.0
 	_bird.volume_db = -14.0
 	add_child(_bird)
@@ -95,6 +120,7 @@ func set_people(list: Array[Dictionary]) -> void:
 	people = list
 	for person: Dictionary in people:
 		var v := AudioStreamPlayer3D.new()
+		v.bus = BUS_CHEER
 		v.unit_size = 45.0
 		v.volume_db = 4.0
 		v.max_db = 6.0
@@ -131,6 +157,7 @@ func _buzz(ms: int) -> void:
 
 func _player(db: float) -> AudioStreamPlayer:
 	var p := AudioStreamPlayer.new()
+	p.bus = BUS_FX
 	p.volume_db = db
 	add_child(p)
 	return p
@@ -139,6 +166,7 @@ func _player(db: float) -> AudioStreamPlayer:
 ## Kurzes Platschen an einer Stelle im See (z. B. Hecht taucht auf/ab).
 func splash_at(pos: Vector3, pitch := 1.4) -> void:
 	var p := AudioStreamPlayer3D.new()
+	p.bus = BUS_FX
 	p.stream = _splash
 	p.pitch_scale = pitch * randf_range(0.9, 1.1)
 	p.unit_size = 8.0

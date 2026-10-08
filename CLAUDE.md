@@ -173,6 +173,13 @@ Features/Setups:
   dem Katalog. Beim Nachstellen von Hacks: vorne/hinten und Seiten genau mit dem Foto abgleichen.
 - T1-Steg ist 5 cm höher als T2 (`Lake.DOCK_T1_Y`).
 
+Einstellungen (`scripts/game_settings.gd`, Reiter Spiel/Fahrer/Welt/Technik in `start_screen.gd`,
+angewendet in `main.gd` `_apply_setting`): Spielmodus Runde 7:30 / 10:00 / 15:00 / Freies Fahren, Hilfen
+(Einloggen, Überschlag ausdrehen; je aus +15 %), Seilzug-Grenze, Brett, Stance Regular/Goofy, Helm,
+Weste, Seillänge, Anlagen-Tempo, Flugzeuge, NPC, Grafik, Lautstärken (Busse Effekte/Jubel/Flugzeuge),
+Kamera, Handy-Neigung. Gespeichert in user://settings.cfg [optionen]; Wetter/Uhrzeit **nicht**.
+Test: `--set=NAME=WERT` (ohne Speichern), `--screen=@einstellungenN` (Reiter N).
+
 Startseite: echte Szene im Hintergrund, Kamera schwenkt von der Seeseite; Menü im HUD-Stil
 (Terminal, Feature-Setup als Tasten, Einstellungen, Spiel starten), keine Tasten-Legende, keine
 Shortcuts T/F (nur Leertaste = Start, Esc). Das Popup „Features & Hacks“ (alle Setups, Detail mit

@@ -34,6 +34,12 @@ func cycle_mode() -> void:
 		_off_yaw = 0.0
 
 
+## Kameramodus direkt setzen (Einstellungen: Standard-Kamera).
+func set_mode(m: int) -> void:
+	while int(cam_mode) != clampi(m, 0, 2):
+		cycle_mode()
+
+
 ## Beim nächsten Bild direkt hinter den Fahrer springen (z. B. nach Terminalwechsel).
 func snap() -> void:
 	_initialized = false

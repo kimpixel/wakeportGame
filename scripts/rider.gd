@@ -111,6 +111,11 @@ var autopilot := false
 ## Pro Fahrer einstellbar (der NPC auf T1 bekommt eigene Werte, vor add_child setzen)
 var start_pos := START_POS
 var rope_length := ROPE_LENGTH  # einstellbar (Startseite, Einstellungen)
+var crash_tension := CRASH_TENSION   # Seilzug-Grenze (Einstellungen)
+var assist_lock := true         # Hilfe: auf dem Slider einloggen
+var assist_flip := true         # Hilfe: Überschlag dreht losgelassen von selbst zu Ende
+var trick_bonus := 1.0          # Profi-Bonus (Hilfen aus)
+var goofy := false              # Stance: Goofy = rechter Fuß vorne
 var start_yaw := 0.0
 var dock_rect := Rect2(Lake.DOCK_MIN, Lake.DOCK_MAX - Lake.DOCK_MIN)
 var mast_b := Vector3(0.0, 0.0, Lake.MAST_B_Z)
@@ -189,6 +194,7 @@ var _arm_r: MeshInstance3D
 var _human: Node3D
 var _ragdoll: Ragdoll
 var _rig: HumanRig
+var _helmet: Node3D
 var _handle: MeshInstance3D
 var _rope_mesh: ImmediateMesh
 var _rope_mat: StandardMaterial3D
@@ -530,7 +536,7 @@ func step(delta: float) -> void:
 	# Deep-Water-Start: liegen bleiben, bis das Seil spannt, dann langsam aufstehen
 	if attached and _getup < 1.0 and (tension_smooth > 250.0 or horizontal_speed() > 2.0):
 		_getup = minf(_getup + delta / 1.6, 1.0)
-	if mode == Mode.WATER and attached and tension_smooth > CRASH_TENSION:
+	if mode == Mode.WATER and attached and tension_smooth > crash_tension:
 		let_go("Seil aus der Hand gerissen!")
 		rope_force = Vector3.ZERO
 	if mode == Mode.WATER:
@@ -913,6 +919,8 @@ func _step_water(delta: float, rope: Vector3) -> void:
 ## großem Winkel (z. B. starker seitlicher Seilzug) rutscht man ab. Die Brettstellung (quer für
 ## den Boardslide) bleibt frei.
 func _slide_lock(delta: float) -> void:
+	if not assist_lock:
+		return
 	var part := features.part_at(pos.x, pos.z) if features else null
 	if part == null or not part.is_slide():
 		return
@@ -972,7 +980,7 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 func _score_trick(trick_name: String, base: int) -> void:
 	_combo += 1
 	_combo_t = COMBO_WINDOW
-	var pts := base * _combo
+	var pts := roundi(base * _combo * trick_bonus)
 	if _combo > 1:
 		trick_name += "   Combo x%d" % _combo
 	score += pts
@@ -1076,7 +1084,7 @@ func _step_air(delta: float, rope: Vector3) -> void:
 		_flip_lock = false
 	if absf(_pitch_in) > 0.1 and not _flip_lock:
 		_flip += _pitch_in * FLIP_RATE * delta
-	else:
+	elif assist_flip:
 		_flip = move_toward(_flip, roundf(_flip / TAU) * TAU, FLIP_RATE * 0.7 * delta)
 
 	# Seitlich gegen ein Feature geflogen? Nur wenn man von außen hineinfliegt –
@@ -1278,7 +1286,7 @@ func _process(delta: float) -> void:
 		if _rig:
 			# Realistischer Griff: vor der vorderen Hüfte, Arme fast gestreckt
 			var rb := global_transform.basis.orthonormalized()
-			handle_pos = vpos + rb * Vector3(0.2, 0.86 - 0.34 * _crouch, -0.2) + to_anchor * 0.5
+			handle_pos = vpos + rb * Vector3(0.2 * _facing(), 0.86 - 0.34 * _crouch, -0.2) + to_anchor * 0.5
 			if _getup < 1.0:
 				handle_pos = _dw_handle.lerp(handle_pos, smoothstep(0.0, 1.0, _getup))
 			if _raley_ang > 0.001:
@@ -1380,7 +1388,7 @@ func _load_model() -> void:
 	var scene: PackedScene = load(model_path)
 	_human = scene.instantiate()
 	# Modell schaut nach +Z; der Fahrer steht seitlich: Brust zeigt nach +X (lokal)
-	_human.rotation.y = PI * 0.5
+	_human.rotation.y = _facing() * PI * 0.5
 	_human.position.y = 0.06
 	add_child(_human)
 	var skel := HumanRig.find_skeleton(_human)
@@ -1393,7 +1401,8 @@ func _load_model() -> void:
 	_body_pivot.visible = false
 	_tint_clothes(_human)
 	# Helm am Kopf-Knochen (die Impact-Weste ist das eng anliegende Oberteil, siehe _tint_clothes)
-	_attach_node("head", Helmet.new(helmet_design))
+	_helmet = Helmet.new(helmet_design)
+	_attach_node("head", _helmet)
 
 
 ## Kleidung einfärben: T-Shirt als Rashguard, Hose als Boardshorts.
@@ -1443,7 +1452,7 @@ func _pose_human() -> void:
 		_ragdoll.follow_water(water.height_at(c.x, c.z), c)
 		_swim_from = []
 		return
-	_human.rotation = Vector3(0.0, PI * 0.5, 0.0)
+	_human.rotation = Vector3(0.0, _facing() * PI * 0.5, 0.0)
 	_human.position = Vector3(0.0, 0.06, 0.0)
 	if mode == Mode.CRASHED:
 		# Schwimmen: aus der letzten Haltung weich in die Bauchlage übergehen
@@ -1486,13 +1495,13 @@ func _air_phase() -> float:
 func _pose_frame() -> Transform3D:
 	var xf := global_transform
 	if _raley_ang > 0.001:
-		var p := Vector3(0.2, 0.86 - 0.34 * _crouch, -0.2)      # Griff vor der vorderen Hüfte
+		var p := Vector3(0.2 * _facing(), 0.86 - 0.34 * _crouch, -0.2)      # Griff vor der vorderen Hüfte
 		var r := Basis(Vector3.BACK, _raley_side * _raley_ang)
 		xf *= Transform3D(r, p - r * p)
 	if absf(_flip) > 0.001:
 		# Überschlag um die Körpermitte; Frontroll = Brust voran (lokal +X)
 		var c := Vector3(0.0, 0.9, 0.0)
-		var f := Basis(Vector3.BACK, -_flip)
+		var f := Basis(Vector3.BACK, -_flip * _facing())
 		xf *= Transform3D(f, c - f * c)
 	return xf
 
@@ -1506,7 +1515,15 @@ func _board_stand_xf() -> Transform3D:
 		var pv := Vector3(0.0, 0.0, -0.55 * signf(_press_vis))
 		var b := Basis(Vector3.RIGHT, -PRESS_ANG * _press_vis)
 		xf *= Transform3D(b, pv - b * pv)
+	if goofy:
+		# Goofy: rechter Fuß vorne – das Twin-Tip-Brett steht einfach andersherum unter dem Fahrer
+		xf *= Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
 	return xf
+
+
+## +1 Regular (Brust zeigt lokal +X, linker Fuß vorne), −1 Goofy.
+func _facing() -> float:
+	return -1.0 if goofy else 1.0
 
 
 ## Brett (Oberseite zeigt nach board_up, Länge quer = lateral) mit den Füßen darin;
@@ -1608,26 +1625,30 @@ func _pose_stand() -> void:
 	var skel_b := _rig.skeleton.global_transform.basis.orthonormalized()
 	var rb0 := global_transform.basis.orthonormalized()
 	# Raley: Becken/Oberkörper schwingen nur teilweise mit (Hohlkreuz, Kopf Richtung Griff)
-	var torso := rb0 * Basis(Vector3.BACK, RALEY_TORSO * _raley_side * _raley_ang - _flip)
-	_raley_chest = torso * Vector3.RIGHT     # Brust-/Bauchseite (für den Griff beim Raley)
+	var torso := rb0 * Basis(Vector3.BACK, RALEY_TORSO * _raley_side * _raley_ang - _flip * _facing())
+	_raley_chest = torso * Vector3.RIGHT * _facing()    # Brust-/Bauchseite (für den Griff beim Raley)
 	var lean_w := torso * Basis.from_euler(Vector3(_lean_pitch * 0.5, 0.0, _lean_roll * 0.6)) * rb0.inverse()
 	var to_skel := func(bw: Basis) -> Basis: return skel_b.inverse() * bw * skel_b
 	_rig.set_pelvis(skel_inv * pelvis_world, to_skel.call(lean_w))
 	# Oberkörper zum Seil drehen und etwas weiter zurücklehnen
 	var rope_h := Vector3(rope_dir.x, 0.0, rope_dir.z)
-	var chest := rb * Vector3.RIGHT
+	var chest := rb * Vector3.RIGHT * _facing()
 	var twist := 0.0
 	if rope_h.length() > 0.1 and attached:
 		twist = clampf(chest.signed_angle_to(rope_h.normalized(), Vector3.UP), -1.4, 1.4) * 0.75 * (1.0 - _raley_ang / RALEY_MAX)   # Raley: Körper gerade gestreckt
-	var spine_w := Basis(Vector3.UP, twist) * (rb * Basis.from_euler(Vector3(_lean_pitch * 0.4, 0.0, _lean_roll * 0.4 - 1.4 * _tuck)) * rb.inverse())   # eingerollt: Brust zu den Knien
+	var spine_w := Basis(Vector3.UP, twist) * (rb * Basis.from_euler(Vector3(_lean_pitch * 0.4, 0.0, _lean_roll * 0.4 - 1.4 * _tuck * _facing())) * rb.inverse())   # eingerollt: Brust zu den Knien
 	_rig.bend_spine(to_skel.call(spine_w).get_rotation_quaternion())
 	# Beine: Knie Richtung Brust/Zehen, leicht nach außen
 	var knee_dir := chest * 1.0 + rb * Vector3.UP * 0.3
-	_rig.leg("l", skel_inv * foot_front, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, -Wakeboard.STANCE)))
-	_rig.leg("r", skel_inv * foot_back, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, Wakeboard.STANCE)))
+	var sz := Wakeboard.STANCE * _facing()      # Goofy: linker Fuß hinten
+	_rig.leg("l", skel_inv * foot_front, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, -sz)))
+	_rig.leg("r", skel_inv * foot_back, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, sz)))
 	# Füße flach in den Bindungen (Ruhe-Ausrichtung relativ zum Fahrer)
 	# Füße in den Bindungen: kippen mit dem Brett, Duck-Stance wie die Schuhe
-	var board_rel := board.basis.orthonormalized() * rb0.inverse()     # Ruhelage gilt zum ungedrehten Fahrer
+	var bb := board.basis.orthonormalized()
+	if goofy:
+		bb = bb * Basis(Vector3.UP, PI)        # Brett steht gedreht, die Füße zeigen trotzdem zur Brust
+	var board_rel := bb * rb0.inverse()     # Ruhelage gilt zum ungedrehten Fahrer
 	for front: bool in [true, false]:
 		var fb := "foot_l" if front else "foot_r"
 		var w := board_rel * Basis(rb0 * Vector3.UP, Wakeboard.foot_yaw(front))
@@ -1637,6 +1658,44 @@ func _pose_stand() -> void:
 	if look_dir.length() < 1.0:
 		look_dir = rope_h if rope_h.length() > 0.1 else forward()
 	_rig.look_at(skel_inv * (pelvis_world + rb * Vector3.UP * 0.8 + look_dir.normalized() * 10.0))
+
+
+## Brett-Design wechseln (Einstellungen).
+func set_board(id: int) -> void:
+	if id == board_design and _board_pivot and _board_pivot.get_child_count() > 0:
+		return
+	board_design = id
+	if _board_pivot == null:
+		return
+	for c in _board_pivot.get_children():
+		c.queue_free()
+	var b := BoardLibrary.make(id)
+	_board_pivot.add_child(b)
+	_board_pivot.move_child(b, 0)
+
+
+## Helm wechseln (Einstellungen).
+func set_helmet(id: int) -> void:
+	if id == helmet_design:
+		return
+	helmet_design = id
+	if _helmet == null:
+		return
+	var parent := _helmet.get_parent()
+	var xf := _helmet.transform
+	_helmet.queue_free()
+	_helmet = Helmet.new(id)
+	_helmet.transform = xf
+	parent.add_child(_helmet)
+
+
+## Westenfarbe wechseln (Einstellungen).
+func set_vest(c: Color) -> void:
+	if c == vest_color:
+		return
+	vest_color = c
+	if _human:
+		_tint_clothes(_human)
 
 
 ## Bindungsschäfte knicken mit den Schienbeinen (links = vorderer Fuß, rechts = hinterer).

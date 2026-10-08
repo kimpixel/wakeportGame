@@ -22,6 +22,7 @@ extends Node3D
 ##   --plane=S         Test: sofort ein Jet im Anflug, S m vor dem See (negativ) bzw. danach
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
+##   --set=NAME=WERT   Test: Einstellung setzen (ohne zu speichern), z. B. --set=goofy=true
 
 const RESET_DELAY := 3.0
 
@@ -49,9 +50,12 @@ var _setup_idx := 0
 var _setup_menu: OptionButton
 var _setup_arg := ""
 const SETTINGS := "user://settings.cfg"
-# Anlage (Einstellungen auf der Startseite, gespeichert): Seillänge und Tempo der eigenen Anlage
-var _rope_len := Rider.ROPE_LENGTH
-var _speed_kmh := 30.0
+# Einstellungen der Startseite (gespeichert, siehe GameSettings)
+var settings := GameSettings.new()
+var terrain: Terrain
+var _free := false              # Freies Fahren: keine Zeit, keine Strafzeit
+var _npc_on := true
+var _msaa_default := Viewport.MSAA_DISABLED
 var _touch_started := false     # dieser Finger hat die Anlage gestartet (kein Sprung)
 
 ## Welche Anlage fährt der Spieler? Der NPC fährt immer an der anderen.
@@ -102,6 +106,7 @@ var _view_arg := PackedFloat32Array()
 var _lane_arg := NAN
 var _crash_at := -1.0          # Test: Sturz zu dieser Zeit auslösen
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
+var _set_args: Array[String] = []   # Test: --set=NAME=WERT
 var _jump_at := -1.0           # Test: zu dieser Zeit abspringen
 var _test_pitch := 0.0         # Test: ↑/↓ in der Luft
 var _touch_at: Array[float] = []   # Test: Finger auf den Bildschirm
@@ -116,7 +121,8 @@ func _ready() -> void:
 	_parse_args()
 	_build_environment()
 	Geo.ensure_loaded()
-	add_child(Terrain.new())
+	terrain = Terrain.new()
+	add_child(terrain)
 	beach = Beach.new()
 	add_child(beach)
 
@@ -250,9 +256,16 @@ func _ready() -> void:
 	cam.doppler_tracking = Camera3D.DOPPLER_TRACKING_IDLE_STEP
 	ambient.pike_hit.connect(func() -> void: hud.show_trick("Hecht erwischt!"))
 	if not _test_log:
-		_load_anlage()          # Tests laufen immer mit Standardwerten
+		settings.load_file(mobile.active)     # Tests laufen immer mit Standardwerten
 	_apply_terminal(_initial_terminal())
 	_build_start_screen()
+	_msaa_default = get_viewport().msaa_3d
+	settings.changed.connect(_apply_setting)
+	for a: String in _set_args:
+		var kv := a.split("=", true, 1)
+		if kv.size() == 2 and settings.values.has(kv[0]):
+			settings.values[kv[0]] = type_convert(str_to_var(kv[1]), typeof(GameSettings.DEFAULTS[kv[0]]))
+	settings.emit_all()
 	if _view_arg.size() == 6:
 		# Testansicht: feste Kamera (x,y,z -> Blickpunkt x,y,z)
 		cam.set_process(false)
@@ -288,6 +301,7 @@ func _build_start_screen() -> void:
 	start_screen.cable_of = {"T1": cable_t1, "T2": cable}
 	start_screen.s_offset = _s_offset()
 	start_screen.mobile = mobile.active
+	start_screen.settings = settings
 	var names: Array = []
 	for e: Dictionary in _setups:
 		names.append(e["name"])
@@ -305,12 +319,6 @@ func _build_start_screen() -> void:
 		pc.start()
 		start_screen.refresh(terminal, _setup_idx))
 	start_screen.start_pressed.connect(_close_start_screen)
-	start_screen.set_anlage(_rope_len, _speed_kmh)
-	start_screen.anlage_changed.connect(func(rope_m: float, speed_kmh: float) -> void:
-		_rope_len = rope_m
-		_speed_kmh = speed_kmh
-		_apply_anlage()
-		_save_anlage())
 
 
 ## Startbildschirm zeigen. Die Bahn läuft live weiter: auf der eigenen Anlage fährt der
@@ -379,26 +387,84 @@ func _select_terminal(t: String) -> void:
 
 ## Seillänge und Tempo gelten für die eigene Anlage; der NPC fährt mit Standardwerten.
 func _apply_anlage() -> void:
-	rider.rope_length = _rope_len
-	pc.max_speed = _speed_kmh / 3.6
+	rider.rope_length = float(settings.get_v("rope"))
+	pc.max_speed = float(settings.get_v("speed")) / 3.6
 	npc.rope_length = Rider.ROPE_LENGTH
 	nc.max_speed = 30.0 / 3.6
 
 
-func _load_anlage() -> void:
-	var cfg := ConfigFile.new()
-	if cfg.load(SETTINGS) != OK:
+## Eine Einstellung anwenden (beim Start alle, danach bei jeder Änderung).
+func _apply_setting(key: String) -> void:
+	var v: Variant = settings.get_v(key)
+	match key:
+		"mode":
+			if not _test_log:           # Tests: --game-time bzw. Standard
+				_free = int(v) == 0
+				_game_time = float(v) if not _free else 0.0
+				if not _session:
+					_time_left = _game_time
+		"board":
+			rider.set_board(int(v))
+		"goofy":
+			rider.goofy = bool(v)
+		"helmet":
+			rider.set_helmet(int(v))
+		"vest":
+			rider.set_vest(GameSettings.VESTS[clampi(int(v), 0, GameSettings.VESTS.size() - 1)])
+		"assist_lock", "assist_flip":
+			rider.assist_lock = bool(settings.get_v("assist_lock"))
+			rider.assist_flip = bool(settings.get_v("assist_flip"))
+			rider.trick_bonus = settings.trick_bonus()
+		"grip":
+			rider.crash_tension = GameSettings.GRIP_TENSION[clampi(int(v), 0, 2)]
+		"rope", "speed":
+			_apply_anlage()
+		"planes":
+			airplanes.rate = int(v)
+		"npc":
+			_set_npc(bool(v))
+		"vol_fx":
+			Sfx.set_volume(Sfx.BUS_FX, float(v))
+		"vol_cheer":
+			Sfx.set_volume(Sfx.BUS_CHEER, float(v))
+		"vol_planes":
+			Sfx.set_volume(Sfx.BUS_PLANES, float(v))
+		"quality":
+			_apply_quality(int(v))
+		"tilt":
+			mobile.max_tilt = GameSettings.TILT_DEG[clampi(int(v), 0, 2)]
+		"tilt_invert":
+			mobile.invert = bool(v)
+		"cam_mode":
+			cam.set_mode(int(v))
+		"cam_dist":
+			cam.distance = float(v)
+
+
+## NPC auf der anderen Anlage an/aus.
+func _set_npc(on: bool) -> void:
+	if on == _npc_on:
 		return
-	_rope_len = clampf(float(cfg.get_value("anlage", "rope", _rope_len)), StartScreen.ROPE_MIN, StartScreen.ROPE_MAX)
-	_speed_kmh = clampf(float(cfg.get_value("anlage", "speed", _speed_kmh)), StartScreen.SPEED_MIN, StartScreen.SPEED_MAX)
+	_npc_on = on
+	npc.visible = on
+	if on:
+		npc.reset()
+		nc.reset()
+		nc.start()
+	else:
+		nc.reset()
 
 
-func _save_anlage() -> void:
-	var cfg := ConfigFile.new()
-	cfg.load(SETTINGS)
-	cfg.set_value("anlage", "rope", _rope_len)
-	cfg.set_value("anlage", "speed", _speed_kmh)
-	cfg.save(SETTINGS)
+## Grafikqualität: Auflösung der 3D-Szene, Schatten, Baumdichte, Kantenglättung.
+func _apply_quality(q: int) -> void:
+	q = clampi(q, 0, 2)
+	var vp := get_viewport()
+	vp.scaling_3d_scale = [0.6, 0.8, 1.0][q]
+	vp.msaa_3d = [Viewport.MSAA_DISABLED, Viewport.MSAA_DISABLED, _msaa_default][q]
+	weather.shadow_distance = [0.0, 110.0, 200.0][q]
+	weather.apply()
+	if terrain:
+		terrain.set_tree_density([0.35, 0.7, 1.0][q])
 
 
 func _apply_terminal(t: String) -> void:
@@ -536,10 +602,11 @@ func _check_buoy(r: Rider) -> void:
 func _physics_process(delta: float) -> void:
 	water.step(delta)
 	pc.step(delta, pc.local_vz(rider.vel) if rider.attached else 0.0, rider.rope_slack())
-	nc.step(delta, nc.local_vz(npc.vel) if npc.attached else 0.0, npc.rope_slack())
-	npc.step(delta)
-	_check_buoy(npc)
-	_recover(npc, nc, delta)
+	if _npc_on:
+		nc.step(delta, nc.local_vz(npc.vel) if npc.attached else 0.0, npc.rope_slack())
+		npc.step(delta)
+		_check_buoy(npc)
+		_recover(npc, nc, delta)
 	rider.step(delta)
 	if not is_nan(_load_arg):
 		rider._load = _load_arg            # Test: Sprung so weit aufgeladen (nur Haltung)
@@ -592,10 +659,17 @@ func _start_run() -> void:
 	pc.start()
 
 
+## Freies Fahren: die Uhr zählt hoch, es gibt kein Zeitende und keine Strafzeit.
+func _free_ride() -> bool:
+	return _free and not _test_log
+
+
 func _step_session(delta: float) -> void:
 	if not _session or start_screen.visible:
 		return
-	if not _finishing:
+	if _free_ride():
+		_time_left += delta
+	elif not _finishing:
 		_time_left -= delta
 		if _time_left <= 0.0:
 			_time_up()
@@ -604,7 +678,7 @@ func _step_session(delta: float) -> void:
 
 
 func _penalty(sec: float) -> void:
-	if not _session or _finishing:
+	if not _session or _finishing or _free_ride():
 		return
 	_time_left -= sec
 	hud.show_trick("Strafzeit −%d:%02d" % [int(sec) / 60, int(sec) % 60])
@@ -688,9 +762,9 @@ func _process(_delta: float) -> void:
 	if _finishing:
 		state = Hud.TimeState.OVER
 	elif _session:
-		state = Hud.TimeState.LOW if _time_left < 60.0 else Hud.TimeState.RUNNING
+		state = Hud.TimeState.LOW if _time_left < 60.0 and not _free_ride() else Hud.TimeState.RUNNING
 	hud.set_stats(_clock(_time_left if _session else _game_time), state,
-		_final_score if _finishing else rider.score, rider.tension_smooth, rider.tension_smooth / Rider.CRASH_TENSION)
+		_final_score if _finishing else rider.score, rider.tension_smooth, rider.tension_smooth / rider.crash_tension)
 	hud.set_debug("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nWenden %d   ·   Kamera: %s%s" % [
 		roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
 		pc.laps, cam.mode_name(), "   ·   AUTOPILOT" if rider.autopilot else ""])
@@ -741,9 +815,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_reset()
 	elif event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down"):
 		pc.change_speed(2.0 if event.is_action_pressed("speed_up") else -2.0)
-		_speed_kmh = pc.max_speed * 3.6
-		start_screen.set_anlage(_rope_len, _speed_kmh)
-		_save_anlage()
+		settings.set_v("speed", float(roundi(pc.max_speed * 3.6)))
+		start_screen.sync_settings()
 	elif event.is_action_pressed("camera"):
 		cam.cycle_mode()
 	elif event.is_action_pressed("autopilot"):
@@ -863,6 +936,8 @@ func _parse_args() -> void:
 			_shot_time = arg.substr(12).to_float()
 		elif arg.begins_with("--pitch="):
 			_test_pitch = arg.substr(8).to_float()
+		elif arg.begins_with("--set="):
+			_set_args.append(arg.substr(6))
 		elif arg.begins_with("--jump-at="):
 			_jump_at = arg.substr(10).to_float()
 		elif arg.begins_with("--letgo-at="):

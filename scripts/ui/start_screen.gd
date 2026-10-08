@@ -10,7 +10,6 @@ extends CanvasLayer
 signal terminal_chosen(terminal: String)
 signal setup_chosen(idx: int)
 signal start_pressed
-signal anlage_changed(rope_m: float, speed_kmh: float)
 
 const BASE_SHORT := 740.0        # so viele Einheiten hat die kurze Bildschirmseite mindestens
 const BASE_LONG := 1200.0        # … und die lange
@@ -25,6 +24,7 @@ var features: FeatureSet
 var weather: Weather
 var cable_of := {}               # "T1"/"T2" -> CableSystem
 var s_offset := {}               # wie FeatureSet.load_setup (für die Setups im Katalog)
+var settings: GameSettings      # Einstellungen (von main.gd gesetzt, vor build)
 var mobile := false              # Handy: keine Tastenhinweise
 
 var _terminals: Array = []
@@ -46,10 +46,8 @@ var _detail: PanelContainer
 var _detail_title: Label
 var _detail_text: Label
 var _preview: FeaturePreview
-var _rope_s: HSlider
-var _speed_s: HSlider
-var _rope_l: Label
-var _speed_l: Label
+var _syncers: Array[Callable] = []
+var _tab_buttons: Array[Button] = []
 var _font: Font
 var _k := 1.0
 
@@ -355,107 +353,254 @@ func _popup_open() -> bool:
 	return _dim.visible
 
 
-## Einstellungen: Wetter, Datum, Uhrzeit, "Jetzt" (heute, jetzige Uhrzeit, Live-Wetter am See).
+## Einstellungen in vier Reitern: Spiel, Fahrer, Welt, Technik. Alles außer Wetter/Uhrzeit
+## landet in GameSettings (gespeichert); main.gd wendet die Werte an.
 func _build_settings() -> void:
 	var f := _popup_frame("EINSTELLUNGEN")
 	_settings = f[0]
 	var v: VBoxContainer = f[1]
-	if weather == null:
-		return
+	var tabs := HBoxContainer.new()
+	tabs.add_theme_constant_override("separation", 6)
+	v.add_child(tabs)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	v.add_child(scroll)
-	var c := VBoxContainer.new()
-	c.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	c.add_theme_constant_override("separation", 12)
-	scroll.add_child(c)
-	c.add_child(_small("WETTER"))
-	var grid := GridContainer.new()
-	grid.columns = 3
-	grid.add_theme_constant_override("h_separation", 8)
-	grid.add_theme_constant_override("v_separation", 8)
-	c.add_child(grid)
-	var wg := ButtonGroup.new()
-	var w_buttons: Array[Button] = []
-	var names := weather.preset_names()
-	for i in names.size():
-		var b := _button(names[i], 20)
+	var holder := VBoxContainer.new()
+	holder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(holder)
+	var tg := ButtonGroup.new()
+	var pages: Array[VBoxContainer] = []
+	for title: String in ["Spiel", "Fahrer", "Welt", "Technik"]:
+		var page := VBoxContainer.new()
+		page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		page.add_theme_constant_override("separation", 10)
+		holder.add_child(page)
+		pages.append(page)
+		var b := _button(title, 19)
 		b.toggle_mode = true
-		b.button_group = wg
+		b.button_group = tg
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.pressed.connect(func() -> void: weather.set_preset(i))
-		grid.add_child(b)
-		w_buttons.append(b)
-	var date_l := _small("DATUM")
-	c.add_child(date_l)
-	var day_s := _slider(1.0, 365.0, 1.0)
-	c.add_child(day_s)
-	day_s.value_changed.connect(func(val: float) -> void:
-		if int(val) != weather.day:
-			weather.set_day(int(val)))
-	var time_l := _small("UHRZEIT")
-	c.add_child(time_l)
-	var hour_s := _slider(0.0, 24.0, 0.25)
-	c.add_child(hour_s)
-	hour_s.value_changed.connect(func(val: float) -> void:
-		if absf(val - weather.hour) > 0.01:
-			weather.set_hour(val))
-	var now := _button("Jetzt  (live)", 20)
-	now.tooltip_text = "Heute, aktuelle Uhrzeit und Wetter am See"
-	now.pressed.connect(weather.set_now)
-	c.add_child(now)
-	_build_anlage(c)
+		var idx := pages.size() - 1
+		b.pressed.connect(func() -> void:
+			for i in pages.size():
+				pages[i].visible = i == idx
+			scroll.scroll_vertical = 0)
+		tabs.add_child(b)
+		_tab_buttons.append(b)
+		if idx == 0:
+			b.button_pressed = true
+		else:
+			page.visible = false
+	if settings:
+		_page_game(pages[0])
+		_page_rider(pages[1])
+	_page_world(pages[2])
+	if settings:
+		_page_tech(pages[3])
 	var ok := _button("FERTIG", 24, true)
 	ok.pressed.connect(_close_popups)
 	v.add_child(ok)
-	var update := func() -> void:
-		if weather.preset >= 0 and weather.preset < w_buttons.size():
-			w_buttons[weather.preset].set_pressed_no_signal(true)
-		day_s.set_value_no_signal(weather.day)
-		hour_s.set_value_no_signal(weather.hour)
-		date_l.text = "DATUM   " + weather.date_text()
-		time_l.text = "UHRZEIT   " + weather.time_text() + ("   (live)" if weather.live else "")
-	weather.changed.connect(update)
-	update.call()
+	sync_settings()
 
 
-## Anlage: Seillänge (Griff bis Carrier) und Tempo der eigenen Anlage.
-func _build_anlage(c: VBoxContainer) -> void:
-	c.add_child(_label("", 6))
-	c.add_child(_small("ANLAGE"))
-	_rope_l = _small("")
-	c.add_child(_rope_l)
-	_rope_s = _slider(ROPE_MIN, ROPE_MAX, 0.5)
-	c.add_child(_rope_s)
-	_speed_l = _small("")
-	c.add_child(_speed_l)
-	_speed_s = _slider(SPEED_MIN, SPEED_MAX, 1.0)
-	c.add_child(_speed_s)
-	var changed := func(_v: float) -> void:
-		_show_anlage()
-		anlage_changed.emit(_rope_s.value, _speed_s.value)
-	_rope_s.value_changed.connect(changed)
-	_speed_s.value_changed.connect(changed)
-	var std := _button("Standard  (16 m, 30 km/h)", 18)
-	std.pressed.connect(func() -> void:
-		set_anlage(Rider.ROPE_LENGTH, 30.0)
-		anlage_changed.emit(_rope_s.value, _speed_s.value))
-	c.add_child(std)
+func _page_game(p: VBoxContainer) -> void:
+	var modes: Array = []
+	var secs: Array = []
+	for m: Array in GameSettings.MODES:
+		secs.append(m[0])
+		modes.append(m[1])
+	_opt_row(p, "SPIELMODUS", modes, "mode", secs, 2)
+	p.add_child(_small("HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"))
+	_opt_row(p, "Auf dem Slider einloggen", ["An", "Aus"], "assist_lock", [true, false])
+	_opt_row(p, "Überschlag dreht von selbst zu Ende", ["An", "Aus"], "assist_flip", [true, false])
+	_opt_row(p, "SEILZUG-GRENZE   (wann die Handle aus der Hand gerissen wird)",
+		["Locker", "Normal", "Streng"], "grip", [0, 1, 2])
 
 
-## Werte der Anlage anzeigen (ohne Signal), z. B. nach dem Laden oder nach +/− im Spiel.
-func set_anlage(rope_m: float, speed_kmh: float) -> void:
-	if _rope_s == null:
+func _page_rider(p: VBoxContainer) -> void:
+	var boards: Array = []
+	for i in BoardLibrary.count():
+		boards.append(BoardLibrary.design(i)["name"])
+	_opt_row(p, "BRETT", boards, "board", [], 3)
+	_opt_row(p, "STANCE", ["Regular  (links vorne)", "Goofy  (rechts vorne)"], "goofy", [false, true])
+	var helmets: Array = []
+	for d: Dictionary in Helmet.DESIGNS:
+		helmets.append([d["left"], d["right"]])
+	_swatch_row(p, "HELM", helmets, "helmet")
+	var vests: Array = []
+	for c: Color in GameSettings.VESTS:
+		vests.append([c, c])
+	_swatch_row(p, "WESTE", vests, "vest")
+
+
+func _page_world(p: VBoxContainer) -> void:
+	if weather:
+		p.add_child(_small("WETTER   (jeder Start: sonniger Sommertag 10:30)"))
+		var grid := GridContainer.new()
+		grid.columns = 3
+		grid.add_theme_constant_override("h_separation", 8)
+		grid.add_theme_constant_override("v_separation", 8)
+		p.add_child(grid)
+		var wg := ButtonGroup.new()
+		var w_buttons: Array[Button] = []
+		var names := weather.preset_names()
+		for i in names.size():
+			var b := _button(names[i], 19)
+			b.toggle_mode = true
+			b.button_group = wg
+			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			b.pressed.connect(func() -> void: weather.set_preset(i))
+			grid.add_child(b)
+			w_buttons.append(b)
+		var date_l := _small("DATUM")
+		p.add_child(date_l)
+		var day_s := _slider(1.0, 365.0, 1.0)
+		p.add_child(day_s)
+		day_s.value_changed.connect(func(val: float) -> void:
+			if int(val) != weather.day:
+				weather.set_day(int(val)))
+		var time_l := _small("UHRZEIT")
+		p.add_child(time_l)
+		var hour_s := _slider(0.0, 24.0, 0.25)
+		p.add_child(hour_s)
+		hour_s.value_changed.connect(func(val: float) -> void:
+			if absf(val - weather.hour) > 0.01:
+				weather.set_hour(val))
+		var now := _button("Jetzt  (live)", 19)
+		now.tooltip_text = "Heute, aktuelle Uhrzeit und Wetter am See"
+		now.pressed.connect(weather.set_now)
+		p.add_child(now)
+		var update := func() -> void:
+			if weather.preset >= 0 and weather.preset < w_buttons.size():
+				w_buttons[weather.preset].set_pressed_no_signal(true)
+			day_s.set_value_no_signal(weather.day)
+			hour_s.set_value_no_signal(weather.hour)
+			date_l.text = "DATUM   " + weather.date_text()
+			time_l.text = "UHRZEIT   " + weather.time_text() + ("   (live)" if weather.live else "")
+		weather.changed.connect(update)
+		update.call()
+	if settings == null:
 		return
-	_rope_s.set_value_no_signal(rope_m)
-	_speed_s.set_value_no_signal(speed_kmh)
-	_show_anlage()
+	p.add_child(_label("", 4))
+	_slider_row(p, "SEILLÄNGE", "rope", ROPE_MIN, ROPE_MAX, 0.5, func(x: float) -> String: return "%.1f m" % x)
+	_slider_row(p, "ANLAGEN-TEMPO", "speed", SPEED_MIN, SPEED_MAX, 1.0, func(x: float) -> String: return "%d km/h" % roundi(x))
+	var std := _button("Seil und Tempo: Standard  (16 m, 30 km/h)", 17)
+	std.pressed.connect(func() -> void:
+		settings.set_v("rope", Rider.ROPE_LENGTH)
+		settings.set_v("speed", 30.0)
+		sync_settings())
+	p.add_child(std)
+	_opt_row(p, "FLUGZEUGE", ["Aus", "Normal", "Rush Hour"], "planes", [0, 1, 2])
+	_opt_row(p, "FAHRER AUF DER ANDEREN ANLAGE", ["An", "Aus"], "npc", [true, false])
 
 
-func _show_anlage() -> void:
-	_rope_l.text = "SEILLÄNGE   %.1f m" % _rope_s.value
-	_speed_l.text = "ANLAGEN-TEMPO   %d km/h" % roundi(_speed_s.value)
+func _page_tech(p: VBoxContainer) -> void:
+	_opt_row(p, "GRAFIK   (niedrig = flüssiger, schont den Akku)", ["Niedrig", "Mittel", "Hoch"], "quality", [0, 1, 2])
+	var pct := func(x: float) -> String: return "%d %%" % roundi(x * 100.0)
+	_slider_row(p, "LAUTSTÄRKE EFFEKTE", "vol_fx", 0.0, 1.0, 0.05, pct)
+	_slider_row(p, "LAUTSTÄRKE JUBEL", "vol_cheer", 0.0, 1.0, 0.05, pct)
+	_slider_row(p, "LAUTSTÄRKE FLUGZEUGE", "vol_planes", 0.0, 1.0, 0.05, pct)
+	_opt_row(p, "KAMERA", ["Verfolger", "Orbit", "Ufer"], "cam_mode", [0, 1, 2])
+	_slider_row(p, "KAMERA-ABSTAND", "cam_dist", 4.0, 14.0, 0.5, func(x: float) -> String: return "%.1f m" % x)
+	if mobile:
+		_opt_row(p, "NEIGUNG ZUM LENKEN", ["Wenig empfindlich", "Mittel", "Sehr empfindlich"], "tilt", [0, 1, 2], 3)
+		_opt_row(p, "NEIGUNG UMKEHREN", ["Nein", "Ja"], "tilt_invert", [false, true])
+
+
+## Auswahl als Tasten (eine aktiv). values: gespeicherte Werte je Taste (leer = Index).
+func _opt_row(p: VBoxContainer, title: String, labels: Array, key: String, values: Array = [], cols := 0) -> void:
+	p.add_child(_small(title))
+	var grid := GridContainer.new()
+	grid.columns = cols if cols > 0 else labels.size()
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	p.add_child(grid)
+	var g := ButtonGroup.new()
+	var buttons: Array[Button] = []
+	for i in labels.size():
+		var b := _button(labels[i], 18)
+		b.toggle_mode = true
+		b.button_group = g
+		b.clip_text = true
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var val: Variant = values[i] if i < values.size() else i
+		b.pressed.connect(func() -> void: settings.set_v(key, val))
+		grid.add_child(b)
+		buttons.append(b)
+	_syncers.append(func() -> void:
+		var cur: Variant = settings.get_v(key)
+		for i in buttons.size():
+			var val: Variant = values[i] if i < values.size() else i
+			if _same(cur, val):
+				buttons[i].set_pressed_no_signal(true))
+
+
+## Gleicher Einstellungswert? (Zahlen aus der Datei können als float zurückkommen)
+static func _same(a: Variant, b: Variant) -> bool:
+	if (a is int or a is float) and (b is int or b is float):
+		return is_equal_approx(float(a), float(b))
+	return typeof(a) == typeof(b) and a == b
+
+
+## Farbauswahl: runde Felder, innen ein zweites Farbfeld (z. B. Helm-Design).
+func _swatch_row(p: VBoxContainer, title: String, colors: Array, key: String) -> void:
+	p.add_child(_small(title))
+	var row := HFlowContainer.new()
+	row.add_theme_constant_override("h_separation", 8)
+	row.add_theme_constant_override("v_separation", 8)
+	p.add_child(row)
+	var g := ButtonGroup.new()
+	var buttons: Array[Button] = []
+	for i in colors.size():
+		var b := Button.new()
+		b.toggle_mode = true
+		b.button_group = g
+		b.focus_mode = Control.FOCUS_NONE
+		b.custom_minimum_size = Vector2(52, 52)
+		var pair: Array = colors[i]
+		for st: String in ["normal", "hover", "pressed", "hover_pressed"]:
+			var sb := StyleBoxFlat.new()
+			sb.bg_color = pair[0]
+			sb.set_corner_radius_all(26)
+			sb.border_color = SEL if st.contains("pressed") else Color(1, 1, 1, 0.35)
+			sb.set_border_width_all(5 if st.contains("pressed") else 2)
+			b.add_theme_stylebox_override(st, sb)
+		var dot := ColorRect.new()
+		dot.color = pair[1]
+		dot.position = Vector2(17, 17)
+		dot.size = Vector2(18, 18)
+		dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		b.add_child(dot)
+		b.pressed.connect(func() -> void: settings.set_v(key, i))
+		row.add_child(b)
+		buttons.append(b)
+	_syncers.append(func() -> void:
+		var cur := int(settings.get_v(key))
+		if cur >= 0 and cur < buttons.size():
+			buttons[cur].set_pressed_no_signal(true))
+
+
+func _slider_row(p: VBoxContainer, title: String, key: String, lo: float, hi: float, step: float, fmt: Callable) -> void:
+	var l := _small(title)
+	p.add_child(l)
+	var s := _slider(lo, hi, step)
+	p.add_child(s)
+	var show := func() -> void: l.text = "%s   %s" % [title, fmt.call(s.value)]
+	s.value_changed.connect(func(val: float) -> void:
+		show.call()
+		settings.set_v(key, val))
+	_syncers.append(func() -> void:
+		s.set_value_no_signal(float(settings.get_v(key)))
+		show.call())
+
+
+## Anzeige der Einstellungen auf den aktuellen Stand bringen (z. B. nach + / − im Spiel).
+func sync_settings() -> void:
+	if settings == null:
+		return
+	for f: Callable in _syncers:
+		f.call()
 
 
 func _slider(lo: float, hi: float, step: float) -> HSlider:
@@ -619,8 +764,12 @@ func select_by_name(prefix: String) -> void:
 	if prefix == "@liste":
 		_open_browser()
 		return
-	if prefix == "@einstellungen":
+	if prefix.begins_with("@einstellungen"):
 		_show_popup(_settings)
+		var tab := prefix.substr(14).to_int()          # z. B. @einstellungen2 = Reiter "Welt"
+		if tab > 0 and tab < _tab_buttons.size():
+			_tab_buttons[tab].button_pressed = true
+			_tab_buttons[tab].pressed.emit()
 		return
 	if _catalog.is_empty():
 		_build_catalog()
