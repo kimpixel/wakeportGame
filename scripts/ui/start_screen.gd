@@ -90,9 +90,11 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	tb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_ui.add_child(tb)
 	_title_box = tb
-	var t := _label("WAKEPORT RAUNHEIM", 40)
+	var t := _label("WAKE THE HACK", 44)
 	t.add_theme_constant_override("outline_size", 10)
 	tb.add_child(t)
+	var place := _label("Wakeport Raunheim", 20, Color(1, 1, 1, 0.85))
+	tb.add_child(place)
 	_result = _label("", 24, SEL)
 	tb.add_child(_result)
 

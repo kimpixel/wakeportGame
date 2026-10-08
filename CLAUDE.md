@@ -1,6 +1,6 @@
-# CLAUDE.md – Wakeport Raunheim
+# CLAUDE.md – WakeTheHack
 
-Wakeboard-Spiel in **Godot 4.7.2** (GDScript), das den **Wakeport Raunheim** nachbaut: Waldsee bei
+**WakeTheHack** (Titel im Spiel „WAKE THE HACK“, darunter „Wakeport Raunheim“): Wakeboard-Spiel in **Godot 4.7.2** (GDScript), das den **Wakeport Raunheim** nachbaut: Waldsee bei
 Frankfurt mit zwei 2-Mast-Seilanlagen (T1, T2). Web-Version auf GitHub Pages:
 https://kimpixel.github.io/wakeportGame/ (Repo `kimpixel/wakeportGame`, Build per
 `.github/workflows/web.yml` bei jedem Push auf `main`, dauert ca. 1 min).

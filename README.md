@@ -1,6 +1,6 @@
-# Wakeport 2-Mast
+# WakeTheHack
 
-Ein kleines 3D-Wakeboard-Spiel in **Godot 4.7**: Wakeboarden an einer **2-Mast-Seilbahn** auf einem See, wie man sie in Europa oft findet. Es geht also nicht ums Fahren hinter einem Boot.
+**Wake the Hack** ist ein kleines 3D-Wakeboard-Spiel in **Godot 4.7**: Wakeboarden an einer **2-Mast-Seilbahn** auf einem See, wie man sie in Europa oft findet. Es geht also nicht ums Fahren hinter einem Boot.
 
 ![Godot 4.7](https://img.shields.io/badge/Godot-4.7-478cbf)
 
