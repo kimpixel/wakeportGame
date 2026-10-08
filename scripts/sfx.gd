@@ -55,7 +55,11 @@ const BUS_CHEER := "Jubel"
 const BUS_PLANES := "Flugzeuge"
 
 
+## Die Kanäle stehen in default_bus_layout.tres. Im Browser dürfen sie nicht zur Laufzeit
+## angelegt werden (Web-Audio spielt Kanäle, die erst später dazukommen, nicht ab – Ton weg).
 static func setup_buses() -> void:
+	if OS.has_feature("web"):
+		return
 	for n: String in [BUS_FX, BUS_CHEER, BUS_PLANES]:
 		if AudioServer.get_bus_index(n) < 0:
 			AudioServer.add_bus()
@@ -68,6 +72,8 @@ static func setup_buses() -> void:
 static func set_volume(bus: String, v: float) -> void:
 	setup_buses()
 	var i := AudioServer.get_bus_index(bus)
+	if i < 0:
+		return
 	AudioServer.set_bus_volume_db(i, linear_to_db(maxf(v, 0.0001)))
 	AudioServer.set_bus_mute(i, v <= 0.001)
 
