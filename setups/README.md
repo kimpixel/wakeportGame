@@ -8,6 +8,8 @@ Die Hindernisse sind **modular**, genau wie die echten Module am Wakeport. Es gi
 
 Das Setup wählst du auf der Startseite aus. Für ein neues Setup legst du eine `setup_*.json` an und trägst sie in `index.json` ein. Am Code ändert sich nichts.
 
+Bequemer geht es mit dem **Setup-Editor** im Spiel (Startseite): Er speichert eigene Setups auf dem Gerät (`user://setups/`). Mit „Als JSON kopieren“ bekommst du genau dieses Dateiformat – als `setup_*.json` hier ablegen und in `index.json` eintragen, dann ist es fest im Spiel.
+
 ## Modulare Teile
 
 | Modul | Aufbau |

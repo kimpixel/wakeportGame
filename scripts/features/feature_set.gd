@@ -6,6 +6,8 @@ extends Node3D
 
 const PARTS_FILE := "res://setups/parts.json"
 const INDEX_FILE := "res://setups/index.json"
+const USER_DIR := "user://setups"                  # eigene Setups aus dem Setup-Editor
+const USER_INDEX := "user://setups/index.json"
 const OVERRIDES := ["length", "width", "height", "height_end", "ramp_in", "ramp_out", "ramp_curve", "side_ramp", "curve", "radius", "center_y", "color", "name", "body", "inner_v", "article", "body_curve", "profile", "side_curve", "lip"]
 
 var parts: Array[FeaturePart] = []
@@ -13,10 +15,75 @@ var setup_name := ""
 var _catalog: Dictionary = {}
 
 
-## Alle Setups aus setups/index.json: [{"id", "name", "date", "file"}, …] (neuestes zuerst).
+## Alle Setups aus setups/index.json: [{"id", "name", "date", "file"}, …] (neuestes zuerst),
+## danach die eigenen aus dem Setup-Editor (mit "user": true).
 static func list_setups() -> Array:
 	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(INDEX_FILE))
+	var out: Array = data.get("setups", []) if data is Dictionary else []
+	for e: Dictionary in user_setups():
+		var u := e.duplicate()
+		u["user"] = true
+		out.append(u)
+	return out
+
+
+## Eigene Setups (user://setups/index.json).
+static func user_setups() -> Array:
+	if not FileAccess.file_exists(USER_INDEX):
+		return []
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(USER_INDEX))
 	return data.get("setups", []) if data is Dictionary else []
+
+
+## Eigenes Setup speichern (neu oder überschreiben). Gibt die Datei zurück ("" bei Fehler).
+static func save_user_setup(id: String, setup: Dictionary) -> String:
+	DirAccess.make_dir_recursive_absolute(USER_DIR)
+	var file := "%s/%s.json" % [USER_DIR, id]
+	var f := FileAccess.open(file, FileAccess.WRITE)
+	if f == null:
+		push_warning("Konnte %s nicht schreiben" % file)
+		return ""
+	f.store_string(JSON.stringify(setup, "  ", false))
+	f.close()
+	var list := user_setups()
+	var entry := {"id": id, "name": setup.get("name", id), "file": file}
+	var found := false
+	for i in list.size():
+		if list[i].get("id", "") == id:
+			list[i] = entry
+			found = true
+	if not found:
+		list.append(entry)
+	_write_user_index(list)
+	return file
+
+
+## Eigenes Setup löschen.
+static func delete_user_setup(id: String) -> void:
+	var list := user_setups()
+	for i in range(list.size() - 1, -1, -1):
+		if list[i].get("id", "") == id:
+			DirAccess.remove_absolute(list[i].get("file", ""))
+			list.remove_at(i)
+	_write_user_index(list)
+
+
+static func _write_user_index(list: Array) -> void:
+	var f := FileAccess.open(USER_INDEX, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify({"setups": list}, "  ", false))
+		f.close()
+
+
+## Setup-Datei als Dictionary ({"name", "T1": [...], "T2": [...]}).
+static func read_setup(file: String) -> Dictionary:
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(file))
+	return data if data is Dictionary else {}
+
+
+## Bauteile-Katalog (parts.json).
+static func read_catalog() -> Dictionary:
+	return read_setup(PARTS_FILE)
 
 
 ## Entfernt das aktuelle Setup und baut das Setup aus file auf.
@@ -24,18 +91,26 @@ static func list_setups() -> Array:
 ## s_offset: pro Terminal zusätzlicher Abstand (m) – die Setups sind vom T2-Startsteg aus
 ## gemessen; liegt der Startsteg einer Anlage weiter draußen, rücken ihre Teile mit.
 func load_setup(file: String, terminals: Dictionary, s_offset := {}) -> void:
+	load_data(_read_json(file), terminals, s_offset, file)
+
+
+## Wie load_setup, aber aus einem schon gelesenen Setup (Setup-Editor).
+## Jedes Teil merkt sich die Nummer seiner Setup-Zeile (FeaturePart.row_index).
+func load_data(setup: Dictionary, terminals: Dictionary, s_offset := {}, label := "") -> void:
 	for part in parts:
 		part.queue_free()
 	parts.clear()
-	_catalog = _read_json(PARTS_FILE)
-	var setup := _read_json(file)
-	setup_name = setup.get("name", file)
+	if _catalog.is_empty():
+		_catalog = _read_json(PARTS_FILE)
+	setup_name = setup.get("name", label)
 	for terminal: String in terminals:
 		var off: float = s_offset.get(terminal, 0.0)
-		for row: Dictionary in setup.get(terminal, []):
-			var r := row.duplicate()
+		var rows: Array = setup.get(terminal, [])
+		for i in rows.size():
+			var r: Dictionary = (rows[i] as Dictionary).duplicate()
 			r["s"] = float(r.get("s", 0.0)) + off
-			_place(r, terminals[terminal], file)
+			r["_row"] = i
+			_place(r, terminals[terminal], label)
 
 
 func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transform3D.IDENTITY) -> void:
@@ -62,6 +137,7 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 		for child: Dictionary in entry.get("parts", []):
 			var c := child.duplicate()
 			c["group"] = entry.get("name", id)
+			c["_row"] = row.get("_row", -1)
 			c["x"] = float(c.get("x", 0.0)) * mirror
 			if row.has("ramp_in") and c.get("edge", "") == "in":
 				c["ramp_in"] = row["ramp_in"]
@@ -84,6 +160,7 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 	var part := FeaturePart.new()
 	part.setup(id, p)
 	part.group_name = row.get("group", "")
+	part.row_index = row.get("_row", -1)
 	part.cable = cable
 	var world := cable.transform * Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, cable.mast_a_z)) * local
 	part.transform = world

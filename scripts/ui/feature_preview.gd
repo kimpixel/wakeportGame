@@ -98,7 +98,7 @@ func show_parts(parts: Array, cable: CableSystem) -> void:
 		aabb = aabb.expand(c)
 	var center := aabb.get_center()
 	center.y = 0.0
-	var to_local := Transform3D(cable.global_basis, center).affine_inverse()
+	var to_local := Transform3D(cable.transform.basis, center).affine_inverse()
 	var bounds := AABB()
 	first = true
 	for p: FeaturePart in parts:

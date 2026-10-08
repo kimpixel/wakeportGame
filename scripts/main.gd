@@ -11,7 +11,8 @@ extends Node3D
 ##   --terminal=T1|T2  an welcher Anlage man fährt (der NPC fährt an der anderen)
 ##   --mobile          Handy-Steuerung erzwingen (mit --tilt=GRAD feste Neigung)
 ##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
-##   --screen[=NAME]   Startbildschirm erzwingen (NAME: Feature/Hack auswählen, z. B. "hack");
+##   --screen[=NAME]   Startbildschirm erzwingen (NAME: Feature/Hack auswählen, z. B. "hack";
+##                     @liste, @einstellungenN, @editor = Setup-Editor);
 ##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
 ##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
 ##   --jump-at=SEK     Test: zu dieser Zeit voll aufgeladen abspringen
@@ -324,6 +325,32 @@ func _build_start_screen() -> void:
 		pc.start()
 		start_screen.refresh(terminal, _setup_idx))
 	start_screen.start_pressed.connect(_close_start_screen)
+	start_screen.setups_changed.connect(_on_setups_changed)
+
+
+## Setup-Editor hat ein eigenes Setup gespeichert (bzw. gelöscht): Listen neu laden, das
+## gespeicherte Setup aufbauen; "Speichern & Fahren" startet gleich das Spiel.
+func _on_setups_changed(id: String, play: bool) -> void:
+	var cur: String = _setups[_setup_idx]["id"]
+	_setups = FeatureSet.list_setups()
+	var names: Array = []
+	_setup_menu.clear()
+	for e: Dictionary in _setups:
+		names.append(e["name"])
+		_setup_menu.add_item(e["name"])
+	start_screen.set_setup_names(names)
+	var idx := -1
+	for want: String in [id, cur]:
+		for i in _setups.size():
+			if idx < 0 and _setups[i]["id"] == want:
+				idx = i
+	_reset()
+	_select_setup(maxi(idx, 0), true)
+	if play:
+		_close_start_screen()
+	else:
+		pc.start()
+		start_screen.refresh(terminal, _setup_idx)
 
 
 ## Startbildschirm zeigen. Die Bahn läuft live weiter: auf der eigenen Anlage fährt der
@@ -529,8 +556,8 @@ func _initial_setup() -> int:
 
 
 ## Anderes Feature-Setup aufbauen (nur solange die Anlage steht).
-func _select_setup(idx: int) -> void:
-	if pc.state != CableSystem.State.IDLE or idx == _setup_idx:
+func _select_setup(idx: int, force := false) -> void:
+	if pc.state != CableSystem.State.IDLE or (idx == _setup_idx and not force):
 		_setup_menu.select(_setup_idx)
 		return
 	_setup_idx = idx

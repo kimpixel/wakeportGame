@@ -17,6 +17,8 @@ Nachgebaut ist der **Wakeport am Raunheimer Waldsee** (Hessen). **Auf der Starts
 
 Die echten Feature-Setups von T1 und T2 stehen modular in [setups/](setups/README.md): ein Bauteile-Katalog mit den echten Modulen (Pipe-Hälften mit an-/absteckbaren Auffahrten, Port Plaza aus Plaza Kicker und Plaza Rail, Spine Kicker aus zwei Kicker M) und mehrere Setups, je eine Datei für beide Terminals. **Auf der Startseite wählst du, welches Setup du fährst.** Aktuell ist „2026 September“, dazu sechs ältere Setups, deren Datum noch als Platzhalter drinsteht.
 
+**Setup-Editor** (Taste auf der Startseite): eigene Setups für T1 und T2 bauen. Links die Bahn von oben (Raster, Seil, Masten, Wenden, Bojen; umschaltbar auf 3D), rechts die Bauteile, alle Hacks aus den echten Setups, die Eigenschaften der Auswahl mit 3D-Vorschau und das Setup selbst (Vorlage laden, Terminal leeren/kopieren, JSON kopieren/einfügen). Teil antippen = auswählen (doppelt = ganzer Hack, Umschalt/Strg = mehrere), ziehen = verschieben, freie Fläche ziehen = Karte bewegen, Rad bzw. + / − = Zoom. Tasten: Pfeile 0,1 m (Umschalt 1 m), Q/E drehen, F Richtung, M spiegeln, Strg+D duplizieren, Entf löschen, Strg+Z/Strg+Y. Zusammenstehende Teile werden als Hack orange markiert. **Speichern** legt ein eigenes Setup an (im Browser bzw. auf dem Gerät gespeichert), es erscheint dann unter FEATURE-SETUP; **Speichern & Fahren** startet gleich.
+
 Über den weißen Schwimmsteg, den Holzsteg und die Wendebojen fährt man einfach drüber: Die Boje wird unter Wasser gedrückt, der Fahrer macht ein kleines „Ups“. Der blaue Gummiball (in manchen Setups) dagegen muss übersprungen werden.
 
 ## Steuerung

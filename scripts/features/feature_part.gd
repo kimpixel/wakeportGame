@@ -19,6 +19,7 @@ var part_id := ""
 ## "all" = ganze Oberseite (Pyramid), "transition" = Transition, aber nicht das Rail.
 var slick := ""
 var display_name := ""
+var row_index := -1           # Nummer der Zeile im Setup (Gruppen: alle Teile dieselbe)
 var group_name := ""          # gehört zu einem Modul aus mehreren Teilen (z. B. Pyramid Series)
 var article := "die"           # für Meldungen: "Gegen die Pipe" / "Gegen den Ball"
 var type := "block"

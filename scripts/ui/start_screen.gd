@@ -3,13 +3,15 @@ extends CanvasLayer
 ## Startseite im Stil der HUD-Leiste, für Desktop und Handy (passt sich der Bildschirmgröße an).
 ## Im Hintergrund läuft die echte Szene: die Kamera schwenkt langsam um den See, auf beiden
 ## Anlagen fährt ein Fahrer. Darüber das Menü: Terminal, Feature-Setup, Einstellungen (Wetter,
-## Datum, Uhrzeit, Seillänge, Anlagen-Tempo) und "Spiel starten". Tastatur: Leertaste Spiel starten, Esc schließt ein Popup.
-## Features & Hacks (alle aus allen Setups, Detail in 3D) ist gebaut, steht aber nicht im Menü –
-## vorgesehen für einen späteren Setup-Builder (Test: --screen=@liste).
+## Datum, Uhrzeit, Seillänge, Anlagen-Tempo), Setup-Editor (eigene Seite, SetupEditor) und
+## "Spiel starten". Tastatur: Leertaste Spiel starten, Esc schließt ein Popup.
+## Features & Hacks (alle aus allen Setups, Detail in 3D) ist gebaut, steht aber nicht im Menü
+## (Test: --screen=@liste); der Setup-Editor hat eine eigene Hack-Liste.
 
 signal terminal_chosen(terminal: String)
 signal setup_chosen(idx: int)
 signal start_pressed
+signal setups_changed(id: String, play: bool)   # Setup-Editor hat gespeichert bzw. gelöscht
 
 const BASE_SHORT := 740.0        # so viele Einheiten hat die kurze Bildschirmseite mindestens
 const BASE_LONG := 1200.0        # … und die lange
@@ -37,6 +39,9 @@ var _result: Label
 var _term_buttons: Array[Button] = []
 var _setup_buttons: Array[Button] = []
 var _setup_grid: GridContainer
+var _setup_group := ButtonGroup.new()
+var _setup_idx := 0
+var _editor: SetupEditor
 var _start_btn: Button
 var _dim: ColorRect
 var _settings: PanelContainer
@@ -128,16 +133,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_setup_grid.add_theme_constant_override("h_separation", 8)
 	_setup_grid.add_theme_constant_override("v_separation", 8)
 	mv.add_child(_setup_grid)
-	var sg := ButtonGroup.new()
-	for i in setup_names.size():
-		var b := _button((setup_names[i] as String).get_slice(" (", 0), 18)   # ohne "(Datum ?)"
-		b.toggle_mode = true
-		b.button_group = sg
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.clip_text = true
-		b.pressed.connect(func() -> void: setup_chosen.emit(i))
-		_setup_grid.add_child(b)
-		_setup_buttons.append(b)
+	set_setup_names(setup_names)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	mv.add_child(row)
@@ -145,6 +141,10 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	eb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	eb.pressed.connect(func() -> void: _show_popup(_settings))
 	row.add_child(eb)
+	var ed := _button("Setup-Editor", 20)
+	ed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ed.pressed.connect(open_editor)
+	row.add_child(ed)
 	_start_btn = _button("SPIEL STARTEN", 30, true)
 	_start_btn.custom_minimum_size.y = 72
 	_start_btn.pressed.connect(func() -> void: start_pressed.emit())
@@ -161,6 +161,46 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_build_settings()
 	_build_browser()
 	_build_detail()
+	_editor = SetupEditor.new()
+	_editor.host = self
+	_editor.visible = false
+	_ui.add_child(_editor)
+	_editor.build()
+	_editor.saved.connect(func(id: String, play: bool) -> void: setups_changed.emit(id, play))
+	_editor.closed.connect(func() -> void: get_viewport().disable_3d = false)
+
+
+## Tasten der Feature-Setups (neu aufbauen, z. B. nach Speichern im Setup-Editor).
+func set_setup_names(setup_names: Array) -> void:
+	_setup_names = setup_names
+	for b in _setup_buttons:
+		b.queue_free()
+	_setup_buttons.clear()
+	for i in setup_names.size():
+		var b := _button((setup_names[i] as String).get_slice(" (", 0), 18)   # ohne "(Datum ?)"
+		b.toggle_mode = true
+		b.button_group = _setup_group
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.clip_text = true
+		b.tooltip_text = setup_names[i]
+		b.pressed.connect(func() -> void: setup_chosen.emit(i))
+		_setup_grid.add_child(b)
+		_setup_buttons.append(b)
+	if is_inside_tree():
+		_layout()
+
+
+## Setup-Editor öffnen (Ausgangspunkt: das gewählte Setup). Die Szene dahinter wird so lange
+## nicht gerendert.
+func open_editor() -> void:
+	_close_popups()
+	var list := FeatureSet.list_setups()
+	_editor.open(list[clampi(_setup_idx, 0, list.size() - 1)], _terminal)
+	get_viewport().disable_3d = true
+
+
+func editor_open() -> bool:
+	return _editor != null and _editor.visible
 
 
 func _ready() -> void:
@@ -302,6 +342,7 @@ func _layout() -> void:
 	_dim.size = size
 	for p: PanelContainer in [_settings, _browser, _detail]:
 		_fit_popup(p, size)
+	_editor.layout(size, _k)
 
 
 func _fit_popup(p: PanelContainer, size: Vector2) -> void:
@@ -736,6 +777,7 @@ func _open_detail(e: Dictionary, from_browser: bool) -> void:
 ## Auswahl und Kamera auf den aktuellen Stand bringen (nach Öffnen bzw. Wechsel).
 func refresh(terminal: String, setup_idx: int, _focus_idx := -1) -> void:
 	_terminal = terminal
+	_setup_idx = setup_idx
 	var ti := _terminals.find(terminal)
 	if ti >= 0:
 		_term_buttons[ti].set_pressed_no_signal(true)
@@ -761,6 +803,10 @@ func activate() -> void:
 
 ## Feature/Hack mit diesem Namensteil im Popup zeigen (Test: --screen=NAME).
 func select_by_name(prefix: String) -> void:
+	if prefix.begins_with("@editor"):
+		open_editor()
+		_editor.run_test(prefix.substr(7))
+		return
 	if prefix == "@liste":
 		_open_browser()
 		return
@@ -809,7 +855,7 @@ func _process(delta: float) -> void:
 # ---------------------------------------------------------------- Tastatur
 
 func _input(event: InputEvent) -> void:
-	if not visible or not (event is InputEventKey) or not event.pressed or event.is_echo():
+	if not visible or not (event is InputEventKey) or not event.pressed or event.is_echo() or editor_open():
 		return
 	var k := (event as InputEventKey).physical_keycode
 	match k:
