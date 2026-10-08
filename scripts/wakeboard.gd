@@ -82,6 +82,9 @@ static func foot_yaw(front: bool) -> float:
 	return DUCK if front else -DUCK
 
 
+var _boots: Array[Dictionary] = []    # je Schuh: Knoten, vorne?, Meshes (für flex)
+const FLEX_MAX := 0.6                 # rad: weiter knickt der Schaft nicht
+
 static var _mesh_cache: ArrayMesh      # Form ist bei allen Brettern gleich -> ein Mesh für alle
 
 
@@ -130,6 +133,9 @@ func _init(design: Dictionary = {}) -> void:
 			boot.transform = Transform3D(Basis(Vector3.UP, -PI * 0.5 + foot_yaw(front)), boot_origin(front))
 			add_child(boot)
 			_style_boot(boot, {"camo": panel, "olive": upper, "orange": accent})
+			var parts: Array[MeshInstance3D] = []
+			_flexible(boot, parts, {})
+			_boots.append({"node": boot, "front": front, "meshes": parts})
 
 
 ## Schuh-Material: beidseitig (man sieht oben in den Schaft hinein).
@@ -152,6 +158,48 @@ func _style_boot(n: Node, by_name: Dictionary) -> void:
 					mi.set_surface_override_material(i, by_name[prefix])
 	for c in n.get_children():
 		_style_boot(c, by_name)
+
+
+## Alle Schuh-Materialien gegen Varianten mit Knöchel-Knick tauschen (boot.gdshader / camo).
+func _flexible(n: Node, out: Array[MeshInstance3D], done: Dictionary) -> void:
+	if n is MeshInstance3D:
+		var mi := n as MeshInstance3D
+		out.append(mi)
+		for i in mi.mesh.get_surface_count():
+			var m := mi.get_surface_override_material(i)
+			if m == null:
+				m = mi.mesh.surface_get_material(i)
+			if m is StandardMaterial3D:
+				if not done.has(m):
+					var sm := ShaderMaterial.new()
+					sm.shader = load("res://shaders/boot.gdshader")
+					sm.set_shader_parameter("albedo", m.albedo_color)
+					if m.albedo_texture:
+						sm.set_shader_parameter("albedo_tex", m.albedo_texture)
+					sm.set_shader_parameter("roughness", m.roughness)
+					sm.set_shader_parameter("metallic", m.metallic)
+					done[m] = sm
+				mi.set_surface_override_material(i, done[m])
+	for c in n.get_children():
+		_flexible(c, out, done)
+
+
+## Schäfte der Bindungen folgen den Schienbeinen: Richtung Knöchel -> Knie (Welt) für
+## vorderen und hinteren Fuß. Die Sohle bleibt flach auf dem Brett, geknickt wird am Knöchel.
+func flex(shin_front: Vector3, shin_back: Vector3) -> void:
+	for b: Dictionary in _boots:
+		var shin: Vector3 = shin_front if b["front"] else shin_back
+		var ankle := global_transform * ankle_local(b["front"])
+		var up := global_basis.y.normalized()
+		var dir := shin.normalized()
+		var axis := up.cross(dir)
+		var ang := minf(asin(clampf(axis.length(), 0.0, 1.0)), FLEX_MAX) if up.dot(dir) > 0.0 else FLEX_MAX
+		for mi: MeshInstance3D in b["meshes"]:
+			var inv := mi.global_transform.affine_inverse()
+			var ax := (inv.basis * axis).normalized() if axis.length() > 0.001 else Vector3.RIGHT
+			mi.set_instance_shader_parameter("flex_pivot", inv * ankle)
+			mi.set_instance_shader_parameter("flex_up", (inv.basis * up).normalized())
+			mi.set_instance_shader_parameter("flex_rot", Vector4(ax.x, ax.y, ax.z, ang if axis.length() > 0.001 else 0.0))
 
 
 # ---------------------------------------------------------------- Mesh

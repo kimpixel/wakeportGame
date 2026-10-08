@@ -8,10 +8,13 @@ uniform vec3 c2 : source_color = vec3(0.33, 0.37, 0.22);
 uniform vec3 c3 : source_color = vec3(0.40, 0.28, 0.17);
 uniform vec3 c4 : source_color = vec3(0.08, 0.09, 0.1);
 
+#include "res://shaders/boot_flex.gdshaderinc"
+
 varying vec3 lp;
 
 void vertex() {
 	lp = VERTEX;
+	flex_vertex(VERTEX, NORMAL);
 }
 
 vec3 srgb(vec3 c) { return pow(c, vec3(2.2)); }

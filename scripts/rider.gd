@@ -1096,6 +1096,8 @@ func _process(delta: float) -> void:
 		_board_pivot.position = Vector3(0.0, BOARD_Y, 0.0)
 		_board_pivot.rotation = Vector3(0.0, 0.0, 1.2 if mode == Mode.CRASHED \
 			else _lean_roll * (0.35 + 0.45 * _edge_vis) * (1.0 - 0.85 * _release_vis))
+	if _rig:
+		_flex_boots()
 
 	# Griff, Arme, Seil
 	var anchor := cable.get_anchor_visual()
@@ -1426,6 +1428,17 @@ func _pose_stand() -> void:
 	if look_dir.length() < 1.0:
 		look_dir = rope_h if rope_h.length() > 0.1 else forward()
 	_rig.look_at(skel_inv * (pelvis_world + Vector3.UP * 0.8 + look_dir.normalized() * 10.0))
+
+
+## Bindungsschäfte knicken mit den Schienbeinen (links = vorderer Fuß, rechts = hinterer).
+func _flex_boots() -> void:
+	var board := _board_pivot.get_child(0) as Wakeboard
+	if board == null:
+		return
+	var xf := _rig.skeleton.global_transform
+	var shin := func(side: String) -> Vector3:
+		return xf * _rig.global_pose("calf_" + side).origin - xf * _rig.global_pose("foot_" + side).origin
+	board.flex(shin.call("l"), shin.call("r"))
 
 
 ## Beim Sturz bleibt das Brett an den Füßen (Bindungen): Lage aus den Fuß-Knochen der Ragdoll.
