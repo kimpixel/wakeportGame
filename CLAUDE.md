@@ -1,0 +1,175 @@
+# CLAUDE.md – Wakeport Raunheim
+
+Wakeboard-Spiel in **Godot 4.7.2** (GDScript), das den **Wakeport Raunheim** nachbaut: Waldsee bei
+Frankfurt mit zwei 2-Mast-Seilanlagen (T1, T2). Web-Version auf GitHub Pages:
+https://kimpixel.github.io/wakeportGame/ (Repo `kimpixel/wakeportGame`, Build per
+`.github/workflows/web.yml` bei jedem Push auf `main`, dauert ca. 1 min).
+
+Spielerdoku: `README.md`. Feature-Setups und Bauteile: `setups/README.md`.
+
+## Zusammenarbeit
+
+- Sprache mit dem Nutzer: **Deutsch**. Code-Kommentare und Doku ebenfalls Deutsch.
+- Nach jeder fertigen Änderung: kurzer Smoke-Test, **commit und push** (Nutzer testet im Browser).
+  Commit-Nachricht auf Deutsch, endet mit `Co-Authored-By: Claude …`.
+- Sagt der Nutzer „zeige das Ergebnis und warte auf Freigabe“ (oder ist eine Pose/Optik strittig):
+  Screenshots schicken, **nicht committen**, bis er „passt so“ sagt.
+- „passt so“ = Freigabe, dann commit.
+- Bei Optik/Animation immer Screenshots machen und selbst ansehen, bevor man Erfolg meldet.
+- README.md und die Hilfe im HUD (`scripts/hud.gd`, `HELP`/`HELP_MOBILE`) bei Steuerungs- und
+  Regeländerungen mitpflegen.
+
+## Testen
+
+Godot liegt im Repo-Root: `./Godot_v4.7.2-stable_win64_console.exe`. Kein ffmpeg/python, aber node.
+
+```bash
+# Headless-Smoke-Test (Autopilot, Log mit TRICK:/CRASH:/t=… Zeilen)
+./Godot_v4.7.2-stable_win64_console.exe --headless --path . --fixed-fps 120 -- --autotest --quit=30
+# Screenshot (mit Fenster), z. B. Nahaufnahme am Fahrer
+./Godot_v4.7.2-stable_win64_console.exe --path . --fixed-fps 120 -- --autotest --jump-at=12 --closeup=0,1.2,4.5,0,1.0,0 --shot=PFAD.png --shot-time=12.4
+# Handy nachstellen
+./Godot_v4.7.2-stable_win64_console.exe --path . --resolution 540x1170 -- --mobile --tilt=0
+```
+
+Wichtige Test-Argumente (vollständig im Kopf von `scripts/main.gd`): `--autotest`, `--quit=S`,
+`--shot=P --shot-time=S`, `--view=x,y,z,lx,ly,lz`, `--closeup=x,y,z[,lx,ly,lz]` (relativ zum Fahrer),
+`--terminal=T1|T2`, `--setup=ID`, `--screen[=NAME|@liste|@einstellungen]`, `--no-screen`,
+`--mobile --tilt=GRAD`, `--jump-at=S`, `--pitch=±1`, `--crash-at=S`, `--letgo-at=S`,
+`--game-time=S`, `--weather=ID --hour=H --day=T`, `--plane=S`, `--passive`.
+
+Fallstricke:
+- **Neue `class_name`** → erst `--headless --import` laufen lassen, sonst „Could not find type“.
+- Screenshots mit Fenster brauchen bei `--fixed-fps 120` lange (Spielzeit wird voll gerendert).
+  Früh testen: der Fahrer ist ab ca. 3 s auf dem Wasser, `--jump-at=12` reicht.
+- Für einen Trick im Test temporär Grenzwerte ändern (z. B. `RALEY_SPEED := 0.0 #TMP`) und
+  **vor dem Commit zurücksetzen**.
+- Mehrzeilige GDScript-Änderungen mit Edit/Write statt bash-heredoc/`node -e`: `\\` am Zeilenende
+  wird dort leicht zu einem wörtlichen `\n` oder verschluckt.
+- „ERROR: BUG: Unreferenced static string“ beim Beenden ist Engine-Rauschen.
+
+## Architektur (wichtigste Dateien)
+
+| Datei | Inhalt |
+|---|---|
+| `scripts/main.gd` | Szene aufbauen, Eingabe (`_setup_input`), Spielablauf (Runde, Strafzeiten, Wenden-Wertung), Startseite öffnen/schließen, Test-Argumente |
+| `scripts/rider.gd` | Fahrer: Physik (Wasser, Luft, Slider), Seilzug, Tricks und Punkte, Posen (IK am Menschen-Rig), Raley/Überschlag/Press, Sturz/Schwimmen/Deep-Water-Start, Autopilot/NPC |
+| `scripts/cable_system.gd` | Carrier/Seilbahn einer Anlage (Zustände RUN, BRAKE, PAUSE, FETCH, HOLD, DONE) |
+| `scripts/features/` | `feature_set.gd` (Setups laden), `feature_part.gd` (Form = Physik = Grafik), `hacks.gd` (Hack-Erkennung/-Namen) |
+| `scripts/ui/start_screen.gd` | Startseite (responsiv, Popups Einstellungen / Features & Hacks / Detail) |
+| `scripts/ui/feature_preview.gd` | drehbare 3D-Vorschau eines Features/Hacks (eigene Welt) |
+| `scripts/ui/touch_pad.gd`, `scripts/mobile_input.gd` | Handy: virtuelle Tasten, Neigung, Touch |
+| `scripts/hud.gd` | HUD (Zeit, Seilzug-Anzeige, Punkte), Hilfe, Stil (`ACCENT` grün, `PANEL`) |
+| `scripts/weather.gd`, `scripts/sun_calc.gd`, `shaders/sky.gdshader` | Wetter, Sonnenstand nach echter Lage |
+| `scripts/sfx.gd`, `assets/sounds/` | Sounds; `positiv/` (Jubel), `feature_hit/`, `landing/` aus Videoaufnahmen |
+| `scripts/npcs/` | Umgebung (Steuermänner, wartende Fahrer, SUPs), Flugzeuge im Anflug |
+| `scripts/wakeboard.gd`, `shaders/boot*.gdshader*` | Board + Bindungen (Schaft knickt per Shader mit dem Schienbein) |
+| `setups/parts.json`, `setups/setup_*.json`, `setups/index.json` | Bauteil-Katalog, Feature-Setups je Terminal |
+
+Koordinaten: Seil T2 entlang −z vom Startmast (z = 0). `s` = Abstand vom Startmast entlang des
+Seils, `x` = seitlich (+ rechts mit Blick zum Endmast). Lage: 50,0122 N, 8,4773 E. Seeseite der
+Bahn = lokal −x der Anlage. Alle Features stehen im Spiel 10 m weiter draußen als in den
+Setup-Dateien (`FEATURE_SHIFT`), Endmasten 35 m weiter (`END_EXTEND`), rote Bojen 27 m vor dem
+Wendepunkt.
+
+## Festgelegte Regeln und Entscheidungen
+
+Spiel:
+- Runde **7:30**. Danach holt der Operator den Fahrer zum Start, dann Startseite mit Ergebnis.
+- **2-Mast-Prinzip: niemand muss zurück zum Start.** Seil verloren → kein Sturz, ausgleiten und
+  einsinken. Nach Sturz bringt der Operator die Handle auf Höhe des Fahrers; schwimmen (Bauchlage,
+  Kraulen, Brett hinten oben), greifen, **Deep-Water-Start** (liegen bleiben bis das Seil spannt,
+  dann langsam aufstehen). Wasserstart immer Richtung des **weiter entfernten** Wendepunkts.
+- Strafzeit: Leertaste nach Sturz −3:00 (sofort unter dem Seil weiter), R zurück zum Steg −5:00.
+- Einsinken: Brett trägt nur mit Seilzug oder Tempo. Schlaffes Seil + langsam = absaufen (wie
+  Wasserstart, keine Punkte für die Wende). Wende: 15 Punkte, außen um die weiße Boje 30.
+- Jeder Start: **sonniger Sommertag 10:30** (21. Juni). Wetter/Uhrzeit werden nicht gespeichert,
+  „Jetzt“ nur auf Knopfdruck. (Grund: es darf nie nachts dunkel starten.)
+- Jubel: nur vom **eigenen Operator**, immer nur **ein** Ruf (kein neuer, solange einer läuft + 3 s).
+- Flugzeuge: Anflug Frankfurt (Betriebsrichtung 07) tief über dem See. Geräusch **ohne reine Töne**
+  (Pfeifen klang am Handy wie Piepen).
+
+Punkte (Konstanten oben in `rider.gd`):
+- **Slides vor Drehungen** (sonst „spin to win“). Slide: 150 + 150/s, Boardslide +100, Press +100,
+  Rail/Pipe ×1,5, Transition Rail ×1,3. Air: 50/s Flugzeit, 50 pro 180°. Raley +150,
+  Front-/Backroll je 300.
+- **Kombination**: nächster Trick innerhalb 3 s Fahrt → 2. Trick ×2, 3. ×3 … Sturz/Absaufen beendet.
+
+Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten):
+- ←/→ (A/D) lenken; in der Luft, beim Raley und auf dem Slider drehen (Slider dreht schnell).
+- ↑/↓ (W/S): in der Luft **Frontroll/Backroll**; auf dem Slider **Nose-/Tailpress** (kippt entlang
+  der Brettlänge, also quer bei quergestelltem Brett); nach Sturz ↑ = schwimmen.
+  Wer beim Abheben ↑/↓ noch hält (Press vom Slider), bekommt keinen Überschlag, bis er loslässt.
+- Leertaste: halten + loslassen = Sprung; startet auch die Anlage (dann ohne Sprung). Kein Enter.
+- Strg (zur Not Alt): Driften (Kante lösen). „Maximaler Grip“ gibt es nicht mehr.
+- R, + / −, C, P, H, M, T, F, Tab wie in der README.
+
+Steuerung Handy: Neigen = lenken, Tippen/Halten = Start/Sprung, ▲ ▼ DRIFT als virtuelle Tasten,
+☰-Menü (Weiter, Hilfe, Zurück zum Steg, Startseite, Ton). Terminal/Setup nur auf der Startseite.
+**Mobil-Code strikt isolieren**: nur Aktionen loslassen, die er selbst gedrückt hat, nichts
+global; Web-Audio-Hacks nur auf Touch-Geräten (früher hakte sonst die Desktop-Tastatur).
+
+Tricks/Optik:
+- **Ollie** = normaler Sprung. **Raley** nur mit viel Power: > 40 km/h, Sprung voll aufgeladen,
+  **kein Feature voraus** (damit man schräg auf Features springen kann). Pose nach Fotoserie:
+  Körper schwingt um den Griff, am höchsten Punkt kopfüber unter dem Brett, Hohlkreuz, Knie
+  angewinkelt, **Griff vor dem Gesicht** mit angewinkelten Armen (nicht hinter dem Kopf).
+- **Frontroll eingerollt** (Knie zur Brust), **Backroll gestreckt**.
+- Nach Sturz/Absaufen/Neustart wird Raley/Überschlag/Press sofort zurückgesetzt.
+- Slider **einloggen** (Auto-Rutschen): bis 35° Abweichung richtet das System die Fahrtrichtung
+  entlang des Features aus und zieht zur Spur; erst darüber rutscht man ab.
+- Sprung aufladen: stufenlos tiefer in die Knie.
+
+Features/Setups:
+- **Hack** = mehrere Features, die zusammenstehen (≤ 0,8 m). Gängige Kombinationen heißen **nicht**
+  „Hack“: Module aus mehreren Teilen (`group_name`, z. B. Pyramid Series, Spine Kicker, Port
+  Plaza), Ollie Box + Ollie Box Ledge, Kicker nebeneinander.
+- Zwei Cheese Wedges zusammen stehen immer **Rücken an Rücken** (zweiter mit `dir` andersherum).
+- Down Ledge: 20 m, Profil `[[0,-0.1],[1.0,0.5],[5.5,1.9],[19.5,0.8],[20,-0.15]]` (kleine Safety
+  vorne, steil hoch, lang abfallend, hintere Safety bis ins Wasser). Kein Add-on-Rail.
+- Uprail 7,5 m. Transition Rail: Rail 28 cm dick, im flachen Abschluss (ca. 26 cm) **versenkt**,
+  ragt 7 cm heraus, von allen Seiten befahrbar, löst keinen Sturz aus.
+- Positionen kommen aus den Plan-Fotos (`fotos/`); die Pläne sind nicht maßstäblich, Maße aus
+  dem Katalog. Beim Nachstellen von Hacks: vorne/hinten und Seiten genau mit dem Foto abgleichen.
+- T1-Steg ist 5 cm höher als T2 (`Lake.DOCK_T1_Y`).
+
+Startseite: echte Szene im Hintergrund, Kamera schwenkt von der Seeseite; Menü im HUD-Stil
+(Terminal, Feature-Setup als Tasten, Features & Hacks, Einstellungen, Spiel starten), Popups für
+Einstellungen, Feature-Liste (alle Setups, unabhängig vom Terminal) und Detail mit 3D-Vorschau.
+Responsiv: Desktop Menü links, Handy quer breit/flach, Handy hoch unten.
+
+## Fachbegriffe
+
+| Begriff | Bedeutung |
+|---|---|
+| Terminal (T1, T2) | eine Seilanlage. T2: Strand mit großer Hütte; T1: Lounge-Steg |
+| 2-Mast-Anlage | Seil zwischen zwei Masten, ein Carrier pendelt hin und her (kein Rundkurs) |
+| Carrier | Wagen am Seil, an dem die Leine mit der Handle hängt |
+| Handle | Griffstange am Ende der Leine |
+| Operator / Steuermann | bedient die Anlage am Start (fährt Carrier, bringt die Handle) |
+| Wende / Wendepunkt | Umkehr des Carriers an den Enden; rote Bojen = Beginn der Wende, weiße = außen herum |
+| Deep-Water-Start | Start aus dem Wasser liegend, Brett vorne quer |
+| Kante (Heel/Toe) | Brett auf die Kante stellen = Halt quer zum Zug; Kante lösen = Driften |
+| Feature / Obstacle | Hindernis im Wasser |
+| Kicker | Schanze (S/M/L); Spine Kicker = zwei Kicker Rücken an Rücken |
+| Cheese Wedge | keilförmiger Kicker/Abfahrt |
+| Slider | alles zum Rutschen: Box, Rail, Pipe, Ledge, Curb, Transition Rail |
+| Box / Ledge / Ollie Box | breite bzw. schmale Rutschfläche |
+| Rail / Pipe | Stange bzw. dickes Rohr; A-Frame = Rail mit Auf- und Abfahrt |
+| Transition | konkav geschwungene Auffahrt (Curb = kurzes Modul mit Transition) |
+| Down Ledge (Rooftop) | lange Ledge, erst steil hoch, dann lang abfallend |
+| Safety | flaches Endstück einer Ledge zum Wasser hin |
+| Uprail | ansteigendes Rail |
+| Hack | Kombination zusammengestellter Features (siehe oben) |
+| Ollie | einfacher Sprung aus dem Wasser |
+| Raley | Sprung mit hohem Schwung nach hinten, Körper gestreckt, Brett über Kopf |
+| 180 / 360 / … | Drehung um die Hochachse |
+| Frontroll / Backroll | Überschlag um die Brettlängsachse (vorwärts / rückwärts) |
+| 50-50 | längs über das Feature rutschen |
+| Boardslide | quer zum Feature rutschen |
+| Nosepress / Tailpress | auf dem Slider Gewicht auf Nose bzw. Tail, anderes Ende in der Luft |
+| Nose / Tail | vorderes / hinteres Brettende (Twin-Tip: symmetrisch) |
+| Rocker | Biegung des Bretts zu den Spitzen |
+| Duck-Stance | beide Füße leicht nach außen gedreht |
+| Combo | mehrere Tricks direkt hintereinander |
+| Absaufen | bei schlaffem Seil und wenig Tempo einsinken |
