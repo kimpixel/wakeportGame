@@ -7,6 +7,46 @@ https://kimpixel.github.io/wakeportGame/ (Repo `kimpixel/wakeportGame`, Build pe
 
 Spielerdoku: `README.md`. Feature-Setups und Bauteile: `setups/README.md`.
 
+## Begriffe und Kurzformen des Nutzers (immer so verstehen)
+
+Der Nutzer benutzt feste Begriffe (oft mit Erklärung in Klammern) und Kurzformen:
+
+| Nutzer sagt | Bedeutung |
+|---|---|
+| **Terminal 1 (T1)**, **Terminal 2 (T2)** | die beiden Seilanlagen am See. Terminal = eine Anlage. T2: Strand mit großer Hütte (Standard, hier fährt man meist); T1: Lounge-Steg. Auf der jeweils anderen Anlage fährt ein NPC |
+| **Feature** | Terminus für ein **Hindernis** im Wasser (Kicker, Box, Rail, Pipe …) |
+| **Feature Setup (Setup)** | Terminus für die **Aufstellung der Hindernisse** einer Saison/Zeit, z. B. „2026 September“, „Setup A“ … „Setup E“. Datum oft unbekannt → Platzhalter „?“ |
+| **„T2 s D“, „t2 S D“, „T2 SE“** | Terminal 2, Setup D bzw. Setup E (so werden Stellen benannt: „auf t2 s D -> …“) |
+| **T und S** (Auswahl) | Terminal- und Setup-Auswahl im Menü / Tasten T und F |
+| **Hack** | sobald **mehrere Features zusammenstehen**, ist das ein Hack (Kombination). Ausnahme: so gängige Kombinationen heißen nicht Hack – Ollie Box + Ledge, A-Frame + Pyramid Rail (Pyramid Series), zwei Kicker nebeneinander oder als Spine |
+| **Feature/Hack** | ein auswählbares Element: einzelnes Feature oder Hack |
+| **Startblock / Startdock** | Startsteg mit kleiner Holzhütte davor, dort startet man. Im Startblock sind immer mindestens der Steuermann und optional Gäste |
+| **Steuermann (Hebler)** = **Operator** | bedient die Anlage mit einer kleinen gelben viereckigen Fernsteuerung (ca. 30 × 10 cm), bringt nach einem Sturz die Handle |
+| **Handle** (geschrieben auch „Handel“) | Griffstange am Seil |
+| **Seil verlieren** | Handle loslassen/aus der Hand gerissen → kein Sturz, nur einsinken |
+| **Seilzug** | Spannung im Seil; wichtigste HUD-Anzeige, zeigt auch an, ob man gleich einsinkt |
+| **Wendepunkt / Wende** | Umkehr am Ende der Bahn (Ufer-Wende am Start, Wende am Endmast) |
+| **Rote Boje** | genau an der optimalen Stelle zum **Rauskanten** für die Kurve, mittig unter dem Seil, ein paar Meter vor den weißen |
+| **Weiße Bojen** | zwei je Wendepunkt (links und rechts), um die man außen herumfährt |
+| **Gelbe Bojenlinie** | lange gelbe Zylinder (ca. 2 m) aneinandergekettet |
+| **Rauskanten** | vor der Wende nach außen kanten und um den Carrier pendeln |
+| **Absinken / Einsinken / Absaufen** | bei schlaffem Seil und wenig Tempo ins Wasser sinken (wie Wasserstart, keine Punkte) |
+| **Kicker S / M / L** | Small / Medium / Large Kicker; **Spine** = zwei Kicker Rücken an Rücken |
+| **Small-Pipe** | Pipe-Hälfte mit beiden Auffahrten |
+| **Down Ledge (Rooftop)** | lange Ledge: kleine Safety vorne, steil hoch, lang abfallend, Safety hinten bis ins Wasser |
+| **Safety** (geschrieben „Safty“) | flaches/abfallendes Endstück einer Ledge |
+| **vorne / hinten** bei einem Feature | vorne = Anfahrtsseite, hinten = Ende/Abfahrt |
+| **Auffahrt** | die Schräge vorne bzw. hinten an Box/Rail/Pipe (Rail beginnt und endet am Ende der Auffahrt) |
+| **Bindung (Schuh)** | Bindung = hoher Schuh auf dem Board |
+| **Einflugschneise** | der See liegt im Landeanflug auf Frankfurt: Flugzeuge tief, groß, laut |
+| **Rolle am Mast** | Umlenkrolle (ca. 30 cm), um die das Stahlseil läuft |
+| **Startseite / Startscreen** | Menü vor dem Spiel |
+| **Hub** | gemeint ist das **HUD** |
+| **„passt so“** | Freigabe → committen |
+
+Häufige Schreibweisen: „rayley“ = Raley, „olli“ = Ollie, „triften“ = driften, „downledge“ = Down
+Ledge, „cheesewedge“ = Cheese Wedge, „Transitionrail“ = Transition Rail.
+
 ## Zusammenarbeit
 
 - Sprache mit dem Nutzer: **Deutsch**. Code-Kommentare und Doku ebenfalls Deutsch.
@@ -138,29 +178,21 @@ Startseite: echte Szene im Hintergrund, Kamera schwenkt von der Seeseite; Menü 
 Einstellungen, Feature-Liste (alle Setups, unabhängig vom Terminal) und Detail mit 3D-Vorschau.
 Responsiv: Desktop Menü links, Handy quer breit/flach, Handy hoch unten.
 
-## Fachbegriffe
+## Weitere Fachbegriffe (Wakeboard)
 
 | Begriff | Bedeutung |
 |---|---|
-| Terminal (T1, T2) | eine Seilanlage. T2: Strand mit großer Hütte; T1: Lounge-Steg |
 | 2-Mast-Anlage | Seil zwischen zwei Masten, ein Carrier pendelt hin und her (kein Rundkurs) |
 | Carrier | Wagen am Seil, an dem die Leine mit der Handle hängt |
-| Handle | Griffstange am Ende der Leine |
-| Operator / Steuermann | bedient die Anlage am Start (fährt Carrier, bringt die Handle) |
-| Wende / Wendepunkt | Umkehr des Carriers an den Enden; rote Bojen = Beginn der Wende, weiße = außen herum |
 | Deep-Water-Start | Start aus dem Wasser liegend, Brett vorne quer |
 | Kante (Heel/Toe) | Brett auf die Kante stellen = Halt quer zum Zug; Kante lösen = Driften |
 | Feature / Obstacle | Hindernis im Wasser |
-| Kicker | Schanze (S/M/L); Spine Kicker = zwei Kicker Rücken an Rücken |
 | Cheese Wedge | keilförmiger Kicker/Abfahrt |
 | Slider | alles zum Rutschen: Box, Rail, Pipe, Ledge, Curb, Transition Rail |
 | Box / Ledge / Ollie Box | breite bzw. schmale Rutschfläche |
 | Rail / Pipe | Stange bzw. dickes Rohr; A-Frame = Rail mit Auf- und Abfahrt |
 | Transition | konkav geschwungene Auffahrt (Curb = kurzes Modul mit Transition) |
-| Down Ledge (Rooftop) | lange Ledge, erst steil hoch, dann lang abfallend |
-| Safety | flaches Endstück einer Ledge zum Wasser hin |
 | Uprail | ansteigendes Rail |
-| Hack | Kombination zusammengestellter Features (siehe oben) |
 | Ollie | einfacher Sprung aus dem Wasser |
 | Raley | Sprung mit hohem Schwung nach hinten, Körper gestreckt, Brett über Kopf |
 | 180 / 360 / … | Drehung um die Hochachse |
@@ -172,4 +204,3 @@ Responsiv: Desktop Menü links, Handy quer breit/flach, Handy hoch unten.
 | Rocker | Biegung des Bretts zu den Spitzen |
 | Duck-Stance | beide Füße leicht nach außen gedreht |
 | Combo | mehrere Tricks direkt hintereinander |
-| Absaufen | bei schlaffem Seil und wenig Tempo einsinken |
