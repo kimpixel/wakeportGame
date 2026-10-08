@@ -1,28 +1,63 @@
 class_name StartScreen
 extends CanvasLayer
-## Startbildschirm: Terminal und Feature-Setup wählen, oben die Bahn live in der echten
-## Szene (isometrisch von der Seeseite) (Features anklickbar, zusammenstehende Teile = Hack, auf beiden Anlagen fährt ein
-## Fahrer), unten das gewählte Feature bzw. der Hack in 3D. Dient auch zum Prüfen der Features.
-## Tastatur: T Terminal, F Feature-Setup, ←/→ Feature, Enter Spiel starten.
+## Startseite im Stil der HUD-Leiste, für Desktop und Handy (passt sich der Bildschirmgröße an).
+## Im Hintergrund läuft die echte Szene: die Kamera schwenkt langsam um den See, auf beiden
+## Anlagen fährt ein Fahrer. Darüber das Menü: Terminal, Feature-Setup, Features & Hacks,
+## Einstellungen (Wetter, Datum, Uhrzeit) und "Spiel starten".
+## Features & Hacks: alle aus allen Setups, unabhängig vom gewählten Terminal; Antippen zeigt
+## das Feature bzw. den Hack in 3D (Popup, drehbar).
+## Tastatur: T Terminal, F Feature-Setup, Leertaste Spiel starten, Esc schließt ein Popup.
 
 signal terminal_chosen(terminal: String)
 signal setup_chosen(idx: int)
 signal start_pressed
 
+const BASE_SHORT := 740.0        # so viele Einheiten hat die kurze Bildschirmseite mindestens
+const BASE_LONG := 1200.0        # … und die lange
+const ORBIT_SPEED := 0.09        # Tempo des Kameraschwenks (Phase rad/s)
+const SEL := Color(1.0, 0.82, 0.2)
+
 var features: FeatureSet
 var weather: Weather
 var cable_of := {}               # "T1"/"T2" -> CableSystem
-var s_offset := {}               # wie FeatureSet.load_setup: s in der Setup-Datei = s_center - Versatz
+var s_offset := {}               # wie FeatureSet.load_setup (für die Setups im Katalog)
+var mobile := false              # Handy: keine Tastenhinweise
 
-var _terminal_opt: OptionButton
-var _setup_opt: OptionButton
-var _map: FeatureMap
-var _preview: FeaturePreview
-var _title: Label
-var _details: Label
-var _result: Label
-var _terminal := "T2"
 var _terminals: Array = []
+var _terminal := "T2"
+var _setup_names: Array = []
+var _ui: Control
+var _menu: PanelContainer
+var _title_box: Control
+var _result: Label
+var _hint: Label
+var _term_buttons: Array[Button] = []
+var _setup_buttons: Array[Button] = []
+var _setup_grid: GridContainer
+var _start_btn: Button
+var _dim: ColorRect
+var _settings: PanelContainer
+var _browser: PanelContainer
+var _browser_grid: VBoxContainer
+var _detail: PanelContainer
+var _detail_title: Label
+var _detail_text: Label
+var _preview: FeaturePreview
+var _font: Font
+var _k := 1.0
+
+# Kamera im Hintergrund
+var _cam: Camera3D
+var _orbit := 0.0
+var _focus := Vector3.ZERO
+var _focus_goal := Vector3.ZERO
+var _radius := 170.0
+var _radius_goal := 170.0
+var _basis := Basis.IDENTITY     # Ausrichtung der gewählten Anlage (für die Seeseite)
+
+# Katalog aller Features/Hacks (beim ersten Öffnen aufgebaut)
+var _catalog: Array = []         # [{name, hack: Array[FeaturePart], cable, where: Array[String], standard}]
+var _catalog_sets: Array[FeatureSet] = []
 
 
 func _init() -> void:
@@ -33,202 +68,553 @@ func _init() -> void:
 ## terminals: z. B. ["T2", "T1"] mit Anzeigenamen; setup_names: Namen aus setups/index.json
 func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_terminals = terminals
-	var bg := ColorRect.new()
-	bg.color = Color(0.07, 0.09, 0.11)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(bg)
+	_setup_names = setup_names
+	var sf := SystemFont.new()
+	sf.font_names = PackedStringArray(["Segoe UI", "Roboto", "Helvetica Neue", "Arial"])
+	sf.font_weight = 700
+	_font = sf
 
-	var root := VBoxContainer.new()
-	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.offset_left = 16
-	root.offset_top = 12
-	root.offset_right = -16
-	root.offset_bottom = -12
-	root.add_theme_constant_override("separation", 10)
-	add_child(root)
+	_cam = Camera3D.new()
+	_cam.fov = 50.0
+	_cam.far = 3000.0
+	add_child(_cam)
 
-	# oben: Titel + Auswahl
-	var top := HBoxContainer.new()
-	top.add_theme_constant_override("separation", 16)
-	root.add_child(top)
-	var head := Label.new()
-	head.text = "Wakeport Raunheim"
-	head.add_theme_font_size_override("font_size", 28)
-	top.add_child(head)
-	_result = Label.new()
-	_result.add_theme_font_size_override("font_size", 22)
-	_result.add_theme_color_override("font_color", FeatureMap.COL_SEL)
-	_result.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	top.add_child(_result)
-	_terminal_opt = _choice(top, "Terminal", terminal_names)
-	_terminal_opt.item_selected.connect(func(i: int) -> void: terminal_chosen.emit(_terminals[i]))
-	_setup_opt = _choice(top, "Feature-Setup", setup_names)
-	_setup_opt.item_selected.connect(func(i: int) -> void: setup_chosen.emit(i))
+	_ui = Control.new()
+	_ui.theme = _make_theme()
+	_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_ui)
 
-	_build_weather_row(root)
+	# links oben: Titel und Ergebnis der letzten Runde
+	var tb := VBoxContainer.new()
+	tb.add_theme_constant_override("separation", 0)
+	tb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ui.add_child(tb)
+	_title_box = tb
+	var t := _label("WAKEPORT RAUNHEIM", 40)
+	t.add_theme_constant_override("outline_size", 10)
+	tb.add_child(t)
+	_result = _label("", 24, SEL)
+	tb.add_child(_result)
 
-	# oben: die Bahn live (Start links, Endmast rechts)
-	var lt := Label.new()
-	lt.text = "Feature oder Hack anklicken (← →)  –  Doppelklick: heranzoomen, ziehen: verschieben, Rad: Zoom, Rechtsklick: ganze Bahn   |   T Terminal   F Feature-Setup   Enter Start"
-	lt.add_theme_font_size_override("font_size", 14)
-	lt.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
-	root.add_child(lt)
-	_map = FeatureMap.new()
-	_map.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_map.size_flags_stretch_ratio = 1.15
-	_map.hack_selected.connect(_on_hack)
-	root.add_child(_map)
+	# Menü
+	_menu = _panel()
+	_ui.add_child(_menu)
+	var mv := VBoxContainer.new()
+	mv.add_theme_constant_override("separation", 10)
+	_menu.add_child(mv)
+	mv.add_child(_small("TERMINAL"))
+	var th := HBoxContainer.new()
+	th.add_theme_constant_override("separation", 8)
+	mv.add_child(th)
+	var tg := ButtonGroup.new()
+	for i in terminals.size():
+		var b := _button(terminal_names[i], 20)
+		b.toggle_mode = true
+		b.button_group = tg
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.pressed.connect(func() -> void: terminal_chosen.emit(_terminals[i]))
+		th.add_child(b)
+		_term_buttons.append(b)
+	mv.add_child(_small("FEATURE-SETUP"))
+	_setup_grid = GridContainer.new()
+	_setup_grid.columns = 2
+	_setup_grid.add_theme_constant_override("h_separation", 8)
+	_setup_grid.add_theme_constant_override("v_separation", 8)
+	mv.add_child(_setup_grid)
+	var sg := ButtonGroup.new()
+	for i in setup_names.size():
+		var b := _button((setup_names[i] as String).get_slice(" (", 0), 18)   # ohne "(Datum ?)"
+		b.toggle_mode = true
+		b.button_group = sg
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.clip_text = true
+		b.pressed.connect(func() -> void: setup_chosen.emit(i))
+		_setup_grid.add_child(b)
+		_setup_buttons.append(b)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	mv.add_child(row)
+	var fb := _button("Features & Hacks", 20)
+	fb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	fb.pressed.connect(_open_browser)
+	row.add_child(fb)
+	var eb := _button("Einstellungen", 20)
+	eb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	eb.pressed.connect(func() -> void: _show_popup(_settings))
+	row.add_child(eb)
+	_start_btn = _button("SPIEL STARTEN", 30, true)
+	_start_btn.custom_minimum_size.y = 72
+	_start_btn.pressed.connect(func() -> void: start_pressed.emit())
+	mv.add_child(_start_btn)
+	_hint = _label("T  Terminal     F  Feature-Setup     Leertaste  Start", 15, Color(1, 1, 1, 0.65))
+	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	mv.add_child(_hint)
 
-	# unten: gewähltes Feature in 3D | Name und Maße
-	var low := HBoxContainer.new()
-	low.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	low.add_theme_constant_override("separation", 16)
-	root.add_child(low)
-	_preview = FeaturePreview.new()
-	_preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_preview.size_flags_stretch_ratio = 1.3
-	low.add_child(_preview)
-	var info := VBoxContainer.new()
-	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	low.add_child(info)
-	_title = Label.new()
-	_title.add_theme_font_size_override("font_size", 22)
-	_title.add_theme_color_override("font_color", FeatureMap.COL_SEL)
-	_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	info.add_child(_title)
-	_details = Label.new()
-	_details.add_theme_font_size_override("font_size", 14)
-	_details.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
-	_details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	info.add_child(_details)
-
-	# unten: Start
-	var bottom := HBoxContainer.new()
-	bottom.alignment = BoxContainer.ALIGNMENT_CENTER
-	root.add_child(bottom)
-	var go := Button.new()
-	go.text = "Spiel starten"
-	go.add_theme_font_size_override("font_size", 26)
-	go.custom_minimum_size = Vector2(320, 56)
-	go.pressed.connect(func() -> void: start_pressed.emit())
-	bottom.add_child(go)
+	# Popups über abgedunkeltem Hintergrund
+	_dim = ColorRect.new()
+	_dim.color = Color(0, 0, 0, 0.5)
+	_dim.visible = false
+	_dim.gui_input.connect(func(e: InputEvent) -> void:
+		if e is InputEventMouseButton and e.pressed:
+			_close_popups())
+	_ui.add_child(_dim)
+	_build_settings()
+	_build_browser()
+	_build_detail()
 
 
-## Wetter, Datum, Uhrzeit und "Jetzt" (Datum/Uhrzeit vom Rechner, Wetter live vom See).
-func _build_weather_row(root: Control) -> void:
+func _ready() -> void:
+	get_viewport().size_changed.connect(_layout)
+	_layout()
+
+
+# ---------------------------------------------------------------- Stil
+
+func _make_theme() -> Theme:
+	var th := Theme.new()
+	th.default_font = _font
+	th.default_font_size = 20
+	var normal := _box(Color(0.12, 0.15, 0.18), 12)
+	var hover := _box(Color(0.2, 0.24, 0.28), 12)
+	var down := _box(Color(Hud.ACCENT, 0.85), 12)
+	for st: String in ["normal", "focus"]:
+		th.set_stylebox(st, "Button", normal)
+	th.set_stylebox("hover", "Button", hover)
+	th.set_stylebox("pressed", "Button", down)
+	th.set_stylebox("hover_pressed", "Button", down)
+	th.set_color("font_color", "Button", Color.WHITE)
+	th.set_color("font_pressed_color", "Button", Color(0.05, 0.08, 0.05))
+	th.set_color("font_hover_pressed_color", "Button", Color(0.05, 0.08, 0.05))
+	th.set_color("font_hover_color", "Button", Color.WHITE)
+	th.set_color("font_focus_color", "Button", Color.WHITE)
+	th.set_stylebox("panel", "PanelContainer", _box(Color(0.05, 0.07, 0.09, 0.82), 16, 18))
+	# Schieber: dicke Spur, großer Griff (gut mit dem Finger)
+	var track := _box(Color(1, 1, 1, 0.15), 6)
+	track.content_margin_top = 6
+	track.content_margin_bottom = 6
+	th.set_stylebox("slider", "HSlider", track)
+	var fill := _box(Color(Hud.ACCENT, 0.8), 6)
+	fill.content_margin_top = 6
+	fill.content_margin_bottom = 6
+	th.set_stylebox("grabber_area", "HSlider", fill)
+	th.set_stylebox("grabber_area_highlight", "HSlider", fill)
+	var grab := _knob(Color.WHITE)
+	th.set_icon("grabber", "HSlider", grab)
+	th.set_icon("grabber_highlight", "HSlider", _knob(Hud.ACCENT.lightened(0.4)))
+	th.set_stylebox("panel", "ScrollContainer", StyleBoxEmpty.new())
+	return th
+
+
+func _box(c: Color, r: int, margin := 10) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = c
+	sb.set_corner_radius_all(r)
+	sb.border_width_bottom = 3
+	sb.border_color = Hud.ACCENT
+	sb.content_margin_left = margin + 4
+	sb.content_margin_right = margin + 4
+	sb.content_margin_top = margin
+	sb.content_margin_bottom = margin
+	return sb
+
+
+func _knob(c: Color) -> ImageTexture:
+	var n := 36
+	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
+	for y in n:
+		for x in n:
+			var d := Vector2(x + 0.5 - n * 0.5, y + 0.5 - n * 0.5).length()
+			img.set_pixel(x, y, Color(c, clampf(n * 0.5 - d, 0.0, 1.0)))
+	return ImageTexture.create_from_image(img)
+
+
+func _panel() -> PanelContainer:
+	var p := PanelContainer.new()
+	return p
+
+
+func _button(text: String, size: int, primary := false) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.add_theme_font_size_override("font_size", size)
+	b.custom_minimum_size = Vector2(0, 48)
+	b.focus_mode = Control.FOCUS_NONE
+	if primary:
+		var sb := _box(Hud.ACCENT, 14)
+		b.add_theme_stylebox_override("normal", sb)
+		b.add_theme_stylebox_override("hover", _box(Hud.ACCENT.lightened(0.15), 14))
+		b.add_theme_stylebox_override("pressed", _box(Hud.ACCENT.darkened(0.2), 14))
+		b.add_theme_color_override("font_color", Color(0.04, 0.07, 0.03))
+		b.add_theme_color_override("font_hover_color", Color(0.04, 0.07, 0.03))
+	return b
+
+
+func _label(text: String, size: int, color := Color.WHITE) -> Label:
+	var l := Label.new()
+	l.text = text
+	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_color_override("font_color", color)
+	l.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
+	l.add_theme_constant_override("outline_size", 6)
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return l
+
+
+func _small(text: String) -> Label:
+	return _label(text, 15, Color(1, 1, 1, 0.6))
+
+
+# ---------------------------------------------------------------- Layout
+
+## Alles in "Einheiten" bauen und als Ganzes skalieren: auf dem Handy werden Tasten und
+## Schrift so groß wie nötig, im Hochformat steht das Menü unten statt links.
+func _layout() -> void:
+	if _ui == null or not is_inside_tree():
+		return
+	var vp := get_viewport().get_visible_rect().size
+	# Handy: größer (Fingerbreite), dafür weniger Platz
+	var short := BASE_SHORT * (0.7 if mobile else 1.0)
+	var long := BASE_LONG * (0.7 if mobile else 1.0)
+	_k = clampf(minf(minf(vp.x, vp.y) / short, maxf(vp.x, vp.y) / long), 0.4, 4.0)
+	var size := vp / _k
+	_ui.scale = Vector2(_k, _k)
+	_ui.size = size
+	_ui.position = Vector2.ZERO
+	var m := 20.0
+	var portrait := size.x < 760.0
+	_title_box.position = Vector2(m, m)
+	_title_box.size = Vector2(size.x - 2.0 * m, 0)
+	var w := size.x - 2.0 * m if portrait else 420.0
+	var low := not portrait and size.y < 620.0        # Handy quer: breiteres, flacheres Menü
+	if low:
+		w = minf(size.x * 0.62, 720.0)
+	_menu.custom_minimum_size = Vector2(w, 0)
+	_menu.size = Vector2(w, 0)
+	_setup_grid.columns = 4 if low else (2 if w < 700.0 else 3)
+	_hint.visible = not mobile
+	await get_tree().process_frame
+	var h := _menu.get_combined_minimum_size().y
+	_menu.size = Vector2(w, h)
+	if portrait:
+		_menu.position = Vector2(m, size.y - m - h)
+	else:
+		_menu.position = Vector2(m, maxf(size.y - m - h, 110.0))
+	_dim.position = Vector2.ZERO
+	_dim.size = size
+	for p: PanelContainer in [_settings, _browser, _detail]:
+		_fit_popup(p, size)
+
+
+func _fit_popup(p: PanelContainer, size: Vector2) -> void:
+	var w := minf(size.x - 32.0, 760.0)
+	var h := minf(size.y - 32.0, 640.0)
+	p.custom_minimum_size = Vector2(w, 0)
+	p.size = Vector2(w, h)
+	p.position = (size - Vector2(w, h)) * 0.5
+
+
+# ---------------------------------------------------------------- Popups
+
+func _popup_frame(title: String) -> Array:
+	var p := _panel()
+	p.add_theme_stylebox_override("panel", _box(Color(0.06, 0.08, 0.1, 0.97), 16, 18))
+	p.visible = false
+	_ui.add_child(p)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 12)
+	p.add_child(v)
+	var head := HBoxContainer.new()
+	v.add_child(head)
+	var l := _label(title, 28, SEL)
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(l)
+	var x := _button("✕", 24)
+	x.custom_minimum_size = Vector2(56, 52)
+	x.pressed.connect(_close_popups)
+	head.add_child(x)
+	return [p, v, l]
+
+
+func _show_popup(p: PanelContainer) -> void:
+	for q: PanelContainer in [_settings, _browser, _detail]:
+		q.visible = q == p
+	_dim.visible = true
+
+
+func _close_popups() -> void:
+	if _detail.visible and _detail.get_meta("from_browser", false):
+		_show_popup(_browser)
+		return
+	for q: PanelContainer in [_settings, _browser, _detail]:
+		q.visible = false
+	_dim.visible = false
+
+
+func _popup_open() -> bool:
+	return _dim.visible
+
+
+## Einstellungen: Wetter, Datum, Uhrzeit, "Jetzt" (heute, jetzige Uhrzeit, Live-Wetter am See).
+func _build_settings() -> void:
+	var f := _popup_frame("EINSTELLUNGEN")
+	_settings = f[0]
+	var v: VBoxContainer = f[1]
 	if weather == null:
 		return
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	root.add_child(row)
-	var w_opt := _choice(row, "Wetter", weather.preset_names())
-	w_opt.custom_minimum_size = Vector2(170, 36)
-	w_opt.item_selected.connect(func(i: int) -> void: weather.set_preset(i))
-	var date_l := Label.new()
-	var time_l := Label.new()
-	var day_s := _slider(row, "Datum", 1.0, 365.0, 1.0, date_l)
-	day_s.value_changed.connect(func(v: float) -> void:
-		if int(v) != weather.day:
-			weather.set_day(int(v)))
-	var hour_s := _slider(row, "Uhrzeit", 0.0, 24.0, 0.25, time_l)
-	hour_s.value_changed.connect(func(v: float) -> void:
-		if absf(v - weather.hour) > 0.01:
-			weather.set_hour(v))
-	var now := Button.new()
-	now.text = "Jetzt"
-	now.add_theme_font_size_override("font_size", 18)
-	now.custom_minimum_size = Vector2(90, 36)
-	now.tooltip_text = "Heute, jetzige Uhrzeit und aktuelles Wetter am See"
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	v.add_child(scroll)
+	var c := VBoxContainer.new()
+	c.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	c.add_theme_constant_override("separation", 12)
+	scroll.add_child(c)
+	c.add_child(_small("WETTER"))
+	var grid := GridContainer.new()
+	grid.columns = 3
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	c.add_child(grid)
+	var wg := ButtonGroup.new()
+	var w_buttons: Array[Button] = []
+	var names := weather.preset_names()
+	for i in names.size():
+		var b := _button(names[i], 20)
+		b.toggle_mode = true
+		b.button_group = wg
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.pressed.connect(func() -> void: weather.set_preset(i))
+		grid.add_child(b)
+		w_buttons.append(b)
+	var date_l := _small("DATUM")
+	c.add_child(date_l)
+	var day_s := _slider(1.0, 365.0, 1.0)
+	c.add_child(day_s)
+	day_s.value_changed.connect(func(val: float) -> void:
+		if int(val) != weather.day:
+			weather.set_day(int(val)))
+	var time_l := _small("UHRZEIT")
+	c.add_child(time_l)
+	var hour_s := _slider(0.0, 24.0, 0.25)
+	c.add_child(hour_s)
+	hour_s.value_changed.connect(func(val: float) -> void:
+		if absf(val - weather.hour) > 0.01:
+			weather.set_hour(val))
+	var now := _button("Jetzt  (live)", 20)
+	now.tooltip_text = "Heute, aktuelle Uhrzeit und Wetter am See"
 	now.pressed.connect(weather.set_now)
-	row.add_child(now)
+	c.add_child(now)
+	var ok := _button("FERTIG", 24, true)
+	ok.pressed.connect(_close_popups)
+	v.add_child(ok)
 	var update := func() -> void:
-		w_opt.select(weather.preset)
+		if weather.preset >= 0 and weather.preset < w_buttons.size():
+			w_buttons[weather.preset].set_pressed_no_signal(true)
 		day_s.set_value_no_signal(weather.day)
 		hour_s.set_value_no_signal(weather.hour)
-		date_l.text = weather.date_text()
-		time_l.text = weather.time_text() + ("  (live)" if weather.live else "")
+		date_l.text = "DATUM   " + weather.date_text()
+		time_l.text = "UHRZEIT   " + weather.time_text() + ("   (live)" if weather.live else "")
 	weather.changed.connect(update)
 	update.call()
 
 
-func _slider(parent: Control, title: String, lo: float, hi: float, step: float, value_label: Label) -> HSlider:
-	var l := Label.new()
-	l.text = title
-	l.add_theme_font_size_override("font_size", 18)
-	parent.add_child(l)
+func _slider(lo: float, hi: float, step: float) -> HSlider:
 	var sl := HSlider.new()
 	sl.min_value = lo
 	sl.max_value = hi
 	sl.step = step
-	sl.custom_minimum_size = Vector2(220, 24)
-	sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	sl.custom_minimum_size = Vector2(0, 44)
 	sl.focus_mode = Control.FOCUS_NONE
-	parent.add_child(sl)
-	value_label.add_theme_font_size_override("font_size", 18)
-	value_label.custom_minimum_size = Vector2(130, 0)
-	parent.add_child(value_label)
 	return sl
 
 
-func _choice(parent: Control, title: String, names: Array) -> OptionButton:
-	var l := Label.new()
-	l.text = title
-	l.add_theme_font_size_override("font_size", 18)
-	parent.add_child(l)
-	var opt := OptionButton.new()
-	opt.add_theme_font_size_override("font_size", 18)
-	opt.custom_minimum_size = Vector2(260, 40)
-	for n: String in names:
-		opt.add_item(n)
-	parent.add_child(opt)
-	return opt
+## Features & Hacks: Liste aller Features und Hacks aus allen Setups.
+func _build_browser() -> void:
+	var f := _popup_frame("FEATURES & HACKS")
+	_browser = f[0]
+	var v: VBoxContainer = f[1]
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	v.add_child(scroll)
+	_browser_grid = VBoxContainer.new()
+	_browser_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_browser_grid.add_theme_constant_override("separation", 10)
+	scroll.add_child(_browser_grid)
 
 
-## Auswahl und Karte auf den aktuellen Stand bringen (nach Öffnen bzw. Wechsel).
-## focus: Index des Hacks, der gleich ausgewählt wird (-1: der erste Hack)
-func refresh(terminal: String, setup_idx: int, focus := -1) -> void:
-	_terminal = terminal
-	_terminal_opt.select(_terminals.find(terminal))
-	_setup_opt.select(setup_idx)
-	var c: CableSystem = cable_of[terminal]
-	_map.set_parts(c, features.parts_of(c))
-	if _map.hacks.is_empty():
-		_title.text = "Keine Features an " + terminal
-		_details.text = ""
-		_preview.show_parts([], c)
-	else:
-		_map.select(clampi(focus, 0, _map.hacks.size() - 1))
+func _build_detail() -> void:
+	var f := _popup_frame("")
+	_detail = f[0]
+	_detail_title = f[2]
+	_detail_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var v: VBoxContainer = f[1]
+	# eigener Rahmen: die 3D-Vorschau übernimmt sonst die Größe ihres Bildes und wächst mit
+	var frame := Control.new()
+	frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	frame.custom_minimum_size = Vector2(0, 160)
+	frame.clip_contents = true
+	v.add_child(frame)
+	_preview = FeaturePreview.new()
+	_preview.set_anchors_preset(Control.PRESET_FULL_RECT)
+	frame.add_child(_preview)
+	_detail_text = _label("", 16, Color(1, 1, 1, 0.8))
+	_detail_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(_detail_text)
 
 
-## Feature/Hack mit diesem Namensanfang auswählen (Test: --screen-select=…).
-func select_by_name(prefix: String) -> void:
-	for i in _map.hacks.size():
-		if FeatureMap.hack_name(_map.hacks[i]).to_lower().contains(prefix.to_lower()):
-			_map.select(i)
-			_map.zoom_to(i)
-			return
+func _open_browser() -> void:
+	if _catalog.is_empty():
+		_build_catalog()
+		_fill_browser()
+	_show_popup(_browser)
 
 
-func _on_hack(parts: Array) -> void:
-	var c: CableSystem = cable_of[_terminal]
-	_title.text = FeatureMap.hack_name(parts)
-	_preview.show_parts(parts, c)
+## Katalog: jedes Setup einmal unsichtbar aufbauen, Teile beider Anlagen zu Hacks gruppieren
+## und gleiche Features/Hacks zusammenfassen (mit allen Fundstellen).
+func _build_catalog() -> void:
+	var by_sig := {}
+	for e: Dictionary in FeatureSet.list_setups():
+		var fs := FeatureSet.new()
+		fs.visible = false
+		add_child(fs)
+		fs.load_setup(e["file"], cable_of, s_offset)
+		_catalog_sets.append(fs)
+		for t: String in _terminals:
+			var c: CableSystem = cable_of[t]
+			for hack: Array in Hacks.group(fs.parts_of(c), c):
+				# gängige Features nach Namen zusammenfassen, Hacks nach Anordnung
+				var sig := Hacks.hack_name(hack) if Hacks.is_standard(hack) else Hacks.signature(hack, c)
+				var where := "%s (%s)" % [e["name"], t]
+				if by_sig.has(sig):
+					by_sig[sig]["where"].append(where)
+				else:
+					by_sig[sig] = {"name": Hacks.hack_name(hack), "hack": hack, "cable": c,
+						"where": [where], "standard": Hacks.is_standard(hack)}
+	_catalog = by_sig.values()
+	# gleichnamige Hacks (andere Anordnung) mit ihrem Setup unterscheiden
+	var count := {}
+	for e: Dictionary in _catalog:
+		count[e["name"]] = count.get(e["name"], 0) + 1
+	for e: Dictionary in _catalog:
+		e["label"] = (e["name"] as String).trim_prefix("Hack: ")
+		if count[e["name"]] > 1:
+			e["label"] += "  ·  " + (e["where"][0] as String).replace(" (Datum ?)", "").replace(" (Jahr ?)", "")
+	_catalog.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["name"].naturalnocasecmp_to(b["name"]) < 0)
+
+
+func _fill_browser() -> void:
+	for c in _browser_grid.get_children():
+		c.queue_free()
+	for section: Array in [["FEATURES", true], ["HACKS", false]]:
+		_browser_grid.add_child(_small(section[0]))
+		var grid := GridContainer.new()
+		grid.columns = 2
+		grid.add_theme_constant_override("h_separation", 8)
+		grid.add_theme_constant_override("v_separation", 8)
+		grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_browser_grid.add_child(grid)
+		for e: Dictionary in _catalog:
+			if e["standard"] != section[1]:
+				continue
+			var name: String = e["label"]
+			var b := _button(name, 17)
+			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			b.clip_text = true
+			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			b.tooltip_text = name
+			b.pressed.connect(func() -> void: _open_detail(e, true))
+			grid.add_child(b)
+
+
+func _open_detail(e: Dictionary, from_browser: bool) -> void:
+	var hack: Array = e["hack"]
+	_detail_title.text = e["name"]
+	_detail.set_meta("from_browser", from_browser)
+	_show_popup(_detail)
+	_preview.show_parts(hack, e["cable"])
 	var lines: Array[String] = []
-	var sorted := parts.duplicate()
-	sorted.sort_custom(func(a: FeaturePart, b: FeaturePart) -> bool: return a.s_center < b.s_center)
-	for p: FeaturePart in sorted:
-		var dir_l := c.transform.affine_inverse().basis * p.forward_world()
+	for p: FeaturePart in hack:
 		var h := p.height
 		if not p.profile.is_empty():
 			h = 0.0
 			for pt: Array in p.profile:
 				h = maxf(h, float(pt[1]))
-		lines.append("%s
-    s %.1f m, x %.1f m, %s,  %.1f × %.1f m, h %.2f m" % [
-			p.display_name, p.s_center - float(s_offset.get(_terminal, 0.0)), p.x_center, "zum Endmast" if dir_l.z < 0.0 else "zum Ufer",
-			p.length, p.width, h])
-	_details.text = "\n".join(lines)
+		lines.append("%s   %.1f × %.1f m, Höhe %.2f m" % [p.display_name, p.length, p.width, h])
+	var where: Array = e["where"]
+	lines.append("Im Setup: " + ", ".join(where))
+	_detail_text.text = "\n".join(lines)
+
+
+# ---------------------------------------------------------------- Ablauf
+
+## Auswahl und Kamera auf den aktuellen Stand bringen (nach Öffnen bzw. Wechsel).
+func refresh(terminal: String, setup_idx: int, _focus_idx := -1) -> void:
+	_terminal = terminal
+	var ti := _terminals.find(terminal)
+	if ti >= 0:
+		_term_buttons[ti].set_pressed_no_signal(true)
+	if setup_idx >= 0 and setup_idx < _setup_buttons.size():
+		_setup_buttons[setup_idx].set_pressed_no_signal(true)
+	# Kamera schwenkt auf die gewählte Anlage
+	var c: CableSystem = cable_of[terminal]
+	_focus_goal = c.global_transform * Vector3(0.0, 0.0, (c.mast_a_z + c.mast_b_z) * 0.5)
+	_radius_goal = absf(c.mast_b_z - c.mast_a_z) * 0.55 + 30.0
+	_basis = c.global_basis.orthonormalized()
+	if _focus == Vector3.ZERO:
+		_focus = _focus_goal
+		_radius = _radius_goal
+	_layout()
+
+
+## Startseite wird sichtbar: Hintergrundkamera übernimmt.
+func activate() -> void:
+	_cam.current = true
+	_close_popups()
+	_layout()
+
+
+## Feature/Hack mit diesem Namensteil im Popup zeigen (Test: --screen=NAME).
+func select_by_name(prefix: String) -> void:
+	if prefix == "@liste":
+		_open_browser()
+		return
+	if prefix == "@einstellungen":
+		_show_popup(_settings)
+		return
+	if _catalog.is_empty():
+		_build_catalog()
+		_fill_browser()
+	for e: Dictionary in _catalog:
+		if (e["name"] as String).to_lower().contains(prefix.to_lower()):
+			_open_detail(e, false)
+			return
+
+
+## Ergebnis der letzten Runde unter dem Titel.
+func set_result(text: String) -> void:
+	_result.text = text
+
+
+func _process(delta: float) -> void:
+	if not visible or _cam == null:
+		return
+	# Popups wachsen mit ihrem Inhalt (z. B. Text beim ersten Umbruch), schrumpfen aber nicht
+	# von selbst: Größe jedes Bild festhalten
+	if _dim.visible:
+		for p: PanelContainer in [_settings, _browser, _detail]:
+			if p.visible:
+				_fit_popup(p, _ui.size)
+	_orbit += ORBIT_SPEED * delta
+	_focus = _focus.lerp(_focus_goal, 1.0 - exp(-delta * 0.8))
+	_radius = lerpf(_radius, _radius_goal, 1.0 - exp(-delta * 0.8))
+	# langsamer Schwenk um die Anlage, Höhe atmet leicht mit
+	# Schwenk von der Seeseite (lokal -x der Anlage) hin und her, nie über Land
+	var phi := 1.05 * sin(_orbit)
+	var side := _basis * Vector3(-cos(phi), 0.0, sin(phi))
+	var h := 34.0 + 12.0 * sin(_orbit * 1.7)
+	var pos := _focus + side * _radius + Vector3.UP * h
+	_cam.look_at_from_position(pos, _focus + Vector3(0.0, 2.0, 0.0), Vector3.UP)
 
 
 # ---------------------------------------------------------------- Tastatur
@@ -238,23 +624,22 @@ func _input(event: InputEvent) -> void:
 		return
 	var k := (event as InputEventKey).physical_keycode
 	match k:
+		KEY_ESCAPE:
+			if not _popup_open():
+				return
+			_close_popups()
 		KEY_T:
 			terminal_chosen.emit(_terminals[(_terminals.find(_terminal) + 1) % _terminals.size()])
 		KEY_F:
-			setup_chosen.emit((_setup_opt.selected + 1) % _setup_opt.item_count)
-		KEY_RIGHT, KEY_D:
-			_map.select_step(1)
-			_map.zoom_to(_map.selected)
-		KEY_LEFT, KEY_A:
-			_map.select_step(-1)
-			_map.zoom_to(_map.selected)
-		KEY_ENTER, KEY_KP_ENTER, KEY_TAB:
+			var cur := 0
+			for i in _setup_buttons.size():
+				if _setup_buttons[i].button_pressed:
+					cur = i
+			setup_chosen.emit((cur + 1) % _setup_buttons.size())
+		KEY_SPACE, KEY_TAB:
+			if _popup_open():
+				_close_popups()
 			start_pressed.emit()
 		_:
 			return
 	get_viewport().set_input_as_handled()
-
-
-## Ergebnis der letzten Runde oben in der Leiste.
-func set_result(text: String) -> void:
-	_result.text = text

@@ -19,6 +19,14 @@ var _touches := 0
 var ui_blockers: Array = []     # Bedienelemente (z. B. Setup-Menü): Finger darauf starten/springen nicht
 var _pressed := ""            # Lenk-Aktion, die dieses Modul gerade hält
 var pad: TouchPad             # virtuelle Tasten (▲ ▼ DRIFT ☰)
+## Startseite offen: Finger bedienen nur die Oberfläche (als Maus), kein Start/Sprung.
+var ui_mode := false:
+	set(on):
+		ui_mode = on
+		if active:
+			Input.emulate_mouse_from_touch = on
+			if on:
+				_touches = 0
 var _on_pad := {}             # Finger-Index -> gedrückte PadButton
 
 # Läuft im Browser: hört auf deviceorientation (auf iOS erst nach Erlaubnis, die beim ersten
@@ -89,7 +97,7 @@ func _ready() -> void:
 
 func _input(event: InputEvent) -> void:
 	var t := event as InputEventScreenTouch
-	if t == null:
+	if t == null or ui_mode:
 		return
 	if _pad_touch(t):
 		get_viewport().set_input_as_handled()

@@ -281,6 +281,7 @@ func _build_start_screen() -> void:
 	start_screen.weather = weather
 	start_screen.cable_of = {"T1": cable_t1, "T2": cable}
 	start_screen.s_offset = _s_offset()
+	start_screen.mobile = mobile.active
 	var names: Array = []
 	for e: Dictionary in _setups:
 		names.append(e["name"])
@@ -311,7 +312,8 @@ func _open_start_screen() -> void:
 	start_screen.set_result(_last_result)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	hud.visible = false
-	get_viewport().disable_3d = true
+	start_screen.activate()
+	mobile.ui_mode = true        # Finger bedienen die Startseite (Tippen = Maus)
 	_autopilot_before = rider.autopilot
 	rider.autopilot = true
 	pc.start()
@@ -328,7 +330,8 @@ func _close_start_screen() -> void:
 	hud.visible = true
 	if touch_pad:
 		touch_pad.visible = true
-	get_viewport().disable_3d = false
+	mobile.ui_mode = false
+	cam.current = true
 	rider.autopilot = _autopilot_before
 	_reset()
 	cam.snap()
