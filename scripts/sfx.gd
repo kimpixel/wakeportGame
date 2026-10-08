@@ -4,7 +4,9 @@ extends Node
 ##  * Jubel bei Punkten – das rufen die Leute im Startblock (Steuermann und Gäste), räumlich
 ##    vom Startsteg aus zu hören. Aufnahmen aus assets/sounds/positiv/*.wav (einfach weitere
 ##    WAVs dazulegen); fehlt der Ordner, gibt es synthetische "Yeah!"/"Wooo!"-Rufe
-##  * Whoosh beim Absprung, Platschen bei der Landung, großer Platscher beim Sturz
+##  * Whoosh beim Absprung, großer Platscher beim Sturz (synthetisch)
+##  * Landung auf dem Wasser und Brett trifft Feature: Aufnahmen aus assets/sounds/landing
+##    und assets/sounds/feature_hit (lauter je nach Wucht)
 ##  * Wasserrauschen abhängig vom Tempo, Grind-Geräusch auf Rails/Boxen
 ##  * Vögel im Wald
 ## Taste M schaltet den Ton stumm.
@@ -12,12 +14,18 @@ extends Node
 const RATE := 22050
 const CHEER_MIN := 200      # ab so vielen Punkten jubelt der Startblock
 const CHEER_DIR := "res://assets/sounds/positiv"
+const HIT_DIR := "res://assets/sounds/feature_hit"      # Brett trifft ein Feature (Aufnahmen)
+const LANDING_DIR := "res://assets/sounds/landing"      # Brett landet auf dem Wasser (Aufnahmen)
 
 var rider: Rider
 var people: Array[Dictionary] = []   # aus Beach: Leute im Startblock
 
 var _yeah: Array[AudioStreamWAV] = []
 var _cheers: Array[AudioStream] = []     # aufgenommene Jubelrufe
+var _hits: Array[AudioStream] = []
+var _landings: Array[AudioStream] = []
+var _impact: AudioStreamPlayer
+var _prev_sliding := false
 var _woo: AudioStreamWAV
 var _whoosh: AudioStreamWAV
 var _splash: AudioStreamWAV
@@ -40,11 +48,9 @@ var _muted := false
 func _ready() -> void:
 	_yeah = [_make_voice("yeah", 1.0), _make_voice("yeah", 1.12), _make_voice("yeah", 0.9)]
 	_woo = _make_voice("woo", 1.05)
-	for f in ResourceLoader.list_directory(CHEER_DIR):
-		if f.get_extension().to_lower() == "wav":
-			var a := load(CHEER_DIR.path_join(f)) as AudioStream
-			if a:
-				_cheers.append(a)
+	_cheers = _load_dir(CHEER_DIR)
+	_hits = _load_dir(HIT_DIR)
+	_landings = _load_dir(LANDING_DIR)
 	_whoosh = _make_whoosh()
 	_splash = _make_splash(0.55, 0.5)
 	_crash = _make_splash(1.4, 1.0)
@@ -54,6 +60,7 @@ func _ready() -> void:
 
 	set_people(people)
 	_fx = _player(-4.0)
+	_impact = _player(-2.0)
 	_water = _player(-80.0)
 	_water.stream = _make_water_loop()
 	_water.play()
@@ -86,6 +93,25 @@ func set_people(list: Array[Dictionary]) -> void:
 		add_child(v)
 		v.global_position = person["pos"]
 		_voices.append(v)
+
+
+## Alle WAV-Aufnahmen eines Ordners (weitere Dateien einfach dazulegen).
+func _load_dir(dir: String) -> Array[AudioStream]:
+	var out: Array[AudioStream] = []
+	for f in ResourceLoader.list_directory(dir):
+		if f.get_extension().to_lower() == "wav":
+			var a := load(dir.path_join(f)) as AudioStream
+			if a:
+				out.append(a)
+	return out
+
+
+## Aufprall: Aufnahme mit leicht variierter Tonhöhe, Lautstärke nach Wucht (0..1).
+func _hit(pool: Array[AudioStream], fallback: AudioStream, strength: float) -> void:
+	_impact.stream = pool.pick_random() if not pool.is_empty() else fallback
+	_impact.pitch_scale = randf_range(0.9, 1.1)
+	_impact.volume_db = lerpf(-14.0, -1.0, clampf(strength, 0.0, 1.0))
+	_impact.play()
 
 
 func _player(db: float) -> AudioStreamPlayer:
@@ -153,10 +179,11 @@ func _process(delta: float) -> void:
 	if mode == Rider.Mode.AIR and _prev_mode == Rider.Mode.WATER and rider.vel.y > 2.0:
 		_play(_fx, _whoosh, randf_range(0.9, 1.15))
 	if mode == Rider.Mode.WATER and _prev_mode == Rider.Mode.AIR and _prev_vy < -1.5:
+		var wucht := clampf((-_prev_vy - 1.5) / 7.0, 0.0, 1.0)
 		if rider.pos.y > 0.15:
-			_play(_fx, _thud, randf_range(0.9, 1.1))         # Landung auf einem Feature
+			_hit(_hits, _thud, 0.5 + 0.5 * wucht)            # Landung auf einem Feature
 		else:
-			_play(_fx, _splash, randf_range(0.85, 1.1))
+			_hit(_landings, _splash, 0.35 + 0.65 * wucht)    # Landung auf dem Wasser
 	_prev_mode = mode
 	_prev_vy = rider.vel.y
 
@@ -169,6 +196,10 @@ func _process(delta: float) -> void:
 
 	# Grinden auf Rail / Box
 	var sliding := rider.is_sliding()
+	# Aufrutschen auf Box/Rail/Pipe ohne Sprung: das Brett schlägt aufs Feature
+	if sliding and not _prev_sliding and _prev_mode == Rider.Mode.WATER and mode == Rider.Mode.WATER:
+		_hit(_hits, _thud, 0.35 + 0.4 * clampf(speed / 9.0, 0.0, 1.0))
+	_prev_sliding = sliding
 	var g := lerpf(db_to_linear(_grind.volume_db), 0.5 if sliding and speed > 1.0 else 0.0, 1.0 - exp(-delta * 15.0))
 	_grind.volume_db = linear_to_db(maxf(g, 0.0001))
 	_grind.pitch_scale = 0.75 + clampf(speed / 9.0, 0.0, 1.0) * 0.5
