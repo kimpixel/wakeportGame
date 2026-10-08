@@ -71,6 +71,11 @@ const SPIN_PER_180 := 50
 const COMBO_WINDOW := 3.0       # s Zeit für den nächsten Trick, damit die Kombination weiterläuft
 const POP_LOAD := 2.8
 const POP_ROPE := 1.8
+# Raley: wer beim Absprung besonders schnell ist (Anschneiden), schwingt mit gestrecktem Körper
+# um den Griff nach hinten oben – Brett höher als der Kopf, Brust zum Wasser. Langsamer = Ollie.
+const RALEY_SPEED := 35.0 / 3.6
+const RALEY_MAX := 1.9          # rad: so weit schwingt der Körper um den Griff (≈110°)
+const RALEY_POINTS := 150
 const BOARD_Y := 0.012          # Unterkante Brettmitte über der Fahrerposition
 const ARM_REACH := 0.88         # Griff höchstens so weit weg (Anteil der Armlänge) – Arme leicht gebeugt
 const BOARD_HALF := 0.35
@@ -129,6 +134,9 @@ var _release_vis := 0.0
 var _jump_held := false
 var _load := 0.0
 var _spin_accum := 0.0
+var _raley := false            # aktueller Sprung ist ein Raley
+var _raley_side := -1.0        # Schwung zur Seite (lokal ±X), weg vom Seil
+var _raley_ang := 0.0          # sichtbarer Schwungwinkel
 var _auto_t := 0.0
 var _prev_pos := START_POS
 var _prev_yaw := 0.0
@@ -924,13 +932,19 @@ func _pop() -> void:
 	var lift := POP_BASE + POP_LOAD * _load + POP_ROPE * clampf((tension_smooth - 150.0) / 600.0, 0.0, 1.0)
 	lift *= clampf(horizontal_speed() / 6.0, 0.3, 1.0)
 	vel.y = maxf(vel.y, 0.0) + lift
+	var fast := horizontal_speed() > RALEY_SPEED and attached
 	_enter_air()
+	if fast:
+		_raley = true
+		var side := rope_dir.dot(right())
+		_raley_side = -signf(side) if absf(side) > 0.05 else -1.0
 
 
 func _enter_air() -> void:
 	mode = Mode.AIR
 	air_time = 0.0
 	_spin_accum = 0.0
+	_raley = false
 
 
 func _step_air(delta: float, rope: Vector3) -> void:
@@ -983,7 +997,13 @@ func _land(surf: float) -> void:
 	var half_turns := int(round(absf(_spin_accum) / PI))
 	if air_time > 0.5 or half_turns > 0:
 		var trick_name := "Air" if half_turns == 0 else str(half_turns * 180)
-		_score_trick(trick_name, int(air_time * AIR_PER_S) + half_turns * SPIN_PER_180)
+		var pts := int(air_time * AIR_PER_S) + half_turns * SPIN_PER_180
+		if _raley and half_turns == 0:
+			trick_name = "Raley"
+			pts += RALEY_POINTS
+		elif half_turns == 0:
+			trick_name = "Ollie"
+		_score_trick(trick_name, pts)
 
 
 func crash(reason: String) -> void:
@@ -1056,6 +1076,9 @@ func _process(delta: float) -> void:
 			target_roll = 1.45
 		Mode.AIR:
 			target_crouch = 0.3
+			if _raley:
+				# gestreckt durch die Luft, zur Landung wieder Knie ran
+				target_crouch = lerpf(0.1, 0.5, smoothstep(0.7, 0.95, _air_phase()))
 		Mode.WATER:
 			# Körper lehnt sich gegen den Seilzug, beim Carven zusätzlich in die Kurve
 			# Kante belastet: tiefer in die Knie, stärker gegen das Seil gelehnt.
@@ -1074,6 +1097,12 @@ func _process(delta: float) -> void:
 		var w := sin(PI * clampf(1.0 - _ups / UPS_TIME, 0.0, 1.0))
 		target_crouch = maxf(target_crouch, 0.38 * w)
 		target_pitch += 0.3 * w
+	var raley_target := 0.0
+	if mode == Mode.AIR and _raley:
+		var s := _air_phase()
+		# Schwung nimmt ab, sobald gedreht wird (Raley und Spin vertragen sich nicht)
+		raley_target = RALEY_MAX * smoothstep(0.0, 0.35, s) * (1.0 - smoothstep(0.6, 0.9, s)) 			* clampf(1.0 - absf(_spin_accum) / 1.2, 0.0, 1.0)
+	_raley_ang = lerpf(_raley_ang, raley_target, 1.0 - exp(-delta * 10.0))
 	var k := 1.0 - exp(-delta * 8.0)
 	_edge_vis = lerpf(_edge_vis, _edge, k)
 	_release_vis = lerpf(_release_vis, _release, k)
@@ -1298,10 +1327,27 @@ func _pose_human() -> void:
 	_pose_stand()
 
 
+## Fortschritt im Sprung 0..1: bisherige Flugzeit / (bisherige + geschätzte Restzeit bis zur Landung).
+func _air_phase() -> float:
+	var h := maxf(pos.y - maxf(_board_surface(), 0.0), 0.0)
+	var rest := (vel.y + sqrt(vel.y * vel.y + 2.0 * GRAVITY * h)) / GRAVITY
+	return clampf(air_time / maxf(air_time + rest, 0.01), 0.0, 1.0)
+
+
+## Bezugsrahmen der Figur: normal der Fahrer selbst, beim Raley um den Griff geschwungen
+## (Drehung um die Brettlängsachse, Füße weg vom Seil nach oben, Brust zum Wasser).
+func _pose_frame() -> Transform3D:
+	if _raley_ang < 0.001:
+		return global_transform
+	var p := Vector3(0.2, 0.86 - 0.34 * _crouch, -0.2)      # Griff vor der vorderen Hüfte
+	var r := Basis(Vector3.BACK, _raley_side * _raley_ang)
+	return global_transform * Transform3D(r, p - r * p)
+
+
 ## Brettlage im Stehen (Fahrerposition, gekippt mit der Kante).
 func _board_stand_xf() -> Transform3D:
 	var roll := _lean_roll * (0.35 + 0.45 * _edge_vis) * (1.0 - 0.85 * _release_vis)
-	return global_transform * Transform3D(Basis.from_euler(Vector3(0.0, 0.0, roll)), Vector3(0.0, BOARD_Y, 0.0))
+	return _pose_frame() * Transform3D(Basis.from_euler(Vector3(0.0, 0.0, roll)), Vector3(0.0, BOARD_Y, 0.0))
 
 
 ## Brett (Oberseite zeigt nach board_up, Länge quer = lateral) mit den Füßen darin;
@@ -1390,7 +1436,7 @@ func _pose_deep_water() -> void:
 ## Stehen auf dem Brett.
 func _pose_stand() -> void:
 	var skel_inv := _rig.skeleton.global_transform.affine_inverse()
-	var rb := global_transform.basis.orthonormalized()
+	var rb := _pose_frame().basis.orthonormalized()
 	var board := _board_stand_xf()
 	_board_xf = board
 	var foot_front := board * Wakeboard.ankle_local(true)    # linker Fuß Richtung Nose
