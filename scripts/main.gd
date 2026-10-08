@@ -15,6 +15,7 @@ extends Node3D
 ##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
 ##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
 ##   --jump-at=SEK     Test: zu dieser Zeit voll aufgeladen abspringen
+##   --pitch=±1        Test: in der Luft ↑ (+1, Frontroll) bzw. ↓ (-1, Backroll) halten
 ##   --game-time=SEK   Test: Spielzeit (normal 450 s); im Autotest läuft dann eine Runde mit Zeit
 ##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, regen, dunst)
 ##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30
@@ -98,6 +99,7 @@ var _lane_arg := NAN
 var _crash_at := -1.0          # Test: Sturz zu dieser Zeit auslösen
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
 var _jump_at := -1.0           # Test: zu dieser Zeit abspringen
+var _test_pitch := 0.0         # Test: ↑/↓ in der Luft
 var _touch_at: Array[float] = []   # Test: Finger auf den Bildschirm
 var _closeup := Vector3.INF     # Testkamera relativ zum Fahrer
 var _closeup_look := Vector3(0, 1.1, 0)   # Blickpunkt relativ zum Fahrer (optional 4.-6. Wert)
@@ -128,6 +130,7 @@ func _ready() -> void:
 	cable_t1.turn_a_z = npc_local_z - 16.0
 	add_child(cable_t1)
 	rider = Rider.new()
+	rider.test_pitch = _test_pitch
 	rider.water = water
 	rider.cable = cable
 	add_child(rider)
@@ -626,7 +629,7 @@ func _process(_delta: float) -> void:
 	hud.show_setup_menu(pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED)
 	if not rider.attached:
 		var skip := "Tippen: sofort weiterfahren" if mobile.active \
-			else "W halten: zur Handle schwimmen     Leertaste: sofort weiterfahren\n(R = zurück zum Steg)"
+			else "↑ halten: zur Handle schwimmen     Leertaste: sofort weiterfahren\n(R = zurück zum Steg)"
 		if pc.state == CableSystem.State.HOLD:
 			hud.set_center(skip)
 		elif pc.state == CableSystem.State.FETCH:
@@ -736,8 +739,11 @@ func _on_trick(trick_name: String, points: int) -> void:
 func _setup_input() -> void:
 	_bind("steer_left", [KEY_A, KEY_LEFT], [], [[JOY_AXIS_LEFT_X, -1.0]])
 	_bind("steer_right", [KEY_D, KEY_RIGHT], [], [[JOY_AXIS_LEFT_X, 1.0]])
-	_bind("edge", [KEY_W, KEY_UP], [], [[JOY_AXIS_TRIGGER_RIGHT, 1.0]])
-	_bind("release", [KEY_S, KEY_DOWN], [], [[JOY_AXIS_TRIGGER_LEFT, 1.0]])
+	# ↑/↓: in der Luft Frontroll/Backroll, auf dem Slider Nose-/Tailpress, nach Sturz ↑ = schwimmen
+	_bind("pitch_front", [KEY_UP, KEY_W], [], [[JOY_AXIS_LEFT_Y, -1.0]])
+	_bind("pitch_back", [KEY_DOWN, KEY_S], [], [[JOY_AXIS_LEFT_Y, 1.0]])
+	# Strg (zur Not Alt): Kante lösen = Driften
+	_bind("release", [KEY_CTRL, KEY_ALT], [], [[JOY_AXIS_TRIGGER_LEFT, 1.0]])
 	_bind("jump", [KEY_SPACE], [JOY_BUTTON_A], [])
 	_bind("start", [KEY_ENTER, KEY_KP_ENTER], [JOY_BUTTON_START], [])
 	_bind("reset", [KEY_R], [JOY_BUTTON_BACK], [])
@@ -789,6 +795,8 @@ func _parse_args() -> void:
 			_shot_path = arg.substr(7)
 		elif arg.begins_with("--shot-time="):
 			_shot_time = arg.substr(12).to_float()
+		elif arg.begins_with("--pitch="):
+			_test_pitch = arg.substr(8).to_float()
 		elif arg.begins_with("--jump-at="):
 			_jump_at = arg.substr(10).to_float()
 		elif arg.begins_with("--letgo-at="):

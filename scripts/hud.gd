@@ -3,12 +3,12 @@ extends CanvasLayer
 ## Anzeige im Spiel. Oben in der Mitte die wichtigen Werte: Zeit, Seilzug (groß, mit
 ## Warnbereich) und Punkte. Unten rechts klein die Technik-Angaben, unten links die Hilfe.
 
-const HELP := """A / D   Kante: lenken   (in der Luft: drehen)
-W   Kante belasten: mehr Grip, weite Bögen, mehr Zug
-S   Kante lösen = Driften: Brett rutscht quer, dreht schneller (gut für die Wende)
-Leertaste halten + loslassen   Absprung
+const HELP := """← / →   lenken   (in der Luft, beim Raley und auf dem Slider: drehen)
+↑ / ↓   in der Luft: Frontroll / Backroll     auf dem Slider: Nosepress / Tailpress
+Strg (oder Alt)   Kante lösen = Driften: Brett rutscht quer, dreht schneller (gut für die Wende)
+Leertaste halten + loslassen   Absprung (langsam: Ollie, über 35 km/h: Raley)
 Enter  Start (Runde 7:30)     R  zurück zum Steg (−5:00)     + / -  Anlagentempo
-Nach Sturz:  W halten = zur Handle schwimmen     Leertaste = sofort weiter (−3:00)
+Nach Sturz:  ↑ halten = zur Handle schwimmen     Leertaste = sofort weiter (−3:00)
 C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom
 P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus
 Vor dem Start:   T  Terminal (T1/T2)     F  Feature-Setup     Tab  Feature-Übersicht"""

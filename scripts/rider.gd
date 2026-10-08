@@ -77,6 +77,12 @@ const RALEY_SPEED := 35.0 / 3.6
 const RALEY_MAX := 2.8          # rad: so weit schwingen Beine und Brett um den Griff (≈160°, Brett über dem Kopf)
 const RALEY_TORSO := 0.55       # Anteil davon für Becken/Oberkörper – der Rest wird Hohlkreuz
 const RALEY_POINTS := 150
+# ↑/↓ in der Luft: Frontroll/Backroll um die Brettlängsachse; auf dem Slider: Nose-/Tailpress
+const FLIP_RATE := 6.5          # rad/s Überschlag
+const FLIP_LAND_TOL := 0.7      # rad: so schief darf man nach einem Überschlag landen
+const FLIP_POINTS := 300
+const PRESS_ANG := 0.22         # rad: Brett beim Press gekippt
+const PRESS_BONUS := 100.0
 const BOARD_Y := 0.012          # Unterkante Brettmitte über der Fahrerposition
 const ARM_REACH := 0.88         # Griff höchstens so weit weg (Anteil der Armlänge) – Arme leicht gebeugt
 const BOARD_HALF := 0.35
@@ -128,7 +134,14 @@ var air_time := 0.0
 var _steer := 0.0
 var slip := 0.0                 # Quergeschwindigkeit des Bretts (m/s) – > 0 = rutscht nach rechts
 
-var _edge := 0.0
+var _edge := 0.0                # Kante belasten (nur Autopilot/NPC; Spieler: normaler Grip)
+var test_pitch := 0.0           # Test: ↑/↓ in der Luft halten (auch mit Autopilot)
+var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), ↓ = -1
+var _flip := 0.0                # Überschlag im Sprung (rad, + = Frontroll)
+var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
+var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
+var _press_nose_t := 0.0
+var _press_tail_t := 0.0
 var _release := 0.0
 var _edge_vis := 0.0
 var _release_vis := 0.0
@@ -602,7 +615,7 @@ func _swim(delta: float) -> void:
 		return
 	if d > 0.3:
 		yaw = lerp_angle(yaw, atan2(-to.x, -to.z), clampf(delta * 2.0, 0.0, 1.0))
-	var want := autopilot or Input.is_action_pressed("edge")
+	var want := autopilot or Input.is_action_pressed("pitch_front")
 	if not want or d < 0.3:
 		return
 	swimming = true
@@ -635,10 +648,12 @@ func _grab() -> void:
 
 func _read_input(delta: float) -> void:
 	if autopilot:
+		_pitch_in = test_pitch if mode == Mode.AIR and air_time < 0.6 else 0.0
 		_autopilot_input(delta)
 	else:
 		_steer = Input.get_axis("steer_left", "steer_right")
-		_edge = Input.get_action_strength("edge")
+		_pitch_in = Input.get_axis("pitch_back", "pitch_front")
+		_edge = 0.0
 		_release = Input.get_action_strength("release")
 
 	var held := (Input.is_action_pressed("jump") and not autopilot) or _npc_charge > 0.0
@@ -880,14 +895,29 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 	if part and part.is_slide():
 		_slide_time += delta
 		_slide_part = part
+		# ↑/↓ auf dem Slider: Nose- bzw. Tailpress
+		if _pitch_in > 0.3:
+			_press_nose_t += delta
+		elif _pitch_in < -0.3:
+			_press_tail_t += delta
 		return
 	if _slide_part and _slide_time > 0.3:
 		var vh := Vector3(vel.x, 0.0, vel.z)
 		var across := vh.length() > 1.0 and absf(vh.normalized().dot(forward())) < 0.6
-		var trick := ("Boardslide" if across else "50-50") + " – " + _slide_part.display_name
-		var pts := (SLIDE_BASE + _slide_time * SLIDE_PER_S + (BOARDSLIDE_BONUS if across else 0.0)) 			* float(SLIDE_FACTOR.get(_slide_part.type, 1.0))
-		_score_trick(trick, int(pts))
+		var trick := "Boardslide" if across else "50-50"
+		var press := 0.0
+		if _press_nose_t > _slide_time * 0.5:
+			trick = "Nosepress" + (" Boardslide" if across else "")
+			press = PRESS_BONUS
+		elif _press_tail_t > _slide_time * 0.5:
+			trick = "Tailpress" + (" Boardslide" if across else "")
+			press = PRESS_BONUS
+		var pts := (SLIDE_BASE + _slide_time * SLIDE_PER_S + (BOARDSLIDE_BONUS if across else 0.0) + press) \
+			* float(SLIDE_FACTOR.get(_slide_part.type, 1.0))
+		_score_trick(trick + " – " + _slide_part.display_name, int(pts))
 	_slide_time = 0.0
+	_press_nose_t = 0.0
+	_press_tail_t = 0.0
 	_slide_part = null
 
 
@@ -943,6 +973,7 @@ func _pop() -> void:
 	vel.y = maxf(vel.y, 0.0) + lift
 	var fast := horizontal_speed() > RALEY_SPEED and attached
 	_enter_air()
+	_popped = true
 	if fast:
 		_raley = true
 		var side := rope_dir.dot(right())
@@ -954,6 +985,8 @@ func _enter_air() -> void:
 	air_time = 0.0
 	_spin_accum = 0.0
 	_raley = false
+	_popped = false
+	_flip = 0.0
 
 
 func _step_air(delta: float, rope: Vector3) -> void:
@@ -972,6 +1005,12 @@ func _step_air(delta: float, rope: Vector3) -> void:
 		if vh.length() > 1.0:
 			yaw = rotate_toward(yaw, _aligned_yaw(atan2(-vh.x, -vh.z)), AIR_ASSIST * delta)
 	_spin_accum += wrapf(yaw - old_yaw, -PI, PI)
+	# ↑/↓: Frontroll/Backroll (Überschlag um die Brettlängsachse). Losgelassen läuft die
+	# Drehung zur nächsten ganzen Umdrehung aus (bzw. zurück, wenn kaum angefangen).
+	if absf(_pitch_in) > 0.1:
+		_flip += _pitch_in * FLIP_RATE * delta
+	else:
+		_flip = move_toward(_flip, roundf(_flip / TAU) * TAU, FLIP_RATE * 0.7 * delta)
 
 	# Seitlich gegen ein Feature geflogen? Nur wenn man von außen hineinfliegt –
 	# wer schon darüber ist (z. B. seitlich vom Rail fällt), landet stattdessen.
@@ -998,21 +1037,33 @@ func _land(surf: float) -> void:
 	if vel.y < -11.0:
 		crash("Zu harte Landung!")
 		return
+	if absf(wrapf(_flip, -PI, PI)) > FLIP_LAND_TOL:
+		crash("Überschlag nicht geschafft!")
+		return
 	pos.y = surf
 	vel.y = 0.0
 	vel.x *= 0.97
 	vel.z *= 0.97
 	mode = Mode.WATER
 	var half_turns := int(round(absf(_spin_accum) / PI))
-	if air_time > 0.5 or half_turns > 0:
-		var trick_name := "Air" if half_turns == 0 else str(half_turns * 180)
-		var pts := int(air_time * AIR_PER_S) + half_turns * SPIN_PER_180
-		if _raley and half_turns == 0:
-			trick_name = "Raley"
+	var rolls := int(round(absf(_flip) / TAU))
+	var flip_dir := signf(_flip)
+	_flip = 0.0
+	if air_time > 0.5 or half_turns > 0 or rolls > 0:
+		# Name aus den Teilen, z. B. "Raley 360", "Backroll", "Double Frontroll 180"
+		var parts: Array[String] = []
+		var pts := int(air_time * AIR_PER_S) + half_turns * SPIN_PER_180 + rolls * FLIP_POINTS
+		if _raley:
+			parts.append("Raley")
 			pts += RALEY_POINTS
-		elif half_turns == 0:
-			trick_name = "Ollie"
-		_score_trick(trick_name, pts)
+		if rolls > 0:
+			var roll := "Frontroll" if flip_dir > 0.0 else "Backroll"
+			parts.append(("Double " if rolls == 2 else ("%dx " % rolls if rolls > 2 else "")) + roll)
+		if half_turns > 0:
+			parts.append(str(half_turns * 180))
+		if parts.is_empty():
+			parts.append("Ollie" if _popped else "Air")
+		_score_trick(" ".join(parts), pts)
 
 
 func crash(reason: String) -> void:
@@ -1111,10 +1162,10 @@ func _process(delta: float) -> void:
 	var raley_target := 0.0
 	if mode == Mode.AIR and _raley:
 		var s := _air_phase()
-		# Schwung nimmt ab, sobald gedreht wird (Raley und Spin vertragen sich nicht)
-		raley_target = RALEY_MAX * smoothstep(0.0, 0.35, s) * (1.0 - smoothstep(0.6, 0.9, s)) \
-			* clampf(1.0 - (absf(_spin_accum) - 0.8) / 1.0, 0.0, 1.0)
+		raley_target = RALEY_MAX * smoothstep(0.0, 0.35, s) * (1.0 - smoothstep(0.6, 0.9, s))
 	_raley_ang = lerpf(_raley_ang, raley_target, 1.0 - exp(-delta * 10.0))
+	var press_target := _pitch_in if (mode == Mode.WATER and _slide_part != null) else 0.0
+	_press_vis = lerpf(_press_vis, press_target, 1.0 - exp(-delta * 10.0))
 	var k := 1.0 - exp(-delta * 8.0)
 	_edge_vis = lerpf(_edge_vis, _edge, k)
 	_release_vis = lerpf(_release_vis, _release, k)
@@ -1357,17 +1408,29 @@ func _air_phase() -> float:
 ## Bezugsrahmen der Figur: normal der Fahrer selbst, beim Raley um den Griff geschwungen
 ## (Drehung um die Brettlängsachse, Füße weg vom Seil nach oben, Brust zum Wasser).
 func _pose_frame() -> Transform3D:
-	if _raley_ang < 0.001:
-		return global_transform
-	var p := Vector3(0.2, 0.86 - 0.34 * _crouch, -0.2)      # Griff vor der vorderen Hüfte
-	var r := Basis(Vector3.BACK, _raley_side * _raley_ang)
-	return global_transform * Transform3D(r, p - r * p)
+	var xf := global_transform
+	if _raley_ang > 0.001:
+		var p := Vector3(0.2, 0.86 - 0.34 * _crouch, -0.2)      # Griff vor der vorderen Hüfte
+		var r := Basis(Vector3.BACK, _raley_side * _raley_ang)
+		xf *= Transform3D(r, p - r * p)
+	if absf(_flip) > 0.001:
+		# Überschlag um die Körpermitte; Frontroll = Brust voran (lokal +X)
+		var c := Vector3(0.0, 0.9, 0.0)
+		var f := Basis(Vector3.BACK, -_flip)
+		xf *= Transform3D(f, c - f * c)
+	return xf
 
 
 ## Brettlage im Stehen (Fahrerposition, gekippt mit der Kante).
 func _board_stand_xf() -> Transform3D:
 	var roll := _lean_roll * (0.35 + 0.45 * _edge_vis) * (1.0 - 0.85 * _release_vis)
-	return _pose_frame() * Transform3D(Basis.from_euler(Vector3(0.0, 0.0, roll)), Vector3(0.0, BOARD_Y, 0.0))
+	var xf := _pose_frame() * Transform3D(Basis.from_euler(Vector3(0.0, 0.0, roll)), Vector3(0.0, BOARD_Y, 0.0))
+	if absf(_press_vis) > 0.01:
+		# Press: Brett kippt um die Nose (↑) bzw. das Tail (↓), das andere Ende hebt ab
+		var pv := Vector3(0.0, 0.0, -0.55 * signf(_press_vis))
+		var b := Basis(Vector3.RIGHT, -PRESS_ANG * _press_vis)
+		xf *= Transform3D(b, pv - b * pv)
+	return xf
 
 
 ## Brett (Oberseite zeigt nach board_up, Länge quer = lateral) mit den Füßen darin;
@@ -1469,9 +1532,9 @@ func _pose_stand() -> void:
 	var skel_b := _rig.skeleton.global_transform.basis.orthonormalized()
 	var rb0 := global_transform.basis.orthonormalized()
 	# Raley: Becken/Oberkörper schwingen nur teilweise mit (Hohlkreuz, Kopf Richtung Griff)
-	var torso_q := Quaternion.IDENTITY.slerp((rb * rb0.inverse()).get_rotation_quaternion(), RALEY_TORSO)
-	_raley_chest = Basis(torso_q) * rb0 * Vector3.RIGHT     # Brust-/Bauchseite (für den Griff beim Raley)
-	var lean_w := Basis(torso_q) * rb0 * Basis.from_euler(Vector3(_lean_pitch * 0.5, 0.0, _lean_roll * 0.6)) * rb0.inverse()
+	var torso := rb0 * Basis(Vector3.BACK, RALEY_TORSO * _raley_side * _raley_ang - _flip)
+	_raley_chest = torso * Vector3.RIGHT     # Brust-/Bauchseite (für den Griff beim Raley)
+	var lean_w := torso * Basis.from_euler(Vector3(_lean_pitch * 0.5, 0.0, _lean_roll * 0.6)) * rb0.inverse()
 	var to_skel := func(bw: Basis) -> Basis: return skel_b.inverse() * bw * skel_b
 	_rig.set_pelvis(skel_inv * pelvis_world, to_skel.call(lean_w))
 	# Oberkörper zum Seil drehen und etwas weiter zurücklehnen
