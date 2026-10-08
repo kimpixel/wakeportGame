@@ -97,6 +97,8 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 		part.inner_v = signf(float(p["inner_v"]))      # z. B. gespiegelte 1/2 Transition Rails
 	add_child(part)
 	parts.append(part)
+	if show_hitboxes:
+		part.show_catch_zone(true)
 
 
 func _read_json(path: String) -> Dictionary:
@@ -148,6 +150,28 @@ func height_at(x: float, z: float, collision := false) -> float:
 	for part in parts:
 		best = maxf(best, part.height_at(x, z, collision))
 	return best
+
+
+## Fangzone eines Sliders an world (nächster Zielpunkt) oder null. Gibt [Teil, Zielpunkt] zurück.
+func catch_at(world: Vector3) -> Array:
+	var best: Array = []
+	var best_d := INF
+	for part in parts:
+		var t := part.catch_target(world)
+		if t != Vector3.INF:
+			var d := Vector2(t.x - world.x, t.z - world.z).length() + absf(t.y - world.y) * 0.5
+			if d < best_d:
+				best_d = d
+				best = [part, t]
+	return best
+
+
+## Debug: Fangzonen aller Slider ein-/ausblenden.
+var show_hitboxes := false:
+	set(on):
+		show_hitboxes = on
+		for part in parts:
+			part.show_catch_zone(on)
 
 
 ## Das Teil mit der höchsten Oberkante an (x, z) oder null.

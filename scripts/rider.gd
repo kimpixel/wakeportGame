@@ -87,6 +87,8 @@ const FLIP_LAND_TOL := 0.7      # rad: so schief darf man nach einem Überschlag
 const FLIP_POINTS := 300
 const PRESS_ANG := 0.22         # rad: Brett beim Press gekippt
 const PRESS_BONUS := 100.0
+const CATCH_GLIDE := 5.0         # m/s seitlich in die Slide-Linie gleiten
+const CATCH_RISE := 3.0          # m/s nach oben auf die Oberkante gleiten
 const SLIDE_TURN := 4.5         # rad/s: so schnell dreht das Brett auf dem Slider
 const LOCK_ANGLE := deg_to_rad(35.0)   # bis zu diesem Winkel zur Feature-Achse bleibt man eingeloggt
 const LOCK_RATE := 8.0          # 1/s: seitliches Wegrutschen wird so schnell abgebaut
@@ -152,6 +154,7 @@ var _edge := 0.0                # Kante belasten (nur Autopilot/NPC; Spieler: no
 var _jump_block := false        # Sprungtaste startete gerade die Anlage -> zählt nicht als Sprung
 var test_pitch := 0.0           # Test: ↑/↓ in der Luft halten (auch mit Autopilot)
 var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), ↓ = -1
+var _catch_part: FeaturePart     # gleitet gerade in diese Slider-Fangzone
 var _flip := 0.0                # Überschlag im Sprung (rad, + = Frontroll)
 var _flip_lock := false         # ↑/↓ war beim Abheben schon gedrückt (z. B. Press vom Slider) -> erst loslassen
 var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
@@ -1085,6 +1088,7 @@ func _enter_air() -> void:
 	_spin_accum = 0.0
 	_raley = false
 	_popped = false
+	_catch_part = null
 	_flip = 0.0
 	_flip_lock = absf(_pitch_in) > 0.1
 
@@ -1114,6 +1118,11 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	elif assist_flip:
 		_flip = move_toward(_flip, roundf(_flip / TAU) * TAU, FLIP_RATE * 0.7 * delta)
 
+	# Fangzone eines Sliders: im Sinkflug neben/knapp unter dem Rail -> sanft auf die
+	# Slide-Linie gleiten (seitlich und nach oben), dann wie eine Landung auf dem Feature
+	if _catch_glide(delta):
+		return
+
 	# Seitlich gegen ein Feature geflogen? Nur wenn man von außen hineinfliegt –
 	# wer schon darüber ist (z. B. seitlich vom Rail fällt), landet stattdessen.
 	var obstacle := _obstacle_height(pos.x, pos.z, true)
@@ -1123,6 +1132,35 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	var surf := _board_surface()
 	if pos.y <= surf and vel.y <= 0.0:
 		_land(surf)
+
+
+## Hineingleiten aufs Rail. true = dieses Bild erledigt (gleitet noch oder ist gelandet).
+func _catch_glide(delta: float) -> bool:
+	if features == null or not assist_lock:
+		return false
+	if _catch_part == null:
+		if vel.y > 0.5:                 # im Steigflug noch nicht fangen
+			return false
+		var hit := features.catch_at(pos)
+		if hit.is_empty():
+			return false
+		_catch_part = hit[0]
+	var target := _catch_part.catch_target(pos)
+	if target == Vector3.INF:
+		# aus der Zone heraus (z. B. Ende des Rails überflogen): normal weiterfliegen
+		_catch_part = null
+		return false
+	# seitlich zur Linie gleiten, Höhe sanft angleichen; entlang des Rails fliegt man weiter
+	var side := Vector3(target.x - pos.x, 0.0, target.z - pos.z)
+	var step := CATCH_GLIDE * delta
+	pos += side.limit_length(step)
+	vel.y = maxf(vel.y, 0.0) if pos.y < target.y else vel.y
+	pos.y = move_toward(pos.y, target.y, CATCH_RISE * delta) if pos.y < target.y else pos.y
+	if side.length() <= step + 0.01 and pos.y <= target.y + 0.02:
+		pos.y = target.y
+		_catch_part = null
+		_land(target.y)
+	return true
 
 
 func _land(surf: float) -> void:

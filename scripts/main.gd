@@ -22,6 +22,7 @@ extends Node3D
 ##   --plane=S         Test: sofort ein Jet im Anflug, S m vor dem See (negativ) bzw. danach
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
+##   --hitbox          Fangzonen der Slider zeigen (im Spiel: F3)
 ##   --set=NAME=WERT   Test: Einstellung setzen (ohne zu speichern), z. B. --set=goofy=true
 
 const RESET_DELAY := 3.0
@@ -107,6 +108,7 @@ var _view_arg := PackedFloat32Array()
 var _lane_arg := NAN
 var _crash_at := -1.0          # Test: Sturz zu dieser Zeit auslösen
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
+var _hitbox_arg := false        # Test: Fangzonen der Slider zeigen
 var _set_args: Array[String] = []   # Test: --set=NAME=WERT
 var _jump_at := -1.0           # Test: zu dieser Zeit abspringen
 var _test_pitch := 0.0         # Test: ↑/↓ in der Luft
@@ -262,6 +264,8 @@ func _ready() -> void:
 	_build_start_screen()
 	_msaa_default = get_viewport().msaa_3d
 	settings.changed.connect(_apply_setting)
+	if _hitbox_arg:
+		features.show_hitboxes = true
 	for a: String in _set_args:
 		var kv := a.split("=", true, 1)
 		if kv.size() == 2 and settings.values.has(kv[0]):
@@ -836,6 +840,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		cam.cycle_mode()
 	elif event.is_action_pressed("autopilot"):
 		rider.autopilot = not rider.autopilot
+	elif event.is_action_pressed("hitbox"):
+		features.show_hitboxes = not features.show_hitboxes
+		hud.show_trick("Hitboxen " + ("an" if features.show_hitboxes else "aus"))
 	elif event.is_action_pressed("help"):
 		hud.toggle_help()
 	elif event.is_action_pressed("overview"):
@@ -901,7 +908,8 @@ func _setup_input() -> void:
 	# Strg (zur Not Alt): Kante lösen = Driften
 	_bind("release", [KEY_CTRL, KEY_ALT], [], [[JOY_AXIS_TRIGGER_LEFT, 1.0]])
 	_bind("jump", [KEY_SPACE], [JOY_BUTTON_A], [])
-	_bind("swim", [], [], [])          # Handy: Bildschirm halten nach einem Sturz
+	_bind("swim", [], [], [])
+	_bind("hitbox", [KEY_F3], [], [])  # Debug: Fangzonen der Slider zeigen          # Handy: Bildschirm halten nach einem Sturz
 	_bind("start", [KEY_SPACE], [JOY_BUTTON_START], [])
 	_bind("reset", [KEY_R], [JOY_BUTTON_BACK], [])
 	_bind("speed_up", [KEY_PAGEUP], [JOY_BUTTON_DPAD_UP], [], [KEY_PLUS, KEY_KP_ADD])
@@ -952,6 +960,8 @@ func _parse_args() -> void:
 			_shot_time = arg.substr(12).to_float()
 		elif arg.begins_with("--pitch="):
 			_test_pitch = arg.substr(8).to_float()
+		elif arg == "--hitbox":
+			_hitbox_arg = true
 		elif arg.begins_with("--set="):
 			_set_args.append(arg.substr(6))
 		elif arg.begins_with("--jump-at="):

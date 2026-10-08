@@ -49,6 +49,7 @@ var x_center := 0.0            # seitlicher Abstand zum Seil
 
 var _reach := 1.0              # Radius für die schnelle Vorauswahl
 var _inv := Transform3D()      # Welt -> lokal (Teile stehen still)
+var _catch_mesh: MeshInstance3D  # Debug: Fangzone
 var _mesh_only := false        # beim Bau des Körpers: Rail-Wölbung weglassen
 
 
@@ -86,6 +87,87 @@ func setup(id: String, p: Dictionary) -> void:
 ## Gleitet man auf diesem Teil (Box, Rail, Pipe) oder ist es eine Absprungrampe?
 func is_slide() -> bool:
 	return type in ["block", "rail", "pipe", "transition"]
+
+
+# Fangzone der Slider (Rail, Pipe, schmale Ledge, Rail im Transition Rail): wer im Sprung hier
+# hineinfällt, gleitet aufs Rail statt daneben zu landen oder dagegen zu fliegen.
+const CATCH_SIDE := 0.75         # m seitlich neben der Rail-Achse
+const CATCH_DOWN := 0.6          # m unter der Oberkante (an den Seiten nach unten)
+const CATCH_UP := 0.5            # m über der Oberkante
+const CATCH_MIN_TOP := 0.15      # an den Enden (Auffahrt im Wasser) wird nicht gefangen
+
+
+## Hat dieses Teil eine Fangzone (schmaler Slider)?
+func can_catch() -> bool:
+	return type in ["rail", "pipe", "transition"] or (type == "block" and width <= 1.0)
+
+
+## Seitliche Lage der Slide-Linie (lokal v).
+func catch_v() -> float:
+	return -inner_v * (width * 0.5 - TR_FLAT * 0.5) if type == "transition" else 0.0
+
+
+## Liegt world in der Fangzone? Dann Zielpunkt auf der Slide-Linie (Welt, auf der Oberkante),
+## sonst Vector3.INF.
+func catch_target(world: Vector3) -> Vector3:
+	if not can_catch():
+		return Vector3.INF
+	var l := _inv * world
+	var u := -l.z
+	if absf(u) > length * 0.5:
+		return Vector3.INF
+	var v0 := catch_v()
+	if absf(l.x - v0) > CATCH_SIDE:
+		return Vector3.INF
+	var top := height_local(u, v0)
+	if top < CATCH_MIN_TOP:
+		return Vector3.INF
+	if world.y < top - CATCH_DOWN or world.y > top + CATCH_UP:
+		return Vector3.INF
+	return global_transform * Vector3(v0, top, -u)
+
+
+## Debug: Fangzone als halbdurchsichtiger Körper (an/aus).
+func show_catch_zone(on: bool) -> void:
+	if _catch_mesh:
+		_catch_mesh.visible = on
+		return
+	if not on or not can_catch():
+		return
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var v0 := catch_v()
+	var hl := length * 0.5
+	var n := maxi(int(length / 0.25), 2)
+	var prev: Array = []
+	for i in n + 1:
+		var u := lerpf(-hl, hl, float(i) / n)
+		var top := height_local(u, v0)
+		var ring: Array = []
+		if top >= CATCH_MIN_TOP:
+			for c: Vector2 in [Vector2(-CATCH_SIDE, -CATCH_DOWN), Vector2(CATCH_SIDE, -CATCH_DOWN),
+					Vector2(CATCH_SIDE, CATCH_UP), Vector2(-CATCH_SIDE, CATCH_UP)]:
+				ring.append(Vector3(v0 + c.x, top + c.y, -u))
+		if not prev.is_empty() and not ring.is_empty():
+			for k in 4:
+				var a: Vector3 = prev[k]
+				var b: Vector3 = prev[(k + 1) % 4]
+				var c2: Vector3 = ring[(k + 1) % 4]
+				var d: Vector3 = ring[k]
+				for vtx: Vector3 in [a, b, c2, a, c2, d]:
+					st.add_vertex(vtx)
+		prev = ring
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(1.0, 0.85, 0.1, 0.28)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.no_depth_test = false
+	_catch_mesh = MeshInstance3D.new()
+	_catch_mesh.mesh = st.commit()
+	_catch_mesh.material_override = mat
+	_catch_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_catch_mesh)
 
 
 ## Steht man an dieser Stelle auf glattem Plastik (kein Slide, nur Rutschen, kein Lenken)?
