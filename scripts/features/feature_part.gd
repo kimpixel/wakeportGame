@@ -10,6 +10,9 @@ extends Node3D
 const NONE := -100.0
 const BOTTOM := -0.45          # Unterkante der Schwimmkörper
 const ENTRY := -0.15           # Rampenanfang knapp unter Wasser
+const TR_FLAT := 0.26          # Transition Rail: flacher Abschluss oben, darin das Rail
+const TR_RAIL_R := 0.14        # Radius des Rails im Transition Rail
+const TR_RAIL_UP := 0.07       # so weit schaut es aus dem flachen Abschluss heraus
 
 var part_id := ""
 var display_name := ""
@@ -43,6 +46,7 @@ var x_center := 0.0            # seitlicher Abstand zum Seil
 
 var _reach := 1.0              # Radius für die schnelle Vorauswahl
 var _inv := Transform3D()      # Welt -> lokal (Teile stehen still)
+var _mesh_only := false        # beim Bau des Körpers: Rail-Wölbung weglassen
 
 
 func setup(id: String, p: Dictionary) -> void:
@@ -85,7 +89,7 @@ func is_slide() -> bool:
 func lane_x() -> float:
 	if type != "transition":
 		return x_center
-	var p := global_transform * Vector3(-inner_v * (width * 0.5 - 0.12), 0.0, 0.0)
+	var p := global_transform * Vector3(-inner_v * (width * 0.5 - TR_FLAT * 0.5), 0.0, 0.0)
 	return (cable.transform.affine_inverse() * p).x
 
 
@@ -120,18 +124,18 @@ func height_local(u: float, v: float, collision := false) -> float:
 				return NONE
 			return _with_ramps(u, center_y + sqrt(radius * radius - v * v))
 		"transition":
-			# Querschnitt: konkave Transition von der Seilseite (-v) hoch zur Kante (+v),
-			# dort das schwarze Rail; hinten senkrechte Wand. Enden: schräge Auffahrten.
+			# Querschnitt: konkave Transition von der Seilseite (-v) hoch zu einem flachen
+			# Abschluss (TR_FLAT breit), darin das schwarze Rail halb versenkt; hinten senkrechte
+			# Wand. Enden: schräge Auffahrten. Das Rail ragt nur TR_RAIL_UP heraus – keine Kante.
 			var hw := width * 0.5
 			if absf(v) > hw:
 				return NONE
 			var w := -v * inner_v                     # > 0 Richtung Außenkante (weg vom Seil)
-			var h: float
-			if w > hw - 0.22:
-				h = height + 0.05                      # Rail auf der Oberkante
-			else:
-				h = ENTRY + (height - ENTRY) * pow((w + hw) / width, 2.0)
-			var top := height + 0.05
+			var h := ENTRY + (height - ENTRY) * pow(clampf((w + hw) / (width - TR_FLAT), 0.0, 1.0), 2.0)
+			var d := w - (hw - TR_FLAT * 0.5)          # Abstand zur Rail-Mitte
+			if absf(d) < TR_RAIL_R and not _mesh_only:
+				h = maxf(h, height + TR_RAIL_UP - TR_RAIL_R + sqrt(TR_RAIL_R * TR_RAIL_R - d * d))
+			var top := height + TR_RAIL_UP
 			if ramp_in > 0.0:
 				h = minf(h, lerpf(ENTRY, top, clampf((u + hl) / ramp_in, 0.0, 1.0)))
 			if ramp_out > 0.0:
@@ -281,12 +285,17 @@ func _ready() -> void:
 		"ramp":
 			_build_heightfield(white, 14, 2)
 		"transition":
-			_build_heightfield(white, 30, 12)
+			_mesh_only = true      # weißer Körper ohne Rail-Wölbung, das Rail ist ein eigenes Rohr
+			_build_heightfield(white, 30, 24)
+			_mesh_only = false
 			var black := Util.mat(Color(0.06, 0.06, 0.07), 0.35)
 			var hl := length * 0.5
-			var rx := -inner_v * (width * 0.5 - 0.1)
-			# Rail nur auf dem flachen Oberteil: beginnt und endet dort, wo die schrägen Auffahrten oben ankommen
-			Util.beam(self, Vector3(rx, height + 0.02, hl - ramp_in), Vector3(rx, height + 0.02, -hl + ramp_out), 0.07, black)
+			var rx := -inner_v * (width * 0.5 - TR_FLAT * 0.5)
+			# Rail im flachen Abschluss versenkt (nur der obere Teil schaut heraus); beginnt und
+			# endet dort, wo die schrägen Auffahrten oben ankommen
+			var ry := height + TR_RAIL_UP - TR_RAIL_R
+			var tube := Util.beam(self, Vector3(rx, ry, hl - ramp_in), Vector3(rx, ry, -hl + ramp_out), TR_RAIL_R, black)
+			tube.mesh.set("radial_segments", 16)
 		_:
 			_build_heightfield(white, 24 if profile.is_empty() else int(length * 8.0), 12 if side_ramp > 0.0 else 2)
 
