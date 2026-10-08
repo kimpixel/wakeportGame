@@ -252,6 +252,7 @@ func _ready() -> void:
 
 
 func reset() -> void:
+	_clear_air_pose()
 	mode = Mode.WATER
 	pos = start_pos
 	_prev_pos = pos
@@ -569,6 +570,7 @@ func let_go(reason: String) -> void:
 
 ## Ausgeglitten: ins Wasser sinken und in die Schwimmlage gehen.
 func _sink() -> void:
+	_clear_air_pose()
 	mode = Mode.CRASHED
 	_combo = 0
 	_crash_t = SETTLE_TIME
@@ -980,6 +982,15 @@ func _pop() -> void:
 		_raley_side = -signf(side) if absf(side) > 0.05 else -1.0
 
 
+## Sprung-Haltung (Raley-Schwung, Überschlag, Press) sofort zurücksetzen – nach Sturz, Absaufen
+## oder Neustart darf die Figur nicht verdreht bleiben.
+func _clear_air_pose() -> void:
+	_raley = false
+	_raley_ang = 0.0
+	_flip = 0.0
+	_press_vis = 0.0
+
+
 func _enter_air() -> void:
 	mode = Mode.AIR
 	air_time = 0.0
@@ -1069,6 +1080,7 @@ func _land(surf: float) -> void:
 func crash(reason: String) -> void:
 	if mode == Mode.CRASHED:
 		return
+	_clear_air_pose()
 	mode = Mode.CRASHED
 	_crash_t = 0.0
 	_combo = 0
