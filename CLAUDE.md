@@ -174,8 +174,9 @@ Features/Setups:
 - T1-Steg ist 5 cm höher als T2 (`Lake.DOCK_T1_Y`).
 
 Startseite: echte Szene im Hintergrund, Kamera schwenkt von der Seeseite; Menü im HUD-Stil
-(Terminal, Feature-Setup als Tasten, Features & Hacks, Einstellungen, Spiel starten), Popups für
-Einstellungen, Feature-Liste (alle Setups, unabhängig vom Terminal) und Detail mit 3D-Vorschau.
+(Terminal, Feature-Setup als Tasten, Einstellungen, Spiel starten), keine Tasten-Legende, keine
+Shortcuts T/F (nur Leertaste = Start, Esc). Das Popup „Features & Hacks“ (alle Setups, Detail mit
+3D-Vorschau) bleibt im Code, aber nicht im Menü – für einen späteren **Setup-Builder**.
 Responsiv: Desktop Menü links, Handy quer breit/flach, Handy hoch unten.
 
 ## Weitere Fachbegriffe (Wakeboard)

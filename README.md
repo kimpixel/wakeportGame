@@ -40,7 +40,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | C | Y | Kamera: Verfolger, Orbit oder Ufer |
 | T | – | Terminal T1/T2 (vor dem Start) |
 | F | – | Feature-Setup (vor dem Start) |
-| Tab | – | zurück zur Startseite (mit ihr beginnt das Spiel). Im Hintergrund die echte Szene, die Kamera schwenkt langsam von der Seeseite über die gewählte Anlage. Darüber das Menü: Terminal, Feature-Setup, **Features & Hacks** (alle aus allen Setups, Antippen zeigt sie in 3D, ziehen = drehen), **Einstellungen** (Wetter, Datum, Uhrzeit, Jetzt) und **Spiel starten**. Tasten: T Terminal, F Feature-Setup, Leertaste Start, Esc schließt ein Fenster. Passt sich an Handy (hoch und quer) und Desktop an |
+| Tab | – | zurück zur Startseite (mit ihr beginnt das Spiel). Im Hintergrund die echte Szene, die Kamera schwenkt langsam von der Seeseite über die gewählte Anlage. Darüber das Menü: Terminal, Feature-Setup, **Einstellungen** (Wetter, Datum, Uhrzeit, Jetzt) und **Spiel starten**. Tasten: Leertaste Start, Esc schließt ein Fenster. Passt sich an Handy (hoch und quer) und Desktop an |
 | Maus / Mausrad | rechter Stick | Umsehen / Zoom |
 | P | – | Autopilot (fährt auch Features) |
 | M | – | Ton aus/an |

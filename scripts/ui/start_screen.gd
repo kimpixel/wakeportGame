@@ -2,11 +2,10 @@ class_name StartScreen
 extends CanvasLayer
 ## Startseite im Stil der HUD-Leiste, für Desktop und Handy (passt sich der Bildschirmgröße an).
 ## Im Hintergrund läuft die echte Szene: die Kamera schwenkt langsam um den See, auf beiden
-## Anlagen fährt ein Fahrer. Darüber das Menü: Terminal, Feature-Setup, Features & Hacks,
-## Einstellungen (Wetter, Datum, Uhrzeit) und "Spiel starten".
-## Features & Hacks: alle aus allen Setups, unabhängig vom gewählten Terminal; Antippen zeigt
-## das Feature bzw. den Hack in 3D (Popup, drehbar).
-## Tastatur: T Terminal, F Feature-Setup, Leertaste Spiel starten, Esc schließt ein Popup.
+## Anlagen fährt ein Fahrer. Darüber das Menü: Terminal, Feature-Setup, Einstellungen (Wetter,
+## Datum, Uhrzeit) und "Spiel starten". Tastatur: Leertaste Spiel starten, Esc schließt ein Popup.
+## Features & Hacks (alle aus allen Setups, Detail in 3D) ist gebaut, steht aber nicht im Menü –
+## vorgesehen für einen späteren Setup-Builder (Test: --screen=@liste).
 
 signal terminal_chosen(terminal: String)
 signal setup_chosen(idx: int)
@@ -30,7 +29,6 @@ var _ui: Control
 var _menu: PanelContainer
 var _title_box: Control
 var _result: Label
-var _hint: Label
 var _term_buttons: Array[Button] = []
 var _setup_buttons: Array[Button] = []
 var _setup_grid: GridContainer
@@ -136,10 +134,6 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	mv.add_child(row)
-	var fb := _button("Features & Hacks", 20)
-	fb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	fb.pressed.connect(_open_browser)
-	row.add_child(fb)
 	var eb := _button("Einstellungen", 20)
 	eb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	eb.pressed.connect(func() -> void: _show_popup(_settings))
@@ -148,9 +142,6 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_start_btn.custom_minimum_size.y = 72
 	_start_btn.pressed.connect(func() -> void: start_pressed.emit())
 	mv.add_child(_start_btn)
-	_hint = _label("T  Terminal     F  Feature-Setup     Leertaste  Start", 15, Color(1, 1, 1, 0.65))
-	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mv.add_child(_hint)
 
 	# Popups über abgedunkeltem Hintergrund
 	_dim = ColorRect.new()
@@ -293,7 +284,6 @@ func _layout() -> void:
 	_menu.custom_minimum_size = Vector2(w, 0)
 	_menu.size = Vector2(w, 0)
 	_setup_grid.columns = 4 if low else (2 if w < 700.0 else 3)
-	_hint.visible = not mobile
 	await get_tree().process_frame
 	var h := _menu.get_combined_minimum_size().y
 	_menu.size = Vector2(w, h)
@@ -630,14 +620,6 @@ func _input(event: InputEvent) -> void:
 			if not _popup_open():
 				return
 			_close_popups()
-		KEY_T:
-			terminal_chosen.emit(_terminals[(_terminals.find(_terminal) + 1) % _terminals.size()])
-		KEY_F:
-			var cur := 0
-			for i in _setup_buttons.size():
-				if _setup_buttons[i].button_pressed:
-					cur = i
-			setup_chosen.emit((cur + 1) % _setup_buttons.size())
 		KEY_SPACE, KEY_TAB:
 			if _popup_open():
 				_close_popups()
