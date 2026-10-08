@@ -21,6 +21,7 @@ signal skipped                   # Abkürzung (Leertaste): Handle sofort da – 
 ## der Operator bringt die Handle auf die Höhe des Fahrers, der schwimmt hin und greift sie.
 const SINK_SPEED := 1.0          # so langsam ohne Seil -> man sinkt ins Wasser
 const SETTLE_TIME := 1.5         # so lange nach dem Sturz treibt man, bevor man schwimmen kann
+const SWIM_MARGIN := 2.0         # m Abstand beim Schwimmen um Features herum
 const SWIM_SPEED := 1.1          # Rückenschwimmen mit Brett an den Füßen (m/s)
 const GRAB_DIST := 1.0
 const AUTO_TURN_START := 20.0     # Autopilot beginnt die Wende so weit vor dem Wendepunkt
@@ -136,6 +137,8 @@ var is_npc := false
 var auto_lane := NAN
 var score := 0
 var crash_reason := ""
+var _swim_path: Array[Vector2] = []   # Wegpunkte zur Handle (um Features herum)
+var _replan_t := 0.0
 var swimming := false            # schwimmt gerade zur Handle
 var _crash_t := 0.0
 var _getup := 1.0                # Deep-Water-Start: 0 = liegt im Wasser, 1 = steht
@@ -610,9 +613,24 @@ func _update_free_handle(delta: float) -> void:
 	_free_handle = Vector3(h.x, water.height_at(h.x, h.z) + 0.05, h.z)
 
 
+## Schwimmweg zur Handle planen (um Features herum).
+func _plan_swim() -> Array[Vector2]:
+	if features:
+		return features.swim_path(pos, _free_handle, SWIM_MARGIN)
+	var out: Array[Vector2] = [Vector2(_free_handle.x, _free_handle.z)]
+	return out
+
+
 ## Geschätzte Schwimmzeit bis zur Handle (s), für die Anzeige nach einem Sturz.
 func swim_time() -> float:
-	var d := Vector3(_free_handle.x - pos.x, 0.0, _free_handle.z - pos.z).length()
+	var d := 0.0
+	var p := Vector2(pos.x, pos.z)
+	var path := _swim_path
+	if path.is_empty():
+		path = _plan_swim()
+	for q: Vector2 in path:
+		d += p.distance_to(q)
+		p = q
 	return d / SWIM_SPEED + SETTLE_TIME
 
 
@@ -636,12 +654,21 @@ func _swim(delta: float) -> void:
 		skipped.emit()
 		_grab()
 		return
-	var to := _free_handle - pos
-	to.y = 0.0
-	var d := to.length()
-	if d < GRAB_DIST and cable.state == CableSystem.State.HOLD:
+	var to_handle := _free_handle - pos
+	to_handle.y = 0.0
+	if to_handle.length() < GRAB_DIST and cable.state == CableSystem.State.HOLD:
 		_grab()
 		return
+	# Weg um die Features herum (großzügig), regelmäßig neu geplant – die Handle wandert ja noch
+	_replan_t -= delta
+	if _replan_t <= 0.0 or _swim_path.is_empty():
+		_swim_path = _plan_swim()
+		_replan_t = 0.4
+	while _swim_path.size() > 1 and Vector2(pos.x, pos.z).distance_to(_swim_path[0]) < 0.5:
+		_swim_path.pop_front()
+	var wp: Vector2 = _swim_path[0] if not _swim_path.is_empty() else Vector2(_free_handle.x, _free_handle.z)
+	var to := Vector3(wp.x - pos.x, 0.0, wp.y - pos.z)
+	var d := to.length()
 	if d > 0.3:
 		yaw = lerp_angle(yaw, atan2(-to.x, -to.z), clampf(delta * 2.0, 0.0, 1.0))
 	# Leertaste halten (Handy: Bildschirm halten) = schwimmen, ↑ geht auch
@@ -661,6 +688,7 @@ func _grab() -> void:
 	mode = Mode.WATER
 	attached = true
 	swimming = false
+	_swim_path.clear()
 	crash_reason = ""
 	block_jump()                  # die zum Schwimmen gehaltene Leertaste ist kein Sprung
 	vel = Vector3.ZERO
@@ -1213,6 +1241,8 @@ func crash(reason: String) -> void:
 	mode = Mode.CRASHED
 	_crash_t = 0.0
 	_combo = 0
+	_swim_path.clear()
+	_replan_t = 0.0
 	if attached:
 		_free_handle = pos + Vector3(0.0, HANDLE_HEIGHT, 0.0)
 	attached = false
@@ -1235,6 +1265,10 @@ func _step_crashed(delta: float) -> void:
 	vel.y = 0.0
 	pos.x += vel.x * delta
 	pos.z += vel.z * delta
+	if features and not (_ragdoll and _ragdoll.active):
+		# nie durch ein Feature schwimmen; wer darauf liegt, rutscht zügig herunter (kein Sprung)
+		var outside := features.push_out(pos, 0.3)
+		pos = pos.move_toward(outside, 3.0 * delta) if pos.distance_to(outside) > 0.05 else outside
 	if _ragdoll and _ragdoll.active:
 		_ragdoll.step(delta)
 		# Fahrerposition (Kamera, Brett) folgt dem treibenden Körper

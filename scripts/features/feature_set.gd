@@ -12,6 +12,7 @@ const OVERRIDES := ["length", "width", "height", "height_end", "ramp_in", "ramp_
 
 var parts: Array[FeaturePart] = []
 var setup_name := ""
+var colliders := true          # Kollisionskörper für die Ragdoll (Katalog der Startseite: aus)
 var _catalog: Dictionary = {}
 
 
@@ -162,6 +163,7 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 	part.group_name = row.get("group", "")
 	part.row_index = row.get("_row", -1)
 	part.cable = cable
+	part.collide = colliders
 	var world := cable.transform * Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, cable.mast_a_z)) * local
 	part.transform = world
 	var on_cable := cable.transform.affine_inverse() * world.origin
@@ -261,3 +263,178 @@ func part_at(x: float, z: float) -> FeaturePart:
 			best = h
 			found = part
 	return found
+
+
+# ---------------------------------------------------------------- Schwimmen um Features
+
+## Grundriss eines Teils als gedrehtes Rechteck in der Ebene (x, z), um margin vergrößert.
+func _rect(part: FeaturePart, margin: float) -> Dictionary:
+	var ax := part.lock_axis()
+	var a2 := Vector2(ax.x, ax.z).normalized()
+	var gp := part.global_position
+	return {"c": Vector2(gp.x, gp.z), "a": a2, "s": Vector2(-a2.y, a2.x),
+		"hx": part.length * 0.5 + margin, "hy": part.width * 0.5 + margin}
+
+
+static func _local(r: Dictionary, p: Vector2) -> Vector2:
+	var d: Vector2 = p - r["c"]
+	return Vector2(d.dot(r["a"]), d.dot(r["s"]))
+
+
+static func _inside(r: Dictionary, p: Vector2, shrink := 0.0) -> bool:
+	var l := _local(r, p)
+	return absf(l.x) < float(r["hx"]) - shrink and absf(l.y) < float(r["hy"]) - shrink
+
+
+## Schneidet die Strecke a–b das Innere des Rechtecks? (Liang-Barsky im Rechteck-Raum)
+static func _seg_hits(r: Dictionary, a: Vector2, b: Vector2) -> bool:
+	var p := _local(r, a)
+	var q := _local(r, b)
+	var d := q - p
+	var hx: float = float(r["hx"]) - 0.02
+	var hy: float = float(r["hy"]) - 0.02
+	var t0 := 0.0
+	var t1 := 1.0
+	for k in 4:
+		var pk: float = [-d.x, d.x, -d.y, d.y][k]
+		var qk: float = [p.x + hx, hx - p.x, p.y + hy, hy - p.y][k]
+		if absf(pk) < 1e-9:
+			if qk < 0.0:
+				return false
+		else:
+			var t := qk / pk
+			if pk < 0.0:
+				t0 = maxf(t0, t)
+			else:
+				t1 = minf(t1, t)
+			if t0 > t1:
+				return false
+	return true
+
+
+## Weg zum Schwimmen von from nach to (Welt), großzügig um alle Features herum.
+## Liefert die Wegpunkte (x, z) ohne den Startpunkt; der letzte ist to.
+func swim_path(from: Vector3, to: Vector3, margin: float) -> Array[Vector2]:
+	var a := Vector2(from.x, from.z)
+	var b := Vector2(to.x, to.z)
+	var out: Array[Vector2] = []
+	# nur Teile in der Nähe der Strecke betrachten
+	var lo := Vector2(minf(a.x, b.x), minf(a.y, b.y)) - Vector2.ONE * 30.0
+	var hi := Vector2(maxf(a.x, b.x), maxf(a.y, b.y)) + Vector2.ONE * 30.0
+	var rects: Array[Dictionary] = []
+	for part in parts:
+		var gp := part.global_position
+		if gp.x < lo.x or gp.x > hi.x or gp.z < lo.y or gp.z > hi.y:
+			continue
+		var r := _rect(part, margin)
+		if not _inside(r, b):              # Ziel (Handle) liegt nie in einem Hindernis
+			rects.append(r)
+	# Start im Sicherheitsabstand (z. B. hinter einem Feature oder mitten in einem Hack):
+	# rundum den kürzesten Ausweg suchen, der durch kein Feature selbst führt
+	var start_in := false
+	for r in rects:
+		if _inside(r, a):
+			start_in = true
+			break
+	if start_in:
+		var solid: Array[Dictionary] = []
+		for part in parts:
+			solid.append(_rect(part, 0.3))
+		var best := Vector2.INF
+		var best_d := INF
+		for i in 24:
+			var dir := Vector2.from_angle(TAU * i / 24.0)
+			var dd := 0.5
+			while dd < 25.0:
+				var p := a + dir * dd
+				var free := true
+				for r in rects:
+					if _inside(r, p):
+						free = false
+						break
+				if free:
+					var ok := true
+					for r in solid:
+						if _seg_hits(r, a, p) and not _inside(r, a):
+							ok = false
+							break
+					if ok and dd < best_d:
+						best_d = dd
+						best = p
+					break
+				dd += 0.5
+		if best != Vector2.INF:
+			a = best
+			out.append(a)
+	var blocked := func(p: Vector2, q: Vector2) -> bool:
+		for r in rects:
+			if _seg_hits(r, p, q):
+				return true
+		return false
+	if not blocked.call(a, b):
+		out.append(b)
+		return out
+	# Sichtgraph über die Ecken der vergrößerten Rechtecke, kürzester Weg (Dijkstra)
+	var nodes: Array[Vector2] = [a, b]
+	for r in rects:
+		for sx: float in [-1.0, 1.0]:
+			for sy: float in [-1.0, 1.0]:
+				var c: Vector2 = r["c"] + r["a"] * sx * (float(r["hx"]) + 0.05) + r["s"] * sy * (float(r["hy"]) + 0.05)
+				var free := true
+				for r2 in rects:
+					if _inside(r2, c):
+						free = false
+						break
+				if free:
+					nodes.append(c)
+	var n := nodes.size()
+	var dist: Array[float] = []
+	var prev: Array[int] = []
+	var done: Array[bool] = []
+	for i in n:
+		dist.append(INF)
+		prev.append(-1)
+		done.append(false)
+	dist[0] = 0.0
+	for _iter in n:
+		var u := -1
+		for i in n:
+			if not done[i] and (u < 0 or dist[i] < dist[u]):
+				u = i
+		if u < 0 or dist[u] == INF or u == 1:
+			break
+		done[u] = true
+		for v in n:
+			if done[v] or v == u:
+				continue
+			var w := nodes[u].distance_to(nodes[v])
+			if dist[u] + w < dist[v] and not blocked.call(nodes[u], nodes[v]):
+				dist[v] = dist[u] + w
+				prev[v] = u
+	if prev[1] < 0:
+		out.append(b)                      # kein Weg gefunden: direkt (Notfall)
+		return out
+	var rev: Array[Vector2] = []
+	var k := 1
+	while k > 0:
+		rev.append(nodes[k])
+		k = prev[k]
+	rev.reverse()
+	out.append_array(rev)
+	return out
+
+
+## Harte Grenze beim Schwimmen: aus dem Grundriss (plus margin) eines Features herausschieben.
+func push_out(p: Vector3, margin: float) -> Vector3:
+	var q := Vector2(p.x, p.z)
+	for part in parts:
+		var gp := part.global_position
+		if absf(gp.x - q.x) > 40.0 or absf(gp.z - q.y) > 40.0:
+			continue
+		var r := _rect(part, margin)
+		if _inside(r, q):
+			var l := _local(r, q)
+			var ex := float(r["hx"]) - absf(l.x)
+			var ey := float(r["hy"]) - absf(l.y)
+			q += r["a"] * signf(l.x) * ex if ex < ey else r["s"] * signf(l.y) * ey
+	return Vector3(q.x, p.y, q.y)

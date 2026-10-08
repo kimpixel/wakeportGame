@@ -4,7 +4,8 @@ extends RefCounted
 ## Kapseln (PhysicalBone3D) an den Hauptknochen, Ellbogen und Knie als Scharnier, der Rest
 ## als Kugelgelenk mit Grenzen. Starke Dämpfung wie im Wasser; eine unsichtbare Ebene auf
 ## Wasserhöhe hält den Körper an der Oberfläche (grober Auftrieb).
-## Die Knochen kollidieren nur mit dieser Ebene, nicht untereinander (stabil, keine Explosionen).
+## Die Knochen kollidieren mit dieser Ebene und den Features (abprallen, darauf liegen bleiben),
+## nicht untereinander (stabil, keine Explosionen).
 
 const LAYER_BONES := 1 << 9
 const LAYER_WATER := 1 << 10
@@ -61,7 +62,7 @@ func _init(skel: Skeleton3D, owner_node: Node3D) -> void:
 		pb.linear_damp = 1.6           # Wasser bremst
 		pb.angular_damp = 3.0
 		pb.collision_layer = LAYER_BONES
-		pb.collision_mask = LAYER_WATER
+		pb.collision_mask = LAYER_WATER | FeaturePart.LAYER_COLLIDE   # Features: abprallen statt durchfallen
 		# Körper mittig auf dem Knochen (Knochen-Y zeigt zum Kindknochen)
 		pb.body_offset = Transform3D(Basis.IDENTITY, Vector3(0.0, length * 0.5, 0.0))
 		var shape := CapsuleShape3D.new()

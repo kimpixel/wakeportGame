@@ -51,6 +51,8 @@ var x_center := 0.0            # seitlicher Abstand zum Seil
 var _reach := 1.0              # Radius für die schnelle Vorauswahl
 var _inv := Transform3D()      # Welt -> lokal (Teile stehen still)
 var _catch_mesh: MeshInstance3D  # Debug: Fangzone
+var collide := true              # Kollisionskörper bauen (nicht für unsichtbare Katalog-Teile)
+const LAYER_COLLIDE := 1 << 11   # Physik-Ebene der Features (Ragdoll prallt daran ab)
 var _mesh_only := false        # beim Bau des Körpers: Rail-Wölbung weglassen
 
 
@@ -423,6 +425,31 @@ func _ready() -> void:
 			tube.mesh.set("radial_segments", 16)
 		_:
 			_build_heightfield(white, 24 if profile.is_empty() else int(length * 8.0), 12 if side_ramp > 0.0 else 2)
+	if collide:
+		_build_collider()
+
+
+## Kollisionskörper aus der sichtbaren Form (alle Dreiecke): daran prallt die Ragdoll beim
+## Sturz ab bzw. bleibt darauf liegen. Die Fahrphysik nutzt weiter height_local().
+func _build_collider() -> void:
+	var faces := PackedVector3Array()
+	for c in get_children():
+		if c is MeshInstance3D and c != _catch_mesh and (c as MeshInstance3D).mesh:
+			var mi := c as MeshInstance3D
+			for v in mi.mesh.get_faces():
+				faces.append(mi.transform * v)
+	if faces.is_empty():
+		return
+	var shape := ConcavePolygonShape3D.new()
+	shape.set_faces(faces)
+	shape.backface_collision = true
+	var body := StaticBody3D.new()
+	body.collision_layer = LAYER_COLLIDE
+	body.collision_mask = 0
+	var cs := CollisionShape3D.new()
+	cs.shape = shape
+	body.add_child(cs)
+	add_child(body)
 
 
 ## Allgemeine Form: Oberfläche aus height_local() + senkrechte Wände bis unter Wasser.

@@ -703,6 +703,7 @@ func _build_catalog() -> void:
 	for e: Dictionary in FeatureSet.list_setups():
 		var fs := FeatureSet.new()
 		fs.visible = false
+		fs.colliders = false
 		add_child(fs)
 		fs.load_setup(e["file"], cable_of, s_offset)
 		_catalog_sets.append(fs)
