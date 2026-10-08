@@ -370,10 +370,10 @@ func make_jet_loop() -> AudioStreamWAV:
 	var mid := _lowpass(raw, 0.25)
 	var s := PackedFloat32Array()
 	s.resize(n)
+	# nur Rauschen: tiefes Grollen und etwas Rauschen in der Mitte. Keine reinen Töne (das
+	# frühere Turbinen-Pfeifen bei 2,4/3,7 kHz klang über Handy-Lautsprecher wie Piepen)
 	for i in n:
-		var t := float(i) / RATE
-		var whine := sin(TAU * 2380.0 * t + 0.6 * sin(TAU * 0.7 * t)) * 0.035 + sin(TAU * 3710.0 * t) * 0.02
-		s[i] = low[i] * 3.0 + (mid[i] - low[i]) * 0.55 + whine
+		s[i] = low[i] * 3.0 + (mid[i] - low[i]) * 0.35
 	var fade := RATE / 5
 	for i in fade:
 		var k := float(i) / fade
