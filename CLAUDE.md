@@ -17,7 +17,7 @@ Der Nutzer benutzt feste Begriffe (oft mit Erklärung in Klammern) und Kurzforme
 | **Feature** | Terminus für ein **Hindernis** im Wasser (Kicker, Box, Rail, Pipe …) |
 | **Feature Setup (Setup)** | Terminus für die **Aufstellung der Hindernisse** einer Saison/Zeit, z. B. „2026 September“, „Setup A“ … „Setup E“. Datum oft unbekannt → Platzhalter „?“ |
 | **„T2 s D“, „t2 S D“, „T2 SE“** | Terminal 2, Setup D bzw. Setup E (so werden Stellen benannt: „auf t2 s D -> …“) |
-| **T und S** (Auswahl) | Terminal- und Setup-Auswahl im Menü / Tasten T und F |
+| **T und S** (Auswahl) | Terminal- und Setup-Auswahl (auf der Startseite; Tasten T/F gibt es nicht mehr) |
 | **Hack** | sobald **mehrere Features zusammenstehen**, ist das ein Hack (Kombination). Ausnahme: so gängige Kombinationen heißen nicht Hack – Ollie Box + Ledge, A-Frame + Pyramid Rail (Pyramid Series), zwei Kicker nebeneinander oder als Spine |
 | **Feature/Hack** | ein auswählbares Element: einzelnes Feature oder Hack |
 | **Startblock / Startdock** | Startsteg mit kleiner Holzhütte davor, dort startet man. Im Startblock sind immer mindestens der Steuermann und optional Gäste |
@@ -142,7 +142,7 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
   Wer beim Abheben ↑/↓ noch hält (Press vom Slider), bekommt keinen Überschlag, bis er loslässt.
 - Leertaste: halten + loslassen = Sprung; startet auch die Anlage (dann ohne Sprung). Kein Enter.
 - Strg (zur Not Alt): Driften (Kante lösen). „Maximaler Grip“ gibt es nicht mehr.
-- R, + / −, C, P, H, M, T, F, Tab wie in der README.
+- R, + / −, C, P, H, M, Tab (Startseite) wie in der README. **Keine Tasten T/F** mehr (Terminal/Setup nur auf der Startseite).
 
 Steuerung Handy: Neigen = lenken, Tippen/Halten = Start/Sprung, ▲ ▼ DRIFT als virtuelle Tasten,
 ☰-Menü (Weiter, Hilfe, Zurück zum Steg, Startseite, Ton). Terminal/Setup nur auf der Startseite.

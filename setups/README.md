@@ -6,7 +6,7 @@ Die Hindernisse sind **modular**, genau wie die echten Module am Wakeport. Es gi
 2. **`setup_*.json` – ein Feature-Setup:** Für beide Terminals (`T1`, `T2`) je eine Liste. Jede Zeile stellt ein Bauteil aus dem Katalog an einer Position auf.
 3. **`index.json` – die Liste der Setups** für das Auswahlmenü im Spiel (oben = Standard). Unbekannte Monate oder Jahre stehen als Platzhalter `?` drin.
 
-Vor dem Start wählst du das Setup oben rechts aus (oder mit F). Für ein neues Setup legst du eine `setup_*.json` an und trägst sie in `index.json` ein. Am Code ändert sich nichts.
+Das Setup wählst du auf der Startseite aus. Für ein neues Setup legst du eine `setup_*.json` an und trägst sie in `index.json` ein. Am Code ändert sich nichts.
 
 ## Modulare Teile
 

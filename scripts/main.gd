@@ -206,11 +206,11 @@ func _ready() -> void:
 
 	hud = Hud.new()
 	add_child(hud)
-	_terminal_menu = hud.add_menu_choice("Terminal  (T wechseln)", ["T2 (Strand, große Hütte)", "T1 (Lounge-Steg)"], 0, _on_terminal_menu)
+	_terminal_menu = hud.add_menu_choice("Terminal", ["T2 (Strand, große Hütte)", "T1 (Lounge-Steg)"], 0, _on_terminal_menu)
 	var names: Array = []
 	for e: Dictionary in _setups:
 		names.append(e["name"])
-	_setup_menu = hud.add_menu_choice("Feature-Setup  (F wechseln)", names, _setup_idx, _select_setup)
+	_setup_menu = hud.add_menu_choice("Feature-Setup", names, _setup_idx, _select_setup)
 	# Handy/Tablet: Tippen = Start bzw. Sprung, Neigen = lenken
 	mobile = MobileInput.new()
 	add_child(mobile)
@@ -710,10 +710,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		cam.cycle_mode()
 	elif event.is_action_pressed("autopilot"):
 		rider.autopilot = not rider.autopilot
-	elif event.is_action_pressed("next_terminal"):
-		_select_terminal("T1" if terminal == "T2" else "T2")
-	elif event.is_action_pressed("next_setup"):
-		_select_setup((_setup_idx + 1) % _setups.size())
 	elif event.is_action_pressed("help"):
 		hud.toggle_help()
 	elif event.is_action_pressed("overview"):
@@ -786,8 +782,6 @@ func _setup_input() -> void:
 	_bind("camera", [KEY_C], [JOY_BUTTON_Y], [])
 	_bind("autopilot", [KEY_P], [], [])
 	_bind("help", [KEY_H, KEY_F1], [], [])
-	_bind("next_setup", [KEY_F], [], [])
-	_bind("next_terminal", [KEY_T], [], [])
 	_bind("mute", [KEY_M], [], [])
 	_bind("overview", [KEY_TAB], [], [])
 	_bind("cam_left", [], [], [[JOY_AXIS_RIGHT_X, -1.0]])

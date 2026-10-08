@@ -11,7 +11,7 @@ Leertaste  Start (Runde 7:30)     R  zurück zum Steg (−5:00)     + / -  Anlag
 Nach Sturz:  ↑ halten = zur Handle schwimmen     Leertaste = sofort weiter (−3:00)
 C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom
 P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus
-Vor dem Start:   T  Terminal (T1/T2)     F  Feature-Setup     Tab  Feature-Übersicht"""
+Tab  Startseite (Terminal, Feature-Setup, Einstellungen)"""
 
 const HELP_MOBILE := """Tippen   Start          Handy neigen   lenken
 Finger halten + loslassen   Absprung (schnell: Raley)

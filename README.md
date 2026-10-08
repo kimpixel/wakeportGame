@@ -6,7 +6,7 @@
 
 ## Die Anlage
 
-Nachgebaut ist der **Wakeport am Raunheimer Waldsee** (Hessen). **Vor dem Start wählst du oben rechts, an welcher Anlage du fährst: T2 oder T1** (oder mit T). An der anderen fährt ein NPC (blaue Weste) mit Sprüngen und 180ern. An beiden Startstegen steht ein Steuermann mit der gelben Fernsteuerung; der Jubel kommt immer aus dem Startblock deiner Anlage.
+Nachgebaut ist der **Wakeport am Raunheimer Waldsee** (Hessen). **Auf der Startseite wählst du, an welcher Anlage du fährst: T2 oder T1.** An der anderen fährt ein NPC (blaue Weste) mit Sprüngen und 180ern. An beiden Startstegen steht ein Steuermann mit der gelben Fernsteuerung; der Jubel kommt immer aus dem Startblock deiner Anlage.
 
 - Der Startmast steht am Strand (echte Koordinaten), der Endmast rund 233 m weiter draußen im See (T1: 240 m). Die Endmasten stehen 35 m weiter draußen als in den Geodaten, damit zwischen Features und Wendebojen genug Platz ist (`Lake.END_EXTEND`).
 - Ein Stahlseil ist als Schlaufe um zwei Rollen (Ø 30 cm) oben an den A-förmigen Gittermasten gespannt.
@@ -15,7 +15,7 @@ Nachgebaut ist der **Wakeport am Raunheimer Waldsee** (Hessen). **Vor dem Start 
 
 ## Hindernisse
 
-Die echten Feature-Setups von T1 und T2 stehen modular in [setups/](setups/README.md): ein Bauteile-Katalog mit den echten Modulen (Pipe-Hälften mit an-/absteckbaren Auffahrten, Port Plaza aus Plaza Kicker und Plaza Rail, Spine Kicker aus zwei Kicker M) und mehrere Setups, je eine Datei für beide Terminals. **Vor dem Start wählst du oben rechts, welches Setup du fährst** (oder mit F). Aktuell ist „2026 September“, dazu sechs ältere Setups, deren Datum noch als Platzhalter drinsteht.
+Die echten Feature-Setups von T1 und T2 stehen modular in [setups/](setups/README.md): ein Bauteile-Katalog mit den echten Modulen (Pipe-Hälften mit an-/absteckbaren Auffahrten, Port Plaza aus Plaza Kicker und Plaza Rail, Spine Kicker aus zwei Kicker M) und mehrere Setups, je eine Datei für beide Terminals. **Auf der Startseite wählst du, welches Setup du fährst.** Aktuell ist „2026 September“, dazu sechs ältere Setups, deren Datum noch als Platzhalter drinsteht.
 
 Über den weißen Schwimmsteg, den Holzsteg und die Wendebojen fährt man einfach drüber: Die Boje wird unter Wasser gedrückt, der Fahrer macht ein kleines „Ups“. Der blaue Gummiball (in manchen Setups) dagegen muss übersprungen werden.
 
@@ -38,8 +38,6 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | Leertaste | A | nach Sturz oder Seilverlust: sofort weiterfahren, direkt unter dem Seil (kostet 3:00 Spielzeit) |
 | + / − | Steuerkreuz ↑/↓ | Tempo der Anlage (16–40 km/h) |
 | C | Y | Kamera: Verfolger, Orbit oder Ufer |
-| T | – | Terminal T1/T2 (vor dem Start) |
-| F | – | Feature-Setup (vor dem Start) |
 | Tab | – | zurück zur Startseite (mit ihr beginnt das Spiel). Im Hintergrund die echte Szene, die Kamera schwenkt langsam von der Seeseite über die gewählte Anlage. Darüber das Menü: Terminal, Feature-Setup, **Einstellungen** (Wetter, Datum, Uhrzeit, Jetzt) und **Spiel starten**. Tasten: Leertaste Start, Esc schließt ein Fenster. Passt sich an Handy (hoch und quer) und Desktop an |
 | Maus / Mausrad | rechter Stick | Umsehen / Zoom |
 | P | – | Autopilot (fährt auch Features) |
