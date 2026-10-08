@@ -62,7 +62,8 @@ var _msaa_default := Viewport.MSAA_DISABLED
 var _touch_started := false     # dieser Finger hat die Anlage gestartet (kein Sprung)
 
 ## Welche Anlage fährt der Spieler? Der NPC fährt immer an der anderen.
-const TERMINALS := ["T2", "T1"]
+const TERMINALS := ["T1", "T2"]
+const TERMINAL_NAMES := ["Terminal 1", "Terminal 2"]
 var terminal := "T2"
 var pc: CableSystem              # Anlage des Spielers
 var nc: CableSystem              # Anlage des NPC
@@ -219,7 +220,7 @@ func _ready() -> void:
 
 	hud = Hud.new()
 	add_child(hud)
-	_terminal_menu = hud.add_menu_choice("Terminal", ["T2 (Strand, große Hütte)", "T1 (Lounge-Steg)"], 0, _on_terminal_menu)
+	_terminal_menu = hud.add_menu_choice("Terminal", TERMINAL_NAMES, 0, _on_terminal_menu)
 	var names: Array = []
 	for e: Dictionary in _setups:
 		names.append(e["name"])
@@ -311,7 +312,7 @@ func _build_start_screen() -> void:
 	var names: Array = []
 	for e: Dictionary in _setups:
 		names.append(e["name"])
-	start_screen.build(TERMINALS, ["T2 (Strand, große Hütte)", "T1 (Lounge-Steg)"], names)
+	start_screen.build(TERMINALS, TERMINAL_NAMES, names)
 	start_screen.visible = false
 	add_child(start_screen)
 	start_screen.terminal_chosen.connect(func(t: String) -> void:
