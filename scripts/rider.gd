@@ -30,9 +30,9 @@ const AUTO_TURN_START := 20.0     # Autopilot beginnt die Wende so weit vor dem 
 ## langsam (z. B. eine Wende ohne Druck), steigt der Sinkpegel; ist er voll, ist man abgesoffen
 ## und liegt im Wasser wie beim Wasserstart (keine Punkte für die Wende).
 const SINK_DEPTH := 0.45         # so tief sinkt man (m) kurz vor dem Absaufen
-const SINK_HOLD_SPEED := 7.0     # ohne Seilzug trägt erst so viel Tempo das Brett ganz (25 km/h)
-const SINK_HOLD_PULL := 150.0    # ab diesem Seilzug (N) trägt das Seil allein
-const SINK_RATE := 0.9           # Pegel pro Sekunde ohne Tempo und ohne Zug
+const SINK_HOLD_SPEED := 5.5     # ohne Seilzug trägt erst so viel Tempo das Brett ganz (20 km/h)
+const SINK_HOLD_PULL := 110.0    # ab diesem Seilzug (N) trägt das Seil allein
+const SINK_RATE := 0.55          # Pegel pro Sekunde ohne Tempo und ohne Zug (ganz absaufen: knapp 2 s)
 const SINK_RECOVER := 1.0        # nur echter Seilzug holt einen wieder hoch
 var sink_level := 0.0            # 0 = gleitet, 1 = abgesoffen
 var _sink_vis := 0.0
