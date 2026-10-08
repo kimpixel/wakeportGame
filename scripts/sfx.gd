@@ -13,12 +13,14 @@ extends Node
 
 const RATE := 22050
 const CHEER_MIN := 200      # ab so vielen Punkten jubelt der Startblock
+const CHEER_PAUSE := 3.0    # Sekunden Ruhe nach einem Ruf
 const CHEER_DIR := "res://assets/sounds/positiv"
 const HIT_DIR := "res://assets/sounds/feature_hit"      # Brett trifft ein Feature (Aufnahmen)
 const LANDING_DIR := "res://assets/sounds/landing"      # Brett landet auf dem Wasser (Aufnahmen)
 
 var rider: Rider
 var people: Array[Dictionary] = []   # aus Beach: Leute im Startblock
+var _last_cheer := -100.0
 var operator: Node3D                 # Steuermann der eigenen Anlage (ruft den Jubel)
 
 var _yeah: Array[AudioStreamWAV] = []
@@ -153,6 +155,11 @@ func _on_trick(trick: String, points: int) -> void:
 	# Jubel nur für richtig gute Aktionen (Wenden und kleine Tricks bleiben still)
 	if _voices.is_empty() or points < CHEER_MIN:
 		return
+	# immer nur ein Ruf: nicht, solange einer läuft, und eine Weile danach auch nicht
+	var now := Time.get_ticks_msec() / 1000.0
+	if _voices[0].playing or now - _last_cheer < CHEER_PAUSE:
+		return
+	_last_cheer = now
 	var big := points >= 250 or trick.begins_with("360") or trick.begins_with("540")
 	var v := _voices[0]
 	if operator:
