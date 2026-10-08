@@ -509,9 +509,10 @@ func _shore_wall(hut: Node3D, deck_y: float) -> void:
 	ring.height = 0.3
 	ring.radial_segments = 14
 	ring.rings = 1
+	ring.cap_top = false                          # oben offen: Erde liegt sichtbar tiefer im Ring
 	var soil := CylinderMesh.new()
-	soil.top_radius = 0.22
-	soil.bottom_radius = 0.22
+	soil.top_radius = 0.265
+	soil.bottom_radius = 0.265
 	soil.height = 0.02
 	soil.radial_segments = 10
 	var bag := BoxMesh.new()
@@ -537,12 +538,14 @@ func _shore_wall(hut: Node3D, deck_y: float) -> void:
 				var q := p + Vector3(rng.randf_range(-0.04, 0.04), base + 0.15 + l * 0.3, 0) - side * l * 0.1
 				ring_xf.append(Transform3D(Basis(Vector3.UP, rng.randf() * TAU), q))
 				if l == lay - 1:
-					soil_xf.append(Transform3D(Basis.IDENTITY, q + Vector3(0, 0.14, 0)))
+					soil_xf.append(Transform3D(Basis.IDENTITY, q + Vector3(0, 0.09, 0)))
 					if rng.randf() < 0.45:
-						plants.append(q + Vector3(0, 0.14, 0))
+						plants.append(q + Vector3(0, 0.1, 0))
 			var bq := p + side * 0.42 + Vector3(0, base + 0.08, 0)
 			bag_xf.append(Transform3D(Basis(Vector3.UP, atan2(-side.z, side.x) + rng.randf_range(-0.3, 0.3)) * Basis(Vector3.FORWARD, rng.randf_range(-0.15, 0.15)), bq))
-	_multi(hut, ring, ring_xf, Util.mat(Color(0.64, 0.63, 0.59), 0.95))
+	var concrete := Util.mat(Color(0.64, 0.63, 0.59), 0.95)
+	concrete.cull_mode = BaseMaterial3D.CULL_DISABLED      # Innenwand des offenen Rings sichtbar
+	_multi(hut, ring, ring_xf, concrete)
 	_multi(hut, soil, soil_xf, Util.mat(Color(0.25, 0.2, 0.15), 1.0))
 	_multi(hut, bag, bag_xf, Util.mat(Color(0.2, 0.24, 0.2), 0.95))
 	# Kraut, Gras und kleine Weiden in den Ringen: Büschel aus schmalen, gefächerten Halmen
