@@ -22,6 +22,7 @@ var rider: Rider
 var people: Array[Dictionary] = []   # aus Beach: Leute im Startblock
 var _last_cheer := -100.0
 var operator: Node3D                 # Steuermann der eigenen Anlage (ruft den Jubel)
+var haptics := false                 # Handy: bei Aufprall/Sturz kurz vibrieren (nur Touch-Geräte)
 
 var _yeah: Array[AudioStreamWAV] = []
 var _cheers: Array[AudioStream] = []     # aufgenommene Jubelrufe
@@ -76,9 +77,13 @@ func _ready() -> void:
 	add_child(_bird)
 
 	rider.trick_landed.connect(_on_trick)
-	rider.crashed.connect(func(_r: String) -> void: _play(_fx, _crash, 1.0))
+	rider.crashed.connect(func(_r: String) -> void:
+		_play(_fx, _crash, 1.0)
+		_buzz(250))
 	# "Ups" über Boje/Steg: kurzes, helles Plopp
-	rider.bumped.connect(func() -> void: _play(_fx, _thud, randf_range(1.6, 1.9)))
+	rider.bumped.connect(func() -> void:
+		_play(_fx, _thud, randf_range(1.6, 1.9))
+		_buzz(20))
 
 
 ## Leute im Startblock des Spieler-Terminals: pro Person eine Stimme
@@ -115,6 +120,13 @@ func _hit(pool: Array[AudioStream], fallback: AudioStream, strength: float) -> v
 	_impact.pitch_scale = randf_range(0.9, 1.1)
 	_impact.volume_db = lerpf(-14.0, -1.0, clampf(strength, 0.0, 1.0))
 	_impact.play()
+	_buzz(int(lerpf(15.0, 70.0, clampf(strength, 0.0, 1.0))))
+
+
+## Handy vibrieren lassen (Browser: navigator.vibrate – geht auf Android, nicht auf dem iPhone).
+func _buzz(ms: int) -> void:
+	if haptics:
+		Input.vibrate_handheld(ms)
 
 
 func _player(db: float) -> AudioStreamPlayer:

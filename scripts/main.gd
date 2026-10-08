@@ -230,6 +230,7 @@ func _ready() -> void:
 	sfx = Sfx.new()
 	sfx.rider = rider
 	sfx.people = beach.people
+	sfx.haptics = mobile.active
 	add_child(sfx)
 	# Leben am See: laufende Steuermänner, wartende Fahrer, SUPs, Hecht
 	ambient = Ambient.new()

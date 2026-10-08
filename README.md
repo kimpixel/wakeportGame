@@ -56,6 +56,8 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 
 Auf dem iPhone fragt Safari beim ersten Tippen nach der Erlaubnis für Bewegungs- und Ausrichtungssensoren. Ohne sie kann man nicht lenken.
 
+Das Handy vibriert kurz bei Landungen, beim Aufschlagen auf ein Feature, beim Rumpeln über Boje/Steg und stärker bei einem Sturz (je nach Wucht). Das geht im Browser nur auf Android; Safari auf dem iPhone unterstützt keine Vibration.
+
 **Wende:** An jedem Wendepunkt liegen drei Bojen:
 - **Rote Boje** mittig unter dem Seil: hier rauskanten.
 - **Zwei weiße Bojen** links und rechts: um eine davon fährst du herum.
