@@ -977,7 +977,7 @@ func _slide_lock(delta: float) -> void:
 	if not assist_lock:
 		return
 	var part := features.part_at(pos.x, pos.z) if features else null
-	if part == null or not part.is_slide():
+	if part == null or not part.is_slide() or part.on_ramp(pos):
 		return
 	var vh := Vector3(vel.x, 0.0, vel.z)
 	var sp := vh.length()
@@ -1000,7 +1000,7 @@ func _slide_lock(delta: float) -> void:
 ## Punkte für Slides: wer eine Weile auf Box/Rail/Pipe rutscht, bekommt sie beim Verlassen.
 func _track_slide(delta: float, on_feature: bool) -> void:
 	var part := features.part_at(pos.x, pos.z) if (features and on_feature) else null
-	if part and part.is_slide():
+	if part and part.is_slide() and not part.on_ramp(pos):     # Safety/Auffahrt zählt nicht als Slide
 		_slide_time += delta
 		_slide_part = part
 		# ↑/↓ auf dem Slider: Nose- bzw. Tailpress

@@ -223,6 +223,8 @@ func show_catch_zone(on: bool) -> void:
 
 ## Steht man an dieser Stelle auf glattem Plastik (kein Slide, nur Rutschen, kein Lenken)?
 func is_slick_at(world: Vector3) -> bool:
+	if on_ramp(world):
+		return false                 # Safety/Auffahrt fährt man wie einen Kicker
 	match slick:
 		"all":
 			return true
@@ -230,6 +232,14 @@ func is_slick_at(world: Vector3) -> bool:
 			var w := -(_inv * world).x * inner_v               # > 0 Richtung Rail
 			return absf(w - (width * 0.5 - TR_FLAT * 0.5)) > TR_FLAT * 0.5 + TR_RAIL_R
 	return false
+
+
+## Steht man auf einer Safety bzw. Auffahrt (kurze Schräge vorne/hinten)? Die fährt man wie
+## einen Kicker: kein Slide, kein glattes Plastik, kein Einloggen.
+func on_ramp(world: Vector3) -> bool:
+	var u := -(_inv * world).z
+	var hl := length * 0.5
+	return (ramp_in > 0.0 and u < -hl + ramp_in) or (ramp_out > 0.0 and u > hl - ramp_out)
 
 
 ## Einloggen beim Slide: Längsachse des Teils (Welt, waagerecht).

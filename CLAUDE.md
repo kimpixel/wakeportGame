@@ -178,7 +178,9 @@ Tricks/Optik:
 - Sprunghöhe gedämpft (`POP_SCALE` 0.8, Ollie ca. 0,8 m); an der Rampe kommt der Absprung nicht voll
   obendrauf (`POP_ON_RAMP`), Rampenkante wirft mit `RAMP_LAUNCH` 0.85 ab.
 - **Glattes Plastik** (`"slick"` in parts.json): Pyramid oben, Transition des Transition Rails,
-  Transition Curb, Ollie Box (nicht die Ledge) – kein
+  Transition Curb, Ollie Box (nicht die Ledge). **Safetys/Auffahrten** (`ramp_in`/`ramp_out`, z. B.
+  vorne an der Transition Curb, vorne/hinten an der Ollie Box) fährt man wie einen **Kicker**: nie glatt,
+  kein Slide, keine Slide-Punkte, kein Einloggen (`FeaturePart.on_ramp`). Glatt heißt sonst: kein
   Slide, keine Punkte, man rutscht in der bisherigen Richtung weiter und kann nicht lenken. Das Rail
   im Transition Rail bleibt slidebar.
 
