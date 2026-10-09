@@ -171,13 +171,14 @@ Tricks/Optik:
 - **Fangzone der Slider** (Rail, Pipe, schmale Ledge ≤ 1 m, Rail im Transition Rail): ±0,55 m seitlich,
   0,45 m unter bis 0,4 m über der Oberkante (`FeaturePart.CATCH_*`). Wer im Sinkflug hineinkommt, gleitet
   seitlich/nach oben auf die Slide-Linie (`Rider._catch_glide`), kein Hochspringen. Gehört zur Hilfe
-  „Einloggen“. Debug: **F3** bzw. `--hitbox` blendet die Fangzonen gelb ein.
+  „Einloggen“. Debug: **F3** bzw. `--hitbox` blendet die Fangzonen gelb und glattes Plastik blau ein.
 - Slider **einloggen** (Auto-Rutschen): bis 35° Abweichung richtet das System die Fahrtrichtung
   entlang des Features aus und zieht zur Spur; erst darüber rutscht man ab.
 - Sprung aufladen: stufenlos tiefer in die Knie.
 - Sprunghöhe gedämpft (`POP_SCALE` 0.8, Ollie ca. 0,8 m); an der Rampe kommt der Absprung nicht voll
   obendrauf (`POP_ON_RAMP`), Rampenkante wirft mit `RAMP_LAUNCH` 0.85 ab.
-- **Glattes Plastik** (`"slick"` in parts.json): Pyramid oben, Transition des Transition Rails – kein
+- **Glattes Plastik** (`"slick"` in parts.json): Pyramid oben, Transition des Transition Rails,
+  Transition Curb, Ollie Box (nicht die Ledge) – kein
   Slide, keine Punkte, man rutscht in der bisherigen Richtung weiter und kann nicht lenken. Das Rail
   im Transition Rail bleibt slidebar.
 

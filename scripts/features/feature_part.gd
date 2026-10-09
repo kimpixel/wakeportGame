@@ -51,6 +51,7 @@ var x_center := 0.0            # seitlicher Abstand zum Seil
 var _reach := 1.0              # Radius für die schnelle Vorauswahl
 var _inv := Transform3D()      # Welt -> lokal (Teile stehen still)
 var _catch_mesh: MeshInstance3D  # Debug: Fangzone
+var _slick_mesh: MeshInstance3D  # Debug: glatte Flächen
 var collide := true              # Kollisionskörper bauen (nicht für unsichtbare Katalog-Teile)
 const LAYER_COLLIDE := 1 << 11   # Physik-Ebene der Features (Ragdoll prallt daran ab)
 var _mesh_only := false        # beim Bau des Körpers: Rail-Wölbung weglassen
@@ -130,8 +131,55 @@ func catch_target(world: Vector3) -> Vector3:
 	return global_transform * Vector3(v0, top, -u)
 
 
-## Debug: Fangzone als halbdurchsichtiger Körper (an/aus).
+## Debug: Flächen aus glattem Plastik (nur rutschen, kein Slide) blau einfärben (an/aus).
+func _show_slick(on: bool) -> void:
+	if _slick_mesh:
+		_slick_mesh.visible = on
+		return
+	if not on or slick == "":
+		return
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var hl := length * 0.5
+	var hw := width * 0.5
+	var nu := maxi(int(length / 0.2), 2)
+	var nv := maxi(int(width / 0.1), 2)
+	var pt := func(u: float, v: float) -> Vector3:
+		return Vector3(v, height_local(clampf(u, -hl + 0.001, hl - 0.001), clampf(v, -hw + 0.001, hw - 0.001)) + 0.03, -u)
+	var any := false
+	for i in nu:
+		for j in nv:
+			var u0 := lerpf(-hl, hl, float(i) / nu)
+			var u1 := lerpf(-hl, hl, float(i + 1) / nu)
+			var v0 := lerpf(-hw, hw, float(j) / nv)
+			var v1 := lerpf(-hw, hw, float(j + 1) / nv)
+			var mid: Vector3 = pt.call((u0 + u1) * 0.5, (v0 + v1) * 0.5)
+			if mid.y < 0.05 or not is_slick_at(global_transform * mid):
+				continue
+			any = true
+			var a: Vector3 = pt.call(u0, v0)
+			var b: Vector3 = pt.call(u1, v0)
+			var c: Vector3 = pt.call(u1, v1)
+			var d: Vector3 = pt.call(u0, v1)
+			for vtx: Vector3 in [a, b, c, a, c, d]:
+				st.add_vertex(vtx)
+	if not any:
+		return
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.05, 0.35, 1.0, 0.7)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_slick_mesh = MeshInstance3D.new()
+	_slick_mesh.mesh = st.commit()
+	_slick_mesh.material_override = mat
+	_slick_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(_slick_mesh)
+
+
+## Debug: Fangzone als halbdurchsichtiger Körper (an/aus), dazu die glatten Flächen.
 func show_catch_zone(on: bool) -> void:
+	_show_slick(on)
 	if _catch_mesh:
 		_catch_mesh.visible = on
 		return
