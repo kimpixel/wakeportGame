@@ -7,6 +7,7 @@
     { "id": "b",           "name": "Setup B (Datum ?)",      "file": "res://setups/setup_b.json" },
     { "id": "c",           "name": "Setup C (Datum ?)",      "file": "res://setups/setup_c.json" },
     { "id": "d",           "name": "Setup D (Datum ?)",      "file": "res://setups/setup_d.json" },
-    { "id": "e",           "name": "Setup E (Datum ?)",      "file": "res://setups/setup_e.json" }
+    { "id": "e",           "name": "Setup E (Datum ?)",      "file": "res://setups/setup_e.json" },
+    { "id": "utopia",      "name": "Utopia",                 "file": "res://setups/setup_utopia.json" }
   ]
 }
