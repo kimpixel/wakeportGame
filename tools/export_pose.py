@@ -1,4 +1,4 @@
-"""Pose aus Blender fürs Spiel exportieren (WakeTheHack).
+r"""Pose aus Blender fürs Spiel exportieren (WakeTheHack).
 
 Bequem alle Posen auf einmal (PowerShell im Projektordner):  .\tools\export_poses.ps1
 
