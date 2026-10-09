@@ -109,7 +109,7 @@ func _ready() -> void:
 	_task = _label(22)
 	_task.add_theme_font_override("font", _font)
 	_task.anchor_right = 1.0
-	_task.offset_top = 140
+	_task.offset_top = 104          # direkt unter der Leiste (Brettzustand rückt darunter)
 	_task.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_task.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 
@@ -349,6 +349,7 @@ func show_count(text: String) -> void:
 ## Spielmodi: Aufgabe und aktueller Messwert unter der Leiste ("" = aus).
 func set_task(text: String) -> void:
 	_task.text = text
+	_board.offset_top = 134 if text != "" else 112
 
 
 func set_center(text: String) -> void:

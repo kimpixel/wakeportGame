@@ -956,7 +956,9 @@ func _process(_delta: float) -> void:
 		_swum = false
 	elif rider.swimming:
 		_swum = true                # wer losschwimmt, braucht das Panel nicht mehr
-	if not rider.attached:
+	if challenge.active or _counting:
+		pass                        # Spielmodi/Countdown: kein Sturz-Panel, kein Starttext
+	elif not rider.attached:
 		hud.set_center("")
 		if _swum:
 			hud.show_recovery("", [])
