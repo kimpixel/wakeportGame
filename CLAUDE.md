@@ -196,7 +196,8 @@ Features/Setups:
 
 Einstellungen (`scripts/game_settings.gd`, Reiter Spiel/Fahrer/Welt/Technik in `start_screen.gd`,
 angewendet in `main.gd` `_apply_setting`): Spielmodus Runde 7:30 / 10:00 / 15:00 / Freies Fahren, Hilfen
-(Einloggen, Überschlag ausdrehen; je aus +15 %), Seilzug-Grenze, Brett, Stance Regular/Goofy, Helm,
+(Einloggen, Überschlag ausdrehen; je aus +15 %), Seilzug-Grenze (Locker/Normal/Streng/Aus; Taste G
+und ☰-Menü schalten Abreißen an/aus), Brett, Stance Regular/Goofy, Helm,
 Weste, Seillänge, Anlagen-Tempo, Flugzeuge, NPC, Grafik, Lautstärken (Busse Effekte/Jubel/Flugzeuge),
 Kamera, Handy-Neigung. Gespeichert in user://settings.cfg [optionen]; Wetter/Uhrzeit **nicht**.
 Test: `--set=NAME=WERT` (ohne Speichern), `--screen=@einstellungenN` (Reiter N).

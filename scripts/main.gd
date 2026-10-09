@@ -57,6 +57,7 @@ var settings := GameSettings.new()
 var terrain: Terrain
 var _free := false              # Freies Fahren: keine Zeit, keine Strafzeit
 var _npc_on := true
+var _grip_on := 1               # Seilzug-Grenze, zu der G zurückschaltet
 var _swum := false              # seit dem Sturz schon geschwommen (Panel aus)
 var _msaa_default := Viewport.MSAA_DISABLED
 var _touch_started := false     # dieser Finger hat die Anlage gestartet (kein Sprung)
@@ -450,7 +451,9 @@ func _apply_setting(key: String) -> void:
 			rider.assist_flip = bool(settings.get_v("assist_flip"))
 			rider.trick_bonus = settings.trick_bonus()
 		"grip":
-			rider.crash_tension = GameSettings.GRIP_TENSION[clampi(int(v), 0, 2)]
+			rider.crash_tension = GameSettings.GRIP_TENSION[clampi(int(v), 0, 3)]
+			if int(v) < 3:
+				_grip_on = int(v)        # zuletzt eingestellte Grenze (für G: wieder einschalten)
 		"rope", "speed":
 			_apply_anlage()
 		"planes":
@@ -473,6 +476,14 @@ func _apply_setting(key: String) -> void:
 			cam.set_mode(int(v))
 		"cam_dist":
 			cam.distance = float(v)
+
+
+## Seil-Abreißen an/aus (Taste G, Handy-Menü): "Aus" bzw. zurück zur zuletzt gewählten Grenze.
+func _toggle_rope_rip() -> void:
+	var off := int(settings.get_v("grip")) == 3
+	settings.set_v("grip", _grip_on if off else 3)
+	start_screen.sync_settings()
+	hud.show_trick("Seil reißt ab: " + ("an" if off else "aus"))
 
 
 ## NPC auf der anderen Anlage an/aus.
@@ -610,6 +621,8 @@ func _on_pad_menu(id: String) -> void:
 			_open_start_screen()
 		"mute":
 			AudioServer.set_bus_mute(0, not AudioServer.is_bus_mute(0))
+		"rope_rip":
+			_toggle_rope_rip()
 
 
 ## Finger weg: nicht mehr schwimmen.
@@ -801,7 +814,7 @@ func _process(_delta: float) -> void:
 	elif _session:
 		state = Hud.TimeState.LOW if _time_left < 60.0 and not _free_ride() else Hud.TimeState.RUNNING
 	hud.set_stats(_clock(_time_left if _session else _game_time), state,
-		_final_score if _finishing else rider.score, rider.tension_smooth, rider.tension_smooth / rider.crash_tension)
+		_final_score if _finishing else rider.score, rider.tension_smooth, rider.tension_smooth / minf(rider.crash_tension, Rider.CRASH_TENSION))
 	hud.set_debug("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nWenden %d   ·   Kamera: %s%s" % [
 		roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
 		pc.laps, cam.mode_name(), "   ·   AUTOPILOT" if rider.autopilot else ""])
@@ -872,6 +885,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		cam.cycle_mode()
 	elif event.is_action_pressed("autopilot"):
 		rider.autopilot = not rider.autopilot
+	elif event.is_action_pressed("rope_rip"):
+		_toggle_rope_rip()
 	elif event.is_action_pressed("hitbox"):
 		features.show_hitboxes = not features.show_hitboxes
 		hud.show_trick("Hitboxen " + ("an" if features.show_hitboxes else "aus"))
@@ -940,8 +955,9 @@ func _setup_input() -> void:
 	# Strg (zur Not Alt): Kante lösen = Driften
 	_bind("release", [KEY_CTRL, KEY_ALT], [], [[JOY_AXIS_TRIGGER_LEFT, 1.0]])
 	_bind("jump", [KEY_SPACE], [JOY_BUTTON_A], [])
-	_bind("swim", [], [], [])
-	_bind("hitbox", [KEY_F3], [], [])  # Debug: Fangzonen der Slider zeigen          # Handy: Bildschirm halten nach einem Sturz
+	_bind("swim", [], [], [])          # Handy: Bildschirm halten nach einem Sturz
+	_bind("hitbox", [KEY_F3], [], [])  # Debug: Fangzonen der Slider zeigen
+	_bind("rope_rip", [KEY_G], [], [])  # Seil-Abreißen an/aus
 	_bind("start", [KEY_SPACE], [JOY_BUTTON_START], [])
 	_bind("reset", [KEY_R], [JOY_BUTTON_BACK], [])
 	_bind("speed_up", [KEY_PAGEUP], [JOY_BUTTON_DPAD_UP], [], [KEY_PLUS, KEY_KP_ADD])

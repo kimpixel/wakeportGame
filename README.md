@@ -43,6 +43,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | Maus / Mausrad | rechter Stick | Umsehen / Zoom |
 | P | – | Autopilot (fährt auch Features) |
 | M | – | Ton aus/an |
+| G | – | Seil-Abreißen an/aus (bei „Aus“ wird einem die Handle nie aus der Hand gerissen; auch unter Einstellungen → Spiel → Seilzug-Grenze) |
 | F3 | – | Debug: Fangzonen der Slider einblenden (gelb). Wer im Sprung in diese Zone kommt, gleitet aufs Rail |
 
 **Auf dem Handy/Tablet** (im Browser, wird automatisch erkannt):
@@ -55,7 +56,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | Bildschirm halten | nach Sturz: zur Handle schwimmen |
 | ▲ / ▼ (unten rechts) | in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress |
 | DRIFT (rechts, über ▲ ▼) | Kante lösen = Driften; nach Sturz: sofort weiterfahren (−3:00) |
-| ☰ (oben links) | Menü: Hilfe, Zurück zum Steg (−5:00), Startseite, Ton |
+| ☰ (oben links) | Menü: Hilfe, Zurück zum Steg (−5:00), Startseite, Ton, Seil-Abreißen an/aus |
 
 Auf dem iPhone fragt Safari beim ersten Tippen nach der Erlaubnis für Bewegungs- und Ausrichtungssensoren. Ohne sie kann man nicht lenken.
 
@@ -90,7 +91,7 @@ Die Haltung wird im Spiel live aus der Physik berechnet, mit einer eigenen IK in
 **Wetter, Jahreszeit und Uhrzeit** stellst du auf der Startseite unter Einstellungen ein (Wetter, Datum, Uhrzeit). Die Sonne steht dabei wie in echt am Raunheimer Waldsee (50,01° N, 8,48° E, deutsche Zeit mit Sommerzeit): Mittagssonne im Süden, im Sommer lange Abende, im Winter tief stehende Sonne, nachts Mondlicht und Sterne. Wetter: Sonnig, Heiter, Bewölkt, Bedeckt, Regen, Dunst. **Jetzt** übernimmt das heutige Datum und die Uhrzeit (läuft dann mit) und holt das aktuelle Wetter am See von open-meteo.com. Jeder Spielstart beginnt an einem sonnigen Sommertag um 10:30, damit es nie dunkel ist. Die Wahl gilt nur bis zum Neustart.
 
 **Einstellungen** (Startseite, vier Reiter; alles außer Wetter und Uhrzeit wird gespeichert):
-- **Spiel:** Spielmodus *Runde 7:30*, *Runde 10:00*, *Runde 15:00* oder *Freies Fahren* (Uhr läuft hoch, kein Zeitende, keine Strafzeit). Hilfen *Auf dem Slider einloggen* und *Überschlag dreht von selbst zu Ende* – jede ausgeschaltete Hilfe gibt +15 % auf alle Tricks. *Seilzug-Grenze* Locker / Normal / Streng.
+- **Spiel:** Spielmodus *Runde 7:30*, *Runde 10:00*, *Runde 15:00* oder *Freies Fahren* (Uhr läuft hoch, kein Zeitende, keine Strafzeit). Hilfen *Auf dem Slider einloggen* und *Überschlag dreht von selbst zu Ende* – jede ausgeschaltete Hilfe gibt +15 % auf alle Tricks. *Seilzug-Grenze* Locker / Normal / Streng / Aus (Handle wird nie aus der Hand gerissen; im Spiel G).
 - **Fahrer:** Brett aus der Brett-Bibliothek, Stance *Regular* (links vorne) oder *Goofy* (rechts vorne), Helm und Westenfarbe.
 - **Welt:** Wetter, Datum, Uhrzeit, Jetzt; **Seillänge** (12–22 m, Standard 16) und **Anlagen-Tempo** (16–40 km/h, Standard 30) deiner Anlage (+ / − im Spiel ändert das Tempo ebenfalls); Flugzeuge *Aus / Normal / Rush Hour*; Fahrer auf der anderen Anlage an/aus.
 - **Technik:** Grafik *Niedrig / Mittel / Hoch* (Auflösung, Schatten, Baumdichte; am Handy Standard *Mittel*), Lautstärke für Effekte, Jubel und Flugzeuge, Kamera und Kamera-Abstand, am Handy Neigungs-Empfindlichkeit und Neigung umkehren.

@@ -10,14 +10,14 @@ Leertaste halten + loslassen   Absprung (langsam: Ollie, über 40 km/h, voll auf
 Leertaste  Start (Runde 7:30)     R  zurück zum Steg (−5:00)     + / -  Anlagentempo
 Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−3:00)     R = Steg (−5:00)
 C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom
-P  Autopilot     M  Ton aus/an     H  Hilfe ein/aus     F3  Hitboxen (Debug)
+P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus     H  Hilfe ein/aus     F3  Hitboxen (Debug)
 Tab  Startseite (Terminal, Feature-Setup, Einstellungen)"""
 
 const HELP_MOBILE := """Tippen   Start          Handy neigen   lenken
 SPRUNG (links) halten + loslassen   Absprung (schnell: Raley)
 ▲ / ▼   in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress
 DRIFT   Kante lösen          Nach Sturz: Bildschirm halten = schwimmen, DRIFT = sofort weiter (−3:00)
-☰   Menü: Hilfe, Zurück zum Steg, Startseite, Ton"""
+☰   Menü: Hilfe, Zurück zum Steg, Startseite, Ton, Seil-Abreißen an/aus"""
 
 const ACCENT := Color(0.55, 0.82, 0.22)          # Wakeport-Grün
 const PANEL := Color(0.05, 0.07, 0.09, 0.66)

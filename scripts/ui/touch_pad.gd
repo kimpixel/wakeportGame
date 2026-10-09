@@ -74,7 +74,7 @@ func _ready() -> void:
 	_menu_box.add_theme_constant_override("separation", 14)
 	_menu.add_child(_menu_box)
 	for e: Array in [["Weiter", "close"], ["Hilfe ein/aus", "help"], ["Zurück zum Steg  (−5:00)", "reset"],
-			["Startseite", "home"], ["Ton aus/an", "mute"]]:
+			["Startseite", "home"], ["Ton aus/an", "mute"], ["Seil-Abreißen an/aus", "rope_rip"]]:
 		var b := PadButton.new()
 		b.text = e[0]
 		b.id = e[1]
@@ -123,7 +123,8 @@ func _layout() -> void:
 	for b: PadButton in _menu_buttons():
 		b.custom_minimum_size = Vector2(w, h)
 	_menu_box.add_theme_constant_override("separation", int(14.0 * _scale))
-	var total := Vector2(w, h * 5.0 + 4.0 * 14.0 * _scale)
+	var count := _menu_buttons().size()
+	var total := Vector2(w, h * count + (count - 1) * 14.0 * _scale)
 	_menu_box.position = (vp - total) * 0.5
 	_menu_box.size = total
 

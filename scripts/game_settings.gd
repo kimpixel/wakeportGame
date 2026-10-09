@@ -17,7 +17,7 @@ const VESTS := [Color(1.0, 0.45, 0.05), Color(0.85, 0.12, 0.12), Color(0.15, 0.4
 	Color(0.2, 0.7, 0.3), Color(0.95, 0.85, 0.15), Color(0.6, 0.25, 0.75), Color(0.1, 0.1, 0.12),
 	Color(0.92, 0.92, 0.9)]
 ## Seilzug-Grenze: ab so viel Zug wird einem die Handle aus der Hand gerissen
-const GRIP_TENSION := [7200.0, 5400.0, 4300.0]
+const GRIP_TENSION := [7200.0, 5400.0, 4300.0, INF]   # INF = Seil reißt nie ab
 ## Neigungs-Empfindlichkeit am Handy: Grad Neigung für vollen Lenkausschlag
 const TILT_DEG := [35.0, 25.0, 16.0]
 ## Profi-Bonus auf alle Tricks je ausgeschalteter Hilfe
@@ -31,7 +31,7 @@ const DEFAULTS := {
 	"vest": 0,              # VESTS
 	"assist_lock": true,    # Hilfe: auf dem Slider einloggen
 	"assist_flip": true,    # Hilfe: Überschlag dreht losgelassen von selbst zu Ende
-	"grip": 1,              # 0 locker, 1 normal, 2 streng
+	"grip": 1,              # 0 locker, 1 normal, 2 streng, 3 aus (reißt nie ab)
 	"rope": 16.0,           # m Seillänge der eigenen Anlage
 	"speed": 30.0,          # km/h Anlagen-Tempo
 	"planes": 1,            # 0 aus, 1 normal, 2 Rush Hour
