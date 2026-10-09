@@ -14,8 +14,11 @@ const MODE_NAMES := ["Verfolger", "Orbit", "Ufer"]
 const BASE_PITCH := -0.3
 const SLIDE_ZOOM := 0.7          # Abstand auf dem Slider (Anteil)
 const PRESS_ZOOM := 0.5          # Abstand beim Press (Anteil)
-const PRESS_SIDE := 0.8          # beim Press so weit zur Seite schwenken (1 = genau seitlich)
-const PRESS_FOCUS := 0.85        # beim Press so weit den Blick vom Fahrer auf das gedrückte Brett-Ende
+const PRESS_SIDE := 1.0          # beim Press so weit zur Seite schwenken (1 = ganz in die Press-Ansicht)
+const PRESS_BEHIND := 0.55       # Press-Ansicht: von der Brustseite so weit nach hinten (Blick in Fahrtrichtung; 1 = genau von hinten)
+const PRESS_FOCUS := 1.0         # beim Press so weit den Blick vom Fahrer auf den Press-Blickpunkt
+const PRESS_TIP := 0.4           # Press-Blickpunkt: zwischen Becken (0) und gedrücktem Brett-Ende (1)
+const PRESS_PORTRAIT := 1.35     # Handy hochkant: beim Press weiter weg (schmales Bild)
 const PRESS_LIFT := 0.3          # m über dem Brett-Ende
 
 var rider: Rider
@@ -85,7 +88,10 @@ func _process(delta: float) -> void:
 		_initialized = true
 		_focus = target
 		_yaw = rider.yaw - (1.2 if rider.in_dock(rider.pos.x, rider.pos.z) else 0.0)
-	_focus = _focus.lerp(target, 1.0 - exp(-delta * 12.0))
+	# erst mit dem Fahrer mitziehen, dann glätten: sonst hängt der Blick bei 8 m/s ca. 0,7 m hinterher
+	# (von hinten unsichtbar, von der Seite beim Press deutlich)
+	var move := Vector3(rider.vel.x, 0.0, rider.vel.z) * delta
+	_focus = (_focus + move).lerp(target, 1.0 - exp(-delta * 12.0))
 
 	var look := Input.get_vector("cam_left", "cam_right", "cam_up", "cam_down")
 	if look.length() > 0.1:
@@ -115,7 +121,11 @@ func _process(delta: float) -> void:
 			desired = rider.yaw - 1.2
 		# Press: von der Seite (Brustseite des Fahrers) zuschauen
 		if _press_k > 0.01:
+			# schräg von hinten auf der Brustseite: Blick in Fahrtrichtung, Brett und gedrücktes Ende im Bild
 			var side_yaw := rider.yaw + rider._facing() * PI * 0.5
+			var vh := Vector3(rider.vel.x, 0.0, rider.vel.z)
+			if vh.length() > 1.0:
+				side_yaw = lerp_angle(side_yaw, atan2(-vh.x, -vh.z), PRESS_BEHIND)
 			desired = lerp_angle(desired, side_yaw, _press_k * PRESS_SIDE)
 		_yaw = lerp_angle(_yaw, desired, 1.0 - exp(-delta * 2.5))
 		if _idle > 1.5:
@@ -132,14 +142,19 @@ func _process(delta: float) -> void:
 	else:
 		var pitch := BASE_PITCH + _off_pitch
 		var zoom := 1.0
-		# Press: Blick auf das Brett-Ende, mit dem geslidet wird
+		# Press: Blick zwischen Körper (Becken) und dem Brett-Ende, mit dem geslidet wird
 		if cam_mode == CamMode.CHASE and _press_k > 0.01:
-			_press_focus = _press_focus.lerp(rider.press_tip + Vector3(0.0, PRESS_LIFT, 0.0), 1.0 - exp(-delta * 8.0)) 				if _press_focus != Vector3.ZERO else rider.press_tip + Vector3(0.0, PRESS_LIFT, 0.0)
+			var want := _focus                   # Press vorbei: weich zurück auf den Fahrer
+			if rider.press_body != Vector3.ZERO:
+				want = (rider.press_body + Vector3(0.0, 0.5, 0.0)).lerp(rider.press_tip + Vector3(0.0, PRESS_LIFT, 0.0), PRESS_TIP)
+			_press_focus = (_press_focus + move).lerp(want, 1.0 - exp(-delta * 8.0)) if _press_focus != Vector3.ZERO else want
 		else:
 			_press_focus = Vector3.ZERO
 		var focus := _focus.lerp(_press_focus, _press_k * PRESS_FOCUS) if _press_focus != Vector3.ZERO else _focus
 		if cam_mode == CamMode.CHASE:
-			zoom = lerpf(lerpf(1.0, SLIDE_ZOOM, _slide_k), PRESS_ZOOM, _press_k)
+			var vp := get_viewport().get_visible_rect().size
+			var press_zoom := PRESS_ZOOM * (PRESS_PORTRAIT if vp.y > vp.x else 1.0)
+			zoom = lerpf(lerpf(1.0, SLIDE_ZOOM, _slide_k), press_zoom, _press_k)
 		var offset := Basis(Vector3.UP, _yaw + _off_yaw) * Basis(Vector3.RIGHT, pitch) * Vector3(0.0, 0.0, distance * zoom)
 		var cam_pos := focus + offset
 		var ground := maxf(water.height_at(cam_pos.x, cam_pos.z), Geo.height(cam_pos.x, cam_pos.z))

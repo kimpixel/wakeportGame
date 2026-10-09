@@ -197,6 +197,7 @@ var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Ob
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
 var _press_bs_vis := 0.0        # 1 = Press im Boardslide (Brett seitlich versetzt, Ende über dem Slider)
 var press_tip := Vector3.ZERO   # Welt: gedrücktes Brett-Ende beim Press (darauf zielt die Kamera)
+var press_body := Vector3.ZERO  # Welt: Becken in der Press-Pose (Kamera)
 var _press_lead := 1.0          # +1: Nose zeigt in Fahrtrichtung, -1: switch (bleibt im Boardslide stehen)
 var _press_nose_t := 0.0
 var _press_tail_t := 0.0
@@ -1646,6 +1647,7 @@ func _process(delta: float) -> void:
 				_flex_boots()          # Beine stehen jetzt anders: Bindungsschäfte neu knicken
 		else:
 			_pose_t = 0.0
+			press_body = Vector3.ZERO
 	Util.place_beam(_handle, handle_pos - bar_axis * 0.2, handle_pos + bar_axis * 0.2)
 	if attached and _rig == null:     # Ersatzarme nur ohne Figur (place_beam macht sichtbar!)
 		var body := _body_pivot.global_transform
@@ -2097,6 +2099,7 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	var pp := skel.get_bone_parent(pel)
 	var parent_t := skel.get_bone_global_pose(pp) if pp >= 0 else Transform3D.IDENTITY
 	skel.set_bone_pose_position(pel, parent_t.affine_inverse() * (skel.global_transform.affine_inverse() * pelvis_world))
+	press_body = pelvis_world
 	_pose_legs(_board_xf, pelvis_world)
 	_rig.blend_from(before, 1.0 - w)
 	# Handle: im Nosepress in der vorderen Hand der Pose; im 50-50-Tailpress ebenfalls in der vorderen Hand
