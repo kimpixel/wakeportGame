@@ -30,12 +30,12 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 
 | Taste | Gamepad | Funktion |
 |---|---|---|
-| ← / → (A / D) | linker Stick ↔ | Über die Kante lenken. In der Luft, beim Raley und auf dem Slider: drehen |
+| ← / → (A / D) | linker Stick ↔ | Über die Kante lenken. In der Luft und beim Raley: drehen. **Auf dem Slider:** je Tipp eine Vierteldrehung, Boardslide ↔ 50-50 (rastet ein) |
 | ↑ / ↓ (W / S) | linker Stick ↕ | In der Luft: **Frontroll / Backroll**. Halten dreht, loslassen dreht zur nächsten ganzen Umdrehung aus. Schief landen = Sturz. Auf dem Slider: **Nosepress / Tailpress** |
-| Strg (zur Not Alt) | LT | **Driften**: Kante gelöst – man rutscht weiter, Lenken ändert die Richtung nicht (nur der Seilzug zieht einen), das Brett lässt sich dabei frei drehen; weniger Wasserwiderstand, also leicht schneller. Nach Sturz: sofort weiterfahren (−3:00) |
+| Strg (zur Not Alt) | LT | **Driften**: Kante gelöst – man rutscht weiter, Lenken ändert die Richtung nicht (nur der Seilzug zieht einen), das Brett lässt sich dabei frei drehen; weniger Wasserwiderstand, also leicht schneller. Nach Sturz: sofort weiterfahren (−1:00) |
 | Leertaste halten + loslassen | A | Absprung: langsam ein **Ollie**, über 40 km/h, voll aufgeladen und ohne Feature voraus automatisch ein **Raley** |
 | Leertaste | Start | Anlage starten (die Taste löst dabei keinen Sprung aus) |
-| R | Back | zurück zum Startsteg (kostet 5:00 Spielzeit) |
+| R | Back | zurück zum Startsteg (kostet 2:00 Spielzeit) |
 | Leertaste halten | A | nach Sturz oder Seilverlust: zur Handle schwimmen (Bauchlage, Brett hinten oben). Ein Panel zeigt, was geht und was es kostet |
 | + / − | Steuerkreuz ↑/↓ | Tempo der Anlage (16–40 km/h) |
 | C | Y | Kamera: Verfolger, Orbit oder Ufer |
@@ -56,8 +56,8 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | SPRUNG (unten links) halten + loslassen | Absprung (schnell: Raley). Tippen auf den Bildschirm springt nicht |
 | Bildschirm halten | nach Sturz: zur Handle schwimmen |
 | ▲ / ▼ (unten rechts) | in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress |
-| DRIFT (rechts, über ▲ ▼) | Kante lösen = Driften; nach Sturz: sofort weiterfahren (−3:00) |
-| ☰ (oben links) | Menü: Hilfe, Zurück zum Steg (−5:00), Startseite, Ton, Seil-Abreißen an/aus |
+| DRIFT (rechts, über ▲ ▼) | Kante lösen = Driften; nach Sturz: sofort weiterfahren (−1:00) |
+| ☰ (oben links) | Menü: Hilfe, Zurück zum Steg (−2:00), Startseite, Ton, Seil-Abreißen an/aus |
 
 Auf dem iPhone fragt Safari beim ersten Tippen nach der Erlaubnis für Bewegungs- und Ausrichtungssensoren. Ohne sie kann man nicht lenken.
 
@@ -97,7 +97,7 @@ Die Haltung wird im Spiel live aus der Physik berechnet, mit einer eigenen IK in
 - **Welt:** Wetter, Datum, Uhrzeit, Jetzt; **Seillänge** (12–22 m, Standard 16) und **Anlagen-Tempo** (16–40 km/h, Standard 30) deiner Anlage (+ / − im Spiel ändert das Tempo ebenfalls); Flugzeuge *Aus / Normal / Rush Hour*; Fahrer auf der anderen Anlage an/aus.
 - **Technik:** Grafik *Niedrig / Mittel / Hoch* (Auflösung, Schatten, Baumdichte; am Handy Standard *Mittel*), Lautstärke für Effekte, Jubel und Flugzeuge, Kamera und Kamera-Abstand, am Handy Neigungs-Empfindlichkeit und Neigung umkehren.
 
-**Spielregeln:** Eine Runde dauert **7:30** (Uhr oben links), sie beginnt mit dem Start vom Steg. Es zählen die Punkte in dieser Zeit. Danach bringt dich der Operator nur noch zum Start, dann kommt die Startseite mit deinem Ergebnis. **Punkte:** Slides zählen am meisten: 150 Grundpunkte, dazu 150 pro Sekunde und 100 für den Boardslide. Nose- oder Tailpress (mehr als die halbe Slide-Zeit gehalten) bringt 100 extra. Auf Rail und Pipe gibt es das 1,5-fache, auf dem Transition Rail das 1,3-fache. Airs und Drehungen bringen weniger, 50 pro Sekunde Flugzeit und 50 pro 180°. Ein Raley bringt 150 extra, jeder Frontroll oder Backroll 300. **Kombinationen** zählen am meisten: Wer innerhalb von 3 s Fahrt den nächsten Trick macht, z. B. 180 auf das Rail, Boardslide, 180 raus, bekommt für den 2. Trick das Doppelte, für den 3. das Dreifache usw. Ein Sturz oder Absaufen beendet die Kombination. Wer stürzt, muss zur Handle schwimmen und verliert Zeit, je weiter weg vom Seil desto mehr. Große Sprünge sind also ein Risiko. Abkürzungen kosten Strafzeit: Strg nach einem Sturz −3:00 (dafür bist du sofort direkt unter dem Seil und fährst weiter), R zurück zum Steg −5:00. Der Wasserstart geht immer Richtung des weiter entfernten Wendepunkts.
+**Spielregeln:** Eine Runde dauert **7:30** (Uhr oben links), sie beginnt mit dem Start vom Steg. Es zählen die Punkte in dieser Zeit. Danach bringt dich der Operator nur noch zum Start, dann kommt die Startseite mit deinem Ergebnis. **Punkte:** Slides zählen am meisten: 150 Grundpunkte, dazu 150 pro Sekunde und 100 für den Boardslide. Wer auf einen Slider springt, landet automatisch im **Boardslide** (nur wer ganz gerade anfliegt, im 50-50); mit ←/→ (Handy: deutlich neigen) springt man in 90°-Schritten zwischen Boardslide und 50-50 um – jeder Wechsel bringt 80 extra und zählt im Namen mit (z. B. „Boardslide to 50-50“). Nose- oder Tailpress (mehr als die halbe Slide-Zeit gehalten) bringt 100 extra. Auf Rail und Pipe gibt es das 1,5-fache, auf dem Transition Rail das 1,3-fache. Airs und Drehungen bringen weniger, 50 pro Sekunde Flugzeit und 50 pro 180°. Ein Raley bringt 150 extra, jeder Frontroll oder Backroll 300. **Kombinationen** zählen am meisten: Wer innerhalb von 3 s Fahrt den nächsten Trick macht, z. B. 180 auf das Rail, Boardslide, 180 raus, bekommt für den 2. Trick das Doppelte, für den 3. das Dreifache usw. Ein Sturz oder Absaufen beendet die Kombination. Wer stürzt, muss zur Handle schwimmen und verliert Zeit, je weiter weg vom Seil desto mehr. Große Sprünge sind also ein Risiko. Abkürzungen kosten Strafzeit: Strg nach einem Sturz −1:00 (dafür bist du sofort direkt unter dem Seil und fährst weiter), R zurück zum Steg −2:00. Der Wasserstart geht immer Richtung des weiter entfernten Wendepunkts.
 
 **Sturz und Bergung wie an der echten 2-Mast-Anlage – niemand muss zurück zum Start:** Wer zu viel Zug bekommt, verliert die Handle (kein Sturz), gleitet aus und sinkt ins Wasser. Nach einem Sturz oder Seilverlust fährt der Operator den Carrier so, dass die Handle auf deiner Höhe neben der Seillinie liegt. Dann schwimmst du in Bauchlage hin (Leertaste halten, am Handy Bildschirm halten), (immer großzügig um die Features herum – wer hinter einem Feature stürzt, schwimmt länger), greifst die Handle und es geht mit einem Deep-Water-Start weiter: liegen bleiben, bis das Seil spannt, dann langsam aufstehen. Mit Strg (am Handy DRIFT) geht es sofort weiter, Richtung des weiter entfernten Wendepunkts. NPC und Autopilot machen das selbst. Nur wer an Land oder im Steg landet, startet am Steg neu (oder mit R).
 

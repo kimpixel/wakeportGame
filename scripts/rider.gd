@@ -96,6 +96,9 @@ const PRESS_BONUS := 100.0
 const CATCH_GLIDE := 5.0         # m/s seitlich in die Slide-Linie gleiten
 const CATCH_RISE := 3.0          # m/s nach oben auf die Oberkante gleiten
 const DRIFT_DRAG := 0.7          # Wasserwiderstand im Drift (Anteil): Brett liegt flach, leicht schneller
+const SNAP_5050 := deg_to_rad(12.0)   # nur so gerade angeflogen rastet ein 50-50 ein, sonst Boardslide
+const SNAP_RATE := 9.0           # rad/s: so schnell dreht das Brett in die eingerastete Stellung
+const SWITCH_BONUS := 80.0       # Punkte je Wechsel Boardslide <-> 50-50 auf dem Slider
 const SLIDE_TURN := 4.5         # rad/s: so schnell dreht das Brett auf dem Slider
 const LOCK_ANGLE := deg_to_rad(35.0)   # bis zu diesem Winkel zur Feature-Achse bleibt man eingeloggt
 const LOCK_RATE := 8.0          # 1/s: seitliches Wegrutschen wird so schnell abgebaut
@@ -165,6 +168,11 @@ var _jump_block := false        # Sprungtaste startete gerade die Anlage -> zäh
 var test_pitch := 0.0           # Test: ↑/↓ in der Luft halten (auch mit Autopilot)
 var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), ↓ = -1
 var _catch_part: FeaturePart     # gleitet gerade in diese Slider-Fangzone
+var _on_slider := false         # Brett steht gerade auf einem Slider (Einrasten erledigt)
+var _snap_yaw := 0.0            # Zielstellung des Bretts auf dem Slider
+var _steer_armed := true        # ←/→ wieder losgelassen -> nächste Vierteldrehung möglich
+var _slide_seq: Array[String] = []   # Stellungen während des Slides (Boardslide / 50-50)
+var _bs_time := 0.0             # Zeit im Boardslide
 var _flip := 0.0                # Überschlag im Sprung (rad, + = Frontroll)
 var _flip_lock := false         # ↑/↓ war beim Abheben schon gedrückt (z. B. Press vom Slider) -> erst loslassen
 var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
@@ -973,10 +981,17 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	# Lenken über die Kante (im Drift dreht sich damit nur das Brett, die Fahrtrichtung bleibt)
 	# flaches (driftendes) Brett lässt sich schneller herumdrehen, belastete Kante zieht weite Bögen
 	var turn := TURN_RATE * clampf(0.6 + speed / 7.0, 0.6, 1.4) * (1.0 + 0.8 * _release - 0.3 * _edge)
+	var rail := slick_part if slick_part else (features.part_at(pos.x, pos.z) if (features and on_feature) else null)
+	var sliding := rail != null and rail.is_slide() and not slick and not rail.on_ramp(pos)
 	if slick:
 		turn = 0.0          # auf glattem Plastik greift keine Kante – lenken geht nicht
+	elif sliding:
+		turn = 0.0          # auf dem Slider rastet das Brett ein (_slide_orient)
+		_slide_orient(rail, delta)
 	elif on_feature:
-		turn = SLIDE_TURN   # auf dem Feature dreht man das Brett frei und schnell (z. B. in den Boardslide)
+		turn = SLIDE_TURN   # auf dem Feature dreht man das Brett frei und schnell
+	if not sliding:
+		_on_slider = false
 	yaw -= _steer * turn * delta
 	# Wasserstart: solange das Brett nicht gleitet, dreht es sich in Zugrichtung
 	if speed < 2.5 and tension > 30.0 and not on_feature:
@@ -1045,12 +1060,53 @@ func _slide_lock(delta: float) -> void:
 	pos.z += corr.z
 
 
+## Brettstellung auf dem Slider: beim Draufkommen je nach Winkel einrasten (schräg/quer ->
+## Boardslide, fast gerade -> 50-50), danach mit ←/→ (Handy: deutlich neigen) in 90°-Schritten
+## umspringen (Boardslide <-> 50-50). Das Brett dreht zügig in die Zielstellung.
+func _slide_orient(rail: FeaturePart, delta: float) -> void:
+	var ax := rail.lock_axis()
+	var axis_yaw := atan2(-ax.x, -ax.z)
+	if not _on_slider:
+		_on_slider = true
+		_steer_armed = absf(_steer) < 0.3
+		var a := absf(wrapf(yaw - axis_yaw, -PI, PI))
+		if a > PI * 0.5:
+			a = PI - a                    # Twin-Tip: vorwärts/rückwärts egal
+		var base: Array = [axis_yaw, axis_yaw + PI] if a <= SNAP_5050 else [axis_yaw + PI * 0.5, axis_yaw - PI * 0.5]
+		var b0: float = base[0]
+		var b1: float = base[1]
+		_snap_yaw = b0 if absf(wrapf(yaw - b0, -PI, PI)) <= absf(wrapf(yaw - b1, -PI, PI)) else b1
+		_snap_yaw = yaw + wrapf(_snap_yaw - yaw, -PI, PI)
+	elif not autopilot:
+		if _steer_armed and absf(_steer) > 0.5:
+			_snap_yaw -= signf(_steer) * PI * 0.5      # eine Vierteldrehung weiter
+			_steer_armed = false
+		elif absf(_steer) < 0.3:
+			_steer_armed = true
+	yaw = move_toward(yaw, _snap_yaw, SNAP_RATE * delta)
+
+
+## Steht das Brett gerade quer zur Längsachse des Sliders (Boardslide)?
+func _is_boardslide(rail: FeaturePart) -> bool:
+	var ax := rail.lock_axis()
+	return absf(forward().dot(ax)) < 0.7
+
+
 ## Punkte für Slides: wer eine Weile auf Box/Rail/Pipe rutscht, bekommt sie beim Verlassen.
 func _track_slide(delta: float, on_feature: bool) -> void:
 	var part := features.part_at(pos.x, pos.z) if (features and on_feature) else null
 	if part and part.is_slide() and not part.on_ramp(pos):     # Safety/Auffahrt zählt nicht als Slide
 		_slide_time += delta
 		_slide_part = part
+		# Stellungen in der Reihenfolge merken (Boardslide / 50-50), Boardslide-Zeit zählen
+		var stance := "Boardslide" if _is_boardslide(part) else "50-50"
+		if _slide_seq.is_empty() or _slide_seq[-1] != stance:
+			if _slide_seq.is_empty() or _slide_time > 0.25:
+				_slide_seq.append(stance)
+			else:
+				_slide_seq[-1] = stance        # Einrasten am Anfang zählt nicht als Wechsel
+		if stance == "Boardslide":
+			_bs_time += delta
 		# ↑/↓ auf dem Slider: Nose- bzw. Tailpress
 		if _pitch_in > 0.3:
 			_press_nose_t += delta
@@ -1058,19 +1114,25 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 			_press_tail_t += delta
 		return
 	if _slide_part and _slide_time > 0.3:
-		var vh := Vector3(vel.x, 0.0, vel.z)
-		var across := vh.length() > 1.0 and absf(vh.normalized().dot(forward())) < 0.6
-		var trick := "Boardslide" if across else "50-50"
+		if _slide_seq.is_empty():
+			_slide_seq.append("50-50")
+		# Name aus der Folge der Stellungen, z. B. "Boardslide to 50-50 to Boardslide"
+		var shown := _slide_seq.slice(maxi(_slide_seq.size() - 4, 0))
+		var trick := " to ".join(shown)
+		var switches := _slide_seq.size() - 1
 		var press := 0.0
 		if _press_nose_t > _slide_time * 0.5:
-			trick = "Nosepress" + (" Boardslide" if across else "")
+			trick = "Nosepress " + trick
 			press = PRESS_BONUS
 		elif _press_tail_t > _slide_time * 0.5:
-			trick = "Tailpress" + (" Boardslide" if across else "")
+			trick = "Tailpress " + trick
 			press = PRESS_BONUS
-		var pts := (SLIDE_BASE + _slide_time * SLIDE_PER_S + (BOARDSLIDE_BONUS if across else 0.0) + press) \
-			* float(SLIDE_FACTOR.get(_slide_part.type, 1.0))
+		var bs_share := clampf(_bs_time / maxf(_slide_time, 0.01), 0.0, 1.0)
+		var pts := (SLIDE_BASE + _slide_time * SLIDE_PER_S + BOARDSLIDE_BONUS * bs_share + press \
+			+ SWITCH_BONUS * switches) * float(SLIDE_FACTOR.get(_slide_part.type, 1.0))
 		_score_trick(trick + " – " + _slide_part.display_name, int(pts))
+	_slide_seq.clear()
+	_bs_time = 0.0
 	_slide_time = 0.0
 	_press_nose_t = 0.0
 	_press_tail_t = 0.0

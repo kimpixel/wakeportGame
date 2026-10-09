@@ -74,7 +74,7 @@ func _ready() -> void:
 	_menu_box = VBoxContainer.new()
 	_menu_box.add_theme_constant_override("separation", 14)
 	_menu.add_child(_menu_box)
-	for e: Array in [["Weiter", "close"], ["Hilfe ein/aus", "help"], ["Zurück zum Steg  (−5:00)", "reset"],
+	for e: Array in [["Weiter", "close"], ["Hilfe ein/aus", "help"], ["Zurück zum Steg  (−2:00)", "reset"],
 			["Startseite", "home"], ["Ton aus/an", "mute"], ["Seil-Abreißen an/aus", "rope_rip"]]:
 		var b := PadButton.new()
 		b.text = e[0]

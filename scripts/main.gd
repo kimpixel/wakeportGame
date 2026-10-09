@@ -32,8 +32,8 @@ const RESET_DELAY := 3.0
 # Spielregeln: eine Runde dauert 7:30, es zählen die Punkte in dieser Zeit. Danach wird man
 # nur noch zum Start gebracht. Abkürzungen kosten Zeit.
 const GAME_TIME := 450.0
-const SKIP_PENALTY := 180.0     # Leertaste nach Sturz: Handle sofort da
-const RESET_PENALTY := 300.0    # R: zurück zum Startsteg
+const SKIP_PENALTY := 60.0      # Strg nach Sturz: Schwimmen abbrechen, Handle sofort da
+const RESET_PENALTY := 120.0    # R: zurück zum Startsteg
 var _session := false           # Runde läuft (Zeit zählt)
 var _game_time := GAME_TIME    # Test: --game-time=SEK
 var _time_left := GAME_TIME
@@ -848,12 +848,12 @@ func _process(_delta: float) -> void:
 			var swim := "ca. %d s" % roundi(rider.swim_time())
 			if mobile.active:
 				hud.show_recovery(title, [["Bildschirm halten", "Zur Handle schwimmen", swim, false],
-					["DRIFT", "Sofort weiterfahren", "keine Strafzeit" if free else "−3:00", not free],
-					["☰", "Zurück zum Steg", "keine Strafzeit" if free else "−5:00", not free]])
+					["DRIFT", "Sofort weiterfahren", "keine Strafzeit" if free else "−1:00", not free],
+					["☰", "Zurück zum Steg", "keine Strafzeit" if free else "−2:00", not free]])
 			else:
 				hud.show_recovery(title, [["LEERTASTE halten", "Zur Handle schwimmen", swim, false],
-					["STRG", "Sofort weiterfahren", "keine Strafzeit" if free else "−3:00", not free],
-					["R", "Zurück zum Steg", "keine Strafzeit" if free else "−5:00", not free]])
+					["STRG", "Sofort weiterfahren", "keine Strafzeit" if free else "−1:00", not free],
+					["R", "Zurück zum Steg", "keine Strafzeit" if free else "−2:00", not free]])
 		else:
 			hud.show_recovery("", [])
 	elif rider.mode != Rider.Mode.CRASHED:

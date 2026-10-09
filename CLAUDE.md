@@ -124,7 +124,7 @@ Spiel:
   einsinken. Nach Sturz bringt der Operator die Handle auf Höhe des Fahrers; schwimmen (Bauchlage,
   Kraulen, Brett hinten oben), greifen, **Deep-Water-Start** (liegen bleiben bis das Seil spannt,
   dann langsam aufstehen). Wasserstart immer Richtung des **weiter entfernten** Wendepunkts.
-- Strafzeit: Leertaste nach Sturz −3:00 (sofort unter dem Seil weiter), R zurück zum Steg −5:00.
+- Strafzeit: Strg nach Sturz −1:00 (sofort unter dem Seil weiter), R zurück zum Steg −2:00.
 - Einsinken: Brett trägt nur mit Seilzug oder Tempo. Schlaffes Seil + langsam = absaufen (wie
   Wasserstart, keine Punkte für die Wende). Wende: 15 Punkte, außen um die weiße Boje 30.
 - Jeder Start: **sonniger Sommertag 10:30** (21. Juni). Wetter/Uhrzeit werden nicht gespeichert,
@@ -145,7 +145,7 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
   der Brettlänge, also quer bei quergestelltem Brett).
   Wer beim Abheben ↑/↓ noch hält (Press vom Slider), bekommt keinen Überschlag, bis er loslässt.
 - Leertaste: halten + loslassen = Sprung; startet auch die Anlage (dann ohne Sprung). Kein Enter.
-  **Nach Sturz: Leertaste halten = schwimmen, Strg = sofort weiter (−3:00), R = Steg (−5:00)** –
+  **Nach Sturz: Leertaste halten = schwimmen, Strg = sofort weiter (−1:00), R = Steg (−2:00)** –
   angezeigt in einem Panel mit Zeitkosten (`Hud.show_recovery`).
 - Strg (zur Not Alt): **Driften** – keine Kante greift: Lenken ändert die Fahrtrichtung nicht, nur der
   Seilzug zieht einen (nicht festnageln, sonst reißt das Seil), ←/→ drehen nur das Brett, Wasserwiderstand × `DRIFT_DRAG` 0.7 (leicht schneller). Nur Spieler,
@@ -179,6 +179,10 @@ Tricks/Optik:
   seitlich/nach oben auf die Slide-Linie (`Rider._catch_glide`), kein Hochspringen. Gehört zur Hilfe
   „Einloggen“. Debug: **F3** bzw. `--hitbox` blendet ein: Fangzonen **gelb**, glattes Plastik **blau**, Safety/Auffahrt und
   Kicker **orange** (fährt man wie einen Kicker).
+- **Brettstellung auf dem Slider rastet ein** (`Rider._slide_orient`): beim Draufkommen Boardslide, nur bei
+  ≤ 12° zur Achse (`SNAP_5050`) 50-50 – man slidet also meistens Boardslide. Auf dem Slider dreht ←/→ (Handy:
+  deutlich neigen) je Tipp 90° (Boardslide ↔ 50-50), nicht stufenlos; Wechsel geben `SWITCH_BONUS` 80 und
+  stehen im Namen („Boardslide to 50-50 – Rail“). Autopilot/NPC springen nicht um.
 - Slider **einloggen** (Auto-Rutschen): bis 35° Abweichung richtet das System die Fahrtrichtung
   entlang des Features aus und zieht zur Spur; erst darüber rutscht man ab.
 - Sprung aufladen: stufenlos tiefer in die Knie.
