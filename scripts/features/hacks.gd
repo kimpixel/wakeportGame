@@ -49,8 +49,15 @@ static func hack_name(hack: Array) -> String:
 	if group_name != "":
 		return group_name
 	var counts := {}
+	var seen := {}
 	for p: FeaturePart in hack:
-		counts[p.display_name] = counts.get(p.display_name, 0) + 1
+		# Module (Gruppe) zählen einmal mit ihrem Namen, nicht jedes Teil einzeln
+		var nm := p.group_name if p.group_name != "" else p.display_name
+		var key := "%s#%d" % [nm, p.row_index] if p.group_name != "" else str(p.get_instance_id())
+		if seen.has(key):
+			continue
+		seen[key] = true
+		counts[nm] = counts.get(nm, 0) + 1
 	var names: Array[String] = []
 	for nm: String in counts:
 		names.append(("%d× %s" % [counts[nm], nm]) if counts[nm] > 1 else nm)
@@ -69,7 +76,8 @@ static func is_standard(hack: Array) -> bool:
 	for p: FeaturePart in hack:
 		ids.append(p.part_id)
 	return ids.all(func(i: String) -> bool: return i.begins_with("kicker_")) \
-		or ids.all(func(i: String) -> bool: return i in ["ollie_box", "ollie_box_half", "ollie_ledge"])
+		or ids.all(func(i: String) -> bool: return i in ["ollie_box", "ollie_box_half", "ollie_ledge"]) \
+		or (ids.has("_plaza_wall") and ids.all(func(i: String) -> bool: return i in ["_plaza_wall", "_plaza_safety", "_plaza_ramp", "cheese_wedge"]))
 
 
 ## Grundriss eines Teils in Anlagenkoordinaten (s, x), um margin vergrößert.

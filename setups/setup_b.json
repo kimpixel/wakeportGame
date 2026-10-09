@@ -21,7 +21,7 @@
     { "part": "uprail",          "s": 119.6, "x": -4.7, "dir": "out" },
     { "part": "pyramid_series",  "s": 76.7,  "x": -5.2, "dir": "out" },
     { "part": "pro_rail",        "s": 119.3, "x": 6.2,  "dir": "out" },
-    { "part": "plaza_rail",      "s": 76.4,  "x": 6.7,  "dir": "out" },
+    { "part": "port_plaza",      "s": 76.4,  "x": 6.7,  "dir": "in" },
     { "part": "bump",            "s": 84.5,  "x": 9.2 }
   ]
 }

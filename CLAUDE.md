@@ -237,6 +237,9 @@ Features/Setups:
 - Zwei Cheese Wedges zusammen stehen immer **Rücken an Rücken** (zweiter mit `dir` andersherum).
 - Down Ledge: 20 m, Profil `[[0,-0.1],[1.0,0.5],[5.5,1.9],[19.5,0.8],[20,-0.15]]` (kleine Safety
   vorne, steil hoch, lang abfallend, hintere Safety bis ins Wasser). Kein Add-on-Rail.
+- **Port Plaza** = ein Modul (kein eigener Plaza Kicker), Maße verbindlich nach Plan „Juli & August“: Slider mit runder Oberkante und
+  runder Safety vorne/hinten, hinten breiter Teil aus Safety + Rampe; dahinter meist ein Cheese Wedge (0,75 m) – Plaza + Wedge ist kein Hack.
+  Interne Teile `_plaza_*` (mit `_` = nicht im Editor).
 - Uprail 7,5 m. Transition Rail: Rail 28 cm dick, im flachen Abschluss (ca. 26 cm) **versenkt**,
   ragt 7 cm heraus, von allen Seiten befahrbar, löst keinen Sturz aus.
 - Positionen kommen aus den Plan-Fotos (`fotos/`); die Pläne sind nicht maßstäblich, Maße aus

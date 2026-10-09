@@ -17,7 +17,7 @@ Bequemer geht es mit dem **Setup-Editor** im Spiel (Startseite): Er speichert ei
 | Modul | Aufbau |
 |---|---|
 | **Pipe** | `pipe_half` = halbe Pipe (6,5 m Rohr). Die Auffahrten vorne (`ramp_in`) und hinten (`ramp_out`) steckst du einzeln an (2,2) oder ab (0). `s` meint immer die Rohrmitte. `pipe_long` = zwei Hälften ohne Auffahrten in der Mitte; `ramp_in`/`ramp_out` der Zeile gelten für die Enden. |
-| **Port Plaza** | `port_plaza` = `plaza_kicker` + `plaza_rail` (das Rail beginnt oben auf dem Kicker). Beide Teile gibt es auch einzeln; die Plaza Rail hat dann eine eigene kleine Auffahrt. |
+| **Port Plaza** | `port_plaza` = **ein Modul** (Port Plaza Uprail), 13,9 m, Maße nach dem Plan „Juli & August“ (Maßstab Cheese Wedge 4 m): schmaler Slider (13 m, runde Oberkante `round_top`) mit runder Safety vorne und hinten; darunter hinten der breite Teil (3 m): kurze Safety (1,8 m, auf 0,3 m) und Rampe (3,65 m, auf 0,75 m) bis zur senkrechten Hinterkante. Es gibt keinen eigenen Plaza Kicker. Hinten steht meist ein `cheese_wedge` (0,75 m, Gegenrichtung, Mitte 8,95 m hinter der Plaza-Mitte) als Abfahrt – Plaza + Wedge gilt nicht als Hack. Auf den Plänen Richtung Startsteg (`dir: in`). |
 | **Spine Kicker** | `spine_kicker` = zwei `kicker_m` Rücken an Rücken. Einzeln stellst du sie als `kicker_m` auf. |
 | **1/2 Transition Rail** | `transition_rail_half` (11 m, eine Auffahrt). Für zwei gespiegelt nebeneinander legst du mit `inner_v` (+1/−1) fest, auf welcher Seite die Transition liegt. |
 | **Pyramid Series** | Gruppe mit `mirror`: Das A-Frame Rail steht immer außen (weg vom Seil), egal auf welcher Seite. |

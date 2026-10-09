@@ -40,6 +40,8 @@ var side_ramp := 0.0           # seitliche Transition auf der Seilseite (Breite 
 var profile: Array = []         # Block: Längsprofil [[Abstand vom Anfang (m), Höhe], …] statt height/height_end
 var lip := ENTRY               # Höhe, auf der Auffahrten beginnen (ENTRY = unter Wasser, > 0 = sichtbare Kante)
 var side_curve := 2.0          # Form der seitlichen Auffahrt: 1 = gerade Schräge, 2 = konkav
+var round_top := false         # Block: Oberkante quer halbrund (Coping, z. B. Plaza Rail)
+var black_top: Array = []       # Block: Abschnitt [von, bis] (m ab Anfang), dessen Oberseite schwarz ist (Plaza Rail)
 var body_curve := 1.0          # Block: Verlauf height -> height_end (1 = gerade, 2 = konkav wie die Transition Curb)
 var inner_v := 1.0             # +1/-1: in welche lokale v-Richtung das Seil liegt (setzt FeatureSet)
 
@@ -81,6 +83,8 @@ func setup(id: String, p: Dictionary) -> void:
 	side_curve = p.get("side_curve", side_curve)
 	lip = p.get("lip", lip)
 	profile = p.get("profile", [])
+	round_top = p.get("round_top", false)
+	black_top = p.get("black_top", [])
 	slick = p.get("slick", "")
 	if type == "pipe" or type == "ball":
 		width = radius * 2.0
@@ -318,6 +322,12 @@ func height_local(u: float, v: float, collision := false) -> float:
 		"block":
 			if absf(v) > width * 0.5:
 				return NONE
+			if round_top:
+				# Coping: quer halbrund, an den Seiten so tief wie der halbe Querschnitt
+				var r := width * 0.5
+				var drop := r - sqrt(maxf(r * r - v * v, 0.0))
+				var hr := _profile_h(u + hl) if not profile.is_empty() else _with_ramps(u, height)
+				return hr - drop if hr - drop > ENTRY else hr
 			if not profile.is_empty():
 				return _with_side_ramp(v, _profile_h(u + hl))
 			# Verlauf über den Körper (ohne Auffahrten): z. B. Transition Curb konkav von 0,35 auf 1,1 m
@@ -505,7 +515,9 @@ func _ready() -> void:
 			var tube := Util.beam(self, Vector3(rx, ry, hl - ramp_in), Vector3(rx, ry, -hl + ramp_out), TR_RAIL_R, black)
 			tube.mesh.set("radial_segments", 16)
 		_:
-			_build_heightfield(white, 24 if profile.is_empty() else int(length * 8.0), 12 if side_ramp > 0.0 else 2)
+			_build_heightfield(white, 24 if profile.is_empty() else int(length * 8.0), 12 if side_ramp > 0.0 or round_top else 2)
+			if black_top.size() == 2:
+				_build_black_top(float(black_top[0]), float(black_top[1]))
 	if collide:
 		_build_collider()
 
@@ -555,7 +567,7 @@ func _build_heightfield(mat: Material, nu: int, nv: int, u_from := -INF, u_to :=
 	# generate_normals() die Kanten zwischen Oberseite und Wänden ab (Ledges sähen rund aus).
 	# Nur geschwungene Oberseiten (Transitions, Kicker, Bump) werden in sich geglättet.
 	var curved := type in ["ramp", "transition", "bump", "pipe"] or (side_ramp > 0.0 and side_curve > 1.0) or body_curve > 1.0 \
-		or (ramp_curve > 1.0 and (ramp_in > 0.0 or ramp_out > 0.0))
+		or (ramp_curve > 1.0 and (ramp_in > 0.0 or ramp_out > 0.0)) or round_top
 	st.set_smooth_group(1 if curved else 0xFFFFFFFF)
 	# Oberseite
 	for i in nu:
@@ -579,6 +591,33 @@ func _build_heightfield(mat: Material, nu: int, nv: int, u_from := -INF, u_to :=
 	var mi := MeshInstance3D.new()
 	mi.mesh = st.commit()
 	mi.material_override = mat
+	add_child(mi)
+
+
+## Schwarze Oberseite (nur Optik, knapp über der weißen): z. B. die runde Gleitfläche der Plaza Rail.
+## from/to in m ab dem Anfang des Teils.
+func _build_black_top(from: float, to: float) -> void:
+	var hl := length * 0.5
+	var u0 := clampf(from - hl, -hl, hl)
+	var u1 := clampf(to - hl, -hl, hl)
+	var nu := maxi(int((u1 - u0) * 4.0), 1)
+	var nv := 12
+	var hw := width * 0.5 + 0.004
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_smooth_group(1)
+	var p := func(i: int, j: int) -> Vector3:
+		var u := lerpf(u0, u1, float(i) / nu)
+		var v := lerpf(-hw, hw, float(j) / nv)
+		var h := height_local(u, clampf(v, -width * 0.5 + 0.001, width * 0.5 - 0.001))
+		return Vector3(v, h + 0.006, -u)
+	for i in nu:
+		for j in nv:
+			_quad(st, p.call(i, j), p.call(i + 1, j), p.call(i + 1, j + 1), p.call(i, j + 1), Vector3.UP)
+	st.generate_normals()
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = Util.mat(Color(0.06, 0.06, 0.07), 0.35)
 	add_child(mi)
 
 
