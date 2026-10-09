@@ -2,6 +2,12 @@
 
 Schön, dass du mitmachst! Hier steht, wie du das Projekt einrichtest und wie Änderungen ins Spiel kommen.
 
+> **Bugfixes sind besonders beliebt!** Wer einen Fehler findet und behebt, hilft am meisten – gern auch kleine PRs.
+>
+> **Alles muss auch am Handy funktionieren.** Das Spiel wird viel im Handy-Browser gespielt (Neigen = lenken,
+> Touch-Tasten). Jede Änderung bitte auch auf dem Handy testen – am einfachsten die PR-Vorschau direkt auf dem
+> Handy öffnen, hoch und quer.
+
 ## Ablauf in Kürze
 
 1. Du bekommst eine Einladung als **Collaborator** (Schreibrechte, kein Fork nötig).
@@ -49,7 +55,7 @@ git push -u origin mein-thema
 Dann auf GitHub „Compare & pull request“ klicken (oder `gh pr create`).
 
 - **Ein Thema pro PR**, lieber klein als riesig.
-- Die Vorschau muss bauen und spielbar sein – das ist der Test. Schlägt der Build fehl, steht im PR ein rotes ✗.
+- Die Vorschau muss bauen und spielbar sein – **am PC und am Handy**. Schlägt der Build fehl, steht im PR ein rotes ✗.
 - Wenn `main` inzwischen weiter ist: `git pull origin main` in deinen Branch und Konflikte lösen.
 - Wenn Kim Änderungen wünscht: einfach weitere Commits auf denselben Branch pushen, der PR aktualisiert sich.
 - Vorher kurz absprechen, wer woran arbeitet. Vor allem `scripts/rider.gd` und `scripts/main.gd` sind groß –
@@ -75,6 +81,9 @@ Alle Test-Argumente stehen im Kopf von `scripts/main.gd` und in `CLAUDE.md`.
 - **Code-Stil:** so wie der umgebende Code (GDScript, Tabs, deutsche Kommentare).
 - **Doku mitpflegen:** bei Änderungen an Steuerung oder Regeln `README.md` und die Hilfe im HUD
   (`scripts/hud.gd`, `HELP`/`HELP_MOBILE`) anpassen.
+- **Handy:** jede neue Funktion braucht auch eine Bedienung per Touch/Neigung (`scripts/ui/touch_pad.gd`,
+  `scripts/mobile_input.gd`), Menüs und HUD müssen hoch und quer auf kleinen Bildschirmen passen.
+  Ton, Tempo und Grafik im Handy-Browser prüfen – Web-Probleme zeigen die Headless-Tests nicht.
 - **Handy-Code strikt getrennt:** Touch/Neigung/Web-Audio-Tricks dürfen die Desktop-Eingabe nie beeinflussen.
 - **Audio-Busse** nur in `default_bus_layout.tres` anlegen (zur Laufzeit angelegte Busse sind im Browser stumm).
 - Temporäre Test-Werte (z. B. `RALEY_SPEED := 0.0 #TMP`) vor dem Commit zurücksetzen.
