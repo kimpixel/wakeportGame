@@ -99,6 +99,7 @@ const FLIP_POINTS := 300
 const PRESS_ANG := 0.45         # rad: Brett beim Press gekippt (Fotos: ca. 25°, anderes Ende deutlich in der Luft)
 ## Körperhaltung beim Press kommt aus Blender (blender/nosepress.blend -> tools/export_pose.py)
 const PRESS_POSE := "res://assets/poses/nosepress.json"
+const TAIL_POSE := "res://assets/poses/tailpress.json"      # 50-50-Tailpress (eigene Pose, nicht gespiegelt)
 ## Diese Knochen übernimmt die Blender-Pose (Becken, Rücken, Kopf, Arme); Beine bleiben per IK in
 ## den Bindungen, Hände/Finger halten weiter die Faust.
 const POSE_BONES := ["pelvis", "spine_01", "spine_02", "spine_03", "neck_01", "head",
@@ -2045,20 +2046,25 @@ static func _load_pose(path: String) -> Array:
 	return frames
 
 
-## Press: Körper in die Blender-Pose überblenden (w 0..1). Die Pose ist ein Nosepress mit dem
-## linken Fuß vorne; Tailpress bzw. Goofy werden gespiegelt (links <-> rechts, Nose <-> Tail).
+## Press: Körper in die Blender-Pose überblenden (w 0..1). Die Posen gelten mit dem linken Fuß vorne
+## (Goofy gespiegelt). Nosepress: nosepress.json; 50-50-Tailpress: tailpress.json; sonst (Boardslide-
+## Tailpress) die Nosepress gespiegelt (links <-> rechts, Nose <-> Tail).
 ## Liefert die Hand, die die Handle hält (Welt), oder INF ohne Pose.
 var _pose_t := 0.0
 
 func _apply_press_pose(w: float, delta: float) -> Vector3:
-	var frames := _load_pose(PRESS_POSE)
+	var pl := _press_local()
+	var path := PRESS_POSE
+	var own_tail := pl < 0.0 and _press_bs_vis < 0.5 and not _load_pose(TAIL_POSE).is_empty()
+	if own_tail:
+		path = TAIL_POSE
+	var frames := _load_pose(path)
 	if frames.is_empty() or w <= 0.001:
 		return Vector3.INF
 	_pose_t += delta
-	var fps: float = _pose_cache.get(PRESS_POSE + ":fps", 24.0)
+	var fps: float = _pose_cache.get(path + ":fps", 24.0)
 	var fr: Dictionary = frames[int(_pose_t * fps) % frames.size()]
-	var pl := _press_local()
-	var mirror := (pl < 0.0) != goofy
+	var mirror := goofy if own_tail else (pl < 0.0) != goofy
 	var before := _rig.snapshot()
 	var skel := _rig.skeleton
 	# Modellraum (Figur wie in der Vorlage) -> Skelettraum
@@ -2086,7 +2092,7 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	if goofy:
 		bx = bx * Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
 	var p: Vector3 = fr["pelvis"]
-	var pelvis_world := bx * Vector3(p.x * _facing(), p.y, p.z * (-1.0 if pl < 0.0 else 1.0))
+	var pelvis_world := bx * Vector3(p.x * _facing(), p.y, p.z * (-1.0 if pl < 0.0 and not own_tail else 1.0))
 	var pel := _rig.idx("pelvis")
 	var pp := skel.get_bone_parent(pel)
 	var parent_t := skel.get_bone_global_pose(pp) if pp >= 0 else Transform3D.IDENTITY
