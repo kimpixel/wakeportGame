@@ -93,6 +93,7 @@ const PRESS_ANG := 0.22         # rad: Brett beim Press gekippt
 const PRESS_BONUS := 100.0
 const CATCH_GLIDE := 5.0         # m/s seitlich in die Slide-Linie gleiten
 const CATCH_RISE := 3.0          # m/s nach oben auf die Oberkante gleiten
+const DRIFT_DRAG := 0.7          # Wasserwiderstand im Drift (Anteil): Brett liegt flach, leicht schneller
 const SLIDE_TURN := 4.5         # rad/s: so schnell dreht das Brett auf dem Slider
 const LOCK_ANGLE := deg_to_rad(35.0)   # bis zu diesem Winkel zur Feature-Achse bleibt man eingeloggt
 const LOCK_RATE := 8.0          # 1/s: seitliches Wegrutschen wird so schnell abgebaut
@@ -161,6 +162,8 @@ var _jump_block := false        # Sprungtaste startete gerade die Anlage -> zäh
 var test_pitch := 0.0           # Test: ↑/↓ in der Luft halten (auch mit Autopilot)
 var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), ↓ = -1
 var _catch_part: FeaturePart     # gleitet gerade in diese Slider-Fangzone
+var _drifting := false          # Drift läuft (Fahrtrichtung festgehalten)
+var _drift_dir := Vector3.FORWARD
 var _flip := 0.0                # Überschlag im Sprung (rad, + = Frontroll)
 var _flip_lock := false         # ↑/↓ war beim Abheben schon gedrückt (z. B. Press vom Slider) -> erst loslassen
 var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
@@ -920,17 +923,31 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var slick_part := features.part_at(pos.x, pos.z) if (features and on_feature) else null
 	var slick := slick_part != null and slick_part.is_slick_at(pos)
 	var dir_before := Vector3(vel.x, 0.0, vel.z).normalized()
+	# Driften (Strg): die Kante ist gelöst – man rutscht in der Richtung weiter, die man beim
+	# Losdriften hatte, lenken ändert sie nicht. Das Brett lässt sich frei drehen, und weil es
+	# flach aufliegt, bremst das Wasser weniger (leicht schneller).
+	var drift := _release > 0.5 and not autopilot and attached and not on_feature and not on_dock and speed > 2.0
+	if drift and not _drifting:
+		_drift_dir = dir_before
+	_drifting = drift
 	var force := Vector3(rope.x, 0.0, rope.z) + f * f_long + r * f_lat
+	if drift:
+		var drag := (DRAG_QUAD * speed * speed + DRAG_LIN * speed) * DRIFT_DRAG
+		force = Vector3(rope.x, 0.0, rope.z) - dir_before * drag
 	vel.x += force.x / MASS * delta
 	vel.z += force.z / MASS * delta
-	if slick and dir_before != Vector3.ZERO:
+	if drift:
+		var along := _drift_dir * maxf(Vector3(vel.x, 0.0, vel.z).dot(_drift_dir), 0.0)
+		vel.x = along.x
+		vel.z = along.z
+	elif slick and dir_before != Vector3.ZERO:
 		var keep := dir_before * maxf(Vector3(vel.x, 0.0, vel.z).dot(dir_before), 0.0)
 		vel.x = keep.x
 		vel.z = keep.z
 	elif on_feature:
 		_slide_lock(delta)
 
-	# Lenken über die Kante
+	# Lenken über die Kante (im Drift dreht sich damit nur das Brett, die Fahrtrichtung bleibt)
 	# flaches (driftendes) Brett lässt sich schneller herumdrehen, belastete Kante zieht weite Bögen
 	var turn := TURN_RATE * clampf(0.6 + speed / 7.0, 0.6, 1.4) * (1.0 + 0.8 * _release - 0.3 * _edge)
 	if slick:

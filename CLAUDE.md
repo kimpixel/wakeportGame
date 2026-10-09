@@ -147,7 +147,9 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
 - Leertaste: halten + loslassen = Sprung; startet auch die Anlage (dann ohne Sprung). Kein Enter.
   **Nach Sturz: Leertaste halten = schwimmen, Strg = sofort weiter (−3:00), R = Steg (−5:00)** –
   angezeigt in einem Panel mit Zeitkosten (`Hud.show_recovery`).
-- Strg (zur Not Alt): Driften (Kante lösen). „Maximaler Grip“ gibt es nicht mehr.
+- Strg (zur Not Alt): **Driften** – Fahrtrichtung beim Losdriften wird festgehalten (lenken ändert sie
+  nicht), ←/→ drehen nur das Brett, Wasserwiderstand × `DRIFT_DRAG` 0.7 (leicht schneller). Nur Spieler,
+  Autopilot/NPC driften wie früher. „Maximaler Grip“ gibt es nicht mehr.
 - R, + / −, C, P, H, M, Tab (Startseite) wie in der README. **Keine Tasten T/F** mehr (Terminal/Setup nur auf der Startseite).
 
 Steuerung Handy: Neigen = lenken, Tippen = Start, **Springen nur mit der SPRUNG-Taste (links)**,
