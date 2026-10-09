@@ -36,6 +36,7 @@ var boat: Node3D
 var _driver: Person
 var _filmer: Person
 var _spray: CPUParticles3D
+var _motor: AudioStreamPlayer3D   # Außenborder-Geräusch (Tonhöhe/Lautstärke nach Tempo)
 var _bpos := Vector2.ZERO      # Boot lokal (x, z) im Rahmen von T2
 var _bhead := 0.0              # Kurs: Winkel der Fahrtrichtung (lokal, 0 = +z)
 var _bv := 0.0
@@ -78,6 +79,14 @@ func build() -> void:
 	_spray.material_override = foam
 	_spray.position = Vector3(0, -0.05, STERN_Z + 0.35)
 	boat.add_child(_spray)
+	if game.sfx:
+		_motor = AudioStreamPlayer3D.new()
+		_motor.stream = game.sfx.make_outboard_loop()
+		_motor.bus = Sfx.BUS_FX
+		_motor.unit_size = 9.0
+		_motor.max_distance = 250.0
+		_motor.position = Vector3(0, 0.5, STERN_Z + 0.25)
+		boat.add_child(_motor)
 
 	drone = _make_drone()
 	drone.visible = false
@@ -125,6 +134,11 @@ func start(choice: int) -> void:
 		if p:
 			p.watch = r
 	boat.visible = mode == "boat"
+	if _motor:
+		if mode == "boat":
+			_motor.play(randf())
+		else:
+			_motor.stop()
 	if game.beach.boat:
 		game.beach.boat.visible = mode != "boat"
 	drone.visible = mode == "drone"
@@ -138,6 +152,8 @@ func stop() -> void:
 	mode = ""
 	boat.visible = false
 	_spray.emitting = false
+	if _motor:
+		_motor.stop()
 	if game.beach.boat:
 		game.beach.boat.visible = true
 	drone.visible = false
@@ -255,6 +271,10 @@ func _place_boat(_delta: float) -> void:
 	boat.global_transform = Transform3D(Basis.from_euler(Vector3(pitch, yaw, roll), EULER_ORDER_YXZ),
 		Vector3(p.x, h + 0.03 + sin(_t * 1.1) * 0.02 - 0.02 * clampf(_bv / 6.0, 0.0, 1.0), p.z))
 	_spray.emitting = _bv > 2.0
+	if _motor:                                          # Standgas tuckert, mit Tempo höher und lauter
+		var thr := clampf(_bv / BOAT_MAX + absf(_bturn) * 0.2, 0.0, 1.0)
+		_motor.pitch_scale = lerpf(0.45, 1.25, thr)
+		_motor.volume_db = lerpf(-9.0, 0.0, thr)
 
 
 # ---------------------------------------------------------------- Drohne

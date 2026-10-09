@@ -467,6 +467,33 @@ func make_jet_loop() -> AudioStreamWAV:
 	return _to_wav(_normalize(s, 0.85), true)
 
 
+## Außenborder (rotes Boot, FilmCrew): Zündstöße als knatternde Pulskette (60 je Sekunde, im Spiel per
+## pitch_scale je nach Gas), jeder Stoß ein kurzer Rauschstoß mit dumpfer Auspuff-Resonanz, dazu
+## mechanisches Rauschen und Blubbern am Auspuff unter Wasser. Genau 1 s lang, damit die Schleife nahtlos ist.
+func make_outboard_loop() -> AudioStreamWAV:
+	const PULSES := 60
+	var n := RATE
+	var per := float(n) / PULSES
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 91
+	var amp := PackedFloat32Array()
+	for k in PULSES:
+		amp.append(rng.randf_range(0.7, 1.0) * (1.0 if k % 2 == 0 else 0.82))   # zwei Zylinder, ungleich
+	var burst := _lowpass(_noise(n, 17), 0.35)
+	var mech := _noise(n, 23)
+	var mech_low := _lowpass(mech.duplicate(), 0.08)
+	var bubble := _lowpass(_lowpass(_noise(n, 29), 0.01), 0.03)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	for i in n:
+		var k := int(i / per)
+		var ts := (i - k * per) / RATE                     # Zeit seit dem letzten Zündstoß
+		var env := exp(-ts / 0.0045)
+		var res := sin(TAU * 165.0 * ts) * exp(-ts / 0.009)
+		s[i] = amp[k] * (burst[i] * env * 1.2 + res * 0.7) + (mech[i] - mech_low[i]) * 0.05 + bubble[i] * 4.0
+	return _to_wav(_normalize(s, 0.8), true)
+
+
 func _make_grind_loop() -> AudioStreamWAV:
 	var n := RATE
 	var s := _noise(n, 33)
