@@ -196,6 +196,7 @@ var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Ob
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
 var _press_bs_vis := 0.0        # 1 = Press im Boardslide (Brett seitlich versetzt, Ende über dem Slider)
 var press_tip := Vector3.ZERO   # Welt: gedrücktes Brett-Ende beim Press (darauf zielt die Kamera)
+var _press_lead := 1.0          # +1: Nose zeigt in Fahrtrichtung, -1: switch (bleibt im Boardslide stehen)
 var _press_nose_t := 0.0
 var _press_tail_t := 0.0
 var _release := 0.0
@@ -1846,10 +1847,15 @@ func _pose_frame() -> Transform3D:
 ## Press bezogen auf das Brett-Ende in Fahrtrichtung: > 0 = vorderes Ende (lokal -Z) gedrückt,
 ## < 0 = hinteres. Fährt man switch (Twin-Tip rückwärts, z. B. 50-50 andersherum eingerastet),
 ## ist vorne lokal +Z – sonst wäre beim Nosepress alles seitenverkehrt.
+## Im Boardslide steht das Brett quer zur Fahrt: dann bleibt die zuletzt klare Richtung (sonst
+## springt der Press bei jedem kleinen Winkel zwischen Nose und Tail hin und her).
 func _press_local() -> float:
 	var vh := Vector3(vel.x, 0.0, vel.z)
-	var lead := -1.0 if vh.length() > 0.5 and vh.dot(forward()) < 0.0 else 1.0
-	return _press_vis * lead
+	if vh.length() > 0.5:
+		var d := vh.normalized().dot(forward())
+		if absf(d) > 0.5:
+			_press_lead = -1.0 if d < 0.0 else 1.0
+	return _press_vis * _press_lead
 
 
 ## Brettlage im Stehen (Fahrerposition, gekippt mit der Kante).
