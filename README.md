@@ -44,7 +44,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | P | – | Autopilot (fährt auch Features) |
 | M | – | Ton aus/an |
 | G | – | Seil-Abreißen an/aus (bei „Aus“ wird einem die Handle nie aus der Hand gerissen; auch unter Einstellungen → Spiel → Seilzug-Grenze) |
-| F3 | – | Debug: Fangzonen der Slider einblenden (gelb; wer im Sprung hineinkommt, gleitet aufs Rail) und glattes Plastik (blau; nur rutschen, kein Slide, kein Lenken) |
+| F3 | – | Debug: Fangzonen der Slider einblenden (gelb; wer im Sprung hineinkommt, gleitet aufs Rail) glattes Plastik (blau; nur rutschen, kein Slide, kein Lenken) und Safetys/Auffahrten und Kicker (orange; fährt man wie einen Kicker, kein Slide) |
 
 **Auf dem Handy/Tablet** (im Browser, wird automatisch erkannt):
 

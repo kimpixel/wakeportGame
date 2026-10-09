@@ -52,6 +52,7 @@ var _reach := 1.0              # Radius für die schnelle Vorauswahl
 var _inv := Transform3D()      # Welt -> lokal (Teile stehen still)
 var _catch_mesh: MeshInstance3D  # Debug: Fangzone
 var _slick_mesh: MeshInstance3D  # Debug: glatte Flächen
+var _ramp_mesh: MeshInstance3D   # Debug: Safety/Auffahrt/Kicker
 var collide := true              # Kollisionskörper bauen (nicht für unsichtbare Katalog-Teile)
 const LAYER_COLLIDE := 1 << 11   # Physik-Ebene der Features (Ragdoll prallt daran ab)
 var _mesh_only := false        # beim Bau des Körpers: Rail-Wölbung weglassen
@@ -131,13 +132,23 @@ func catch_target(world: Vector3) -> Vector3:
 	return global_transform * Vector3(v0, top, -u)
 
 
-## Debug: Flächen aus glattem Plastik (nur rutschen, kein Slide) blau einfärben (an/aus).
+## Debug (F3): glattes Plastik blau (nur rutschen), Safety/Auffahrt und Kicker orange (fährt man
+## wie einen Kicker, kein Slide).
 func _show_slick(on: bool) -> void:
-	if _slick_mesh:
-		_slick_mesh.visible = on
+	if _slick_mesh or _ramp_mesh or not on:
+		if _slick_mesh:
+			_slick_mesh.visible = on
+		if _ramp_mesh:
+			_ramp_mesh.visible = on
 		return
-	if not on or slick == "":
-		return
+	if slick != "":
+		_slick_mesh = _paint_surface(func(w: Vector3) -> bool: return is_slick_at(w), Color(0.05, 0.35, 1.0, 0.7))
+	if type == "ramp" or ramp_in > 0.0 or ramp_out > 0.0:
+		_ramp_mesh = _paint_surface(func(w: Vector3) -> bool: return type == "ramp" or on_ramp(w), Color(1.0, 0.45, 0.05, 0.75))
+
+
+## Oberseite dort einfärben, wo pred(Weltpunkt) zutrifft (knapp über der Fläche).
+func _paint_surface(pred: Callable, color: Color) -> MeshInstance3D:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var hl := length * 0.5
@@ -154,7 +165,7 @@ func _show_slick(on: bool) -> void:
 			var v0 := lerpf(-hw, hw, float(j) / nv)
 			var v1 := lerpf(-hw, hw, float(j + 1) / nv)
 			var mid: Vector3 = pt.call((u0 + u1) * 0.5, (v0 + v1) * 0.5)
-			if mid.y < 0.05 or not is_slick_at(global_transform * mid):
+			if mid.y < 0.0 or not pred.call(global_transform * mid):
 				continue
 			any = true
 			var a: Vector3 = pt.call(u0, v0)
@@ -164,17 +175,18 @@ func _show_slick(on: bool) -> void:
 			for vtx: Vector3 in [a, b, c, a, c, d]:
 				st.add_vertex(vtx)
 	if not any:
-		return
+		return null
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.05, 0.35, 1.0, 0.7)
+	mat.albedo_color = color
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	_slick_mesh = MeshInstance3D.new()
-	_slick_mesh.mesh = st.commit()
-	_slick_mesh.material_override = mat
-	_slick_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(_slick_mesh)
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = mat
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mi)
+	return mi
 
 
 ## Debug: Fangzone als halbdurchsichtiger Körper (an/aus), dazu die glatten Flächen.
