@@ -481,10 +481,16 @@ func _reset_to_dock() -> void:
 func _enter_training() -> void:
 	_session = false
 	_finishing = false
-	if terminal != "T2":
-		_comp_terminal = terminal
-		_apply_terminal("T2")
 	challenge.begin(game_mode, _task_idx)
+
+
+## Spielmodus: Aufgabe läuft auf dieser Anlage (meist Terminal 2); die Wahl der Competition merken.
+func _training_terminal(t: String) -> void:
+	if t == terminal:
+		return
+	if _comp_terminal == "":
+		_comp_terminal = terminal
+	_apply_terminal(t)
 
 
 ## Zurück aus dem Spielmodus: Setup, Terminal, Seil und Tempo der Competition wiederherstellen.
@@ -494,7 +500,8 @@ func _leave_training() -> void:
 	_task_idx = challenge.task_idx
 	challenge.stop()
 	if _comp_terminal != "":
-		_apply_terminal(_comp_terminal)
+		if _comp_terminal != terminal:
+			_apply_terminal(_comp_terminal)
 		_comp_terminal = ""
 	features.load_setup(_setups[_setup_idx]["file"], {"T1": cable_t1, "T2": cable}, _s_offset())
 	rider.forget_features()

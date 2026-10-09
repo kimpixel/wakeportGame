@@ -48,6 +48,11 @@ var _setup_idx := 0
 var _editor: SetupEditor
 var _start_btn: Button
 var _mode_buttons: Array[Button] = []
+var _split: BoxContainer          # Querformat: links Spielmodi, rechts Terminal/Setup bzw. Aufgaben
+var _mode_grid: GridContainer
+var _left: VBoxContainer          # linke Spalte (Querformat am Handy: auch Einstellungen + Start)
+var _menu_v: VBoxContainer
+var _bottom_row: HBoxContainer
 var _comp_box: VBoxContainer     # Competition: Terminal + Feature-Setup
 var _train_box: VBoxContainer    # Spielmodi: Aufgaben
 var _task_grid: GridContainer
@@ -125,12 +130,28 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	var mv := VBoxContainer.new()
 	mv.add_theme_constant_override("separation", 10)
 	_menu.add_child(mv)
-	mv.add_child(_small("SPIELMODUS"))
+	# Querformat zwei Spalten (links Spielmodus, rechts Auswahl), hochkant untereinander
+	_split = BoxContainer.new()
+	_split.add_theme_constant_override("separation", 18)
+	mv.add_child(_split)
+	var left := VBoxContainer.new()
+	left.add_theme_constant_override("separation", 10)
+	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left.size_flags_stretch_ratio = 0.8
+	_split.add_child(left)
+	_left = left
+	_menu_v = mv
+	var right := VBoxContainer.new()
+	right.add_theme_constant_override("separation", 10)
+	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_split.add_child(right)
+	left.add_child(_small("SPIELMODUS"))
 	var mg := GridContainer.new()
 	mg.columns = 3
 	mg.add_theme_constant_override("h_separation", 8)
 	mg.add_theme_constant_override("v_separation", 8)
-	mv.add_child(mg)
+	left.add_child(mg)
+	_mode_grid = mg
 	var mgroup := ButtonGroup.new()
 	for m: Dictionary in Training.MODES:
 		var b := _button(m["name"], 18)
@@ -144,11 +165,11 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 		_mode_buttons.append(b)
 	_comp_box = VBoxContainer.new()
 	_comp_box.add_theme_constant_override("separation", 10)
-	mv.add_child(_comp_box)
+	right.add_child(_comp_box)
 	_train_box = VBoxContainer.new()
 	_train_box.add_theme_constant_override("separation", 10)
 	_train_box.visible = false
-	mv.add_child(_train_box)
+	right.add_child(_train_box)
 	_train_box.add_child(_small("AUFGABEN"))
 	_task_grid = GridContainer.new()
 	_task_grid.columns = 2
@@ -184,6 +205,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	mv.add_child(row)
+	_bottom_row = row
 	var eb := _button("Einstellungen", 20)
 	eb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	eb.pressed.connect(func() -> void: _show_popup(_settings))
@@ -424,13 +446,21 @@ func _layout() -> void:
 	var portrait := size.x < 760.0
 	_title_box.position = Vector2(m, m)
 	_title_box.size = Vector2(size.x - 2.0 * m, 0)
-	var w := size.x - 2.0 * m if portrait else 420.0
+	var w := size.x - 2.0 * m if portrait else clampf(size.x * 0.6, 640.0, 860.0)
 	var low := not portrait and size.y < 620.0        # Handy quer: breiteres, flacheres Menü
 	if low:
-		w = minf(size.x * 0.62, 720.0)
+		w = minf(size.x * 0.66, 860.0)
 	_menu.custom_minimum_size = Vector2(w, 0)
 	_menu.size = Vector2(w, 0)
-	_setup_grid.columns = 4 if low else (2 if w < 700.0 else 3)
+	_setup_grid.columns = 2
+	_split.vertical = portrait
+	_mode_grid.columns = 3 if portrait else 2
+	# Handy quer (flach): Einstellungen/Editor und Start in die linke Spalte, sonst zu hoch
+	var host: VBoxContainer = _left if low else _menu_v
+	for c: Control in [_bottom_row, _start_btn]:
+		if c.get_parent() != host:
+			c.reparent(host)
+	_start_btn.custom_minimum_size.y = 56 if low else 72
 	await get_tree().process_frame
 	var h := _menu.get_combined_minimum_size().y
 	_menu.size = Vector2(w, h)

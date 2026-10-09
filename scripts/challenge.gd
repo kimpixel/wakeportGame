@@ -10,6 +10,7 @@ signal home_requested
 const SETTLE := 0.7             # s nach Landung/Slide ohne Sturz, bis der Versuch zählt
 const FAIL_DELAY := 1.4         # s nach Sturz, bis das Ergebnis kommt
 const TIMEOUT := 75.0
+const OUTRO := 1.4              # s nach dem Ende weiterfahren (ausrollen), dann erst das Ergebnis
 
 var game: Node                  # main.gd (rider, pc, features, hud, cam, water, …)
 var panel: TaskPanel
@@ -35,6 +36,9 @@ var _hit := false               # Ziel erreicht (Wert gültig)
 var _count := 0
 var _s_turn := 0.0              # Wendepunkt (Spiel-s) bei Wende/Raley
 var _off := 0.0                 # Verschiebung Setup -> Spiel (s)
+var _via := false               # Transfer: gerade über das Start-Feature gekommen (noch nicht im Wasser)
+var _via_ok := false            # Transfer: beim Draufkommen aufs Ziel kam man vom Start-Feature
+var _target_started := false
 
 
 func _ready() -> void:
@@ -62,10 +66,12 @@ func begin(mode: String, idx: int) -> void:
 	active = true
 	running = false
 	attempt = 0
+	var term: String = task.get("terminal", "T2")
+	game._training_terminal(term)
 	game.features.load_setup(task["setup"], {"T1": game.cable_t1, "T2": game.cable}, game._s_offset())
 	game.rider.forget_features()
 	game.npc.forget_features()
-	_off = float(game._s_offset()["T2"])
+	_off = float(game._s_offset()[term])
 	game.rider.rope_length = Training.ROPE
 	game.pc.max_speed = Training.SPEED / 3.6
 	game.hud.time_title = "VERSUCH"
@@ -183,6 +189,9 @@ func _reset_measure() -> void:
 	_fail_t = -1.0
 	_hit = false
 	_count = 0
+	_via = false
+	_via_ok = false
+	_target_started = false
 	if task["kind"] == "turn":
 		_value = 0.0
 
@@ -247,6 +256,8 @@ func _physics_process(delta: float) -> void:
 				_fail("Kicker verpasst – kein Wert")
 				return
 		"slide", "chain":
+			if task.has("via"):
+				_track_via(r)
 			if _past(s_now, float(task["end_s"]) + _off) and _done_t < 0.0:
 				if task["kind"] == "chain" and _count > 0:
 					_value = _count
@@ -285,9 +296,15 @@ func _past(s_now: float, s_end: float) -> bool:
 
 
 func _in_target(p: FeaturePart) -> bool:
-	var tg: Dictionary = task.get("target", {})
+	return _matches(p, task.get("target", {}))
+
+
+## Passt das Teil zur Beschreibung? {name} (Anzeigename, nur eigene Anlage) oder {s0, s1, side, x}.
+func _matches(p: FeaturePart, tg: Dictionary) -> bool:
 	if tg.is_empty():
 		return true
+	if tg.has("name"):
+		return p.display_name == tg["name"] and p.cable == game.pc
 	if p.s_center < float(tg["s0"]) + _off or p.s_center > float(tg["s1"]) + _off:
 		return false
 	if signf(p.x_center) != signf(float(tg["side"])):
@@ -313,11 +330,27 @@ func _on_landed(info: Dictionary) -> void:
 			_done_t = SETTLE
 
 
+## Transfer: über das Start-Feature gekommen? Wer dazwischen ins Wasser kommt, muss neu ansetzen.
+## Beim ersten Kontakt mit dem Ziel wird festgehalten, ob man vom Start-Feature kam.
+func _track_via(r: Rider) -> void:
+	var under: FeaturePart = game.features.part_at(r.pos.x, r.pos.z) if r.pos.y > 0.05 else null
+	if under and _matches(under, task["via"]):
+		_via = true
+	elif r.mode == Rider.Mode.WATER and r.pos.y < 0.08 and under == null:
+		_via = false
+	if not _target_started and under and _in_target(under):
+		_target_started = true
+		_via_ok = _via
+
+
 func _on_slide(info: Dictionary) -> void:
 	if not running or _fail_t >= 0.0:
 		return
 	var p: FeaturePart = info["part"]
 	if not _in_target(p):
+		return
+	if task.has("via") and not _via_ok:
+		_fail(str(task.get("via_fail", "Transfer verpasst")) + " – kein Wert")
 		return
 	if task["kind"] == "chain":
 		if float(info["dist"]) >= 1.5:
@@ -363,6 +396,12 @@ func _finish(ok: bool) -> void:
 			print("CHALLENGE %s/%s Versuch %d: %s" % [mode_id, task["id"], attempt, text])
 		game.hud.show_trick(text.replace(" – kein Wert", ""))
 		start_attempt()
+		return
+	# erst noch ein Stück ausfahren lassen, dann anhalten und das Ergebnis zeigen
+	game.hud.show_trick(("%s!  " % Training.MEDALS[medal].to_upper() if medal > 0 else "") + text)
+	var n := attempt
+	await get_tree().create_timer(OUTRO).timeout
+	if not active or running or attempt != n:
 		return
 	get_tree().paused = true
 	panel.show_result(_mode_name(), task_idx, list.size(), task, _best(), task_idx + 1 < list.size(),
