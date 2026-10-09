@@ -177,7 +177,9 @@ Tricks/Optik:
   entlang des Features aus und zieht zur Spur; erst darüber rutscht man ab.
 - Sprung aufladen: stufenlos tiefer in die Knie.
 - Sprunghöhe gedämpft (`POP_SCALE` 0.8, Ollie ca. 0,8 m); an der Rampe kommt der Absprung nicht voll
-  obendrauf (`POP_ON_RAMP`), Rampenkante wirft mit `RAMP_LAUNCH` 0.85 ab.
+  obendrauf (`POP_ON_RAMP`). **Kicker-Absprung hängt vom Winkel an der Kante ab** (`_lip_slope`,
+  `KICK_REF`): je steiler, desto höher, überproportional – über der Kante bei 8 m/s ca. Cheese Wedge 0,17 m,
+  Kicker S 0,26 m, M 0,41 m, L 0,77 m.
 - **Glattes Plastik** (`"slick"` in parts.json): Pyramid oben, Transition des Transition Rails,
   Transition Curb, Ollie Box (nicht die Ledge), Bump nur die flache Spitze (`"slick": "top"`; alle
   Seiten des Bumps sind Kicker). **Safetys/Auffahrten** (`ramp_in`/`ramp_out`, z. B.

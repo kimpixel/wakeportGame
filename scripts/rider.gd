@@ -74,6 +74,8 @@ const POP_LOAD := 2.8
 const POP_ROPE := 1.8
 const POP_SCALE := 0.8          # Sprunghöhe insgesamt (Ollie): Verhältnis Tempo/Höhe
 const POP_ON_RAMP := 0.35       # Absprung an der Rampe: Anteil des schwächeren Schubs
+const KICK_REF := 0.36          # Bezugs-Steigung kurz vor der Kante: steiler wirft überproportional mehr
+const KICK_MAX_VY := 7.0        # m/s Obergrenze beim Absprung von der Kante
 const RAMP_LAUNCH := 0.85       # Abwurf von der Rampenkante (Anteil der Steiggeschwindigkeit)
 # Raley: wer beim Absprung besonders schnell ist (Anschneiden), schwingt mit gestrecktem Körper
 # um den Griff nach hinten oben – Brett höher als der Kopf, Brust zum Wasser. Langsamer = Ollie.
@@ -956,7 +958,12 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	if y_ball > surf + 0.03 and (vel.y > 0.8 or surf < old_y - 0.2):
 		pos.y = y_ball
 		vel.y += ay * delta
-		if vel.y > 0.0:
+		var lip := _lip_slope(delta)
+		if lip > 0.05:
+			# Absprung von der Kante: Steiggeschwindigkeit aus dem Winkel an der Kante – je steiler,
+			# desto höher und überproportional aggressiver (Kicker L wirft deutlich mehr als S)
+			vel.y = clampf(horizontal_speed() * lip * RAMP_LAUNCH * (lip / KICK_REF), 0.0, KICK_MAX_VY)
+		elif vel.y > 0.0:
 			vel.y *= RAMP_LAUNCH          # Rampe wirft etwas flacher ab
 		_enter_air()
 	else:
@@ -1160,6 +1167,23 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	var surf := _board_surface()
 	if pos.y <= surf and vel.y <= 0.0:
 		_land(surf)
+
+
+## Steigung (dh/ds) der Rampe direkt hinter der Kante, über die man gerade abhebt; 0 wenn
+## man nicht von einer Rampe/Auffahrt kommt (z. B. am Ende eines Sliders herunterfällt).
+func _lip_slope(delta: float) -> float:
+	var v := Vector3(vel.x, 0.0, vel.z)
+	if v.length() < 1.0:
+		return 0.0
+	var dir := v.normalized()
+	var p := pos - v * delta              # Stelle vor diesem Schritt (noch auf der Kante)
+	var a := p - dir * 0.1
+	var b := p - dir * 0.4
+	var h0 := _obstacle_height(a.x, a.z)
+	var h1 := _obstacle_height(b.x, b.z)
+	if h0 < 0.2 or h1 < -0.5:
+		return 0.0
+	return (h0 - h1) / 0.3
 
 
 ## Hineingleiten aufs Rail. true = dieses Bild erledigt (gleitet noch oder ist gelandet).
