@@ -124,7 +124,8 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
   mehrere Aufgaben (leicht → schwer), jede misst einen Wert → **Bronze/Silber/Gold** (Schwellen in `Training.MODES`,
   vom Nutzer fein justiert). Bestwerte in user://settings.cfg [medaillen]; **Tests speichern nichts**.
 - Aufgabe setzt Fahrer + Carrier **in voller Fahrt** kurz vor die Stelle (`Rider.place`, `CableSystem.place_running`),
-  jeder Versuch wieder dort (auch Kamera). Immer Terminal 2, 30 km/h, 16 m Seil. Eigene Setups
+  jeder Versuch wieder dort (auch Kamera). Sturz/Seil verloren/verpasst: **kein Bergungs- oder Ergebnis-Fenster**,
+  sofort neuer Versuch mit Countdown; Fenster nur bei gewertetem Versuch. Immer Terminal 2, 30 km/h, 16 m Seil. Eigene Setups
   `setups/training_*.json` (nicht in index.json): leer (Wenden/Raley), Kicker M+L wie Setup B, Slider-Park
   (rechts Full Pipe, Rail, A-Frame, Pipe; links 100 m Long Rail).
 - **Jeder Start mit Countdown 3 – 2 – 1 – GO** (`Challenge.countdown`), dazu Ansage **englisch** „three, two, one, go“

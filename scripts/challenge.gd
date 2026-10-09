@@ -337,7 +337,8 @@ func _fail(text: String) -> void:
 	_fail_t = FAIL_DELAY
 
 
-## Versuch auswerten, Bestwert speichern, Ergebnis zeigen (Spiel steht).
+## Versuch auswerten, Bestwert speichern, Ergebnis zeigen (Spiel steht). Ohne Wert (Sturz usw.)
+## kein Fenster: sofort neuer Versuch.
 func _finish(ok: bool) -> void:
 	running = false
 	var list := Training.tasks(mode_id)
@@ -352,8 +353,13 @@ func _finish(ok: bool) -> void:
 			text += "   –   noch keine Medaille"
 		if game._test_log:
 			print("CHALLENGE %s/%s Versuch %d: %s Medaille %d" % [mode_id, task["id"], attempt, text, medal])
-	elif game._test_log:
-		print("CHALLENGE %s/%s Versuch %d: %s" % [mode_id, task["id"], attempt, text])
+	else:
+		# Sturz, Seil verloren, verpasst …: kein Fenster, gleich der nächste Versuch (mit Countdown)
+		if game._test_log:
+			print("CHALLENGE %s/%s Versuch %d: %s" % [mode_id, task["id"], attempt, text])
+		game.hud.show_trick(text.replace(" – kein Wert", ""))
+		start_attempt()
+		return
 	get_tree().paused = true
 	panel.show_result(_mode_name(), task_idx, list.size(), task, _best(), task_idx + 1 < list.size(),
 		medal, text, new_best)
