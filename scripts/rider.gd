@@ -72,11 +72,11 @@ const SPIN_PER_180 := 50
 const COMBO_WINDOW := 3.0       # s Zeit für den nächsten Trick, damit die Kombination weiterläuft
 const POP_LOAD := 2.8
 const POP_ROPE := 1.8
-const POP_SCALE := 0.8          # Sprunghöhe insgesamt (Ollie): Verhältnis Tempo/Höhe
+const POP_SCALE := 0.93         # Sprunghöhe insgesamt (Ollie): Verhältnis Tempo/Höhe
 const POP_ON_RAMP := 0.35       # Absprung an der Rampe: Anteil des schwächeren Schubs
-const KICK_REF := 0.36          # Bezugs-Steigung kurz vor der Kante: steiler wirft überproportional mehr
-const POP_ON_KICK := 0.6        # Anteil der Sprungkraft, der auf dem Kicker zum Wurf dazukommt
-const KICK_MAX_VY := 7.0        # m/s Obergrenze beim Absprung von der Kante
+const KICK_REF := 0.31          # Bezugs-Steigung kurz vor der Kante: steiler wirft überproportional mehr
+const POP_ON_KICK := 0.7        # Anteil der Sprungkraft, der auf dem Kicker zum Wurf dazukommt
+const KICK_MAX_VY := 8.0        # m/s Obergrenze beim Absprung von der Kante
 const RAMP_LAUNCH := 0.85       # Abwurf von der Rampenkante (Anteil der Steiggeschwindigkeit)
 # Raley: wer beim Absprung besonders schnell ist (Anschneiden), schwingt mit gestrecktem Körper
 # um den Griff nach hinten oben – Brett höher als der Kopf, Brust zum Wasser. Langsamer = Ollie.
