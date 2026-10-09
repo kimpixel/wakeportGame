@@ -94,7 +94,14 @@ const RALEY_POINTS := 150
 const FLIP_RATE := 6.5          # rad/s Überschlag
 const FLIP_LAND_TOL := 0.7      # rad: so schief darf man nach einem Überschlag landen
 const FLIP_POINTS := 300
-const PRESS_ANG := 0.22         # rad: Brett beim Press gekippt
+const PRESS_ANG := 0.45         # rad: Brett beim Press gekippt (Fotos: ca. 25°, anderes Ende deutlich in der Luft)
+## Körperhaltung beim Press kommt aus Blender (blender/nosepress.blend -> tools/export_pose.py)
+const PRESS_POSE := "res://assets/poses/nosepress.json"
+## Diese Knochen übernimmt die Blender-Pose (Becken, Rücken, Kopf, Arme); Beine bleiben per IK in
+## den Bindungen, Hände/Finger halten weiter die Faust.
+const POSE_BONES := ["pelvis", "spine_01", "spine_02", "spine_03", "neck_01", "head",
+	"clavicle_l", "upperarm_l", "lowerarm_l", "clavicle_r", "upperarm_r", "lowerarm_r"]
+static var _pose_cache := {}
 const PRESS_BONUS := 100.0
 const CATCH_GLIDE := 5.0         # m/s seitlich in die Slide-Linie gleiten
 const CATCH_RISE := 3.0          # m/s nach oben auf die Oberkante gleiten
@@ -168,7 +175,7 @@ var slip := 0.0                 # Quergeschwindigkeit des Bretts (m/s) – > 0 =
 
 var _edge := 0.0                # Kante belasten (nur Autopilot/NPC; Spieler: normaler Grip)
 var _jump_block := false        # Sprungtaste startete gerade die Anlage -> zählt nicht als Sprung
-var test_pitch := 0.0           # Test: ↑/↓ in der Luft halten (auch mit Autopilot)
+var test_pitch := 0.0           # Test: ↑/↓ in der Luft bzw. auf dem Slider halten (auch mit Autopilot)
 var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), ↓ = -1
 var _catch_part: FeaturePart     # gleitet gerade in diese Slider-Fangzone
 var _on_slider := false         # Brett steht gerade auf einem Slider (Einrasten erledigt)
@@ -773,7 +780,7 @@ func _grab() -> void:
 
 func _read_input(delta: float) -> void:
 	if autopilot:
-		_pitch_in = test_pitch if mode == Mode.AIR and air_time < 0.6 else 0.0
+		_pitch_in = test_pitch if (mode == Mode.AIR and air_time < 0.6) or _slide_part != null else 0.0   # Test: auch Press auf dem Slider
 		_autopilot_input(delta)
 	else:
 		_steer = Input.get_axis("steer_left", "steer_right")
@@ -1594,6 +1601,15 @@ func _process(delta: float) -> void:
 	if _rig and attached and mode != Mode.CRASHED:
 		# Die Hände bestimmen, wo der Griff ist: nie weiter weg, als die Arme reichen
 		handle_pos = _pose_arms(handle_pos, bar_axis)
+		# Press: Körper aus der Blender-Pose, die Handle in der vorderen Hand
+		var pw := smoothstep(0.1, 0.8, absf(_press_vis))
+		if pw > 0.001:
+			var hand := _apply_press_pose(pw, delta)
+			if hand != Vector3.INF:
+				handle_pos = handle_pos.lerp(hand, pw)
+				_flex_boots()          # Beine stehen jetzt anders: Bindungsschäfte neu knicken
+		else:
+			_pose_t = 0.0
 	Util.place_beam(_handle, handle_pos - bar_axis * 0.2, handle_pos + bar_axis * 0.2)
 	if attached and _rig == null:     # Ersatzarme nur ohne Figur (place_beam macht sichtbar!)
 		var body := _body_pivot.global_transform
@@ -1793,14 +1809,24 @@ func _pose_frame() -> Transform3D:
 	return xf
 
 
+## Press bezogen auf das Brett-Ende in Fahrtrichtung: > 0 = vorderes Ende (lokal -Z) gedrückt,
+## < 0 = hinteres. Fährt man switch (Twin-Tip rückwärts, z. B. 50-50 andersherum eingerastet),
+## ist vorne lokal +Z – sonst wäre beim Nosepress alles seitenverkehrt.
+func _press_local() -> float:
+	var vh := Vector3(vel.x, 0.0, vel.z)
+	var lead := -1.0 if vh.length() > 0.5 and vh.dot(forward()) < 0.0 else 1.0
+	return _press_vis * lead
+
+
 ## Brettlage im Stehen (Fahrerposition, gekippt mit der Kante).
 func _board_stand_xf() -> Transform3D:
 	var roll := _lean_roll * (0.35 + 0.45 * _edge_vis) * (1.0 - 0.85 * _release_vis)
 	var xf := _pose_frame() * Transform3D(Basis.from_euler(Vector3(0.0, 0.0, roll)), Vector3(0.0, BOARD_Y, 0.0))
-	if absf(_press_vis) > 0.01:
+	var pl := _press_local()
+	if absf(pl) > 0.01:
 		# Press: Brett kippt um die Nose (↑) bzw. das Tail (↓), das andere Ende hebt ab
-		var pv := Vector3(0.0, 0.0, -0.55 * signf(_press_vis))
-		var b := Basis(Vector3.RIGHT, -PRESS_ANG * _press_vis)
+		var pv := Vector3(0.0, 0.0, -0.55 * signf(pl))
+		var b := Basis(Vector3.RIGHT, -PRESS_ANG * pl)
 		xf *= Transform3D(b, pv - b * pv)
 	if goofy:
 		# Goofy: rechter Fuß vorne – das Twin-Tip-Brett steht einfach andersherum unter dem Fahrer
@@ -1925,13 +1951,26 @@ func _pose_stand() -> void:
 		twist = clampf(chest.signed_angle_to(rope_h.normalized(), Vector3.UP), -1.4, 1.4) * 0.75 * (1.0 - _raley_ang / RALEY_MAX)   # Raley: Körper gerade gestreckt
 	var spine_w := Basis(Vector3.UP, twist) * (rb * Basis.from_euler(Vector3(_lean_pitch * 0.4, 0.0, _lean_roll * 0.4 - 1.4 * _tuck * _facing())) * rb.inverse())   # eingerollt: Brust zu den Knien
 	_rig.bend_spine(to_skel.call(spine_w).get_rotation_quaternion())
-	# Beine: Knie Richtung Brust/Zehen, leicht nach außen
+	_pose_legs(board, pelvis_world)
+	# Kopf: in Fahrtrichtung bzw. zum Seil
+	var look_dir := Vector3(vel.x, 0.0, vel.z)
+	if look_dir.length() < 1.0:
+		look_dir = rope_h if rope_h.length() > 0.1 else forward()
+	_rig.look_at(skel_inv * (pelvis_world + rb * Vector3.UP * 0.8 + look_dir.normalized() * 10.0))
+
+
+## Beine per IK in die Bindungen: Knie Richtung Brust/Zehen, leicht nach außen; Füße kippen mit
+## dem Brett (Duck-Stance wie die Schuhe).
+func _pose_legs(board: Transform3D, pelvis_world: Vector3) -> void:
+	var skel_inv := _rig.skeleton.global_transform.affine_inverse()
+	var skel_b := _rig.skeleton.global_transform.basis.orthonormalized()
+	var rb := _pose_frame().basis.orthonormalized()
+	var rb0 := global_transform.basis.orthonormalized()
+	var chest := rb * Vector3.RIGHT * _facing()
 	var knee_dir := chest * 1.0 + rb * Vector3.UP * 0.3
 	var sz := Wakeboard.STANCE * _facing()      # Goofy: linker Fuß hinten
-	_rig.leg("l", skel_inv * foot_front, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, -sz)))
-	_rig.leg("r", skel_inv * foot_back, skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, sz)))
-	# Füße flach in den Bindungen (Ruhe-Ausrichtung relativ zum Fahrer)
-	# Füße in den Bindungen: kippen mit dem Brett, Duck-Stance wie die Schuhe
+	_rig.leg("l", skel_inv * (board * Wakeboard.ankle_local(true)), skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, -sz)))
+	_rig.leg("r", skel_inv * (board * Wakeboard.ankle_local(false)), skel_inv * (pelvis_world + knee_dir + rb * Vector3(0, 0, sz)))
 	var bb := board.basis.orthonormalized()
 	if goofy:
 		bb = bb * Basis(Vector3.UP, PI)        # Brett steht gedreht, die Füße zeigen trotzdem zur Brust
@@ -1940,11 +1979,79 @@ func _pose_stand() -> void:
 		var fb := "foot_l" if front else "foot_r"
 		var w := board_rel * Basis(rb0 * Vector3.UP, Wakeboard.foot_yaw(front))
 		_rig.set_end_basis(fb, skel_b.inverse() * w * skel_b * _rig.rest_global(fb).basis)
-	# Kopf: in Fahrtrichtung bzw. zum Seil
-	var look_dir := Vector3(vel.x, 0.0, vel.z)
-	if look_dir.length() < 1.0:
-		look_dir = rope_h if rope_h.length() > 0.1 else forward()
-	_rig.look_at(skel_inv * (pelvis_world + rb * Vector3.UP * 0.8 + look_dir.normalized() * 10.0))
+
+
+## Pose aus Blender laden (je Bild: Knochen-Drehung gegenüber der Ruhe im Modellraum, Becken im Brettraum).
+static func _load_pose(path: String) -> Array:
+	if _pose_cache.has(path):
+		return _pose_cache[path]
+	var frames: Array = []
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f:
+		var data: Variant = JSON.parse_string(f.get_as_text())
+		if data is Dictionary:
+			for fr: Dictionary in data.get("frames", []):
+				var bones := {}
+				for b: String in fr["bones"]:
+					var q: Array = fr["bones"][b]
+					bones[b] = Basis(Quaternion(q[0], q[1], q[2], q[3]))
+				var p: Array = fr["pelvis"]
+				frames.append({"bones": bones, "pelvis": Vector3(p[0], p[1], p[2])})
+			_pose_cache[path + ":fps"] = float(data.get("fps", 24))
+	_pose_cache[path] = frames
+	return frames
+
+
+## Press: Körper in die Blender-Pose überblenden (w 0..1). Die Pose ist ein Nosepress mit dem
+## linken Fuß vorne; Tailpress bzw. Goofy werden gespiegelt (links <-> rechts, Nose <-> Tail).
+## Liefert die Hand, die die Handle hält (Welt), oder INF ohne Pose.
+var _pose_t := 0.0
+
+func _apply_press_pose(w: float, delta: float) -> Vector3:
+	var frames := _load_pose(PRESS_POSE)
+	if frames.is_empty() or w <= 0.001:
+		return Vector3.INF
+	_pose_t += delta
+	var fps: float = _pose_cache.get(PRESS_POSE + ":fps", 24.0)
+	var fr: Dictionary = frames[int(_pose_t * fps) % frames.size()]
+	var pl := _press_local()
+	var mirror := (pl < 0.0) != goofy
+	var before := _rig.snapshot()
+	var skel := _rig.skeleton
+	# Modellraum (Figur wie in der Vorlage) -> Skelettraum
+	var s_b := (_human.global_transform.affine_inverse() * skel.global_transform).basis.orthonormalized()
+	var m := Basis(Vector3(-1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1))      # Spiegel an der Ebene x = 0
+	var bones: Dictionary = fr["bones"]
+	for bone: String in POSE_BONES:
+		var src := bone
+		if mirror and bone.ends_with("_l"):
+			src = bone.trim_suffix("_l") + "_r"
+		elif mirror and bone.ends_with("_r"):
+			src = bone.trim_suffix("_r") + "_l"
+		if not bones.has(src):
+			continue
+		var d: Basis = bones[src]
+		if mirror:
+			d = m * d * m
+		var i := _rig.idx(bone)
+		var want := s_b.inverse() * d * s_b * _rig.rest_global(bone).basis
+		var parent := skel.get_bone_parent(i)
+		var pb := skel.get_bone_global_pose(parent).basis if parent >= 0 else Basis.IDENTITY
+		skel.set_bone_pose_rotation(i, (pb.inverse() * want).get_rotation_quaternion())
+	# Becken: Lage über dem Brett wie in Blender (Brettraum ohne Goofy-Drehung)
+	var bx := _board_xf
+	if goofy:
+		bx = bx * Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
+	var p: Vector3 = fr["pelvis"]
+	var pelvis_world := bx * Vector3(p.x * _facing(), p.y, p.z * (-1.0 if pl < 0.0 else 1.0))
+	var pel := _rig.idx("pelvis")
+	var pp := skel.get_bone_parent(pel)
+	var parent_t := skel.get_bone_global_pose(pp) if pp >= 0 else Transform3D.IDENTITY
+	skel.set_bone_pose_position(pel, parent_t.affine_inverse() * (skel.global_transform.affine_inverse() * pelvis_world))
+	_pose_legs(_board_xf, pelvis_world)
+	_rig.blend_from(before, 1.0 - w)
+	var hold := "hand_r" if mirror else "hand_l"
+	return skel.global_transform * skel.get_bone_global_pose(_rig.idx(hold)).origin
 
 
 ## Brett-Design wechseln (Einstellungen).
