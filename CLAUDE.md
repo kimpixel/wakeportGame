@@ -206,7 +206,7 @@ Tricks/Optik:
   Geschwommen wird **in runden Bögen** wie ein Mensch, nicht Ecke für Ecke: Zielpunkt 2,5 m voraus auf dem
   Weg (`SWIM_LOOKAHEAD`), Schwimmrichtung dreht höchstens `SWIM_TURN` 1,2 rad/s.
 - **Fangzone der Slider** (Rail, Pipe, schmale Ledge ≤ 1 m, Rail im Transition Rail): ±0,55 m seitlich,
-  0,45 m unter bis 0,8 m über der Oberkante (`FeaturePart.CATCH_*`). Im Sinkflug in der Zone startet ↑/↓ keine Rolle (`FLIP_PRESS_MAX`: kaum angefangene wird zurückgenommen) – man will pressen. Wer im Sinkflug hineinkommt, gleitet
+  0,45 m unter bis 1,3 m über der Oberkante (`FeaturePart.CATCH_*`). Im Sinkflug in der Zone startet ↑/↓ keine Rolle (`FLIP_PRESS_MAX`: kaum angefangene wird zurückgenommen) – man will pressen. Wer im Sinkflug hineinkommt, gleitet
   seitlich/nach oben auf die Slide-Linie (`Rider._catch_glide`), kein Hochspringen. Gehört zur Hilfe
   „Einloggen“. Debug: **F3** bzw. `--hitbox` blendet ein: Fangzonen **gelb**, glattes Plastik **blau**, Safety/Auffahrt und
   Kicker **orange** (fährt man wie einen Kicker).
