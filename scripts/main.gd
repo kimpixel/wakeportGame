@@ -88,6 +88,7 @@ var _terminal_arg := ""
 var _start := {}                 # "T1"/"T2" -> {pos, yaw, dock, mast_b}
 var sfx: Sfx
 var ambient: Ambient
+var film: FilmCrew                 # Filmteam der Challenges (rotes Boot oder FPV-Drohne)
 var weather: Weather
 var airplanes: Airplanes
 var _plane_arg := NAN
@@ -273,6 +274,10 @@ func _ready() -> void:
 	ambient.player = rider
 	add_child(ambient)
 	ambient.build()
+	film = FilmCrew.new()
+	film.game = self
+	add_child(film)
+	film.build()
 	# Einflugschneise Frankfurt: Jets im Landeanflug über dem See
 	airplanes = Airplanes.new()
 	airplanes.jet_sound = sfx.make_jet_loop()

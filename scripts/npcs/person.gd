@@ -9,6 +9,9 @@ extends Node3D
 ##  * "wait_stand" – wartender Fahrer mit Helm, hält sein Brett aufrecht neben sich
 ##  * "wait_sit"   – wartender Fahrer mit Helm, sitzt an der Stegkante, Beine baumeln
 ##  * "sup"        – Stand-up-Paddler auf einem Board, paddelt (Zieh-Zyklus, Seitenwechsel)
+##  * "boat_driver" – sitzt hinten im Boot, eine Hand an der Pinne (hold), die andere auf dem Knie
+##  * "filmer"     – steht im Boot, dreht sich zum Fahrer (watch), Kamera mit beiden Händen vor dem Gesicht
+##  * "pilot"      – FPV-Drohnenpilot: steht, FPV-Brille auf, Funke mit beiden Händen vor dem Bauch
 
 const WALK_SPEED := 0.9
 const STRIDE := 0.32                 # halbe Schrittlänge
@@ -18,6 +21,8 @@ var watch: Node3D                    # wen die Figur im Blick hat (der Fahrer)
 var path: Array[Vector3] = []        # operator: Wegpunkte (Welt), als Kette begehbar
 var board_design := 1
 var helmet_design := 1
+var hold: Node3D                     # boat_driver: Griff der Pinne
+var watch_offset := Vector3(0, 1.0, 0)   # Blickziel relativ zu watch
 
 var _rig: HumanRig
 var _fig: Node3D
@@ -68,6 +73,11 @@ func setup(model: String) -> bool:
 			add_child(b)
 		"sup":
 			_build_sup()
+		"filmer":
+			_build_camera()
+		"pilot":
+			_build_radio()
+			_attach_goggles()
 	return true
 
 
@@ -80,6 +90,8 @@ func _process(delta: float) -> void:
 			_move_operator(delta)
 		"sup":
 			_phase += delta * 1.6
+		"filmer", "pilot":
+			_face(_watch_dir(), delta * 2.5)
 	_rig.begin()
 	match kind:
 		"operator":
@@ -90,8 +102,15 @@ func _process(delta: float) -> void:
 			_pose_sit()
 		"sup":
 			_pose_sup()
+		"boat_driver":
+			_pose_helm()
+		"filmer":
+			_pose_filmer()
+		"pilot":
+			_pose_legs(0.0, 0.02)
+			_hold_remote()
 	if watch and kind != "sup":
-		_rig.look_at(_rig.to_skel(watch.global_position + Vector3(0, 1.0, 0)), 1.2)
+		_rig.look_at(_rig.to_skel(watch.global_position + watch_offset), 1.2)
 	elif kind == "sup":
 		_rig.look_at(_rig.to_skel(global_transform * Vector3(0, 1.4, 10)), 0.5)
 
@@ -216,6 +235,8 @@ func _watch_dir() -> Vector3:
 func _face(dir: Vector3, rate: float) -> void:
 	if dir.length() < 0.01:
 		return
+	if get_parent() is Node3D:           # z. B. im Boot: Richtung im Raum des Elternknotens
+		dir = (get_parent() as Node3D).global_basis.inverse() * dir
 	var want := atan2(dir.x, dir.z)
 	rotation.y = lerp_angle(rotation.y, want, clampf(rate, 0.0, 1.0))
 
@@ -352,3 +373,83 @@ func _pose_sup() -> void:
 	_paddle.global_transform = Transform3D(Basis(side, up, side.cross(up)).scaled(Vector3(1.0, a.distance_to(tip), 1.0)), mid)
 	var blade: Node3D = _paddle.get_node("blade")
 	blade.scale = Vector3(1.0, 1.0 / a.distance_to(tip), 1.0)
+
+
+# ---------------------------------------------------------------- Filmteam (Challenges)
+
+## Bootsfahrer: sitzt auf der Heckbank (Knotenursprung = Sitzfläche), Füße auf dem Boden davor,
+## rechte Hand an der Pinne, linke auf dem Knie.
+func _pose_helm() -> void:
+	var pelvis := Vector3(0.0, 0.11, -0.05)
+	_rig.set_pelvis(_rig.to_skel(global_transform * pelvis), Basis.IDENTITY)
+	_rig.bend_spine(Quaternion(Vector3.RIGHT, 0.12 + sin(_t * 1.1 + _seed) * 0.03))
+	for side: String in ["l", "r"]:
+		var sx := 1.0 if side == "l" else -1.0
+		var foot := Vector3(sx * 0.16, -0.22, 0.42)
+		_rig.leg(side, _rig.to_skel(global_transform * foot), _rig.to_skel(global_transform * Vector3(sx * 0.2, 0.6, 1.2)))
+	if hold:
+		_rig.arm("r", _rig.to_skel(hold.global_position + Vector3(0, 0.03, 0)), _rig.to_skel(global_transform * Vector3(-0.7, 0.5, -0.3)))
+	_rig.arm("l", _rig.to_skel(global_transform * Vector3(0.17, 0.2, 0.32)), _rig.to_skel(global_transform * Vector3(0.7, 0.6, -0.2)))
+
+
+## Kamerafrau: leicht in den Knien (Boot schaukelt), Kamera mit beiden Händen vor dem Gesicht.
+func _pose_filmer() -> void:
+	_pose_legs(0.0, 0.06)
+	_rig.bend_spine(Quaternion(Vector3.RIGHT, 0.08))
+	# rechte Hand in der Schlaufe an der Seite, linke stützt unter dem Objektiv
+	_rig.arm("r", _rig.to_skel(global_transform * (_remote.position + Vector3(-0.08, -0.01, 0.0))),
+		_rig.to_skel(global_transform * Vector3(-0.6, 1.0, -0.2)))
+	_rig.arm("l", _rig.to_skel(global_transform * (_remote.position + Vector3(0.02, -0.08, 0.12))),
+		_rig.to_skel(global_transform * Vector3(0.5, 0.9, -0.1)))
+
+
+## Videokamera (Camcorder, Objektiv nach vorne) vor dem Gesicht.
+func _build_camera() -> void:
+	_remote = Node3D.new()
+	_remote.position = Vector3(0.0, 1.47, 0.22)
+	add_child(_remote)
+	var black := Util.mat(Color(0.07, 0.07, 0.08), 0.5)
+	Util.box(_remote, Vector3(0.11, 0.1, 0.17), Vector3(0, 0, 0.02), black)
+	var lens := CylinderMesh.new()
+	lens.top_radius = 0.035
+	lens.bottom_radius = 0.04
+	lens.height = 0.09
+	var l := _mesh(_remote, lens, Vector3(0, 0.0, 0.15), black)
+	l.rotation.x = PI * 0.5
+	var g := Util.sphere(_remote, 0.03, Vector3(0, 0.0, 0.195), Util.mat(Color(0.12, 0.2, 0.35), 0.05))
+	g.scale = Vector3(1, 1, 0.3)
+	Util.box(_remote, Vector3(0.025, 0.025, 0.14), Vector3(0, 0.07, 0.02), black)   # Tragegriff
+	Util.box(_remote, Vector3(0.012, 0.012, 0.012), Vector3(0.03, 0.06, 0.1), Util.mat(Color(1, 0.1, 0.1), 0.3, true))   # Aufnahme-LED
+
+
+## Funke des Drohnenpiloten: schwarz, zwei Sticks, zwei Antennen.
+func _build_radio() -> void:
+	_remote = Node3D.new()
+	_remote.position = Vector3(0.0, 1.05, 0.28)
+	_remote.rotation.x = -0.5
+	add_child(_remote)
+	var black := Util.mat(Color(0.08, 0.08, 0.09), 0.5)
+	Util.box(_remote, Vector3(0.2, 0.05, 0.13), Vector3.ZERO, black)
+	var grey := Util.mat(Color(0.5, 0.5, 0.52), 0.4)
+	for sx: float in [-1.0, 1.0]:
+		Util.beam(_remote, Vector3(sx * 0.05, 0.025, 0.0), Vector3(sx * 0.05, 0.05, 0.0), 0.006, grey)   # Stick
+		Util.beam(_remote, Vector3(sx * 0.08, 0.02, -0.06), Vector3(sx * 0.1, 0.13, -0.1), 0.006, black)   # Antenne
+
+
+## FPV-Brille: breites schwarzes Gehäuse vor den Augen, Band um den Kopf, kleine Antenne.
+func _attach_goggles() -> void:
+	var att := BoneAttachment3D.new()
+	att.bone_name = "head"
+	_rig.skeleton.add_child(att)
+	var g := Node3D.new()
+	g.transform = Transform3D(_rig.rest_global("head").basis.orthonormalized().inverse(), Vector3.ZERO)
+	att.add_child(g)
+	var black := Util.mat(Color(0.06, 0.06, 0.07), 0.45)
+	Util.box(g, Vector3(0.17, 0.065, 0.07), Vector3(0, 0.04, 0.115), black)
+	Util.box(g, Vector3(0.012, 0.012, 0.03), Vector3(0.05, 0.08, 0.12), Util.mat(Color(0.2, 0.6, 1.0), 0.3, true))
+	var strap := CylinderMesh.new()
+	strap.top_radius = 0.093
+	strap.bottom_radius = 0.093
+	strap.height = 0.025
+	_mesh(g, strap, Vector3(0, 0.045, 0.01), black)
+	Util.beam(g, Vector3(0.07, 0.07, 0.11), Vector3(0.08, 0.14, 0.09), 0.005, black)

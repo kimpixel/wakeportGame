@@ -84,6 +84,7 @@ func begin(mode: String, idx: int) -> void:
 	game.rider.rope_length = Training.ROPE
 	game.pc.max_speed = Training.SPEED / 3.6
 	game.hud.time_title = "VERSUCH"
+	game.film.start(int(game.settings.get_v("film")))
 	await _place_and_freeze()
 	if not active:
 		get_tree().paused = false
@@ -97,6 +98,7 @@ func stop() -> void:
 	active = false
 	running = false
 	panel.close()
+	game.film.stop()
 	game.hud.show_count("")
 	game.hud.set_task("")
 	game.hud.time_title = "ZEIT"
@@ -183,6 +185,7 @@ func _place() -> void:
 	var p := c.transform * Vector3(x, 0.0, z_r)
 	r.autopilot = game.mode_auto
 	r.place(Vector3(p.x, 0.0, p.z), atan2(-travel.x, -travel.z), travel * speed)
+	game.film.snap()
 	_laps0 = c.laps
 
 

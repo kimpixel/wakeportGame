@@ -669,6 +669,7 @@ func _page_world(p: VBoxContainer) -> void:
 	p.add_child(std)
 	_opt_row(p, "FLUGZEUGE", ["Aus", "Normal", "Rush Hour"], "planes", [0, 1, 2])
 	_opt_row(p, "FAHRER AUF DER ANDEREN ANLAGE", ["An", "Aus"], "npc", [true, false])
+	_opt_row(p, "CHALLENGE: FILMTEAM", ["Zufall", "Boot", "Drohne", "Aus"], "film", [0, 1, 2, 3])
 
 
 func _page_tech(p: VBoxContainer) -> void:
