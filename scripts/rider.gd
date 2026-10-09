@@ -162,8 +162,6 @@ var _jump_block := false        # Sprungtaste startete gerade die Anlage -> zäh
 var test_pitch := 0.0           # Test: ↑/↓ in der Luft halten (auch mit Autopilot)
 var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), ↓ = -1
 var _catch_part: FeaturePart     # gleitet gerade in diese Slider-Fangzone
-var _drifting := false          # Drift läuft (Fahrtrichtung festgehalten)
-var _drift_dir := Vector3.FORWARD
 var _flip := 0.0                # Überschlag im Sprung (rad, + = Frontroll)
 var _flip_lock := false         # ↑/↓ war beim Abheben schon gedrückt (z. B. Press vom Slider) -> erst loslassen
 var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
@@ -923,24 +921,18 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var slick_part := features.part_at(pos.x, pos.z) if (features and on_feature) else null
 	var slick := slick_part != null and slick_part.is_slick_at(pos)
 	var dir_before := Vector3(vel.x, 0.0, vel.z).normalized()
-	# Driften (Strg): die Kante ist gelöst – man rutscht in der Richtung weiter, die man beim
-	# Losdriften hatte, lenken ändert sie nicht. Das Brett lässt sich frei drehen, und weil es
-	# flach aufliegt, bremst das Wasser weniger (leicht schneller).
+	# Driften (Strg): die Kante ist gelöst – keine Kante greift, also ändert Lenken die Fahrt-
+	# richtung nicht: man rutscht weiter, nur der Seilzug zieht einen (sonst würde das Seil
+	# überdehnt und die Handle aus der Hand gerissen). Das Brett lässt sich frei drehen, und weil
+	# es flach aufliegt, bremst das Wasser weniger (leicht schneller).
 	var drift := _release > 0.5 and not autopilot and attached and not on_feature and not on_dock and speed > 2.0
-	if drift and not _drifting:
-		_drift_dir = dir_before
-	_drifting = drift
 	var force := Vector3(rope.x, 0.0, rope.z) + f * f_long + r * f_lat
 	if drift:
 		var drag := (DRAG_QUAD * speed * speed + DRAG_LIN * speed) * DRIFT_DRAG
 		force = Vector3(rope.x, 0.0, rope.z) - dir_before * drag
 	vel.x += force.x / MASS * delta
 	vel.z += force.z / MASS * delta
-	if drift:
-		var along := _drift_dir * maxf(Vector3(vel.x, 0.0, vel.z).dot(_drift_dir), 0.0)
-		vel.x = along.x
-		vel.z = along.z
-	elif slick and dir_before != Vector3.ZERO:
+	if slick and not drift and dir_before != Vector3.ZERO:
 		var keep := dir_before * maxf(Vector3(vel.x, 0.0, vel.z).dot(dir_before), 0.0)
 		vel.x = keep.x
 		vel.z = keep.z

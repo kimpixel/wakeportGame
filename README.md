@@ -32,7 +32,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 |---|---|---|
 | ← / → (A / D) | linker Stick ↔ | Über die Kante lenken. In der Luft, beim Raley und auf dem Slider: drehen |
 | ↑ / ↓ (W / S) | linker Stick ↕ | In der Luft: **Frontroll / Backroll**. Halten dreht, loslassen dreht zur nächsten ganzen Umdrehung aus. Schief landen = Sturz. Auf dem Slider: **Nosepress / Tailpress** |
-| Strg (zur Not Alt) | LT | **Driften**: Kante gelöst – man rutscht in der Richtung weiter, die man beim Losdriften hatte (lenken ändert sie nicht), das Brett lässt sich dabei frei drehen; weniger Wasserwiderstand, also leicht schneller. Nach Sturz: sofort weiterfahren (−3:00) |
+| Strg (zur Not Alt) | LT | **Driften**: Kante gelöst – man rutscht weiter, Lenken ändert die Richtung nicht (nur der Seilzug zieht einen), das Brett lässt sich dabei frei drehen; weniger Wasserwiderstand, also leicht schneller. Nach Sturz: sofort weiterfahren (−3:00) |
 | Leertaste halten + loslassen | A | Absprung: langsam ein **Ollie**, über 40 km/h, voll aufgeladen und ohne Feature voraus automatisch ein **Raley** |
 | Leertaste | Start | Anlage starten (die Taste löst dabei keinen Sprung aus) |
 | R | Back | zurück zum Startsteg (kostet 5:00 Spielzeit) |
