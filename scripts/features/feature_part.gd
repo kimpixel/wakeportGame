@@ -143,7 +143,7 @@ func _show_slick(on: bool) -> void:
 		return
 	if slick != "":
 		_slick_mesh = _paint_surface(func(w: Vector3) -> bool: return is_slick_at(w), Color(0.05, 0.35, 1.0, 0.7))
-	if type == "ramp" or ramp_in > 0.0 or ramp_out > 0.0:
+	if type == "ramp" or type == "bump" or ramp_in > 0.0 or ramp_out > 0.0:
 		_ramp_mesh = _paint_surface(func(w: Vector3) -> bool: return type == "ramp" or on_ramp(w), Color(1.0, 0.45, 0.05, 0.75))
 
 
@@ -240,6 +240,8 @@ func is_slick_at(world: Vector3) -> bool:
 	match slick:
 		"all":
 			return true
+		"top":
+			return _on_bump_top(world)
 		"transition":
 			var w := -(_inv * world).x * inner_v               # > 0 Richtung Rail
 			return absf(w - (width * 0.5 - TR_FLAT * 0.5)) > TR_FLAT * 0.5 + TR_RAIL_R
@@ -249,9 +251,18 @@ func is_slick_at(world: Vector3) -> bool:
 ## Steht man auf einer Safety bzw. Auffahrt (kurze Schräge vorne/hinten)? Die fährt man wie
 ## einen Kicker: kein Slide, kein glattes Plastik, kein Einloggen.
 func on_ramp(world: Vector3) -> bool:
+	if type == "bump":
+		return not _on_bump_top(world)   # Bump: alle Seiten sind Kicker, nur oben flach
 	var u := -(_inv * world).z
 	var hl := length * 0.5
 	return (ramp_in > 0.0 and u < -hl + ramp_in) or (ramp_out > 0.0 and u > hl - ramp_out)
+
+
+## Bump: liegt world auf der flachen Spitze (Breite top)?
+func _on_bump_top(world: Vector3) -> bool:
+	var l := _inv * world
+	var r := top * 0.5 + 0.01
+	return absf(l.z) <= r and absf(l.x) <= r
 
 
 ## Einloggen beim Slide: Längsachse des Teils (Welt, waagerecht).

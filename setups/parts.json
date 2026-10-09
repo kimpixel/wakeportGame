@@ -42,5 +42,5 @@
 
   "ball":            { "name": "Ball",              "article": "den", "type": "ball", "radius": 0.5, "center_y": 0.35 },
 
-  "bump":            { "name": "Bump", "article": "den",              "type": "bump",  "length": 3.0,  "width": 3.0, "height": 0.6, "top": 1.0 }
+  "bump":            { "name": "Bump", "article": "den",              "type": "bump",  "length": 3.0,  "width": 3.0, "height": 0.6, "top": 1.0, "slick": "top" }
 }
