@@ -11,7 +11,7 @@ extends RefCounted
 ##   setup    Setup-Datei (Terminal 2)
 ##   start    {s, x, dir}: s = Abstand vom Startmast wie in den Setup-Dateien (ohne Verschiebung),
 ##            dir +1 = Richtung Endmast, -1 = Richtung Startsteg. Wende: {turn: "a"|"b", before, x}
-##   metric   Messwert: sink, height, dist, dist_5050, dist_bs, switches, press, count, spin, points
+##   metric   Messwert: sink, height, dist, dist_5050, dist_bs, switches, press, time (s auf dem Slider), count, spin, points
 ##   medals   Schwellen [Bronze, Silber, Gold]; lower = true: kleiner ist besser
 ##   target   kick/slide: {s0, s1, side} – Features mit Mitte in diesem Bereich (Setup-Koordinaten),
 ##            side +1/-1 = rechte/linke Seite
@@ -187,8 +187,8 @@ const MODES := [
 		 "start": {"s": 150.0, "x": 4.05, "dir": -1}, "end_s": 95.0,
 		 "via": {"name": "Transition Curb"}, "target": {"name": "Down Ledge"},
 		 "via_fail": "Erst auf die Transition Curb, dann auf die Down Ledge springen",
-		 "metric": "dist", "medals": [2.0, 5.0, 9.0],
-		 "goal": "Terminal 2, Setup D: mit einem Ollie auf die Transition Curb, darauf hoch und dann auf die Down Ledge daneben springen. Wie du slidest, ist egal. Gemessen: Meter auf der Ledge.",
+		 "metric": "time", "medals": [0.3, 0.6, 0.9],
+		 "goal": "Terminal 2, Setup D: mit einem Ollie auf die Transition Curb, darauf hoch und dann auf die Down Ledge daneben springen. Wie du slidest, ist egal. Gemessen: Sekunden auf der Ledge.",
 		 "keys": "Leertaste: Ollie auf die Curb, auf der Curb nochmal abspringen, in der Luft ← / →",
 		 "keys_mobile": "SPRUNG: Ollie auf die Curb, auf der Curb nochmal abspringen, in der Luft neigen",
 		 "tip": "Auf der Curb ist glattes Plastik – lenken geht nicht. Schon vor dem Ollie auf die richtige Linie gehen."},
@@ -237,7 +237,7 @@ static func format_value(task: Dictionary, value: float) -> String:
 			return "%d %% eingesunken" % roundi(value * 100.0)
 		"height", "dist", "dist_5050", "dist_bs":
 			return ("%.1f m" % value).replace(".", ",")
-		"press":
+		"press", "time":
 			return ("%.1f s" % value).replace(".", ",")
 		"switches":
 			return "%d Wechsel" % roundi(value)
