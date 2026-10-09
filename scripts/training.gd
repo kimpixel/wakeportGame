@@ -197,7 +197,7 @@ const MODES := [
 		 "start": {"s": 150.0, "x": 4.05, "dir": -1}, "end_s": 95.0,
 		 "via": {"name": "Transition Curb"}, "target": {"name": "Down Ledge"},
 		 "via_fail": "Erst auf die Transition Curb, dann auf die Down Ledge springen",
-		 "metric": "press", "medals": [0.5, 1.5, 2.5],
+		 "metric": "press", "medals": [0.3, 0.6, 0.9],
 		 "goal": "Wie Transfer special, aber auf der Down Ledge einen Nosepress halten. Gemessen: Sekunden im Press.",
 		 "keys": "Auf der Ledge ↑ halten (Nosepress)",
 		 "keys_mobile": "Auf der Ledge ▲ halten (Nosepress)",
