@@ -93,6 +93,7 @@ const RALEY_POINTS := 150
 # ↑/↓ in der Luft: Frontroll/Backroll um die Brettlängsachse; auf dem Slider: Nose-/Tailpress
 const FLIP_RATE := 6.5          # rad/s Überschlag
 const FLIP_LAND_TOL := 0.7      # rad: so schief darf man nach einem Überschlag landen
+const FLIP_PRESS_MAX := 1.2    # rad: so weit angefangene Rolle wird über einem Slider noch zum Press (zurückgenommen)
 const FLIP_POINTS := 300
 const PRESS_ANG := 0.45         # rad: Brett beim Press gekippt (Fotos: ca. 25°, anderes Ende deutlich in der Luft)
 ## Körperhaltung beim Press kommt aus Blender (blender/nosepress.blend -> tools/export_pose.py)
@@ -1312,6 +1313,11 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	# Drehung zur nächsten ganzen Umdrehung aus (bzw. zurück, wenn kaum angefangen).
 	if _flip_lock and absf(_pitch_in) <= 0.1:
 		_flip_lock = false
+	# Im Sinkflug knapp über einem Slider (Fangzone) heißt ↑/↓ „gleich pressen“, nicht Überschlag:
+	# eine kaum angefangene Rolle wird zurückgenommen, bis zum Loslassen gibt es keine
+	if absf(_pitch_in) > 0.1 and not _flip_lock and absf(_flip) < FLIP_PRESS_MAX and vel.y < 0.5 \
+			and features and not features.catch_at(pos).is_empty():
+		_flip_lock = true
 	if absf(_pitch_in) > 0.1 and not _flip_lock:
 		_flip += _pitch_in * FLIP_RATE * delta
 	elif assist_flip:

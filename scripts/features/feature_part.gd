@@ -98,7 +98,7 @@ func is_slide() -> bool:
 # hineinfällt, gleitet aufs Rail statt daneben zu landen oder dagegen zu fliegen.
 const CATCH_SIDE := 0.55         # m seitlich neben der Rail-Achse
 const CATCH_DOWN := 0.45         # m unter der Oberkante (an den Seiten nach unten)
-const CATCH_UP := 0.4            # m über der Oberkante
+const CATCH_UP := 0.8            # m über der Oberkante (hoch: wer darüber ↑/↓ drückt, presst statt zu rollen)
 const CATCH_MIN_TOP := 0.15      # an den Enden (Auffahrt im Wasser) wird nicht gefangen
 
 
