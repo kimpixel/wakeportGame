@@ -65,6 +65,7 @@ const GRIP_LIN := 180.0
 const TURN_RATE := 1.7
 const SPIN_RATE := 7.5
 const AIR_ASSIST := 5.0         # Brett dreht in der Luft langsam zur Flugrichtung
+const AIR_ASSIST_SLIDER := 8.0  # m: liegt ein Slider so weit voraus auf dem Flugweg, dreht nichts zurück
 const POP_BASE := 2.2
 const SLIDE_FRICTION := 0.1     # Reibung Brett auf Feature-Oberfläche
 # Punkte: Slides sind mehr wert als Drehungen, Kombinationen am meisten
@@ -1307,7 +1308,9 @@ func _step_air(delta: float, rope: Vector3) -> void:
 		yaw -= _steer * SPIN_RATE * delta
 	else:
 		var vh := Vector3(vel.x, 0.0, vel.z)
-		if vh.length() > 1.0:
+		# Brett dreht zur Flugrichtung zurück – aber nicht, wenn man auf einen Slider zufliegt: dort
+		# soll eine Vierteldrehung (Boardslide) stehen bleiben, das Einrasten macht die Landung
+		if vh.length() > 1.0 and (autopilot or not (features and features.slider_ahead(pos, vh, AIR_ASSIST_SLIDER))):
 			yaw = rotate_toward(yaw, _aligned_yaw(atan2(-vh.x, -vh.z)), AIR_ASSIST * delta)
 	_spin_accum += wrapf(yaw - old_yaw, -PI, PI)
 	# ↑/↓: Frontroll/Backroll (Überschlag um die Brettlängsachse). Losgelassen läuft die

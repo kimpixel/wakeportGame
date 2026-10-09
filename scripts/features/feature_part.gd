@@ -112,6 +112,16 @@ func catch_v() -> float:
 	return -inner_v * (width * 0.5 - TR_FLAT * 0.5) if type == "transition" else 0.0
 
 
+## Liegt world (nur x/z) über dem Slider oder knapp daneben (margin m)? Höhe egal.
+func over_slider(world: Vector3, margin: float) -> bool:
+	if not is_slide():
+		return false
+	var l := _inv * world
+	if absf(l.z) > length * 0.5 + margin:
+		return false
+	return absf(l.x - catch_v()) <= maxf(width * 0.5, CATCH_SIDE) + margin
+
+
 ## Liegt world in der Fangzone? Dann Zielpunkt auf der Slide-Linie (Welt, auf der Oberkante),
 ## sonst Vector3.INF.
 func catch_target(world: Vector3) -> Vector3:
