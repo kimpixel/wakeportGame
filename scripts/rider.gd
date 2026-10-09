@@ -193,6 +193,7 @@ var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom K
 var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Oberkörper vor)
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
 var _press_bs_vis := 0.0        # 1 = Press im Boardslide (Brett seitlich versetzt, Ende über dem Slider)
+var press_tip := Vector3.ZERO   # Welt: gedrücktes Brett-Ende beim Press (darauf zielt die Kamera)
 var _press_nose_t := 0.0
 var _press_tail_t := 0.0
 var _release := 0.0
@@ -1852,6 +1853,7 @@ func _board_stand_xf() -> Transform3D:
 		var b := Basis(Vector3.RIGHT, -PRESS_ANG * pl)
 		# Boardslide: Fahrer und Brett rücken zur Seite, bis Nose bzw. Tail über dem Slider liegt
 		var shift := -pv * _press_bs_vis * minf(absf(pl), 1.0)
+		press_tip = xf * (pv + shift)          # Brett-Ende, mit dem geslidet wird (Kamera)
 		xf *= Transform3D(b, pv - b * pv + shift)
 	if goofy:
 		# Goofy: rechter Fuß vorne – das Twin-Tip-Brett steht einfach andersherum unter dem Fahrer
@@ -2075,7 +2077,10 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	skel.set_bone_pose_position(pel, parent_t.affine_inverse() * (skel.global_transform.affine_inverse() * pelvis_world))
 	_pose_legs(_board_xf, pelvis_world)
 	_rig.blend_from(before, 1.0 - w)
+	# Handle: im Nosepress in der vorderen Hand der Pose; im 50-50-Tailpress ebenfalls in der vorderen Hand
 	var hold := "hand_r" if mirror else "hand_l"
+	if pl < 0.0 and _press_bs_vis < 0.5:
+		hold = "hand_r" if goofy else "hand_l"
 	return skel.global_transform * skel.get_bone_global_pose(_rig.idx(hold)).origin
 
 

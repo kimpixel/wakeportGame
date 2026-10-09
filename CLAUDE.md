@@ -195,7 +195,8 @@ Tricks/Optik:
   Noch nicht im Spiel verwendet – bisher nur nosepress.json (gespiegelt für Tailpress). Im Spiel kippt das Brett um Nose/Tail,
   beim Boardslide-Press rücken Fahrer und Brett seitlich, bis Nose bzw. Tail über dem Slider liegt (`_press_bs_vis`;
   Vorlagen: Rail quer unter Nose bzw. Tail, 22 cm vor der Spitze).
-- **Kamera** (Verfolger): auf dem Slider 70 % Abstand, beim Press 50 % und von der Brustseite; danach weich zurück.
+- **Kamera** (Verfolger): auf dem Slider 70 % Abstand, beim Press 50 % und von der Brustseite, Blick auf das gedrückte Brett-Ende (`Rider.press_tip`); danach weich zurück.
+- Handle beim Press immer in der vorderen Hand (auch 50-50-Tailpress, obwohl die Pose gespiegelt ist).
 - Nach Sturz/Absaufen/Neustart wird Raley/Überschlag/Press sofort zurückgesetzt.
 - Features haben **Kollisionskörper** aus ihrer Form (`FeaturePart._build_collider`, Ebene `LAYER_COLLIDE`):
   die Ragdoll prallt ab bzw. bleibt darauf liegen. Fahrphysik nutzt weiter `height_local()`.
