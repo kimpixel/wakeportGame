@@ -7,8 +7,11 @@ Schön, dass du mitmachst! Hier steht, wie du das Projekt einrichtest und wie Ä
 1. Du bekommst eine Einladung als **Collaborator** (Schreibrechte, kein Fork nötig).
 2. Du arbeitest immer auf einem **eigenen Branch**, nie direkt auf `main`.
 3. Fertige Änderung → **Pull Request** auf `main`.
-4. Kim schaut den PR an und gibt ihn frei (Review). Erst danach kann gemergt werden.
-5. Jeder Merge auf `main` baut automatisch die Web-Version und stellt sie nach ca. 1 Minute live:
+4. Für jeden PR wird automatisch eine **spielbare Web-Vorschau** gebaut (ca. 1–2 Minuten). Der Link kommt als
+   Kommentar in den PR: `https://kimpixel.github.io/wakeportGame/pr-preview/pr-<Nummer>/`.
+   Jeder weitere Push auf den Branch aktualisiert die Vorschau, beim Schließen des PRs wird sie gelöscht.
+5. Kim testet die Vorschau im Browser und gibt den PR frei (Review). Erst danach kann gemergt werden.
+6. Jeder Merge auf `main` baut automatisch die Hauptversion und stellt sie live:
    https://kimpixel.github.io/wakeportGame/
 
 `main` ist geschützt: direkte Pushes gehen nicht, jeder PR braucht die Freigabe von Kim (`.github/CODEOWNERS`).
@@ -46,7 +49,7 @@ git push -u origin mein-thema
 Dann auf GitHub „Compare & pull request“ klicken (oder `gh pr create`).
 
 - **Ein Thema pro PR**, lieber klein als riesig.
-- Im PR beschreiben: was, warum, wie getestet. Bei Optik/Animation **Screenshots** anhängen.
+- Die Vorschau muss bauen und spielbar sein – das ist der Test. Schlägt der Build fehl, steht im PR ein rotes ✗.
 - Wenn `main` inzwischen weiter ist: `git pull origin main` in deinen Branch und Konflikte lösen.
 - Wenn Kim Änderungen wünscht: einfach weitere Commits auf denselben Branch pushen, der PR aktualisiert sich.
 - Vorher kurz absprechen, wer woran arbeitet. Vor allem `scripts/rider.gd` und `scripts/main.gd` sind groß –
