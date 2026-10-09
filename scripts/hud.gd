@@ -9,7 +9,7 @@ Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das
 Leertaste halten + loslassen   Absprung (langsam: Ollie, über 40 km/h, voll aufgeladen und ohne Feature voraus: Raley)
 Leertaste  Start (Runde 7:30)     R  zurück zum Steg (−5:00)     + / -  Anlagentempo
 Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−3:00)     R = Steg (−5:00)
-C  Kamera     Maus: umsehen (Klick fängt Maus, Esc gibt frei), Rad: Zoom
+C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause
 P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus     H  Hilfe ein/aus     F3  Hitboxen (Debug)
 Tab  Startseite (Terminal, Feature-Setup, Einstellungen)"""
 

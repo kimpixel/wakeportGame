@@ -42,6 +42,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | Tab | – | zurück zur Startseite (mit ihr beginnt das Spiel). Im Hintergrund die echte Szene, die Kamera schwenkt langsam von der Seeseite über die gewählte Anlage. Darüber das Menü: Terminal, Feature-Setup, **Einstellungen** (Wetter, Datum, Uhrzeit, Jetzt) und **Spiel starten**. Tasten: Leertaste Start, Esc schließt ein Fenster. Passt sich an Handy (hoch und quer) und Desktop an |
 | Maus / Mausrad | rechter Stick | Umsehen / Zoom |
 | P | – | Autopilot (fährt auch Features) |
+| Esc | Start | **Pause** (Fenster mit Weiter, Hilfe, Startseite); am Handy pausiert das ☰-Menü |
 | M | – | Ton aus/an |
 | G | – | Seil-Abreißen an/aus (bei „Aus“ wird einem die Handle nie aus der Hand gerissen; auch unter Einstellungen → Spiel → Seilzug-Grenze) |
 | F3 | – | Debug: Fangzonen der Slider einblenden (gelb; wer im Sprung hineinkommt, gleitet aufs Rail) glattes Plastik (blau; nur rutschen, kein Slide, kein Lenken) und Safetys/Auffahrten und Kicker (orange; fährt man wie einen Kicker, kein Slide) |

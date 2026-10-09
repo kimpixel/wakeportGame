@@ -9,6 +9,7 @@ extends CanvasLayer
 ## springen bzw. starten wie bisher. Stil wie die HUD-Leiste.
 
 signal menu_action(id: String)
+signal menu_toggled(open: bool)
 
 const SIZE := 118.0          # Durchmesser der runden Tasten (bei Maßstab 1)
 
@@ -163,13 +164,19 @@ func button_at(pos: Vector2) -> PadButton:
 func trigger(id: String) -> void:
 	match id:
 		"menu":
-			_menu.visible = true
+			_set_menu(true)
 		"close":
-			_menu.visible = false
+			_set_menu(false)
 		_:
-			_menu.visible = false
+			_set_menu(false)
 			menu_action.emit(id)
 
 
 func close_menu() -> void:
-	_menu.visible = false
+	_set_menu(false)
+
+
+## Menü auf/zu – solange es offen ist, ist das Spiel pausiert.
+func _set_menu(on: bool) -> void:
+	_menu.visible = on
+	menu_toggled.emit(on)

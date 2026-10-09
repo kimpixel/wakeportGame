@@ -23,6 +23,7 @@ extends Node3D
 ##   --plane=S         Test: sofort ein Jet im Anflug, S m vor dem See (negativ) bzw. danach
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
+##   --pause-at=SEK    Test: zu dieser Zeit pausieren (mit --shot: Bild der Pause)
 ##   --hitbox          Fangzonen der Slider zeigen (im Spiel: F3)
 ##   --set=NAME=WERT   Test: Einstellung setzen (ohne zu speichern), z. B. --set=goofy=true
 
@@ -46,6 +47,7 @@ var rider: Rider
 var cam: ChaseCamera
 var hud: Hud
 var mobile: MobileInput
+var pause_menu: PauseMenu
 var touch_pad: TouchPad         # nur am Handy
 var _setups: Array = []          # aus setups/index.json
 var _setup_idx := 0
@@ -111,6 +113,7 @@ var _view_arg := PackedFloat32Array()
 var _lane_arg := NAN
 var _crash_at := -1.0          # Test: Sturz zu dieser Zeit auslösen
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
+var _pause_at := -1.0           # Test: zu dieser Zeit pausieren (und Screenshot)
 var _hitbox_arg := false        # Test: Fangzonen der Slider zeigen
 var _set_args: Array[String] = []   # Test: --set=NAME=WERT
 var _jump_at := -1.0           # Test: zu dieser Zeit abspringen
@@ -237,9 +240,12 @@ func _ready() -> void:
 		mobile.touch_up.connect(_on_touch_up)
 		# virtuelle Tasten ▲ ▼ DRIFT und Menü ☰
 		touch_pad = TouchPad.new()
+		touch_pad.process_mode = Node.PROCESS_MODE_ALWAYS     # Menü bedienbar, auch während der Pause
+		mobile.process_mode = Node.PROCESS_MODE_ALWAYS
 		add_child(touch_pad)
 		mobile.pad = touch_pad
 		touch_pad.menu_action.connect(_on_pad_menu)
+		touch_pad.menu_toggled.connect(func(open: bool) -> void: get_tree().paused = open)
 	sfx = Sfx.new()
 	sfx.rider = rider
 	sfx.people = beach.people
@@ -266,6 +272,12 @@ func _ready() -> void:
 		settings.load_file(mobile.active)     # Tests laufen immer mit Standardwerten
 	_apply_terminal(_initial_terminal())
 	_build_start_screen()
+	# Pause (Esc): Spiel anhalten, Fenster mit Weiter / Hilfe / Startseite
+	pause_menu = PauseMenu.new()
+	pause_menu.can_pause = func() -> bool: return not start_screen.visible and hud.visible
+	pause_menu.help_pressed.connect(hud.toggle_help)
+	pause_menu.home_pressed.connect(_open_start_screen)
+	add_child(pause_menu)
 	_msaa_default = get_viewport().msaa_3d
 	settings.changed.connect(_apply_setting)
 	if _hitbox_arg:
@@ -361,6 +373,7 @@ func _on_setups_changed(id: String, play: bool) -> void:
 var _autopilot_before := false
 
 func _open_start_screen() -> void:
+	get_tree().paused = false
 	_session = false
 	_finishing = false
 	_reset()
@@ -852,6 +865,11 @@ func _process(_delta: float) -> void:
 		else:
 			hud.set_center("")
 
+	if _pause_at > 0.0 and _elapsed >= _pause_at:
+		_pause_at = -1.0
+		pause_menu.set_paused(true)
+		if _shot_path != "":
+			_take_shot()
 	if _shot_path != "" and not _shot_taken and _elapsed >= _shot_time:
 		_take_shot()
 
@@ -1008,6 +1026,8 @@ func _parse_args() -> void:
 			_shot_time = arg.substr(12).to_float()
 		elif arg.begins_with("--pitch="):
 			_test_pitch = arg.substr(8).to_float()
+		elif arg.begins_with("--pause-at="):
+			_pause_at = arg.substr(11).to_float()
 		elif arg == "--hitbox":
 			_hitbox_arg = true
 		elif arg.begins_with("--set="):

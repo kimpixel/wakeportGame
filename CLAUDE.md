@@ -150,6 +150,8 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
 - Strg (zur Not Alt): **Driften** – keine Kante greift: Lenken ändert die Fahrtrichtung nicht, nur der
   Seilzug zieht einen (nicht festnageln, sonst reißt das Seil), ←/→ drehen nur das Brett, Wasserwiderstand × `DRIFT_DRAG` 0.7 (leicht schneller). Nur Spieler,
   Autopilot/NPC driften wie früher. „Maximaler Grip“ gibt es nicht mehr.
+- **Esc = Pause** (`scripts/ui/pause_menu.gd`, SceneTree.paused; Fenster Weiter/Hilfe/Startseite). Am Handy
+  pausiert das offene ☰-Menü (TouchPad/MobileInput laufen mit PROCESS_MODE_ALWAYS). Test `--pause-at=S`.
 - R, + / −, C, P, H, M, Tab (Startseite) wie in der README. **Keine Tasten T/F** mehr (Terminal/Setup nur auf der Startseite).
 
 Steuerung Handy: Neigen = lenken, Tippen = Start, **Springen nur mit der SPRUNG-Taste (links)**,
