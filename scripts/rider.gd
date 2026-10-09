@@ -21,6 +21,8 @@ signal skipped                   # Abkürzung (Leertaste): Handle sofort da – 
 ## der Operator bringt die Handle auf die Höhe des Fahrers, der schwimmt hin und greift sie.
 const SINK_SPEED := 1.0          # so langsam ohne Seil -> man sinkt ins Wasser
 const SETTLE_TIME := 1.5         # so lange nach dem Sturz treibt man, bevor man schwimmen kann
+const SWIM_LOOKAHEAD := 2.5      # m: so weit voraus auf dem Weg peilt der Schwimmer an (runde Bögen)
+const SWIM_TURN := 1.2           # rad/s: so schnell dreht die Schwimmrichtung
 const SWIM_MARGIN := 2.0         # m Abstand beim Schwimmen um Features herum
 const SWIM_SPEED := 1.1          # Rückenschwimmen mit Brett an den Füßen (m/s)
 const GRAB_DIST := 1.0
@@ -143,6 +145,7 @@ var score := 0
 var crash_reason := ""
 var _swim_path: Array[Vector2] = []   # Wegpunkte zur Handle (um Features herum)
 var _replan_t := 0.0
+var _swim_heading := Vector2.ZERO    # aktuelle Schwimmrichtung (dreht allmählich)
 var swimming := false            # schwimmt gerade zur Handle
 var _crash_t := 0.0
 var _getup := 1.0                # Deep-Water-Start: 0 = liegt im Wasser, 1 = steht
@@ -668,21 +671,48 @@ func _swim(delta: float) -> void:
 	if _replan_t <= 0.0 or _swim_path.is_empty():
 		_swim_path = _plan_swim()
 		_replan_t = 0.4
-	while _swim_path.size() > 1 and Vector2(pos.x, pos.z).distance_to(_swim_path[0]) < 0.5:
+	var here := Vector2(pos.x, pos.z)
+	while _swim_path.size() > 1 and here.distance_to(_swim_path[0]) < SWIM_LOOKAHEAD * 0.6:
 		_swim_path.pop_front()
-	var wp: Vector2 = _swim_path[0] if not _swim_path.is_empty() else Vector2(_free_handle.x, _free_handle.z)
-	var to := Vector3(wp.x - pos.x, 0.0, wp.y - pos.z)
-	var d := to.length()
+	# Wie ein Mensch: nicht Ecke für Ecke anschwimmen, sondern einen Punkt ein Stück voraus auf
+	# dem Weg anpeilen und die Schwimmrichtung nur allmählich drehen -> runde Bögen um Features
+	var goal := Vector2(_free_handle.x, _free_handle.z)
+	var carrot := _swim_carrot(here, goal)
+	var to2 := carrot - here
+	var d := here.distance_to(goal) if _swim_path.size() <= 1 else to2.length()
+	var want_dir := to2.normalized() if to2.length() > 0.01 else _swim_heading
+	if _swim_heading == Vector2.ZERO:
+		_swim_heading = want_dir
+	else:
+		var ang := _swim_heading.angle_to(want_dir)
+		_swim_heading = _swim_heading.rotated(clampf(ang, -SWIM_TURN * delta, SWIM_TURN * delta)).normalized()
 	if d > 0.3:
-		yaw = lerp_angle(yaw, atan2(-to.x, -to.z), clampf(delta * 2.0, 0.0, 1.0))
+		yaw = lerp_angle(yaw, atan2(-_swim_heading.x, -_swim_heading.y), clampf(delta * 2.0, 0.0, 1.0))
 	# Leertaste halten (Handy: Bildschirm halten) = schwimmen, ↑ geht auch
 	var want := autopilot or Input.is_action_pressed("jump") or Input.is_action_pressed("swim") 		or Input.is_action_pressed("pitch_front")
 	if not want or d < 0.3:
 		return
 	swimming = true
-	var sv := to / d * SWIM_SPEED
+	var sv := _swim_heading * SWIM_SPEED
 	vel.x = sv.x
-	vel.z = sv.z
+	vel.z = sv.y
+
+
+## Punkt SWIM_LOOKAHEAD Meter voraus auf dem geplanten Weg (bzw. das Ziel, wenn näher).
+func _swim_carrot(from: Vector2, goal: Vector2) -> Vector2:
+	var rest := SWIM_LOOKAHEAD
+	var p := from
+	var pts: Array[Vector2] = _swim_path.duplicate()
+	if pts.is_empty():
+		pts.append(goal)
+	for q in pts:
+		var seg := q - p
+		var l := seg.length()
+		if l >= rest:
+			return p + seg / l * rest
+		rest -= l
+		p = q
+	return p
 
 
 ## Handle gegriffen: im Wasser sitzend (Deep-Water-Start) wieder ans Seil.
@@ -693,6 +723,7 @@ func _grab() -> void:
 	attached = true
 	swimming = false
 	_swim_path.clear()
+	_swim_heading = Vector2.ZERO
 	crash_reason = ""
 	block_jump()                  # die zum Schwimmen gehaltene Leertaste ist kein Sprung
 	vel = Vector3.ZERO
@@ -1303,6 +1334,7 @@ func crash(reason: String) -> void:
 	_crash_t = 0.0
 	_combo = 0
 	_swim_path.clear()
+	_swim_heading = Vector2.ZERO
 	_replan_t = 0.0
 	if attached:
 		_free_handle = pos + Vector3(0.0, HANDLE_HEIGHT, 0.0)
