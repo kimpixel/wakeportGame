@@ -120,7 +120,8 @@ Wendepunkt. Ufer-Wende T2 bei 28 m vom Startmast (`cable.turn_a_z` in main.gd).
 ## Festgelegte Regeln und Entscheidungen
 
 Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/ui/task_panel.gd` Fenster):
-- **Competition** = die Runde auf Zeit (alles unter „Spiel“). Daneben Training: **Wenden, Kicker, Slider, Raley**, je
+- **Competition** = die Runde auf Zeit (alles unter „Spiel“). Daneben die **Community Challenge** (im Spiel kurz „Challenge“,
+  nie „Training“/„Aufgabe“ schreiben; im Code heißen sie weiter Training/Task): **Wenden, Kicker, Slider, Raley**, je
   mehrere Aufgaben (leicht → schwer), jede misst einen Wert → **Bronze/Silber/Gold** (Schwellen in `Training.MODES`,
   vom Nutzer fein justiert). Bestwerte in user://settings.cfg [medaillen]; **Tests speichern nichts**.
 - Modi: Wenden, Kicker, Slider, Raley, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
@@ -134,6 +135,10 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
 - **Jeder Start mit Countdown 3 – 2 – 1 – GO** (`Challenge.countdown`), dazu Ansage **englisch** „three, two, one, go“
   (`assets/sounds/countdown/`, Windows-Stimme Zira, Stille abgeschnitten; `Sfx.say_count`, spielt auch in der Pause): Competition fährt bei GO los (Szene läuft; auch nach R/☰ zurück zum Steg),
   Aufgaben stehen bis GO (SceneTree.paused).
+- **Slider Special** und **Ollie in Boardslide Nosepress** (`kind: "special"`, `combo` je Slider; metric count = geschaffte Slider,
+  sonst bester Messwert einer geschafften Station, z. B. Meter; fertig, sobald alle Stationen gewertet sind): Stationen = Slider-Gruppen (Full Pipe = 2 Teile) nach s; je
+  Station Ollie on (Slide beginnt < 0,2 s nach Landung, nicht über die Auffahrt), Drehung on/out (halbe Drehungen), Stellung
+  überwiegend, Press > halbe Slide-Zeit; Abgang wird gewertet, wenn das Brett wieder im Wasser ist. Test-Ausgabe `SPECIAL …`.
 - Test: `--mode=kicker:2 --go=0.5` (Fenster bestätigen), `--mode-auto` (Autopilot fährt), `--lane=X` (Spur halten),
   `--jump-at=S`. Ausgabe `CHALLENGE …: Wert Medaille N`. Kalibrierung: Autopilot schafft Wenden mit Silber,
   Kicker M ohne Absprung 1,6 m, mit Absprung bis 3,0 m (L 3,8 m), Full Pipe 13 m.
@@ -188,13 +193,15 @@ Tricks/Optik:
 - **Frontroll eingerollt** (Knie zur Brust), **Backroll gestreckt**.
 - **Press-Pose aus Blender** (Nutzer posiert selbst): `blender/*.blend` (Godot ignoriert den Ordner) -> `tools/export_pose.py` (Nutzer: `.	oolsexport_poses.ps1` in PowerShell, exportiert alle)
   (Blender 5.2 im Hintergrund, IK ausgewertet) -> `assets/poses/nosepress.json`. Übernommen: Becken (Lage im Brettraum),
-  Rücken, Kopf, Arme; Füße per IK in den Bindungen, Hände Faust, Handle in der vorderen Hand. Tailpress/Goofy gespiegelt,
+  Rücken, Kopf, Arme; Füße per IK in den Bindungen, Hände Faust, Handle in der vorderen Hand. 50-50-Tailpress: eigene Pose `tailpress.json` (aus `blender/tailpress.blend`), Boardslide-Tailpress/Goofy gespiegelt,
   Press relativ zur Fahrtrichtung (switch). Animierter Root läuft in Schleife. Vorlage: `blender/nosepress_vorlage.glb`.
   Weitere Vorlagen (aus nosepress.blend abgeleitet, Foto als `Referenz_Foto` eingepackt, Pfeil `Fahrtrichtung`, Nutzer posiert nach):
   `tailpress` (50-50), `bs_vorwaerts_/bs_rueckwaerts_` + `nosepress`/`tailpress` (Boardslide; vorwärts = Brust in Fahrtrichtung).
   Noch nicht im Spiel verwendet – bisher nur nosepress.json (gespiegelt für Tailpress). Im Spiel kippt das Brett um Nose/Tail,
-  beim Boardslide müsste es später um das Rail kippen (Vorlagen: Rail quer direkt unter Nose bzw. Tail, 22 cm vor der Spitze).
-- **Kamera** (Verfolger): auf dem Slider 70 % Abstand, beim Press 50 % und von der Brustseite; danach weich zurück.
+  beim Boardslide-Press rücken Fahrer und Brett seitlich, bis Nose bzw. Tail über dem Slider liegt (`_press_bs_vis`;
+  Vorlagen: Rail quer unter Nose bzw. Tail, 22 cm vor der Spitze).
+- **Kamera** (Verfolger): auf dem Slider 70 % Abstand, beim Press 50 % und von der Brustseite, Blick auf das gedrückte Brett-Ende (`Rider.press_tip`); danach weich zurück.
+- Handle beim Press immer in der vorderen Hand (auch 50-50-Tailpress, obwohl die Pose gespiegelt ist).
 - Nach Sturz/Absaufen/Neustart wird Raley/Überschlag/Press sofort zurückgesetzt.
 - Features haben **Kollisionskörper** aus ihrer Form (`FeaturePart._build_collider`, Ebene `LAYER_COLLIDE`):
   die Ragdoll prallt ab bzw. bleibt darauf liegen. Fahrphysik nutzt weiter `height_local()`.
@@ -204,7 +211,7 @@ Tricks/Optik:
   Geschwommen wird **in runden Bögen** wie ein Mensch, nicht Ecke für Ecke: Zielpunkt 2,5 m voraus auf dem
   Weg (`SWIM_LOOKAHEAD`), Schwimmrichtung dreht höchstens `SWIM_TURN` 1,2 rad/s.
 - **Fangzone der Slider** (Rail, Pipe, schmale Ledge ≤ 1 m, Rail im Transition Rail): ±0,55 m seitlich,
-  0,45 m unter bis 0,4 m über der Oberkante (`FeaturePart.CATCH_*`). Wer im Sinkflug hineinkommt, gleitet
+  0,45 m unter bis 1,3 m über der Oberkante (`FeaturePart.CATCH_*`). Im Sinkflug in der Zone startet ↑/↓ keine Rolle (`FLIP_PRESS_MAX`: kaum angefangene wird zurückgenommen) – man will pressen. Wer im Sinkflug hineinkommt, gleitet
   seitlich/nach oben auf die Slide-Linie (`Rider._catch_glide`), kein Hochspringen. Gehört zur Hilfe
   „Einloggen“. Debug: **F3** bzw. `--hitbox` blendet ein: Fangzonen **gelb**, glattes Plastik **blau**, Safety/Auffahrt und
   Kicker **orange** (fährt man wie einen Kicker).
@@ -214,6 +221,9 @@ Tricks/Optik:
   stehen im Namen („Boardslide to 50-50 – Rail“). Autopilot/NPC springen nicht um.
 - **Abgang quer** (Brett > 50° zur Fahrtrichtung) vom Feature ins Wasser oder quer gelandet = Sturz, außer mit **Drift**
   (Strg) – dann rutscht es quer weiter (`Rider.last_exit_drift`). Autopilot/NPC ausgenommen.
+- **Luft-Hilfe** (`AIR_ASSIST`): ohne Lenken dreht das Brett in der Luft zur Flugrichtung zurück – **nicht**, wenn ein Slider
+  bis 8 m voraus auf dem Flugweg liegt (`FeatureSet.slider_ahead`, nur Spieler): sonst wäre die Vierteldrehung für den
+  Boardslide beim Aufspringen wieder weg. Gelandet wird per Einrasten (nächste Stellung).
 - Slider **einloggen** (Auto-Rutschen): bis 35° Abweichung richtet das System die Fahrtrichtung
   entlang des Features aus und zieht zur Spur; erst darüber rutscht man ab.
 - Sprung aufladen: stufenlos tiefer in die Knie.

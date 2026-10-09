@@ -118,7 +118,7 @@ func _ready() -> void:
 	_go = _button("LOS", true)
 	_go.pressed.connect(func() -> void: go_pressed.emit())
 	brow.add_child(_go)
-	_next = _button("Nächste Aufgabe", false)
+	_next = _button("Nächste Challenge", false)
 	_next.pressed.connect(func() -> void: next_pressed.emit())
 	brow.add_child(_next)
 	var home := _button("Startseite", false)
@@ -166,7 +166,11 @@ func show_intro(mode_name: String, idx: int, count: int, task: Dictionary, best:
 	_fill(mode_name, idx, count, task, best, has_next)
 	_result_row.visible = false
 	var keys: String = task.get("keys_mobile", task["keys"]) if mobile else task["keys"]
-	_text.text = "%s\n\nSteuerung:  %s\nTipp:  %s" % [task["goal"], keys, task["tip"]]
+	var goal: String = task["goal"]
+	var combo: Array = task.get("combo", [])
+	for i in combo.size():       # Slider Special: die Kombination je Slider
+		goal += "\n%d. %s:  %s" % [i + 1, combo[i].get("name", ""), Challenge.combo_text(combo[i])]
+	_text.text = "%s\n\nSteuerung:  %s\nTipp:  %s" % [goal, keys, task["tip"]]
 	_go.text = "LOS" + ("" if mobile else "  (Leertaste)")
 	_open()
 
@@ -188,13 +192,13 @@ func show_result(mode_name: String, idx: int, count: int, task: Dictionary, best
 
 
 func _fill(mode_name: String, idx: int, count: int, task: Dictionary, best: Array, has_next: bool) -> void:
-	_head.text = "%s   ·   AUFGABE %d / %d" % [mode_name.to_upper(), idx + 1, count]
+	_head.text = "%s   ·   CHALLENGE %d / %d" % [mode_name.to_upper(), idx + 1, count]
 	_title.text = task["title"]
 	for i in 3:
 		_medal_labels[i].text = "%s  %s" % [Training.MEDALS[i + 1], Training.format_threshold(task, i)]
 		_medals[i].modulate.a = 1.0 if int(best[0]) > i else 0.45
 	_next.visible = has_next
-	_next.text = "Nächste Aufgabe" + ("" if mobile else "  (N)")
+	_next.text = "Nächste Challenge" + ("" if mobile else "  (N)")
 
 
 func _open() -> void:

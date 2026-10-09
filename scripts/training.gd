@@ -7,7 +7,7 @@ extends RefCounted
 ##
 ## Felder einer Aufgabe:
 ##   id, name (kurz, Liste), title, goal, keys / keys_mobile (Steuerung), tip
-##   kind     turn | kick | slide | chain | raley
+##   kind     turn | kick | slide | chain | raley | special
 ##   setup    Setup-Datei (Terminal 2)
 ##   start    {s, x, dir}: s = Abstand vom Startmast wie in den Setup-Dateien (ohne Verschiebung),
 ##            dir +1 = Richtung Endmast, -1 = Richtung Startsteg. Wende: {turn: "a"|"b", before, x}
@@ -16,6 +16,10 @@ extends RefCounted
 ##   target   kick/slide: {s0, s1, side} – Features mit Mitte in diesem Bereich (Setup-Koordinaten),
 ##            side +1/-1 = rechte/linke Seite
 ##   end_s    Versuch endet spätestens hier (Setup-Koordinaten, in Fahrtrichtung)
+##   combo    special: je Slider der Kette (nach s sortiert) eine Kombination {name, on, stance, press, out}:
+##            immer Ollie on (aus der Luft direkt auf den Slider, nicht über die Auffahrt), on/out =
+##            halbe Drehungen beim Aufspringen/Abgang (1 = 180, 2 = 360; fehlt = egal bzw. 0 beim on),
+##            stance "5050"/"bs" (überwiegend), press "nose"/"tail" (mehr als die halbe Slide-Zeit)
 
 const COMPETITION := "competition"
 const MEDALS := ["", "Bronze", "Silber", "Gold"]
@@ -137,6 +141,29 @@ const MODES := [
 		 "keys": "← / →  lenken     Leertaste  Absprung",
 		 "keys_mobile": "Neigen  lenken     SPRUNG  Absprung",
 		 "tip": "Nach jedem Slider zieht dich das Seil nach innen: sofort wieder nach außen auf Linie lenken – alle stehen auf derselben Spur."},
+		{"id": "bs_nose", "name": "BS Nosepress", "title": "Ollie in Boardslide Nosepress",
+		 "kind": "special", "setup": SLIDER, "start": {"s": 22.0, "x": 6.0, "dir": 1},
+		 "target": {"s0": 45.0, "s1": 65.0, "side": 1}, "end_s": 75.0,
+		 "metric": "dist", "medals": [4.0, 7.0, 10.0],
+		 "combo": [{"name": "Full Pipe", "stance": "bs", "press": "nose"}],
+		 "goal": "Mit einem Ollie aus dem Wasser direkt auf die Full Pipe, in der Luft quer drehen und im Boardslide mit Nosepress rutschen. Gemessen: gerutschte Meter – nur wenn Ollie on, Boardslide und Nosepress stimmen.",
+		 "keys": "Leertaste  Ollie     in der Luft ← / → kurz tippen (Vierteldrehung)     auf der Pipe ↑ halten",
+		 "keys_mobile": "SPRUNG  Ollie     in der Luft kurz neigen (Vierteldrehung)     auf der Pipe ▲ halten",
+		 "tip": "Nicht über die Auffahrt fahren, sondern vor der Pipe abspringen. Eine Vierteldrehung reicht – das Brett rastet quer ein. Am Ende das Brett gerade stellen (← / →) oder Drift halten, sonst stürzt man quer ins Wasser."},
+		{"id": "special", "name": "Special", "title": "Slider Special",
+		 "kind": "special", "setup": SLIDER, "start": {"s": 22.0, "x": 6.0, "dir": 1},
+		 "target": {"s0": 45.0, "s1": 155.0, "side": 1}, "end_s": 160.0,
+		 "metric": "count", "medals": [2.0, 3.0, 4.0],
+		 "combo": [
+			{"name": "Full Pipe", "stance": "5050", "press": "nose"},
+			{"name": "Rail", "stance": "bs", "press": "tail"},
+			{"name": "A-Frame", "stance": "bs", "press": "nose", "out": 1},
+			{"name": "Pipe", "on": 1, "stance": "5050", "press": "tail", "out": 2},
+		 ],
+		 "goal": "Die Slider-Kette rechts, an jedem Slider eine feste Kombination. Gezählt: geschaffte Slider.",
+		 "keys": "Leertaste  Ollie on / out     ← / →  in der Luft drehen, auf dem Slider Boardslide / 50-50     ↑ / ↓  Nose- / Tailpress",
+		 "keys_mobile": "SPRUNG  Ollie on / out     Neigen  in der Luft drehen, auf dem Slider Boardslide / 50-50     ▲ / ▼  Nose- / Tailpress",
+		 "tip": "Ollie on heißt: aus dem Wasser direkt auf das Rohr springen, nicht über die Auffahrt fahren. Den Press mehr als die halbe Slide-Zeit halten."},
 	]},
 	{"id": "raley", "name": "Raley", "text": "Raley: mit viel Power nach der Wende.", "tasks": [
 		{"id": "first", "name": "Erster Raley", "title": "Den ersten Raley stehen",

@@ -15,6 +15,8 @@ const BASE_PITCH := -0.3
 const SLIDE_ZOOM := 0.7          # Abstand auf dem Slider (Anteil)
 const PRESS_ZOOM := 0.5          # Abstand beim Press (Anteil)
 const PRESS_SIDE := 0.8          # beim Press so weit zur Seite schwenken (1 = genau seitlich)
+const PRESS_FOCUS := 0.85        # beim Press so weit den Blick vom Fahrer auf das gedrückte Brett-Ende
+const PRESS_LIFT := 0.3          # m über dem Brett-Ende
 
 var rider: Rider
 var water: Water
@@ -29,6 +31,7 @@ var _focus := Vector3.ZERO
 var _initialized := false
 var _slide_k := 0.0              # 0..1 weich: Fahrer auf dem Slider
 var _press_k := 0.0              # 0..1 weich: Nose-/Tailpress
+var _press_focus := Vector3.ZERO # Press: Blickpunkt am gedrückten Brett-Ende (weich nachgeführt)
 
 
 func cycle_mode() -> void:
@@ -129,13 +132,19 @@ func _process(delta: float) -> void:
 	else:
 		var pitch := BASE_PITCH + _off_pitch
 		var zoom := 1.0
+		# Press: Blick auf das Brett-Ende, mit dem geslidet wird
+		if cam_mode == CamMode.CHASE and _press_k > 0.01:
+			_press_focus = _press_focus.lerp(rider.press_tip + Vector3(0.0, PRESS_LIFT, 0.0), 1.0 - exp(-delta * 8.0)) 				if _press_focus != Vector3.ZERO else rider.press_tip + Vector3(0.0, PRESS_LIFT, 0.0)
+		else:
+			_press_focus = Vector3.ZERO
+		var focus := _focus.lerp(_press_focus, _press_k * PRESS_FOCUS) if _press_focus != Vector3.ZERO else _focus
 		if cam_mode == CamMode.CHASE:
 			zoom = lerpf(lerpf(1.0, SLIDE_ZOOM, _slide_k), PRESS_ZOOM, _press_k)
 		var offset := Basis(Vector3.UP, _yaw + _off_yaw) * Basis(Vector3.RIGHT, pitch) * Vector3(0.0, 0.0, distance * zoom)
-		var cam_pos := _focus + offset
+		var cam_pos := focus + offset
 		var ground := maxf(water.height_at(cam_pos.x, cam_pos.z), Geo.height(cam_pos.x, cam_pos.z))
 		cam_pos.y = maxf(cam_pos.y, ground + 0.6)
 		global_position = cam_pos
-		look_at(_focus + Vector3(0.0, 0.3, 0.0), Vector3.UP)
+		look_at(focus + Vector3(0.0, 0.3, 0.0), Vector3.UP)
 
 	fov = lerpf(fov, 68.0 + clampf(speed * 1.2, 0.0, 14.0), 1.0 - exp(-delta * 3.0))

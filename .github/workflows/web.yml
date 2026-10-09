@@ -1,18 +1,25 @@
-# Baut bei jedem Push auf main die Web-Version und veröffentlicht sie auf GitHub Pages.
+# Baut die Web-Version und veröffentlicht sie auf GitHub Pages (Branch gh-pages):
+# - Push auf main     -> Hauptversion  https://kimpixel.github.io/wakeportGame/
+# - Pull Request      -> Vorschau      https://kimpixel.github.io/wakeportGame/pr-preview/pr-<Nummer>/
+#                        (Link kommt als Kommentar in den PR, wird bei jedem Push aktualisiert,
+#                        beim Schließen des PRs wieder gelöscht)
 name: Web-Build
 
 on:
   push:
     branches: [main]
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
+  pull-requests: write
 
+# Je PR bzw. Branch eine Gruppe. Nicht github.ref allein: beim Schließen eines gemergten PRs ist das
+# refs/heads/main, und der Lauf hat dann den Build der Hauptversion abgebrochen.
 concurrency:
-  group: pages
+  group: web-${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -20,6 +27,10 @@ env:
 
 jobs:
   build:
+    # PRs aus Forks bekommen keine Schreibrechte -> keine Vorschau
+    if: >-
+      github.event.action != 'closed' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,19 +54,64 @@ jobs:
         run: |
           mkdir -p build/web
           "$RUNNER_TEMP/godot" --headless --path . --export-release "Web" build/web/index.html
+          touch build/web/.nojekyll
           ls -la build/web
           test -f build/web/index.wasm
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: web
           path: build/web
+          include-hidden-files: true
+          retention-days: 3
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    # Immer nur ein Schreiber auf gh-pages, nichts abbrechen
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
     steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: web
+          path: build/web
+
+      - name: Hauptversion veröffentlichen
+        if: github.event_name != 'pull_request'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: build/web
+          branch: gh-pages
+          clean-exclude: pr-preview/
+          force: false
+
+      - name: PR-Vorschau veröffentlichen
+        if: github.event_name == 'pull_request'
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: build/web
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: deploy
+
+  remove-preview:
+    if: >-
+      github.event_name == 'pull_request' && github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PR-Vorschau löschen
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: remove

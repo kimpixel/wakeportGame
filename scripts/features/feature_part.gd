@@ -102,7 +102,7 @@ func is_slide() -> bool:
 # hineinfällt, gleitet aufs Rail statt daneben zu landen oder dagegen zu fliegen.
 const CATCH_SIDE := 0.55         # m seitlich neben der Rail-Achse
 const CATCH_DOWN := 0.45         # m unter der Oberkante (an den Seiten nach unten)
-const CATCH_UP := 0.4            # m über der Oberkante
+const CATCH_UP := 1.3            # m über der Oberkante (hoch: wer darüber ↑/↓ drückt, presst statt zu rollen)
 const CATCH_MIN_TOP := 0.15      # an den Enden (Auffahrt im Wasser) wird nicht gefangen
 
 
@@ -114,6 +114,16 @@ func can_catch() -> bool:
 ## Seitliche Lage der Slide-Linie (lokal v).
 func catch_v() -> float:
 	return -inner_v * (width * 0.5 - TR_FLAT * 0.5) if type == "transition" else 0.0
+
+
+## Liegt world (nur x/z) über dem Slider oder knapp daneben (margin m)? Höhe egal.
+func over_slider(world: Vector3, margin: float) -> bool:
+	if not is_slide():
+		return false
+	var l := _inv * world
+	if absf(l.z) > length * 0.5 + margin:
+		return false
+	return absf(l.x - catch_v()) <= maxf(width * 0.5, CATCH_SIDE) + margin
 
 
 ## Liegt world in der Fangzone? Dann Zielpunkt auf der Slide-Linie (Welt, auf der Oberkante),

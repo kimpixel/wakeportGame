@@ -40,6 +40,14 @@ var _via := false               # Transfer: gerade über das Start-Feature gekom
 var _via_ok := false            # Transfer: beim Draufkommen aufs Ziel kam man vom Start-Feature
 var _target_started := false
 var _via_air := false           # Transfer: seit dem Start-Feature in der Luft gewesen (Absprung)
+# special (Kombinationen auf der Slider-Kette)
+var _stations: Array = []       # Slider der Kette in Fahrtrichtung (je Station die Teile, z. B. Full Pipe = 2)
+var _st_next := 0               # nächste noch offene Station
+var _cur := {}                  # laufende Station: idx, on_air, on_turns, slide, phase
+var _since_air := 99.0          # s seit der letzten Landung
+var _air_turns := 0             # halbe Drehungen des letzten Sprungs
+var _status: Array[String] = [] # je Station "", "OK", "X"
+var _best_station := 0.0        # bester Messwert einer geschafften Station (metric != count)
 
 
 func _ready() -> void:
@@ -194,6 +202,32 @@ func _reset_measure() -> void:
 	_via_ok = false
 	_via_air = false
 	_target_started = false
+	_cur = {}
+	_st_next = 0
+	_since_air = 99.0
+	_air_turns = 0
+	_status.clear()
+	_stations.clear()
+	_best_station = 0.0
+	if task["kind"] == "special":
+		var groups := {}
+		for p: FeaturePart in game.features.parts:
+			if p.is_slide() and _in_target(p) and p.cable == game.pc:
+				var key: Variant = p.group_name if p.group_name != "" else p
+				if not groups.has(key):
+					groups[key] = []
+					_stations.append(groups[key])
+				groups[key].append(p)
+		var out := float(task["start"].get("dir", 1.0)) > 0.0
+		var s_of := func(st: Array) -> float:
+			var s := INF if out else -INF
+			for p: FeaturePart in st:
+				s = minf(s, p.s_center) if out else maxf(s, p.s_center)
+			return s
+		_stations.sort_custom(func(a: Array, b: Array) -> bool:
+			return s_of.call(a) < s_of.call(b) if out else s_of.call(a) > s_of.call(b))
+		for i in _stations.size():
+			_status.append("")
 	if task["kind"] == "turn":
 		_value = 0.0
 
@@ -212,8 +246,8 @@ func _physics_process(delta: float) -> void:
 			_finish(false)
 		return
 	if r.mode == Rider.Mode.CRASHED or not r.attached:
-		if task["kind"] == "chain" and _count > 0:
-			_value = _count
+		if task["kind"] in ["chain", "special"] and _count > 0:
+			_value = _count if task["kind"] == "chain" else _special_value()
 			_hit = true
 			_finish(true)
 			return
@@ -267,6 +301,17 @@ func _physics_process(delta: float) -> void:
 					_finish(true)
 				else:
 					_fail("Slider verpasst – kein Wert")
+				return
+		"special":
+			_track_special(r)
+			var all_done := _cur.is_empty() and not _stations.is_empty() and _st_next >= _stations.size()
+			if (_past(s_now, float(task["end_s"]) + _off) and _cur.is_empty()) or all_done:
+				if _count > 0:
+					_value = _special_value()
+					_hit = true
+					_finish(true)
+				else:
+					_fail("Keine Kombination geschafft – kein Wert")
 				return
 		"raley":
 			if r.mode == Rider.Mode.AIR:
@@ -355,10 +400,122 @@ func _track_via(r: Rider) -> void:
 		_via_air = false
 
 
+## Slider Special: je Slider der Kette Aufspringen (aus der Luft, Drehung), Stellung, Press und
+## Abgang (Drehung bis zum Wasser) prüfen. Ausgelassene Slider zählen als verpasst.
+func _track_special(r: Rider) -> void:
+	if r.mode == Rider.Mode.AIR:
+		_since_air = 0.0
+		_air_turns = int(round(absf(r._spin_accum) / PI))
+		return
+	_since_air += get_physics_process_delta_time()
+	if _cur.is_empty():
+		if r.is_sliding():
+			var i := _station_of(r._slide_part)
+			if i >= _st_next:
+				for k in range(_st_next, i):
+					_station_done(k, false, "ausgelassen")
+				_st_next = i + 1
+				var on_air := _since_air < 0.2
+				_cur = {"idx": i, "on_air": on_air, "on_turns": _air_turns if on_air else 0, "phase": "slide"}
+		return
+	if _cur["phase"] == "slide":
+		if not r.is_sliding():
+			_station_done(_cur["idx"], false, "zu kurz auf dem Slider")    # (unter 0,3 s: kein Slide)
+			_cur = {}
+		return
+	# Abgang: die Slide-Wertung kommt erst nach der Landung bzw. auf der Abfahrt – dann im Wasser werten
+	# (Drehung aus dem Sprung vom Slider, sonst gerade)
+	var on_feat := r.pos.y > 0.05 and game.features.part_at(r.pos.x, r.pos.z) != null
+	if r.pos.y < 0.15 and not on_feat:
+		_judge_station(_air_turns if _cur["out_air"] else 0)
+	elif r.is_sliding() and _station_of(r._slide_part) != _cur["idx"]:
+		_judge_station(_air_turns if _cur["out_air"] else 0)     # direkt auf den nächsten Slider
+
+
+## Station bewerten (nach dem Abgang).
+func _judge_station(out_turns: int) -> void:
+	var req: Dictionary = task["combo"][_cur["idx"]] if _cur["idx"] < task["combo"].size() else {}
+	var info: Dictionary = _cur.get("slide", {})
+	var why := ""
+	var want_on := int(req.get("on", 0))
+	var stance := "bs" if float(info.get("bs_share", 0.0)) > 0.5 else "5050"
+	var t := float(info.get("time", 0.0))
+	var press := "nose" if float(info.get("press_nose", 0.0)) > t * 0.5 else ("tail" if float(info.get("press_tail", 0.0)) > t * 0.5 else "")
+	if not _cur["on_air"]:
+		why = "kein Ollie on (über die Auffahrt)"
+	elif int(_cur["on_turns"]) != want_on:
+		why = "Aufspringen: %s statt %s" % [_turn_name(int(_cur["on_turns"])), _turn_name(want_on)]
+	elif req.has("stance") and stance != req["stance"]:
+		why = "Boardslide statt 50-50" if stance == "bs" else "50-50 statt Boardslide"
+	elif req.has("press") and press != req["press"]:
+		why = ("kein Press" if press == "" else ("Nosepress" if press == "nose" else "Tailpress") + " statt " + ("Nosepress" if req["press"] == "nose" else "Tailpress"))
+	elif req.has("out") and out_turns != int(req["out"]):
+		why = "Abgang: %s statt %s" % [_turn_name(out_turns), _turn_name(int(req["out"]))]
+	if why == "" and task["metric"] != "count":
+		_best_station = maxf(_best_station, float(info.get(task["metric"], 0.0)))   # z. B. Meter im Slide
+	_station_done(_cur["idx"], why == "", why)
+	_cur = {}
+
+
+## Wert der Kombinations-Challenge: Anzahl geschaffter Slider oder bester Messwert einer geschafften Station.
+func _special_value() -> float:
+	return float(_count) if task["metric"] == "count" else _best_station
+
+
+## Station (Index in _stations) eines Slider-Teils, -1 = keins.
+func _station_of(p: FeaturePart) -> int:
+	for i in _stations.size():
+		if p in _stations[i]:
+			return i
+	return -1
+
+
+func _station_name(i: int) -> String:
+	var combo: Array = task.get("combo", [])
+	if i < combo.size() and combo[i].has("name"):
+		return combo[i]["name"]
+	return (_stations[i][0] as FeaturePart).display_name
+
+
+func _turn_name(half_turns: int) -> String:
+	return "gerade" if half_turns == 0 else str(half_turns * 180)
+
+
+func _station_done(i: int, ok: bool, why: String) -> void:
+	if i >= _status.size() or _status[i] != "":
+		return
+	_status[i] = "OK" if ok else "X"
+	if ok:
+		_count += 1
+	var name := "%d. %s" % [i + 1, _station_name(i)]
+	game.hud.show_trick(("%s geschafft!" % name) if ok else ("%s: %s" % [name, why]))
+	if game._test_log:
+		print("SPECIAL %s %s %s" % [name, "OK" if ok else "X", why])
+
+
+## Kombination einer Station als Text, z. B. "Ollie on – Boardslide Nosepress – 180 out".
+static func combo_text(req: Dictionary) -> String:
+	var on := int(req.get("on", 0))
+	var parts: Array[String] = ["Ollie on" if on == 0 else "Ollie %d on" % (on * 180)]
+	var s := "Boardslide" if req.get("stance", "") == "bs" else "50-50"
+	if req.has("press"):
+		s += " Nosepress" if req["press"] == "nose" else " Tailpress"
+	parts.append(s)
+	if req.has("out"):
+		parts.append("%d out" % (int(req["out"]) * 180))
+	return " – ".join(parts)
+
+
 func _on_slide(info: Dictionary) -> void:
 	if not running or _fail_t >= 0.0:
 		return
 	var p: FeaturePart = info["part"]
+	if task["kind"] == "special":
+		if not _cur.is_empty() and _cur["phase"] == "slide" and _station_of(p) == _cur["idx"]:
+			_cur["slide"] = info
+			_cur["phase"] = "out"
+			_cur["out_air"] = _since_air < 0.3 and game.rider.mode != Rider.Mode.AIR    # vom Slider abgesprungen, eben gelandet
+		return
 	if not _in_target(p):
 		return
 	if task.has("via") and not _via_ok:
@@ -444,6 +601,11 @@ func _update_hud() -> void:
 					live = "Höhe " + Training.format_value(task, _max_y)
 			"chain":
 				live = Training.format_value(task, _count)
+			"special":
+				var n := _st_next - 1 if not _cur.is_empty() else _st_next
+				if n < task["combo"].size():
+					live = "%d. %s: %s" % [n + 1, task["combo"][n].get("name", ""), combo_text(task["combo"][n])]
+				live += "     %d geschafft" % _count
 		if live != "":
 			line += "     " + live
 	var b := _best()

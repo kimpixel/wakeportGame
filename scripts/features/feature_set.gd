@@ -245,6 +245,18 @@ func catch_at(world: Vector3) -> Array:
 	return best
 
 
+## Fliegt man gerade auf einen Slider zu (Weg ab world entlang dir, bis dist m)? Höhe egal.
+func slider_ahead(world: Vector3, dir: Vector3, dist: float) -> bool:
+	var d := Vector3(dir.x, 0.0, dir.z).normalized()
+	for part in parts:
+		var k := 0.0
+		while k <= dist:
+			if part.over_slider(world + d * k, 0.3):
+				return true
+			k += 1.0
+	return false
+
+
 ## Debug: Fangzonen aller Slider ein-/ausblenden.
 var show_hitboxes := false:
 	set(on):

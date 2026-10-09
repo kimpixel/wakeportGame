@@ -18,7 +18,7 @@ signal sank                      # zu langsam geworden und abgesoffen: wie ein W
 signal skipped                   # Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
 ## Für die Spielmodi (Challenge): Landung nach einem Sprung bzw. Ende eines Slides, mit Messwerten
 signal jump_landed(info: Dictionary)   # raley, air_time, half_turns, rolls, popped, points
-signal slide_ended(info: Dictionary)   # part, time, dist, dist_5050, dist_bs, switches, press
+signal slide_ended(info: Dictionary)   # part, time, dist, dist_5050, dist_bs, switches, press, press_nose, press_tail, bs_share
 
 ## Bergung nach Sturz/Seilverlust (2-Mast-Anlage: niemand muss zurück zum Start):
 ## der Operator bringt die Handle auf die Höhe des Fahrers, der schwimmt hin und greift sie.
@@ -65,6 +65,7 @@ const GRIP_LIN := 180.0
 const TURN_RATE := 1.7
 const SPIN_RATE := 7.5
 const AIR_ASSIST := 5.0         # Brett dreht in der Luft langsam zur Flugrichtung
+const AIR_ASSIST_SLIDER := 8.0  # m: liegt ein Slider so weit voraus auf dem Flugweg, dreht nichts zurück
 const POP_BASE := 2.2
 const SLIDE_FRICTION := 0.1     # Reibung Brett auf Feature-Oberfläche
 # Punkte: Slides sind mehr wert als Drehungen, Kombinationen am meisten
@@ -93,10 +94,12 @@ const RALEY_POINTS := 150
 # ↑/↓ in der Luft: Frontroll/Backroll um die Brettlängsachse; auf dem Slider: Nose-/Tailpress
 const FLIP_RATE := 6.5          # rad/s Überschlag
 const FLIP_LAND_TOL := 0.7      # rad: so schief darf man nach einem Überschlag landen
+const FLIP_PRESS_MAX := 1.2    # rad: so weit angefangene Rolle wird über einem Slider noch zum Press (zurückgenommen)
 const FLIP_POINTS := 300
 const PRESS_ANG := 0.45         # rad: Brett beim Press gekippt (Fotos: ca. 25°, anderes Ende deutlich in der Luft)
 ## Körperhaltung beim Press kommt aus Blender (blender/nosepress.blend -> tools/export_pose.py)
 const PRESS_POSE := "res://assets/poses/nosepress.json"
+const TAIL_POSE := "res://assets/poses/tailpress.json"      # 50-50-Tailpress (eigene Pose, nicht gespiegelt)
 ## Diese Knochen übernimmt die Blender-Pose (Becken, Rücken, Kopf, Arme); Beine bleiben per IK in
 ## den Bindungen, Hände/Finger halten weiter die Faust.
 const POSE_BONES := ["pelvis", "spine_01", "spine_02", "spine_03", "neck_01", "head",
@@ -192,6 +195,9 @@ var _flip_lock := false         # ↑/↓ war beim Abheben schon gedrückt (z. B
 var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
 var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Oberkörper vor)
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
+var _press_bs_vis := 0.0        # 1 = Press im Boardslide (Brett seitlich versetzt, Ende über dem Slider)
+var press_tip := Vector3.ZERO   # Welt: gedrücktes Brett-Ende beim Press (darauf zielt die Kamera)
+var _press_lead := 1.0          # +1: Nose zeigt in Fahrtrichtung, -1: switch (bleibt im Boardslide stehen)
 var _press_nose_t := 0.0
 var _press_tail_t := 0.0
 var _release := 0.0
@@ -1181,7 +1187,8 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 		_score_trick(trick + " – " + _slide_part.display_name, int(pts))
 		slide_ended.emit({"part": _slide_part, "time": _slide_time, "dist": _slide_dist,
 			"dist_bs": _bs_dist, "dist_5050": _slide_dist - _bs_dist, "switches": switches,
-			"press": maxf(_press_nose_t, _press_tail_t)})
+			"press": maxf(_press_nose_t, _press_tail_t), "press_nose": _press_nose_t,
+			"press_tail": _press_tail_t, "bs_share": bs_share})
 	_slide_seq.clear()
 	_bs_time = 0.0
 	_slide_dist = 0.0
@@ -1275,6 +1282,7 @@ func _clear_air_pose() -> void:
 	_flip = 0.0
 	_tuck = 0.0
 	_press_vis = 0.0
+	_press_bs_vis = 0.0
 
 
 func _enter_air() -> void:
@@ -1302,13 +1310,20 @@ func _step_air(delta: float, rope: Vector3) -> void:
 		yaw -= _steer * SPIN_RATE * delta
 	else:
 		var vh := Vector3(vel.x, 0.0, vel.z)
-		if vh.length() > 1.0:
+		# Brett dreht zur Flugrichtung zurück – aber nicht, wenn man auf einen Slider zufliegt: dort
+		# soll eine Vierteldrehung (Boardslide) stehen bleiben, das Einrasten macht die Landung
+		if vh.length() > 1.0 and (autopilot or not (features and features.slider_ahead(pos, vh, AIR_ASSIST_SLIDER))):
 			yaw = rotate_toward(yaw, _aligned_yaw(atan2(-vh.x, -vh.z)), AIR_ASSIST * delta)
 	_spin_accum += wrapf(yaw - old_yaw, -PI, PI)
 	# ↑/↓: Frontroll/Backroll (Überschlag um die Brettlängsachse). Losgelassen läuft die
 	# Drehung zur nächsten ganzen Umdrehung aus (bzw. zurück, wenn kaum angefangen).
 	if _flip_lock and absf(_pitch_in) <= 0.1:
 		_flip_lock = false
+	# Im Sinkflug knapp über einem Slider (Fangzone) heißt ↑/↓ „gleich pressen“, nicht Überschlag:
+	# eine kaum angefangene Rolle wird zurückgenommen, bis zum Loslassen gibt es keine
+	if absf(_pitch_in) > 0.1 and not _flip_lock and absf(_flip) < FLIP_PRESS_MAX and vel.y < 0.5 \
+			and features and not features.catch_at(pos).is_empty():
+		_flip_lock = true
 	if absf(_pitch_in) > 0.1 and not _flip_lock:
 		_flip += _pitch_in * FLIP_RATE * delta
 	elif assist_flip:
@@ -1563,6 +1578,8 @@ func _process(delta: float) -> void:
 		_crouch = maxf(_crouch, _tuck * 0.95)
 	var press_target := _pitch_in if (mode == Mode.WATER and _slide_part != null) else 0.0
 	_press_vis = lerpf(_press_vis, press_target, 1.0 - exp(-delta * 10.0))
+	var bs_target := 1.0 if (mode == Mode.WATER and _slide_part != null and _is_boardslide(_slide_part)) else 0.0
+	_press_bs_vis = lerpf(_press_bs_vis, bs_target, 1.0 - exp(-delta * 10.0))
 	var k := 1.0 - exp(-delta * 8.0)
 	_edge_vis = lerpf(_edge_vis, _edge, k)
 	_release_vis = lerpf(_release_vis, _release, k)
@@ -1831,10 +1848,15 @@ func _pose_frame() -> Transform3D:
 ## Press bezogen auf das Brett-Ende in Fahrtrichtung: > 0 = vorderes Ende (lokal -Z) gedrückt,
 ## < 0 = hinteres. Fährt man switch (Twin-Tip rückwärts, z. B. 50-50 andersherum eingerastet),
 ## ist vorne lokal +Z – sonst wäre beim Nosepress alles seitenverkehrt.
+## Im Boardslide steht das Brett quer zur Fahrt: dann bleibt die zuletzt klare Richtung (sonst
+## springt der Press bei jedem kleinen Winkel zwischen Nose und Tail hin und her).
 func _press_local() -> float:
 	var vh := Vector3(vel.x, 0.0, vel.z)
-	var lead := -1.0 if vh.length() > 0.5 and vh.dot(forward()) < 0.0 else 1.0
-	return _press_vis * lead
+	if vh.length() > 0.5:
+		var d := vh.normalized().dot(forward())
+		if absf(d) > 0.5:
+			_press_lead = -1.0 if d < 0.0 else 1.0
+	return _press_vis * _press_lead
 
 
 ## Brettlage im Stehen (Fahrerposition, gekippt mit der Kante).
@@ -1846,7 +1868,10 @@ func _board_stand_xf() -> Transform3D:
 		# Press: Brett kippt um die Nose (↑) bzw. das Tail (↓), das andere Ende hebt ab
 		var pv := Vector3(0.0, 0.0, -0.55 * signf(pl))
 		var b := Basis(Vector3.RIGHT, -PRESS_ANG * pl)
-		xf *= Transform3D(b, pv - b * pv)
+		# Boardslide: Fahrer und Brett rücken zur Seite, bis Nose bzw. Tail über dem Slider liegt
+		var shift := -pv * _press_bs_vis * minf(absf(pl), 1.0)
+		press_tip = xf * (pv + shift)          # Brett-Ende, mit dem geslidet wird (Kamera)
+		xf *= Transform3D(b, pv - b * pv + shift)
 	if goofy:
 		# Goofy: rechter Fuß vorne – das Twin-Tip-Brett steht einfach andersherum unter dem Fahrer
 		xf *= Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
@@ -2021,20 +2046,25 @@ static func _load_pose(path: String) -> Array:
 	return frames
 
 
-## Press: Körper in die Blender-Pose überblenden (w 0..1). Die Pose ist ein Nosepress mit dem
-## linken Fuß vorne; Tailpress bzw. Goofy werden gespiegelt (links <-> rechts, Nose <-> Tail).
+## Press: Körper in die Blender-Pose überblenden (w 0..1). Die Posen gelten mit dem linken Fuß vorne
+## (Goofy gespiegelt). Nosepress: nosepress.json; 50-50-Tailpress: tailpress.json; sonst (Boardslide-
+## Tailpress) die Nosepress gespiegelt (links <-> rechts, Nose <-> Tail).
 ## Liefert die Hand, die die Handle hält (Welt), oder INF ohne Pose.
 var _pose_t := 0.0
 
 func _apply_press_pose(w: float, delta: float) -> Vector3:
-	var frames := _load_pose(PRESS_POSE)
+	var pl := _press_local()
+	var path := PRESS_POSE
+	var own_tail := pl < 0.0 and _press_bs_vis < 0.5 and not _load_pose(TAIL_POSE).is_empty()
+	if own_tail:
+		path = TAIL_POSE
+	var frames := _load_pose(path)
 	if frames.is_empty() or w <= 0.001:
 		return Vector3.INF
 	_pose_t += delta
-	var fps: float = _pose_cache.get(PRESS_POSE + ":fps", 24.0)
+	var fps: float = _pose_cache.get(path + ":fps", 24.0)
 	var fr: Dictionary = frames[int(_pose_t * fps) % frames.size()]
-	var pl := _press_local()
-	var mirror := (pl < 0.0) != goofy
+	var mirror := goofy if own_tail else (pl < 0.0) != goofy
 	var before := _rig.snapshot()
 	var skel := _rig.skeleton
 	# Modellraum (Figur wie in der Vorlage) -> Skelettraum
@@ -2062,14 +2092,17 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	if goofy:
 		bx = bx * Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
 	var p: Vector3 = fr["pelvis"]
-	var pelvis_world := bx * Vector3(p.x * _facing(), p.y, p.z * (-1.0 if pl < 0.0 else 1.0))
+	var pelvis_world := bx * Vector3(p.x * _facing(), p.y, p.z * (-1.0 if pl < 0.0 and not own_tail else 1.0))
 	var pel := _rig.idx("pelvis")
 	var pp := skel.get_bone_parent(pel)
 	var parent_t := skel.get_bone_global_pose(pp) if pp >= 0 else Transform3D.IDENTITY
 	skel.set_bone_pose_position(pel, parent_t.affine_inverse() * (skel.global_transform.affine_inverse() * pelvis_world))
 	_pose_legs(_board_xf, pelvis_world)
 	_rig.blend_from(before, 1.0 - w)
+	# Handle: im Nosepress in der vorderen Hand der Pose; im 50-50-Tailpress ebenfalls in der vorderen Hand
 	var hold := "hand_r" if mirror else "hand_l"
+	if pl < 0.0 and _press_bs_vis < 0.5:
+		hold = "hand_r" if goofy else "hand_l"
 	return skel.global_transform * skel.get_bone_global_pose(_rig.idx(hold)).origin
 
 
