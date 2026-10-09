@@ -145,12 +145,12 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	right.add_theme_constant_override("separation", 10)
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_split.add_child(right)
+	# Spielmodus: Competition allein, darunter die Community Challenges (Wenden, Kicker, Slider …)
 	left.add_child(_small("SPIELMODUS"))
 	var mg := GridContainer.new()
 	mg.columns = 3
 	mg.add_theme_constant_override("h_separation", 8)
 	mg.add_theme_constant_override("v_separation", 8)
-	left.add_child(mg)
 	_mode_grid = mg
 	var mgroup := ButtonGroup.new()
 	for m: Dictionary in Training.MODES:
@@ -161,7 +161,12 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 		b.tooltip_text = m["text"]
 		var id: String = m["id"]
 		b.pressed.connect(func() -> void: mode_chosen.emit(id))
-		mg.add_child(b)
+		if id == Training.COMPETITION:
+			left.add_child(b)
+			left.add_child(_small("COMMUNITY CHALLENGE"))
+			left.add_child(mg)
+		else:
+			mg.add_child(b)
 		_mode_buttons.append(b)
 	_comp_box = VBoxContainer.new()
 	_comp_box.add_theme_constant_override("separation", 10)
@@ -170,7 +175,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_train_box.add_theme_constant_override("separation", 10)
 	_train_box.visible = false
 	right.add_child(_train_box)
-	_train_box.add_child(_small("AUFGABEN"))
+	_train_box.add_child(_small("CHALLENGES"))
 	_task_grid = GridContainer.new()
 	_task_grid.columns = 2
 	_task_grid.add_theme_constant_override("h_separation", 8)
@@ -264,7 +269,7 @@ func refresh_mode(mode_id: String, task_idx: int) -> void:
 	var comp := mode_id == Training.COMPETITION
 	_comp_box.visible = comp
 	_train_box.visible = not comp
-	_start_btn.text = "SPIEL STARTEN" if comp else "AUFGABE STARTEN"
+	_start_btn.text = "SPIEL STARTEN" if comp else "CHALLENGE STARTEN"
 	for c in _task_grid.get_children():
 		c.queue_free()
 	if not comp:
@@ -454,7 +459,7 @@ func _layout() -> void:
 	_menu.size = Vector2(w, 0)
 	_setup_grid.columns = 2
 	_split.vertical = portrait
-	_mode_grid.columns = 3 if portrait else 2
+	_mode_grid.columns = 3 if portrait or low else 2    # Handy quer: drei Spalten, sonst zu hoch
 	# Handy quer (flach): Einstellungen/Editor und Start in die linke Spalte, sonst zu hoch
 	var host: VBoxContainer = _left if low else _menu_v
 	for c: Control in [_bottom_row, _start_btn]:

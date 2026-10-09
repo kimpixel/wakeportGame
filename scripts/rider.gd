@@ -18,7 +18,7 @@ signal sank                      # zu langsam geworden und abgesoffen: wie ein W
 signal skipped                   # Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
 ## Für die Spielmodi (Challenge): Landung nach einem Sprung bzw. Ende eines Slides, mit Messwerten
 signal jump_landed(info: Dictionary)   # raley, air_time, half_turns, rolls, popped, points
-signal slide_ended(info: Dictionary)   # part, time, dist, dist_5050, dist_bs, switches, press
+signal slide_ended(info: Dictionary)   # part, time, dist, dist_5050, dist_bs, switches, press, press_nose, press_tail, bs_share
 
 ## Bergung nach Sturz/Seilverlust (2-Mast-Anlage: niemand muss zurück zum Start):
 ## der Operator bringt die Handle auf die Höhe des Fahrers, der schwimmt hin und greift sie.
@@ -1184,7 +1184,8 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 		_score_trick(trick + " – " + _slide_part.display_name, int(pts))
 		slide_ended.emit({"part": _slide_part, "time": _slide_time, "dist": _slide_dist,
 			"dist_bs": _bs_dist, "dist_5050": _slide_dist - _bs_dist, "switches": switches,
-			"press": maxf(_press_nose_t, _press_tail_t)})
+			"press": maxf(_press_nose_t, _press_tail_t), "press_nose": _press_nose_t,
+			"press_tail": _press_tail_t, "bs_share": bs_share})
 	_slide_seq.clear()
 	_bs_time = 0.0
 	_slide_dist = 0.0
