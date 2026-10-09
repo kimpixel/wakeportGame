@@ -200,8 +200,8 @@ Tricks/Optik:
   Noch nicht im Spiel verwendet – bisher nur nosepress.json (gespiegelt für Tailpress). Im Spiel kippt das Brett um Nose/Tail,
   beim Boardslide-Press rücken Fahrer und Brett seitlich, bis Nose bzw. Tail über dem Slider liegt (`_press_bs_vis`;
   Vorlagen: Rail quer unter Nose bzw. Tail, 22 cm vor der Spitze).
-- **Kamera** (Verfolger): auf dem Slider 70 % Abstand, beim Press 50 % (Handy hochkant ×1,35) schräg von vorne auf der Brustseite
-  (`PRESS_FRONT`), Blick zwischen Becken (`Rider.press_body`) und gedrücktem Brett-Ende (`Rider.press_tip`); danach weich zurück.
+- **Kamera** (Verfolger): auf dem Slider 70 % Abstand, beim Press 50 % (Handy hochkant ×1,35) schräg von hinten auf der Brustseite, Blick in Fahrtrichtung
+  (`PRESS_BEHIND`; „vorne“ heißt beim Nutzer: in Fahrtrichtung sehen), Blick zwischen Becken (`Rider.press_body`) und gedrücktem Brett-Ende (`Rider.press_tip`); danach weich zurück.
   Der Blickpunkt zieht mit der Fahrgeschwindigkeit mit (sonst hängt er von der Seite sichtbar ca. 1 m hinterher).
 - Handle beim Press immer in der vorderen Hand (auch 50-50-Tailpress, obwohl die Pose gespiegelt ist).
 - Nach Sturz/Absaufen/Neustart wird Raley/Überschlag/Press sofort zurückgesetzt.

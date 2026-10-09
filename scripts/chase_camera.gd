@@ -15,7 +15,7 @@ const BASE_PITCH := -0.3
 const SLIDE_ZOOM := 0.7          # Abstand auf dem Slider (Anteil)
 const PRESS_ZOOM := 0.5          # Abstand beim Press (Anteil)
 const PRESS_SIDE := 1.0          # beim Press so weit zur Seite schwenken (1 = ganz in die Press-Ansicht)
-const PRESS_FRONT := 0.35        # Press-Ansicht: von der Brustseite so weit nach vorne (1 = genau von vorne)
+const PRESS_BEHIND := 0.55       # Press-Ansicht: von der Brustseite so weit nach hinten (Blick in Fahrtrichtung; 1 = genau von hinten)
 const PRESS_FOCUS := 1.0         # beim Press so weit den Blick vom Fahrer auf den Press-Blickpunkt
 const PRESS_TIP := 0.4           # Press-Blickpunkt: zwischen Becken (0) und gedrücktem Brett-Ende (1)
 const PRESS_PORTRAIT := 1.35     # Handy hochkant: beim Press weiter weg (schmales Bild)
@@ -121,11 +121,11 @@ func _process(delta: float) -> void:
 			desired = rider.yaw - 1.2
 		# Press: von der Seite (Brustseite des Fahrers) zuschauen
 		if _press_k > 0.01:
-			# schräg von vorne auf der Brustseite: Gesicht, Brett und gedrücktes Ende im Bild
+			# schräg von hinten auf der Brustseite: Blick in Fahrtrichtung, Brett und gedrücktes Ende im Bild
 			var side_yaw := rider.yaw + rider._facing() * PI * 0.5
 			var vh := Vector3(rider.vel.x, 0.0, rider.vel.z)
 			if vh.length() > 1.0:
-				side_yaw = lerp_angle(side_yaw, atan2(-vh.x, -vh.z) + PI, PRESS_FRONT)
+				side_yaw = lerp_angle(side_yaw, atan2(-vh.x, -vh.z), PRESS_BEHIND)
 			desired = lerp_angle(desired, side_yaw, _press_k * PRESS_SIDE)
 		_yaw = lerp_angle(_yaw, desired, 1.0 - exp(-delta * 2.5))
 		if _idle > 1.5:
