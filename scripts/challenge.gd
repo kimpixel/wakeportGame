@@ -39,6 +39,7 @@ var _off := 0.0                 # Verschiebung Setup -> Spiel (s)
 var _via := false               # Transfer: gerade über das Start-Feature gekommen (noch nicht im Wasser)
 var _via_ok := false            # Transfer: beim Draufkommen aufs Ziel kam man vom Start-Feature
 var _target_started := false
+var _via_air := false           # Transfer: seit dem Start-Feature in der Luft gewesen (Absprung)
 
 
 func _ready() -> void:
@@ -191,6 +192,7 @@ func _reset_measure() -> void:
 	_count = 0
 	_via = false
 	_via_ok = false
+	_via_air = false
 	_target_started = false
 	if task["kind"] == "turn":
 		_value = 0.0
@@ -332,15 +334,25 @@ func _on_landed(info: Dictionary) -> void:
 
 ## Transfer: über das Start-Feature gekommen? Wer dazwischen ins Wasser kommt, muss neu ansetzen.
 ## Beim ersten Kontakt mit dem Ziel wird festgehalten, ob man vom Start-Feature kam.
+## Gilt nur: auf dem Start-Feature fahren (Brett auf seiner Oberfläche, nicht darüber fliegen),
+## von dort abspringen und aus der Luft aufs Ziel kommen. Wer das Ziel von vorne anfährt, von der
+## Seite aus dem Wasser drauf springt oder dazwischen Wasser/ein anderes Feature berührt, zählt nicht.
 func _track_via(r: Rider) -> void:
 	var under: FeaturePart = game.features.part_at(r.pos.x, r.pos.z) if r.pos.y > 0.05 else null
+	if r.mode == Rider.Mode.AIR:
+		if _via:
+			_via_air = true                     # vom Start-Feature abgehoben
+		return
 	if under and _matches(under, task["via"]):
 		_via = true
-	elif r.mode == Rider.Mode.WATER and r.pos.y < 0.08 and under == null:
-		_via = false
-	if not _target_started and under and _in_target(under):
-		_target_started = true
-		_via_ok = _via
+		_via_air = false
+	elif under and _in_target(under):
+		if not _target_started:
+			_target_started = true
+			_via_ok = _via and _via_air       # direkt aus dem Sprung vom Start-Feature aufs Ziel
+	else:
+		_via = false                           # Wasser oder anderes Feature: neu ansetzen
+		_via_air = false
 
 
 func _on_slide(info: Dictionary) -> void:
