@@ -5,7 +5,7 @@ extends CanvasLayer
 
 const HELP := """← / →   lenken   (in der Luft und beim Raley: drehen; auf dem Slider: Boardslide ↔ 50-50 umspringen)
 ↑ / ↓   in der Luft: Frontroll / Backroll     auf dem Slider: Nosepress / Tailpress
-Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das Brett dreht frei, etwas schneller
+Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das Brett dreht frei, etwas schneller; quer vom Slider ins Wasser nur mit Drift
 Leertaste halten + loslassen   Absprung (langsam: Ollie, über 40 km/h, voll aufgeladen und ohne Feature voraus: Raley)
 Start mit Countdown 3 – 2 – 1 – GO (Runde 7:30)     R  zurück zum Steg (−2:00, dann Countdown), in den Spielmodi: neuer Versuch     + / -  Anlagentempo
 Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−1:00)     R = Steg (−2:00)

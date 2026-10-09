@@ -179,6 +179,8 @@ var test_pitch := 0.0           # Test: ↑/↓ in der Luft bzw. auf dem Slider 
 var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), ↓ = -1
 var _catch_part: FeaturePart     # gleitet gerade in diese Slider-Fangzone
 var _on_slider := false         # Brett steht gerade auf einem Slider (Einrasten erledigt)
+var _prev_on_feature := false   # im letzten Schritt noch auf dem Feature (Abgang ins Wasser erkennen)
+var last_exit_drift := false    # letzter Abgang vom Feature quer mit Drift (Spielmodus „Drift-Abgang“)
 var _snap_yaw := 0.0            # Zielstellung des Bretts auf dem Slider
 var _steer_armed := true        # ←/→ wieder losgelassen -> nächste Vierteldrehung möglich
 var _slide_seq: Array[String] = []   # Stellungen während des Slides (Boardslide / 50-50)
@@ -335,6 +337,8 @@ func place(p: Vector3, facing: float, velocity: Vector3) -> void:
 	vel = velocity
 	sink_level = 0.0
 	_combo = 0
+	_prev_on_feature = false
+	last_exit_drift = false
 	_slide_part = null
 	_slide_time = 0.0
 	_slide_seq.clear()
@@ -959,6 +963,17 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var on_dock := _in_dock(pos.x, pos.z) and pos.y > start_pos.y - 0.05
 	var feat_h := features.height_at(pos.x, pos.z) if features else FeaturePart.NONE
 	var on_feature := feat_h > 0.05 and pos.y > feat_h - 0.1
+	# Abgang vom Feature ins Wasser mit quer stehendem Brett (z. B. aus dem Boardslide): die Kante
+	# hakt ein -> Sturz. Wer das Brett vorher gerade stellt oder dabei driftet (Strg), fährt weiter.
+	if _prev_on_feature and not on_feature and not on_dock and speed > 2.0 and not autopilot \
+			and absf(vh.normalized().dot(f)) < cos(deg_to_rad(50.0)):
+		if _release > 0.5:
+			last_exit_drift = true
+		else:
+			_prev_on_feature = false
+			crash("Quer abgefahren – Brett gerade stellen oder driften!")
+			return
+	_prev_on_feature = on_feature
 
 	var f_long: float
 	var f_lat: float
@@ -1263,6 +1278,7 @@ func _clear_air_pose() -> void:
 
 
 func _enter_air() -> void:
+	_prev_on_feature = false
 	mode = Mode.AIR
 	air_time = 0.0
 	_spin_accum = 0.0
@@ -1388,8 +1404,11 @@ func _land(surf: float) -> void:
 	# Auf einem Feature darf man quer landen (Boardslide), im Wasser nicht
 	var on_feature := _obstacle_height(pos.x, pos.z) > 0.05 and _obstacle_height(pos.x, pos.z) >= surf - 0.02
 	if not on_feature and vh.length() > 2.0 and absf(vh.normalized().dot(forward())) < cos(deg_to_rad(50.0)):
-		crash("Verkantet gelandet!")
-		return
+		if _release > 0.5 and not autopilot and attached:
+			last_exit_drift = true          # quer gelandet, aber mit Drift: rutscht weiter
+		else:
+			crash("Verkantet gelandet!")
+			return
 	var landed_on := features.part_at(pos.x, pos.z) if (features and on_feature) else null
 	if landed_on and landed_on.type == "ball":
 		crash("Auf dem Ball gelandet!")      # auf dem runden Gummiball hält sich kein Brett

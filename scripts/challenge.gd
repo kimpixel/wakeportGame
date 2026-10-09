@@ -345,6 +345,10 @@ func _finish(ok: bool) -> void:
 	var medal := 0
 	var text := _fail_text
 	var new_best := false
+	if ok and _hit and task.get("drift_exit", false) and not game.rider.last_exit_drift:
+		_fail_text = "Gerade abgefahren – hier quer mit Drift abgehen"
+		ok = false
+		text = _fail_text
 	if ok and _hit:
 		medal = Training.medal_for(task, _value)
 		text = Training.format_value(task, _value)

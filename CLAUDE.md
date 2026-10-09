@@ -205,6 +205,8 @@ Tricks/Optik:
   ≤ 12° zur Achse (`SNAP_5050`) 50-50 – man slidet also meistens Boardslide. Auf dem Slider dreht ←/→ (Handy:
   deutlich neigen) je Tipp 90° (Boardslide ↔ 50-50), nicht stufenlos; Wechsel geben `SWITCH_BONUS` 80 und
   stehen im Namen („Boardslide to 50-50 – Rail“). Autopilot/NPC springen nicht um.
+- **Abgang quer** (Brett > 50° zur Fahrtrichtung) vom Feature ins Wasser oder quer gelandet = Sturz, außer mit **Drift**
+  (Strg) – dann rutscht es quer weiter (`Rider.last_exit_drift`). Autopilot/NPC ausgenommen.
 - Slider **einloggen** (Auto-Rutschen): bis 35° Abweichung richtet das System die Fahrtrichtung
   entlang des Features aus und zieht zur Spur; erst darüber rutscht man ab.
 - Sprung aufladen: stufenlos tiefer in die Knie.
