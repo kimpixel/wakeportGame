@@ -183,6 +183,7 @@ var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), 
 var _catch_part: FeaturePart     # gleitet gerade in diese Slider-Fangzone
 var _on_slider := false         # Brett steht gerade auf einem Slider (Einrasten erledigt)
 var _prev_on_feature := false   # im letzten Schritt noch auf dem Feature (Abgang ins Wasser erkennen)
+var drifting := false            # Fahrer driftet gerade auf dem Wasser (Spielmodus Driften)
 var last_exit_drift := false    # letzter Abgang vom Feature quer mit Drift (Spielmodus „Drift-Abgang“)
 var _snap_yaw := 0.0            # Zielstellung des Bretts auf dem Slider
 var _steer_armed := true        # ←/→ wieder losgelassen -> nächste Vierteldrehung möglich
@@ -1017,6 +1018,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	# überdehnt und die Handle aus der Hand gerissen). Das Brett lässt sich frei drehen, und weil
 	# es flach aufliegt, bremst das Wasser weniger (leicht schneller).
 	var drift := _release > 0.5 and not autopilot and attached and not on_feature and not on_dock and speed > 2.0
+	drifting = drift
 	var force := Vector3(rope.x, 0.0, rope.z) + f * f_long + r * f_lat
 	if drift:
 		var drag := (DRAG_QUAD * speed * speed + DRAG_LIN * speed) * DRIFT_DRAG
