@@ -183,7 +183,7 @@ Tricks/Optik:
   Körper schwingt um den Griff, am höchsten Punkt kopfüber unter dem Brett, Hohlkreuz, Knie
   angewinkelt, **Griff vor dem Gesicht** mit angewinkelten Armen (nicht hinter dem Kopf).
 - **Frontroll eingerollt** (Knie zur Brust), **Backroll gestreckt**.
-- **Press-Pose aus Blender** (Nutzer posiert selbst): `blender/*.blend` (Godot ignoriert den Ordner) -> `tools/export_pose.py`
+- **Press-Pose aus Blender** (Nutzer posiert selbst): `blender/*.blend` (Godot ignoriert den Ordner) -> `tools/export_pose.py` (Nutzer: `.	oolsexport_poses.ps1` in PowerShell, exportiert alle)
   (Blender 5.2 im Hintergrund, IK ausgewertet) -> `assets/poses/nosepress.json`. Übernommen: Becken (Lage im Brettraum),
   Rücken, Kopf, Arme; Füße per IK in den Bindungen, Hände Faust, Handle in der vorderen Hand. Tailpress/Goofy gespiegelt,
   Press relativ zur Fahrtrichtung (switch). Animierter Root läuft in Schleife. Vorlage: `blender/nosepress_vorlage.glb`.

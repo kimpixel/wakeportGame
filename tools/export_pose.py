@@ -1,6 +1,8 @@
 """Pose aus Blender fürs Spiel exportieren (WakeTheHack).
 
-Aufruf (Blender im Hintergrund):
+Bequem alle Posen auf einmal (PowerShell im Projektordner):  .\tools\export_poses.ps1
+
+Einzeln (Blender im Hintergrund):
   blender -b blender/nosepress.blend --python tools/export_pose.py -- assets/poses/NAME.json
 
 Schreibt für jedes Bild (Animation des Skeletts, sonst nur das aktuelle Bild) je Knochen die
