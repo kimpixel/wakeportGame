@@ -192,6 +192,7 @@ var _flip_lock := false         # ↑/↓ war beim Abheben schon gedrückt (z. B
 var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
 var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Oberkörper vor)
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
+var _press_bs_vis := 0.0        # 1 = Press im Boardslide (Brett seitlich versetzt, Ende über dem Slider)
 var _press_nose_t := 0.0
 var _press_tail_t := 0.0
 var _release := 0.0
@@ -1275,6 +1276,7 @@ func _clear_air_pose() -> void:
 	_flip = 0.0
 	_tuck = 0.0
 	_press_vis = 0.0
+	_press_bs_vis = 0.0
 
 
 func _enter_air() -> void:
@@ -1563,6 +1565,8 @@ func _process(delta: float) -> void:
 		_crouch = maxf(_crouch, _tuck * 0.95)
 	var press_target := _pitch_in if (mode == Mode.WATER and _slide_part != null) else 0.0
 	_press_vis = lerpf(_press_vis, press_target, 1.0 - exp(-delta * 10.0))
+	var bs_target := 1.0 if (mode == Mode.WATER and _slide_part != null and _is_boardslide(_slide_part)) else 0.0
+	_press_bs_vis = lerpf(_press_bs_vis, bs_target, 1.0 - exp(-delta * 10.0))
 	var k := 1.0 - exp(-delta * 8.0)
 	_edge_vis = lerpf(_edge_vis, _edge, k)
 	_release_vis = lerpf(_release_vis, _release, k)
@@ -1846,7 +1850,9 @@ func _board_stand_xf() -> Transform3D:
 		# Press: Brett kippt um die Nose (↑) bzw. das Tail (↓), das andere Ende hebt ab
 		var pv := Vector3(0.0, 0.0, -0.55 * signf(pl))
 		var b := Basis(Vector3.RIGHT, -PRESS_ANG * pl)
-		xf *= Transform3D(b, pv - b * pv)
+		# Boardslide: Fahrer und Brett rücken zur Seite, bis Nose bzw. Tail über dem Slider liegt
+		var shift := -pv * _press_bs_vis * minf(absf(pl), 1.0)
+		xf *= Transform3D(b, pv - b * pv + shift)
 	if goofy:
 		# Goofy: rechter Fuß vorne – das Twin-Tip-Brett steht einfach andersherum unter dem Fahrer
 		xf *= Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
