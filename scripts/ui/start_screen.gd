@@ -64,6 +64,9 @@ var _settings: PanelContainer
 var _browser: PanelContainer
 var _browser_grid: VBoxContainer
 var _detail: PanelContainer
+var _achieve: PanelContainer      # geheime Erfolge (Liste mit Achievements.SLOTS Einträgen)
+var _achieve_list: VBoxContainer
+var _achieve_count: Label
 var _detail_title: Label
 var _detail_text: Label
 var _preview: FeaturePreview
@@ -219,6 +222,10 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	ed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ed.pressed.connect(open_editor)
 	row.add_child(ed)
+	var ab := _button("Erfolge", 20)
+	ab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ab.pressed.connect(_open_achievements)
+	row.add_child(ab)
 	_start_btn = _button("SPIEL STARTEN", 30, true)
 	_start_btn.custom_minimum_size.y = 72
 	_start_btn.pressed.connect(func() -> void: start_pressed.emit())
@@ -235,6 +242,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_build_settings()
 	_build_browser()
 	_build_detail()
+	_build_achievements()
 	_editor = SetupEditor.new()
 	_editor.host = self
 	_editor.visible = false
@@ -475,7 +483,7 @@ func _layout() -> void:
 		_menu.position = Vector2(m, maxf(size.y - m - h, 110.0))
 	_dim.position = Vector2.ZERO
 	_dim.size = size
-	for p: PanelContainer in [_settings, _browser, _detail]:
+	for p: PanelContainer in [_settings, _browser, _detail, _achieve]:
 		_fit_popup(p, size)
 	_editor.layout(size, _k)
 
@@ -511,7 +519,7 @@ func _popup_frame(title: String) -> Array:
 
 
 func _show_popup(p: PanelContainer) -> void:
-	for q: PanelContainer in [_settings, _browser, _detail]:
+	for q: PanelContainer in [_settings, _browser, _detail, _achieve]:
 		q.visible = q == p
 	_dim.visible = true
 
@@ -520,7 +528,7 @@ func _close_popups() -> void:
 	if _detail.visible and _detail.get_meta("from_browser", false):
 		_show_popup(_browser)
 		return
-	for q: PanelContainer in [_settings, _browser, _detail]:
+	for q: PanelContainer in [_settings, _browser, _detail, _achieve]:
 		q.visible = false
 	_dim.visible = false
 
@@ -825,6 +833,71 @@ func _build_detail() -> void:
 	v.add_child(_detail_text)
 
 
+## Geheime Erfolge: SLOTS Zeilen, noch nicht erreichte ausgegraut und ohne Text.
+func _build_achievements() -> void:
+	var f := _popup_frame("GEHEIME ERFOLGE")
+	_achieve = f[0]
+	var v: VBoxContainer = f[1]
+	_achieve_count = _small("")
+	v.add_child(_achieve_count)
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	v.add_child(scroll)
+	_achieve_list = VBoxContainer.new()
+	_achieve_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_achieve_list.add_theme_constant_override("separation", 8)
+	scroll.add_child(_achieve_list)
+
+
+func _open_achievements() -> void:
+	for c in _achieve_list.get_children():
+		c.queue_free()
+	var n := Achievements.count_unlocked()
+	_achieve_count.text = "%d von %d entdeckt – was es gibt, siehst du erst, wenn du es geschafft hast." 		% [n, Achievements.SLOTS]
+	_achieve_count.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	for i in Achievements.SLOTS:
+		var a: Dictionary = Achievements.LIST[i] if i < Achievements.LIST.size() else {}
+		var date := Achievements.unlocked_at(a["id"]) if not a.is_empty() else ""
+		_achieve_list.add_child(_achievement_row(i + 1, a, date))
+	_show_popup(_achieve)
+
+
+func _achievement_row(nr: int, a: Dictionary, date: String) -> Control:
+	var open := date != ""
+	var p := PanelContainer.new()
+	var sb := _box(Color(0.16, 0.14, 0.06, 0.95) if open else Color(1, 1, 1, 0.05), 10, 8)
+	sb.border_color = SEL if open else Color(1, 1, 1, 0.12)
+	p.add_theme_stylebox_override("panel", sb)
+	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", 14)
+	p.add_child(h)
+	var badge := _label(str(nr) if open else "?", 26, Color(0.1, 0.08, 0.02) if open else Color(1, 1, 1, 0.3))
+	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	badge.custom_minimum_size = Vector2(46, 46)
+	badge.add_theme_constant_override("outline_size", 0)
+	var bsb := StyleBoxFlat.new()
+	bsb.bg_color = SEL if open else Color(1, 1, 1, 0.08)
+	bsb.set_corner_radius_all(23)
+	badge.add_theme_stylebox_override("normal", bsb)
+	h.add_child(badge)
+	var v := VBoxContainer.new()
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.add_theme_constant_override("separation", 0)
+	h.add_child(v)
+	if open:
+		v.add_child(_label(a["name"], 22, SEL))
+		var t := _label(a["text"], 16, Color(1, 1, 1, 0.85))
+		t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		v.add_child(t)
+		v.add_child(_label("erreicht am " + date, 14, Color(1, 1, 1, 0.5)))
+	else:
+		v.add_child(_label("Geheim", 22, Color(1, 1, 1, 0.35)))
+		v.add_child(_label("Noch nicht entdeckt", 16, Color(1, 1, 1, 0.25)))
+	return p
+
+
 func _open_browser() -> void:
 	if _catalog.is_empty():
 		_build_catalog()
@@ -947,6 +1020,9 @@ func select_by_name(prefix: String) -> void:
 	if prefix == "@liste":
 		_open_browser()
 		return
+	if prefix == "@erfolge":
+		_open_achievements()
+		return
 	if prefix.begins_with("@einstellungen"):
 		_show_popup(_settings)
 		var tab := prefix.substr(14).to_int()          # z. B. @einstellungen2 = Reiter "Welt"
@@ -974,7 +1050,7 @@ func _process(delta: float) -> void:
 	# Popups wachsen mit ihrem Inhalt (z. B. Text beim ersten Umbruch), schrumpfen aber nicht
 	# von selbst: Größe jedes Bild festhalten
 	if _dim.visible:
-		for p: PanelContainer in [_settings, _browser, _detail]:
+		for p: PanelContainer in [_settings, _browser, _detail, _achieve]:
 			if p.visible:
 				_fit_popup(p, _ui.size)
 	_orbit += ORBIT_SPEED * delta

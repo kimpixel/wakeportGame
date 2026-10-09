@@ -5,6 +5,7 @@ extends Node3D
 ##  * wartende Fahrer mit Helm und Brett auf den Stegen
 ##  * SUP-Paddler ganz links (nördlich der gelben Bojenkette, im Badebereich)
 ##  * ab und zu springt ein Hecht in einem Halbbogen aus dem Wasser – wer ihn trifft, macht "Ups"
+##    (geheimer Erfolg "Fischkontakt", siehe Achievements)
 
 signal pike_hit
 
@@ -12,6 +13,7 @@ const PIKE_LEN := 0.9
 const PIKE_JUMP := 1.6              # Weite des Bogens
 const PIKE_HEIGHT := 0.75           # Höhe des Bogens
 const PIKE_TIME := 0.8
+const PIKE_CLOSE := 0.15            # Anteil der Sprünge knapp vor dem Fahrer (sonst ist er immer schon weg)
 
 var beach: Beach
 var water: Water
@@ -176,7 +178,9 @@ func _build_pike() -> void:
 
 
 ## Neuen Sprung planen: meist ein Stück vor dem Spieler (damit man ihn sieht), manchmal genau in der Spur.
-func _start_pike() -> void:
+## Ab und zu (PIKE_CLOSE) knapp voraus: dann ist der Fahrer mitten im Bogen dort – mit Lenken zu treffen.
+## close (Test --pike-at): knapp voraus, genau in der Spur, springt in Fahrtrichtung.
+func _start_pike(close := false) -> void:
 	if player == null:
 		return
 	var v := Vector3(player.vel.x, 0.0, player.vel.z)
@@ -184,17 +188,26 @@ func _start_pike() -> void:
 	var side := fwd.cross(Vector3.UP)
 	var ahead := randf_range(10.0, 22.0)
 	var off := randf_range(-0.4, 0.4) if randf() < 0.35 else randf_range(2.0, 5.0) * (1.0 if randf() < 0.5 else -1.0)
+	var near := close or randf() < PIKE_CLOSE
+	if near:
+		ahead = v.length() * PIKE_TIME * 0.5 + randf_range(0.5, 2.0)
+		off = 0.0 if close else randf_range(-2.0, 2.0)
 	var at := player.pos + fwd * ahead + side * off
 	if not Lake.in_lake(at.x, at.z, 3.0) or (features and features.height_at(at.x, at.z) > FeaturePart.NONE + 1.0):
 		_pike_next = 3.0
 		return
 	var a := randf() * TAU
-	_pike_dir = Vector3(cos(a), 0.0, sin(a))
+	_pike_dir = fwd if close else Vector3(cos(a), 0.0, sin(a))
 	_pike_from = at - _pike_dir * PIKE_JUMP * 0.5
 	_pike_t = 0.0
 	_pike_hit = false
 	_pike.visible = true
 	_splash_at(_pike_from)
+
+
+## Test: Hecht springt sofort knapp vor dem Fahrer.
+func pike_now() -> void:
+	_start_pike(true)
 
 
 func _splash_at(p: Vector3) -> void:

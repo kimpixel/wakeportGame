@@ -23,6 +23,7 @@ const ACCENT := Color(0.55, 0.82, 0.22)          # Wakeport-Grün
 const PANEL := Color(0.05, 0.07, 0.09, 0.66)
 const WARN := Color(1.0, 0.62, 0.15)
 const DANGER := Color(1.0, 0.22, 0.15)
+const ACH_TIME := 4.5             # s Meldung "Geheimer Erfolg"
 
 enum TimeState { IDLE, RUNNING, LOW, OVER }
 
@@ -39,6 +40,9 @@ var _recovery: PanelContainer     # nach einem Sturz: was jetzt geht und was es 
 var _rec_title: Label
 var _rec_grid: GridContainer
 var _rec_key := ""
+var _ach: PanelContainer          # Meldung "Geheimer Erfolg" (oben, unter der Leiste)
+var _ach_name: Label
+var _ach_time := 0.0
 
 var _time_label: Label
 var time_title := "ZEIT"          # Spielmodi: "VERSUCH"
@@ -96,6 +100,7 @@ func _ready() -> void:
 	_help_hint.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
 
 	_build_recovery()
+	_build_achievement()
 
 	_count = _label(150)
 	_count.anchor_right = 1.0
@@ -361,6 +366,46 @@ func show_trick(text: String) -> void:
 	_trick_time = 2.0
 
 
+## Geheimer Erfolg freigeschaltet: Meldung in der Mitte (unteres Drittel), ACH_TIME Sekunden.
+func show_achievement(title: String) -> void:
+	_ach_name.text = title
+	_ach_time = ACH_TIME
+
+
+func _build_achievement() -> void:
+	var holder := Control.new()
+	holder.anchor_right = 1.0
+	holder.anchor_top = 0.6           # unter Trick-Name und Countdown, über dem Sturz-Panel
+	holder.anchor_bottom = 0.6
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(holder)
+	var c := CenterContainer.new()
+	c.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(c)
+	_ach = PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = PANEL
+	sb.set_corner_radius_all(14)
+	sb.set_border_width_all(2)
+	sb.border_color = Color(1.0, 0.82, 0.2)
+	sb.content_margin_left = 22
+	sb.content_margin_right = 22
+	sb.content_margin_top = 8
+	sb.content_margin_bottom = 10
+	_ach.add_theme_stylebox_override("panel", sb)
+	_ach.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ach.visible = false
+	c.add_child(_ach)
+	var vb := VBoxContainer.new()
+	vb.add_theme_constant_override("separation", -2)
+	_ach.add_child(vb)
+	var head := _small(vb, "GEHEIMER ERFOLG FREIGESCHALTET")
+	head.add_theme_color_override("font_color", Color(1.0, 0.82, 0.2))
+	_ach_name = _big(vb, "")
+	_ach_name.add_theme_font_size_override("font_size", 34)
+
+
 ## Auswahl vor dem Start (Terminal, Feature-Setup), rechts unter der Leiste. Liefert die Auswahlbox.
 func add_menu_choice(title_text: String, names: Array, current: int, on_select: Callable) -> OptionButton:
 	if _setup_box == null:
@@ -433,6 +478,12 @@ func _process(delta: float) -> void:
 		_recovery.scale = Vector2(rk, rk)
 	_trick_time -= delta
 	_trick.visible = _trick_time > 0.0
+	_ach_time -= delta
+	_ach.visible = _ach_time > 0.0
+	if _ach.visible:
+		_ach.modulate.a = clampf(_ach_time / 0.6, 0.0, 1.0) * clampf((ACH_TIME - _ach_time) / 0.3, 0.0, 1.0)
+		_ach.pivot_offset = _ach.size * Vector2(0.5, 0.0)
+		_ach.scale = _top_bar.scale
 	# Punkte zählen hoch, kurzes "Aufpoppen"
 	_score_shown = move_toward(_score_shown, _score_target, maxf(absf(_score_target - _score_shown) * 6.0, 30.0) * delta)
 	_score_value.text = str(int(round(_score_shown)))

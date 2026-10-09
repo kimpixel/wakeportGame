@@ -12,7 +12,7 @@ extends Node3D
 ##   --mobile          Handy-Steuerung erzwingen (mit --tilt=GRAD feste Neigung)
 ##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
 ##   --screen[=NAME]   Startbildschirm erzwingen (NAME: Feature/Hack auswählen, z. B. "hack";
-##                     @liste, @einstellungenN, @editor = Setup-Editor);
+##                     @liste, @einstellungenN, @erfolge, @editor = Setup-Editor);
 ##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
 ##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
 ##   --jump-at=SEK     Test: zu dieser Zeit voll aufgeladen abspringen
@@ -21,6 +21,8 @@ extends Node3D
 ##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, regen, dunst)
 ##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30
 ##   --plane=S         Test: sofort ein Jet im Anflug, S m vor dem See (negativ) bzw. danach
+##   --pike-at=SEK     Test: zu dieser Zeit springt der Hecht knapp vor dem Fahrer (Erfolg "fisch")
+##   --erfolg=ID,…     Test: geheime Erfolge als erreicht zeigen (z. B. --screen=@erfolge --erfolg=fisch)
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
 ##   --pause-at=SEK    Test: zu dieser Zeit pausieren (mit --shot: Bild der Pause)
@@ -126,6 +128,7 @@ var _cam_arg := ""
 var _view_arg := PackedFloat32Array()
 var _lane_arg := NAN
 var _crash_at := -1.0          # Test: Sturz zu dieser Zeit auslösen
+var _pike_at := -1.0           # Test: Hecht springt zu dieser Zeit knapp vor dem Fahrer
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
 var _pause_at := -1.0           # Test: zu dieser Zeit pausieren (und Screenshot)
 var _hitbox_arg := false        # Test: Fangzonen der Slider zeigen
@@ -285,7 +288,9 @@ func _ready() -> void:
 	if not is_nan(_plane_arg):
 		airplanes.spawn_at(_plane_arg)
 	cam.doppler_tracking = Camera3D.DOPPLER_TRACKING_IDLE_STEP
-	ambient.pike_hit.connect(func() -> void: hud.show_trick("Hecht erwischt!"))
+	ambient.pike_hit.connect(func() -> void:
+		hud.show_trick("Hecht erwischt!")
+		_unlock_achievement("fisch"))
 	if not _test_log:
 		settings.load_file(mobile.active)     # Tests laufen immer mit Standardwerten
 	_apply_terminal(_initial_terminal())
@@ -812,6 +817,9 @@ func _physics_process(delta: float) -> void:
 	if _crash_at > 0.0 and _elapsed >= _crash_at:
 		_crash_at = -1.0
 		rider.crash("Teststurz")
+	if _pike_at > 0.0 and _elapsed >= _pike_at:
+		_pike_at = -1.0
+		ambient.pike_now()
 	if _letgo_at > 0.0 and _elapsed >= _letgo_at:
 		_letgo_at = -1.0
 		rider.let_go("Test: Seil verloren")
@@ -1153,7 +1161,17 @@ func _bind(action: String, physical_keys: Array, buttons: Array, axes: Array, lo
 		InputMap.action_add_event(action, e)
 
 
+## Geheimen Erfolg freischalten (nur im Spiel, nicht hinter der Startseite) und melden.
+func _unlock_achievement(id: String) -> void:
+	if start_screen and start_screen.visible:
+		return
+	if Achievements.unlock(id):
+		hud.show_achievement(Achievements.get_def(id)["name"])
+		print("ERFOLG ", id)
+
+
 func _parse_args() -> void:
+	Achievements.no_save = not OS.get_cmdline_user_args().is_empty()   # Tests speichern keine Erfolge
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--autotest":
 			_test_log = true
@@ -1183,6 +1201,11 @@ func _parse_args() -> void:
 			_letgo_at = arg.substr(11).to_float()
 		elif arg.begins_with("--crash-at="):
 			_crash_at = arg.substr(11).to_float()
+		elif arg.begins_with("--pike-at="):
+			_pike_at = arg.substr(10).to_float()
+		elif arg.begins_with("--erfolg="):
+			for id in arg.substr(9).split(","):
+				Achievements.unlock(id)
 		elif arg.begins_with("--terminal="):
 			_terminal_arg = arg.substr(11).to_upper()
 		elif arg.begins_with("--setup="):

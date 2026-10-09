@@ -149,6 +149,13 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
   `--jump-at=S`. Ausgabe `CHALLENGE …: Wert Medaille N`. Kalibrierung: Autopilot schafft Wenden mit Silber,
   Kicker M ohne Absprung 1,6 m, mit Absprung bis 3,0 m (L 3,8 m), Full Pipe 13 m.
 
+Geheime Erfolge (`scripts/achievements.gd`, Liste auf der Startseite Taste „Erfolge“, Meldung `Hud.show_achievement`):
+- Immer **10 Plätze** (`SLOTS`), nicht erreichte ausgegraut („Geheim“, ohne Text); neue Erfolge hinten an `LIST` hängen.
+  Gespeichert in user://settings.cfg [erfolge] (Datum); **Tests speichern nichts** (jedes Kommandozeilen-Argument).
+  Freischalten über `main.gd _unlock_achievement(id)` (nicht hinter der Startseite). Test: `--screen=@erfolge --erfolg=fisch`.
+- **Fischkontakt** (`fisch`): mit dem springenden Hecht zusammenstoßen (`Ambient.pike_hit`). Damit er erreichbar ist,
+  springt er in `PIKE_CLOSE` 15 % der Fälle knapp vor dem Fahrer (±2 m daneben, hinlenken). Test `--pike-at=S` (genau in der Spur).
+
 Spiel (Competition):
 - Runde **7:30** (Einstellung „Competition: Rundenlänge“), Start nach Countdown. Danach holt der Operator den Fahrer zum Start, dann Startseite mit Ergebnis.
 - **2-Mast-Prinzip: niemand muss zurück zum Start.** Seil verloren → kein Sturz, ausgleiten und
