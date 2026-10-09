@@ -26,6 +26,8 @@ extends Node3D
 ##   --pause-at=SEK    Test: zu dieser Zeit pausieren (mit --shot: Bild der Pause)
 ##   --hitbox          Fangzonen der Slider zeigen (im Spiel: F3)
 ##   --set=NAME=WERT   Test: Einstellung setzen (ohne zu speichern), z. B. --set=goofy=true
+##   --mode=ID[:N]     Spielmodus (wende, kicker, slider, raley) mit Aufgabe N (ab 1) direkt starten;
+##                     mit --go=SEK: Aufgaben-Fenster zu dieser Zeit bestätigen; --mode-auto: Autopilot fährt
 
 const RESET_DELAY := 3.0
 
@@ -63,6 +65,17 @@ var _grip_on := 1               # Seilzug-Grenze, zu der G zurückschaltet
 var _swum := false              # seit dem Sturz schon geschwommen (Panel aus)
 var _msaa_default := Viewport.MSAA_DISABLED
 var _touch_started := false     # dieser Finger hat die Anlage gestartet (kein Sprung)
+# Spielmodi (Training): Competition = Runde auf Zeit, sonst Aufgaben mit Medaillen (Challenge)
+var game_mode := Training.COMPETITION
+var _task_idx := 0
+var challenge: Challenge
+var task_panel: TaskPanel
+var _comp_terminal := ""        # Terminal der Competition (Aufgaben laufen auf Terminal 2)
+var _counting := false          # Countdown läuft (Competition)
+var _round_over := false        # Runde zu Ende, gleich kommt die Startseite: kein neuer Countdown
+var _mode_arg := ""
+var _go_at := -1.0
+var mode_auto := false           # Test: im Spielmodus fährt der Autopilot (--mode-auto)
 
 ## Welche Anlage fährt der Spieler? Der NPC fährt immer an der anderen.
 const TERMINALS := ["T1", "T2"]
@@ -274,10 +287,32 @@ func _ready() -> void:
 	_build_start_screen()
 	# Pause (Esc): Spiel anhalten, Fenster mit Weiter / Hilfe / Startseite
 	pause_menu = PauseMenu.new()
-	pause_menu.can_pause = func() -> bool: return not start_screen.visible and hud.visible
+	pause_menu.can_pause = func() -> bool: return not start_screen.visible and hud.visible 		and not task_panel.is_open() and not hud._count.visible
 	pause_menu.help_pressed.connect(hud.toggle_help)
 	pause_menu.home_pressed.connect(_open_start_screen)
 	add_child(pause_menu)
+	# Spielmodi: Aufgaben-Fenster und Ablauf
+	task_panel = TaskPanel.new()
+	task_panel.mobile = mobile.active
+	task_panel.open_changed = func(open: bool) -> void:
+		mobile.ui_mode = open or start_screen.visible
+		if touch_pad:
+			mobile.release_pad()
+			touch_pad.visible = not open and not start_screen.visible
+	add_child(task_panel)
+	challenge = Challenge.new()
+	challenge.game = self
+	challenge.panel = task_panel
+	challenge.home_requested.connect(_open_start_screen)
+	add_child(challenge)
+	if _quit_after > 0.0 and _mode_arg != "":   # Spielmodi stehen im Ergebnis-Fenster: Zeit inkl. Pause
+		get_tree().create_timer(_quit_after + 3.0, true).timeout.connect(get_tree().quit)
+	if _shot_path != "" and _mode_arg != "" and not _screen_arg:   # Spielmodus steht im Fenster: Zeit inkl. Pause
+		get_tree().create_timer(_shot_time, true).timeout.connect(_take_shot)
+	if _go_at > 0.0:                         # Test: Aufgaben-Fenster bestätigen (läuft auch in der Pause)
+		get_tree().create_timer(_go_at, true).timeout.connect(func() -> void:
+			if task_panel.is_open():
+				task_panel.go_pressed.emit())
 	_msaa_default = get_viewport().msaa_3d
 	settings.changed.connect(_apply_setting)
 	if _hitbox_arg:
@@ -303,8 +338,14 @@ func _ready() -> void:
 		else:
 			pc.start()
 	# Das Spiel beginnt mit dem Startbildschirm (Testläufe gehen direkt ins Spiel)
-	if not _screen_arg and not _no_screen and not _test_log and _shot_path == "" and _view_arg.is_empty() and _closeup == Vector3.INF:
+	if not _screen_arg and not _no_screen and not _test_log and _shot_path == "" and _view_arg.is_empty() and _closeup == Vector3.INF and _mode_arg == "":
 		_screen_arg = true
+	if _mode_arg != "":
+		var mi := _mode_arg.split(":")
+		game_mode = mi[0]
+		_task_idx = (mi[1].to_int() - 1) if mi.size() > 1 else 0
+		if not _screen_arg:
+			_enter_training()
 	if _screen_arg:
 		_open_start_screen()
 		if _screen_select != "":
@@ -339,7 +380,14 @@ func _build_start_screen() -> void:
 		_select_setup(i)
 		pc.start()
 		start_screen.refresh(terminal, _setup_idx))
-	start_screen.start_pressed.connect(_close_start_screen)
+	start_screen.start_pressed.connect(_on_start_pressed)
+	start_screen.mode_chosen.connect(func(id: String) -> void:
+		game_mode = id
+		_task_idx = 0
+		start_screen.refresh_mode(game_mode, _task_idx))
+	start_screen.task_chosen.connect(func(i: int) -> void:
+		_task_idx = i
+		start_screen.refresh_mode(game_mode, _task_idx))
 	start_screen.setups_changed.connect(_on_setups_changed)
 
 
@@ -374,6 +422,8 @@ var _autopilot_before := false
 
 func _open_start_screen() -> void:
 	get_tree().paused = false
+	_round_over = false
+	_leave_training()
 	_session = false
 	_finishing = false
 	_reset()
@@ -387,10 +437,69 @@ func _open_start_screen() -> void:
 	pc.start()
 	start_screen.visible = true
 	start_screen.refresh(terminal, _setup_idx)
+	start_screen.refresh_mode(game_mode, _task_idx)
 	if touch_pad:
 		mobile.release_pad()
 		touch_pad.close_menu()
 		touch_pad.visible = false
+
+
+## "Spiel starten": Competition beginnt direkt mit Countdown, die Spielmodi mit ihrer Aufgabe.
+func _on_start_pressed() -> void:
+	_close_start_screen()
+	if game_mode == Training.COMPETITION:
+		_countdown_start()
+	else:
+		_enter_training()
+
+
+## Competition: 3 – 2 – 1 – GO, dann fährt die Anlage los (Runde beginnt).
+func _countdown_start() -> void:
+	if _counting:
+		return
+	_counting = true
+	await Challenge.countdown(hud, get_tree(), false, sfx)
+	_counting = false
+	if not start_screen.visible and not challenge.active and pc.state == CableSystem.State.IDLE 			and rider.mode != Rider.Mode.CRASHED:
+		_start_run()
+		rider.block_jump()
+
+
+## R / ☰ „Zurück zum Steg“ (Competition): Strafzeit, zurück auf den Steg, dann wieder Countdown.
+func _reset_to_dock() -> void:
+	if _finishing:
+		_end_session()
+		_reset()
+		return
+	_penalty(RESET_PENALTY)
+	_reset()
+	if not _finishing:
+		_countdown_start()
+
+
+## Spielmodus mit Aufgabe starten (immer Terminal 2).
+func _enter_training() -> void:
+	_session = false
+	_finishing = false
+	if terminal != "T2":
+		_comp_terminal = terminal
+		_apply_terminal("T2")
+	challenge.begin(game_mode, _task_idx)
+
+
+## Zurück aus dem Spielmodus: Setup, Terminal, Seil und Tempo der Competition wiederherstellen.
+func _leave_training() -> void:
+	if not challenge.active:
+		return
+	_task_idx = challenge.task_idx
+	challenge.stop()
+	if _comp_terminal != "":
+		_apply_terminal(_comp_terminal)
+		_comp_terminal = ""
+	features.load_setup(_setups[_setup_idx]["file"], {"T1": cable_t1, "T2": cable}, _s_offset())
+	rider.forget_features()
+	npc.forget_features()
+	_apply_anlage()
 
 
 func _close_start_screen() -> void:
@@ -612,6 +721,8 @@ func _select_setup(idx: int, force := false) -> void:
 func _on_touch_down() -> void:
 	if start_screen.visible:
 		return
+	if challenge.active or _counting:
+		return
 	if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED:
 		_start_run()
 		_touch_started = true
@@ -625,11 +736,10 @@ func _on_pad_menu(id: String) -> void:
 		"help":
 			hud.toggle_help()
 		"reset":
-			if _finishing:
-				_end_session()
-			else:
-				_penalty(RESET_PENALTY)
-			_reset()
+			if challenge.active:
+				challenge.start_attempt()
+				return
+			_reset_to_dock()
 		"home":
 			_open_start_screen()
 		"mute":
@@ -761,6 +871,7 @@ func _time_up() -> void:
 
 
 func _end_session() -> void:
+	_round_over = true
 	if _test_log:
 		print("RUNDE ENDE at t=%.1f" % _elapsed)
 	_session = false
@@ -826,7 +937,11 @@ func _process(_delta: float) -> void:
 		state = Hud.TimeState.OVER
 	elif _session:
 		state = Hud.TimeState.LOW if _time_left < 60.0 and not _free_ride() else Hud.TimeState.RUNNING
-	hud.set_stats(_clock(_time_left if _session else _game_time), state,
+	var time_text := _clock(_time_left if _session else _game_time)
+	if challenge.active:
+		time_text = str(maxi(challenge.attempt, 1))
+		state = Hud.TimeState.RUNNING
+	hud.set_stats(time_text, state,
 		_final_score if _finishing else rider.score, rider.tension_smooth, rider.tension_smooth / minf(rider.crash_tension, Rider.CRASH_TENSION))
 	hud.set_debug("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nWenden %d   ·   Kamera: %s%s" % [
 		roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
@@ -834,7 +949,10 @@ func _process(_delta: float) -> void:
 	hud.set_board(rider.board_state_text())
 	# Terminal/Setup wählt man am Handy nur auf der Startseite
 	hud.show_setup_menu(pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED and not mobile.active)
-	if rider.attached:
+	if challenge.active or _counting:
+		hud.show_recovery("", [])
+		hud.set_center("")
+	elif rider.attached:
 		_swum = false
 	elif rider.swimming:
 		_swum = true                # wer losschwimmt, braucht das Panel nicht mehr
@@ -859,7 +977,10 @@ func _process(_delta: float) -> void:
 	elif rider.mode != Rider.Mode.CRASHED:
 		hud.show_recovery("", [])
 		if pc.state == CableSystem.State.IDLE:
-			hud.set_center("Tippen zum Starten" if mobile.active else "LEERTASTE drücken zum Starten")
+			hud.set_center("")
+			# Competition: steht man auf dem Steg (z. B. nach Bergung), startet der Countdown von selbst
+			if not _round_over and not start_screen.visible and hud.visible and not get_tree().paused:
+				_countdown_start()
 		elif mobile.active and not mobile.tilt_available:
 			hud.set_center("Neigungssensor nicht verfügbar –\nBewegungssensoren im Browser erlauben")
 		else:
@@ -886,15 +1007,15 @@ func _take_shot() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("start"):
-		if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED:
+		if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED and not _counting and not challenge.active:
 			_start_run()
 			rider.block_jump()
+	elif event.is_action_pressed("reset") and challenge.active:
+		challenge.start_attempt()            # Spielmodus: neuer Versuch
+	elif (event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down")) and challenge.active:
+		pass                                 # Spielmodus: festes Tempo
 	elif event.is_action_pressed("reset"):
-		if _finishing:
-			_end_session()
-		else:
-			_penalty(RESET_PENALTY)
-		_reset()
+		_reset_to_dock()
 	elif event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down"):
 		pc.change_speed(2.0 if event.is_action_pressed("speed_up") else -2.0)
 		settings.set_v("speed", float(roundi(pc.max_speed * 3.6)))
@@ -1028,6 +1149,12 @@ func _parse_args() -> void:
 			_test_pitch = arg.substr(8).to_float()
 		elif arg.begins_with("--pause-at="):
 			_pause_at = arg.substr(11).to_float()
+		elif arg.begins_with("--mode="):
+			_mode_arg = arg.substr(7)
+		elif arg == "--mode-auto":
+			mode_auto = true
+		elif arg.begins_with("--go="):
+			_go_at = arg.substr(5).to_float()
 		elif arg == "--hitbox":
 			_hitbox_arg = true
 		elif arg.begins_with("--set="):

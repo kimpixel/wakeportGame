@@ -7,17 +7,17 @@ const HELP := """← / →   lenken   (in der Luft und beim Raley: drehen; auf d
 ↑ / ↓   in der Luft: Frontroll / Backroll     auf dem Slider: Nosepress / Tailpress
 Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das Brett dreht frei, etwas schneller
 Leertaste halten + loslassen   Absprung (langsam: Ollie, über 40 km/h, voll aufgeladen und ohne Feature voraus: Raley)
-Leertaste  Start (Runde 7:30)     R  zurück zum Steg (−2:00)     + / -  Anlagentempo
+Start mit Countdown 3 – 2 – 1 – GO (Runde 7:30)     R  zurück zum Steg (−2:00, dann Countdown), in den Spielmodi: neuer Versuch     + / -  Anlagentempo
 Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−1:00)     R = Steg (−2:00)
 C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause
 P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus     H  Hilfe ein/aus     F3  Hitboxen (Debug)
 Tab  Startseite (Terminal, Feature-Setup, Einstellungen)"""
 
-const HELP_MOBILE := """Tippen   Start          Handy neigen   lenken (auf dem Slider: deutlich neigen = Boardslide ↔ 50-50)
+const HELP_MOBILE := """Start mit Countdown          Handy neigen   lenken (auf dem Slider: deutlich neigen = Boardslide ↔ 50-50)
 SPRUNG (links) halten + loslassen   Absprung (schnell: Raley)
 ▲ / ▼   in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress
 DRIFT   Kante lösen          Nach Sturz: Bildschirm halten = schwimmen, DRIFT = sofort weiter (−1:00)
-☰   Menü: Hilfe, Zurück zum Steg, Startseite, Ton, Seil-Abreißen an/aus"""
+☰   Menü: Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Seil-Abreißen an/aus"""
 
 const ACCENT := Color(0.55, 0.82, 0.22)          # Wakeport-Grün
 const PANEL := Color(0.05, 0.07, 0.09, 0.66)
@@ -41,6 +41,9 @@ var _rec_grid: GridContainer
 var _rec_key := ""
 
 var _time_label: Label
+var time_title := "ZEIT"          # Spielmodi: "VERSUCH"
+var _count: Label                 # Countdown 3 – 2 – 1 – GO
+var _task: Label                  # Spielmodi: Aufgabe und Messwert unter der Leiste
 var _time_value: Label
 var _time_state := TimeState.IDLE
 var _score_value: Label
@@ -93,6 +96,22 @@ func _ready() -> void:
 	_help_hint.add_theme_color_override("font_color", Color(1, 1, 1, 0.7))
 
 	_build_recovery()
+
+	_count = _label(150)
+	_count.anchor_right = 1.0
+	_count.anchor_top = 0.3
+	_count.anchor_bottom = 0.3
+	_count.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_count.add_theme_font_override("font", _font)
+	_count.add_theme_constant_override("outline_size", 14)
+	_count.visible = false
+
+	_task = _label(22)
+	_task.add_theme_font_override("font", _font)
+	_task.anchor_right = 1.0
+	_task.offset_top = 140
+	_task.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_task.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 
 	# Technik-Angaben klein unten rechts
 	_debug = _label(14)
@@ -304,7 +323,7 @@ func _label(size: int) -> Label:
 func set_stats(time_text: String, time_state: TimeState, score: int, tension_n: float, tension_ratio: float) -> void:
 	_time_value.text = time_text
 	_time_state = time_state
-	_time_label.text = "ZEIT UM" if time_state == TimeState.OVER else "ZEIT"
+	_time_label.text = "ZEIT UM" if time_state == TimeState.OVER else time_title
 	if score > _score_target:
 		_score_gain.text = "+%d" % (score - _score_target)
 		_gain_time = 1.6
@@ -318,6 +337,18 @@ func set_stats(time_text: String, time_state: TimeState, score: int, tension_n: 
 ## Technik-Angaben (klein, unten rechts).
 func set_debug(text: String) -> void:
 	_debug.text = text
+
+
+## Countdown groß in der Mitte ("" = aus). GO in Grün.
+func show_count(text: String) -> void:
+	_count.visible = text != ""
+	_count.text = text
+	_count.add_theme_color_override("font_color", ACCENT if text == "GO" else Color.WHITE)
+
+
+## Spielmodi: Aufgabe und aktueller Messwert unter der Leiste ("" = aus).
+func set_task(text: String) -> void:
+	_task.text = text
 
 
 func set_center(text: String) -> void:

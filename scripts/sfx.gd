@@ -17,6 +17,7 @@ const CHEER_PAUSE := 3.0    # Sekunden Ruhe nach einem Ruf
 const CHEER_DIR := "res://assets/sounds/positiv"
 const HIT_DIR := "res://assets/sounds/feature_hit"      # Brett trifft ein Feature (Aufnahmen)
 const LANDING_DIR := "res://assets/sounds/landing"      # Brett landet auf dem Wasser (Aufnahmen)
+const COUNT_DIR := "res://assets/sounds/countdown"     # Countdown-Ansage (englisch): three, two, one, go
 
 var rider: Rider
 var people: Array[Dictionary] = []   # aus Beach: Leute im Startblock
@@ -159,6 +160,22 @@ func _hit(pool: Array[AudioStream], fallback: AudioStream, strength: float) -> v
 func _buzz(ms: int) -> void:
 	if haptics:
 		Input.vibrate_handheld(ms)
+
+
+## Countdown-Ansage ("3", "2", "1", "GO") – spielt auch, während das Spiel steht (Spielmodi).
+var _count_player: AudioStreamPlayer
+const COUNT_WORDS := {"3": "three", "2": "two", "1": "one", "GO": "go"}
+
+func say_count(text: String) -> void:
+	if not COUNT_WORDS.has(text):
+		return
+	if _count_player == null:
+		_count_player = _player(0.0)
+		_count_player.process_mode = Node.PROCESS_MODE_ALWAYS
+	var a := load(COUNT_DIR.path_join(COUNT_WORDS[text] + ".wav")) as AudioStream
+	if a:
+		_count_player.stream = a
+		_count_player.play()
 
 
 func _player(db: float) -> AudioStreamPlayer:

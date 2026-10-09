@@ -6,6 +6,8 @@ Die Hindernisse sind **modular**, genau wie die echten Module am Wakeport. Es gi
 2. **`setup_*.json` – ein Feature-Setup:** Für beide Terminals (`T1`, `T2`) je eine Liste. Jede Zeile stellt ein Bauteil aus dem Katalog an einer Position auf.
 3. **`index.json` – die Liste der Setups** für das Auswahlmenü im Spiel (oben = Standard). Unbekannte Monate oder Jahre stehen als Platzhalter `?` drin.
 
+Die Dateien `training_*.json` gehören zu den Spielmodi (Training) und stehen nicht im Menü: `training_leer.json` (Wenden, Raley), `training_kicker.json` (Kicker M und L nebeneinander), `training_slider.json` (Slider-Park mit 100 m Long Rail).
+
 Das Setup wählst du auf der Startseite aus. Für ein neues Setup legst du eine `setup_*.json` an und trägst sie in `index.json` ein. Am Code ändert sich nichts.
 
 Bequemer geht es mit dem **Setup-Editor** im Spiel (Startseite): Er speichert eigene Setups auf dem Gerät (`user://setups/`). Mit „Als JSON kopieren“ bekommst du genau dieses Dateiformat – als `setup_*.json` hier ablegen und in `index.json` eintragen, dann ist es fest im Spiel.

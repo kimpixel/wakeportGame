@@ -96,6 +96,7 @@ Fallstricke:
 |---|---|
 | `scripts/main.gd` | Szene aufbauen, Eingabe (`_setup_input`), Spielablauf (Runde, Strafzeiten, Wenden-Wertung), Startseite öffnen/schließen, Test-Argumente |
 | `scripts/rider.gd` | Fahrer: Physik (Wasser, Luft, Slider), Seilzug, Tricks und Punkte, Posen (IK am Menschen-Rig), Raley/Überschlag/Press, Sturz/Schwimmen/Deep-Water-Start, Autopilot/NPC |
+| `scripts/training.gd`, `scripts/challenge.gd`, `scripts/ui/task_panel.gd` | Spielmodi: Aufgaben/Medaillen (Daten), Ablauf eines Versuchs (Platzieren, Countdown, Messen), Aufgaben-Fenster |
 | `scripts/cable_system.gd` | Carrier/Seilbahn einer Anlage (Zustände RUN, BRAKE, PAUSE, FETCH, HOLD, DONE) |
 | `scripts/features/` | `feature_set.gd` (Setups laden), `feature_part.gd` (Form = Physik = Grafik), `hacks.gd` (Hack-Erkennung/-Namen) |
 | `scripts/ui/start_screen.gd` | Startseite (responsiv, Popups Einstellungen / Features & Hacks / Detail) |
@@ -118,8 +119,23 @@ Wendepunkt. Ufer-Wende T2 bei 28 m vom Startmast (`cable.turn_a_z` in main.gd).
 
 ## Festgelegte Regeln und Entscheidungen
 
-Spiel:
-- Runde **7:30**. Danach holt der Operator den Fahrer zum Start, dann Startseite mit Ergebnis.
+Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/ui/task_panel.gd` Fenster):
+- **Competition** = die Runde auf Zeit (alles unter „Spiel“). Daneben Training: **Wenden, Kicker, Slider, Raley**, je
+  mehrere Aufgaben (leicht → schwer), jede misst einen Wert → **Bronze/Silber/Gold** (Schwellen in `Training.MODES`,
+  vom Nutzer fein justiert). Bestwerte in user://settings.cfg [medaillen]; **Tests speichern nichts**.
+- Aufgabe setzt Fahrer + Carrier **in voller Fahrt** kurz vor die Stelle (`Rider.place`, `CableSystem.place_running`),
+  jeder Versuch wieder dort (auch Kamera). Immer Terminal 2, 30 km/h, 16 m Seil. Eigene Setups
+  `setups/training_*.json` (nicht in index.json): leer (Wenden/Raley), Kicker M+L wie Setup B, Slider-Park
+  (rechts Full Pipe, Rail, A-Frame, Pipe; links 100 m Long Rail).
+- **Jeder Start mit Countdown 3 – 2 – 1 – GO** (`Challenge.countdown`), dazu Ansage **englisch** „three, two, one, go“
+  (`assets/sounds/countdown/`, Windows-Stimme Zira, Stille abgeschnitten; `Sfx.say_count`, spielt auch in der Pause): Competition fährt bei GO los (Szene läuft; auch nach R/☰ zurück zum Steg),
+  Aufgaben stehen bis GO (SceneTree.paused).
+- Test: `--mode=kicker:2 --go=0.5` (Fenster bestätigen), `--mode-auto` (Autopilot fährt), `--lane=X` (Spur halten),
+  `--jump-at=S`. Ausgabe `CHALLENGE …: Wert Medaille N`. Kalibrierung: Autopilot schafft Wenden mit Silber,
+  Kicker M ohne Absprung 1,6 m, mit Absprung bis 3,0 m (L 3,8 m), Full Pipe 13 m.
+
+Spiel (Competition):
+- Runde **7:30** (Einstellung „Competition: Rundenlänge“), Start nach Countdown. Danach holt der Operator den Fahrer zum Start, dann Startseite mit Ergebnis.
 - **2-Mast-Prinzip: niemand muss zurück zum Start.** Seil verloren → kein Sturz, ausgleiten und
   einsinken. Nach Sturz bringt der Operator die Handle auf Höhe des Fahrers; schwimmen (Bauchlage,
   Kraulen, Brett hinten oben), greifen, **Deep-Water-Start** (liegen bleiben bis das Seil spannt,

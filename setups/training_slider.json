@@ -1,0 +1,12 @@
+{
+  "name": "Training: Slider",
+  "_info": "Spielmodus Slider: rechts (Blick zum Endmast) vier einzelne Slider hintereinander (Full Pipe, Rail, A-Frame, Pipe) mit genug Abstand, um wieder auf Linie zu kommen; links ein 100 m langes Rail. Alles Richtung Endmast. Nicht in index.json.",
+  "T2": [
+    { "part": "pipe_long",      "s": 55.0,  "x": 6.0,  "dir": "out" },
+    { "part": "pro_rail",       "s": 88.0,  "x": 6.0,  "dir": "out", "ramp_out": 2.5 },
+    { "part": "py_aframe_rail", "s": 117.0, "x": 6.0,  "dir": "out" },
+    { "part": "pipe_half",      "s": 145.0, "x": 6.0,  "dir": "out" },
+    { "part": "pro_rail",       "s": 100.0, "x": -6.0, "dir": "out", "length": 100.0, "ramp_out": 2.5, "name": "Long Rail" }
+  ],
+  "T1": []
+}

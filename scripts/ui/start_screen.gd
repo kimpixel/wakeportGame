@@ -1,6 +1,8 @@
 class_name StartScreen
 extends CanvasLayer
 ## Startseite im Stil der HUD-Leiste, für Desktop und Handy (passt sich der Bildschirmgröße an).
+## Oben die Wahl des Spielmodus (Competition oder Training: Wenden, Kicker, Slider, Raley); bei
+## Competition darunter Terminal und Feature-Setup, sonst die Aufgaben mit ihren Medaillen.
 ## Im Hintergrund läuft die echte Szene: die Kamera schwenkt langsam um den See, auf beiden
 ## Anlagen fährt ein Fahrer. Darüber das Menü: Terminal, Feature-Setup, Einstellungen (Wetter,
 ## Datum, Uhrzeit, Seillänge, Anlagen-Tempo), Setup-Editor (eigene Seite, SetupEditor) und
@@ -11,6 +13,8 @@ extends CanvasLayer
 signal terminal_chosen(terminal: String)
 signal setup_chosen(idx: int)
 signal start_pressed
+signal mode_chosen(id: String)
+signal task_chosen(idx: int)
 signal setups_changed(id: String, play: bool)   # Setup-Editor hat gespeichert bzw. gelöscht
 
 const BASE_SHORT := 740.0        # so viele Einheiten hat die kurze Bildschirmseite mindestens
@@ -43,6 +47,13 @@ var _setup_group := ButtonGroup.new()
 var _setup_idx := 0
 var _editor: SetupEditor
 var _start_btn: Button
+var _mode_buttons: Array[Button] = []
+var _comp_box: VBoxContainer     # Competition: Terminal + Feature-Setup
+var _train_box: VBoxContainer    # Spielmodi: Aufgaben
+var _task_grid: GridContainer
+var _task_group := ButtonGroup.new()
+var _task_info: Label
+var _medal_icons: Array[Texture2D] = []
 var _dim: ColorRect
 var _settings: PanelContainer
 var _browser: PanelContainer
@@ -114,10 +125,46 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	var mv := VBoxContainer.new()
 	mv.add_theme_constant_override("separation", 10)
 	_menu.add_child(mv)
-	mv.add_child(_small("TERMINAL"))
+	mv.add_child(_small("SPIELMODUS"))
+	var mg := GridContainer.new()
+	mg.columns = 3
+	mg.add_theme_constant_override("h_separation", 8)
+	mg.add_theme_constant_override("v_separation", 8)
+	mv.add_child(mg)
+	var mgroup := ButtonGroup.new()
+	for m: Dictionary in Training.MODES:
+		var b := _button(m["name"], 18)
+		b.toggle_mode = true
+		b.button_group = mgroup
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.tooltip_text = m["text"]
+		var id: String = m["id"]
+		b.pressed.connect(func() -> void: mode_chosen.emit(id))
+		mg.add_child(b)
+		_mode_buttons.append(b)
+	_comp_box = VBoxContainer.new()
+	_comp_box.add_theme_constant_override("separation", 10)
+	mv.add_child(_comp_box)
+	_train_box = VBoxContainer.new()
+	_train_box.add_theme_constant_override("separation", 10)
+	_train_box.visible = false
+	mv.add_child(_train_box)
+	_train_box.add_child(_small("AUFGABEN"))
+	_task_grid = GridContainer.new()
+	_task_grid.columns = 2
+	_task_grid.add_theme_constant_override("h_separation", 8)
+	_task_grid.add_theme_constant_override("v_separation", 8)
+	_train_box.add_child(_task_grid)
+	_task_info = _label("", 16, Color(1, 1, 1, 0.85))
+	_task_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_task_info.custom_minimum_size = Vector2(100, 0)
+	_train_box.add_child(_task_info)
+	for i in 4:
+		_medal_icons.append(_medal_icon(i))
+	_comp_box.add_child(_small("TERMINAL"))
 	var th := HBoxContainer.new()
 	th.add_theme_constant_override("separation", 8)
-	mv.add_child(th)
+	_comp_box.add_child(th)
 	var tg := ButtonGroup.new()
 	for i in terminals.size():
 		var b := _button(terminal_names[i], 20)
@@ -127,12 +174,12 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 		b.pressed.connect(func() -> void: terminal_chosen.emit(_terminals[i]))
 		th.add_child(b)
 		_term_buttons.append(b)
-	mv.add_child(_small("FEATURE-SETUP"))
+	_comp_box.add_child(_small("FEATURE-SETUP"))
 	_setup_grid = GridContainer.new()
 	_setup_grid.columns = 2
 	_setup_grid.add_theme_constant_override("h_separation", 8)
 	_setup_grid.add_theme_constant_override("v_separation", 8)
-	mv.add_child(_setup_grid)
+	_comp_box.add_child(_setup_grid)
 	set_setup_names(setup_names)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
@@ -168,6 +215,59 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_editor.build()
 	_editor.saved.connect(func(id: String, play: bool) -> void: setups_changed.emit(id, play))
 	_editor.closed.connect(func() -> void: get_viewport().disable_3d = false)
+
+
+## Medaille als kleines Bild für die Aufgaben-Tasten (0 = noch keine: leerer Ring).
+func _medal_icon(level: int) -> ImageTexture:
+	var n := 26
+	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
+	var c: Color = Training.MEDAL_COLORS[level]
+	for y in n:
+		for x in n:
+			var d := Vector2(x + 0.5 - n * 0.5, y + 0.5 - n * 0.5).length()
+			var a := clampf(n * 0.5 - d, 0.0, 1.0)
+			if level == 0:
+				a *= clampf(d - (n * 0.5 - 3.0), 0.0, 1.0)      # nur Ring
+				img.set_pixel(x, y, Color(1, 1, 1, a * 0.45))
+			else:
+				var inner := c.lightened(0.25) if d < n * 0.3 else c
+				img.set_pixel(x, y, Color(inner, a))
+	return ImageTexture.create_from_image(img)
+
+
+## Spielmodus und Aufgabe anzeigen (Tasten, Medaillen, kurzes Ziel).
+func refresh_mode(mode_id: String, task_idx: int) -> void:
+	var mi := Training.mode_index(mode_id)
+	_mode_buttons[mi].set_pressed_no_signal(true)
+	var comp := mode_id == Training.COMPETITION
+	_comp_box.visible = comp
+	_train_box.visible = not comp
+	_start_btn.text = "SPIEL STARTEN" if comp else "AUFGABE STARTEN"
+	for c in _task_grid.get_children():
+		c.queue_free()
+	if not comp:
+		var list := Training.tasks(mode_id)
+		for i in list.size():
+			var t: Dictionary = list[i]
+			var b := _button("%d  %s" % [i + 1, t["name"]], 17)
+			b.toggle_mode = true
+			b.button_group = _task_group
+			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			b.clip_text = true
+			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+			b.icon = _medal_icons[clampi(int(Training.best(mode_id, t["id"])[0]), 0, 3)]
+			b.tooltip_text = t["title"]
+			b.button_pressed = i == task_idx
+			b.pressed.connect(func() -> void: task_chosen.emit(i))
+			_task_grid.add_child(b)
+		var t: Dictionary = list[clampi(task_idx, 0, list.size() - 1)]
+		var best := Training.best(mode_id, t["id"])
+		var line: String = t["goal"]
+		if not is_nan(float(best[1])):
+			line += "
+Bestwert: " + Training.format_value(t, best[1])
+		_task_info.text = line
+	_layout()
 
 
 ## Tasten der Feature-Setups (neu aufbauen, z. B. nach Speichern im Setup-Editor).
@@ -451,7 +551,7 @@ func _page_game(p: VBoxContainer) -> void:
 	for m: Array in GameSettings.MODES:
 		secs.append(m[0])
 		modes.append(m[1])
-	_opt_row(p, "SPIELMODUS", modes, "mode", secs, 2)
+	_opt_row(p, "COMPETITION: RUNDENLÄNGE", modes, "mode", secs, 2)
 	p.add_child(_small("HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"))
 	_opt_row(p, "Auf dem Slider einloggen", ["An", "Aus"], "assist_lock", [true, false])
 	_opt_row(p, "Überschlag dreht von selbst zu Ende", ["An", "Aus"], "assist_flip", [true, false])

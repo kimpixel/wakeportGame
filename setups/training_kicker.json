@@ -1,0 +1,9 @@
+{
+  "name": "Training: Kicker",
+  "_info": "Spielmodus Kicker: Kicker M und Kicker L nebeneinander wie in Setup B (Terminal 2, Richtung Startsteg). Nicht in index.json.",
+  "T2": [
+    { "part": "kicker_m", "s": 64.8, "x": 4.6, "dir": "in", "yaw": -4 },
+    { "part": "kicker_l", "s": 66.6, "x": 7.8, "dir": "in", "yaw": -4 }
+  ],
+  "T1": []
+}

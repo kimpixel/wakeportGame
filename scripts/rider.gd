@@ -16,6 +16,9 @@ signal rope_lost(reason: String) # Handle verloren (kein Sturz): ausgleiten, abs
 signal grabbed                   # nach dem Schwimmen die Handle wieder gegriffen
 signal sank                      # zu langsam geworden und abgesoffen: wie ein Wasserstart
 signal skipped                   # Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
+## Für die Spielmodi (Challenge): Landung nach einem Sprung bzw. Ende eines Slides, mit Messwerten
+signal jump_landed(info: Dictionary)   # raley, air_time, half_turns, rolls, popped, points
+signal slide_ended(info: Dictionary)   # part, time, dist, dist_5050, dist_bs, switches, press
 
 ## Bergung nach Sturz/Seilverlust (2-Mast-Anlage: niemand muss zurück zum Start):
 ## der Operator bringt die Handle auf die Höhe des Fahrers, der schwimmt hin und greift sie.
@@ -173,6 +176,8 @@ var _snap_yaw := 0.0            # Zielstellung des Bretts auf dem Slider
 var _steer_armed := true        # ←/→ wieder losgelassen -> nächste Vierteldrehung möglich
 var _slide_seq: Array[String] = []   # Stellungen während des Slides (Boardslide / 50-50)
 var _bs_time := 0.0             # Zeit im Boardslide
+var _slide_dist := 0.0          # gerutschte Meter (gesamt / im Boardslide) – für die Spielmodi
+var _bs_dist := 0.0
 var _flip := 0.0                # Überschlag im Sprung (rad, + = Frontroll)
 var _flip_lock := false         # ↑/↓ war beim Abheben schon gedrückt (z. B. Press vom Slider) -> erst loslassen
 var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
@@ -311,6 +316,24 @@ func reset() -> void:
 	_getup = 1.0
 	if _ragdoll:
 		_ragdoll.stop()
+
+
+## Spielmodi: Fahrer mitten in der Fahrt absetzen (auf dem Wasser, gleitend, Seil am Carrier).
+func place(p: Vector3, facing: float, velocity: Vector3) -> void:
+	reset()
+	pos = p
+	_prev_pos = p
+	yaw = facing
+	_prev_yaw = facing
+	vel = velocity
+	sink_level = 0.0
+	_combo = 0
+	_slide_part = null
+	_slide_time = 0.0
+	_slide_seq.clear()
+	_slide_dist = 0.0
+	_bs_dist = 0.0
+	_bs_time = 0.0
 
 
 # ---------------------------------------------------------------- Helfer
@@ -1105,8 +1128,11 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 				_slide_seq.append(stance)
 			else:
 				_slide_seq[-1] = stance        # Einrasten am Anfang zählt nicht als Wechsel
+		var step := horizontal_speed() * delta
+		_slide_dist += step
 		if stance == "Boardslide":
 			_bs_time += delta
+			_bs_dist += step
 		# ↑/↓ auf dem Slider: Nose- bzw. Tailpress
 		if _pitch_in > 0.3:
 			_press_nose_t += delta
@@ -1131,8 +1157,13 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 		var pts := (SLIDE_BASE + _slide_time * SLIDE_PER_S + BOARDSLIDE_BONUS * bs_share + press \
 			+ SWITCH_BONUS * switches) * float(SLIDE_FACTOR.get(_slide_part.type, 1.0))
 		_score_trick(trick + " – " + _slide_part.display_name, int(pts))
+		slide_ended.emit({"part": _slide_part, "time": _slide_time, "dist": _slide_dist,
+			"dist_bs": _bs_dist, "dist_5050": _slide_dist - _bs_dist, "switches": switches,
+			"press": maxf(_press_nose_t, _press_tail_t)})
 	_slide_seq.clear()
 	_bs_time = 0.0
+	_slide_dist = 0.0
+	_bs_dist = 0.0
 	_slide_time = 0.0
 	_press_nose_t = 0.0
 	_press_tail_t = 0.0
@@ -1386,6 +1417,8 @@ func _land(surf: float) -> void:
 		if parts.is_empty():
 			parts.append("Ollie" if _popped else "Air")
 		_score_trick(" ".join(parts), pts)
+		jump_landed.emit({"raley": _raley, "air_time": air_time, "half_turns": half_turns,
+			"rolls": rolls, "popped": _popped, "points": pts})
 
 
 func crash(reason: String) -> void:

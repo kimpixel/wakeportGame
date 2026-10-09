@@ -216,6 +216,16 @@ func reset() -> void:
 	_brake_z = NAN
 
 
+## Spielmodi: Carrier mitten in der Fahrt absetzen (lokales z, Richtung -1 = zum Endmast).
+func place_running(z: float, direction: float, speed: float) -> void:
+	reset()
+	s = z
+	_prev_s = z
+	dir = direction
+	v = direction * speed
+	state = State.RUN
+
+
 func change_speed(kmh: float) -> void:
 	max_speed = clampf(max_speed + kmh / 3.6, 16.0 / 3.6, 40.0 / 3.6)
 
