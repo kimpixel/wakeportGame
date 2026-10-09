@@ -135,7 +135,7 @@ func _ready() -> void:
 	add_child(water)
 	cable = CableSystem.new()
 	add_child(cable)
-	cable.turn_a_z = -26.0          # Ufer-Wende T2: 4 m weiter draußen (mehr Abstand zum Ufer)
+	cable.turn_a_z = -28.0          # Ufer-Wende T2: 6 m weiter draußen (mehr Abstand zum Ufer)
 	# Nachbaranlage T1 mit einem NPC-Fahrer (startet vom T1-Schwimmsteg)
 	cable_t1 = CableSystem.new()
 	cable_t1.place_between(Geo.masts["t1_start"], Geo.masts["t1_end"])

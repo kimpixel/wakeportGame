@@ -114,7 +114,7 @@ Seils, `x` = seitlich (+ rechts mit Blick zum Endmast). Lage: 50,0122 N, 8,4773 
 Bahn = lokal −x der Anlage. Alle Features stehen im Spiel 10 m weiter draußen als in den
 Setup-Dateien (`FEATURE_SHIFT`) plus Mittenausgleich je Anlage (`CENTER_SHIFT`: T1 10,5 m, T2 12,5 m – im
 Schnitt gleich viel Platz vorne und hinten), Endmasten 35 m weiter (`END_EXTEND`), rote Bojen 27 m vor dem
-Wendepunkt. Ufer-Wende T2 bei 26 m vom Startmast (`cable.turn_a_z` in main.gd).
+Wendepunkt. Ufer-Wende T2 bei 28 m vom Startmast (`cable.turn_a_z` in main.gd).
 
 ## Festgelegte Regeln und Entscheidungen
 
