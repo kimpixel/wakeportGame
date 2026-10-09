@@ -237,7 +237,7 @@ Features/Setups:
 - T1-Steg ist 5 cm höher als T2 (`Lake.DOCK_T1_Y`).
 
 Einstellungen (`scripts/game_settings.gd`, Reiter Spiel/Fahrer/Welt/Technik in `start_screen.gd`,
-angewendet in `main.gd` `_apply_setting`): Spielmodus Runde 7:30 / 10:00 / 15:00 / Freies Fahren, Hilfen
+angewendet in `main.gd` `_apply_setting`): Spielmodus Runde 7:30 / 10:00 / 15:00 / Freies Fahren (keine Uhr, HUD zeigt „MODUS FREI“), Hilfen
 (Einloggen, Überschlag ausdrehen; je aus +15 %), Seilzug-Grenze (Locker/Normal/Streng/Aus; Taste G
 und ☰-Menü schalten Abreißen an/aus), Brett, Stance Regular/Goofy, Helm,
 Weste, Seillänge, Anlagen-Tempo, Flugzeuge, NPC, Grafik, Lautstärken (Busse Effekte/Jubel/Flugzeuge),

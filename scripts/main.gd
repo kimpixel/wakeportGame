@@ -841,7 +841,7 @@ func _step_session(delta: float) -> void:
 	if not _session or start_screen.visible:
 		return
 	if _free_ride():
-		_time_left += delta
+		pass                             # Freies Fahren: keine Uhr
 	elif not _finishing:
 		_time_left -= delta
 		if _time_left <= 0.0:
@@ -941,6 +941,10 @@ func _process(_delta: float) -> void:
 	if challenge.active:
 		time_text = str(maxi(challenge.attempt, 1))
 		state = Hud.TimeState.RUNNING
+	elif _free_ride():
+		time_text = "FREI"                  # Freies Fahren: keine Uhr
+		state = Hud.TimeState.RUNNING
+	hud.time_title = "VERSUCH" if challenge.active else ("MODUS" if _free_ride() else "ZEIT")
 	hud.set_stats(time_text, state,
 		_final_score if _finishing else rider.score, rider.tension_smooth, rider.tension_smooth / minf(rider.crash_tension, Rider.CRASH_TENSION))
 	hud.set_debug("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nWenden %d   ·   Kamera: %s%s" % [
