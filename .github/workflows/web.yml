@@ -16,8 +16,10 @@ permissions:
   contents: write
   pull-requests: write
 
+# Je PR bzw. Branch eine Gruppe. Nicht github.ref allein: beim Schließen eines gemergten PRs ist das
+# refs/heads/main, und der Lauf hat dann den Build der Hauptversion abgebrochen.
 concurrency:
-  group: web-${{ github.ref }}
+  group: web-${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || github.ref }}
   cancel-in-progress: true
 
 env:
