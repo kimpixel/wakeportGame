@@ -47,6 +47,7 @@ var _cur := {}                  # laufende Station: idx, on_air, on_turns, slide
 var _since_air := 99.0          # s seit der letzten Landung
 var _air_turns := 0             # halbe Drehungen des letzten Sprungs
 var _status: Array[String] = [] # je Station "", "OK", "X"
+var _best_station := 0.0        # bester Messwert einer geschafften Station (metric != count)
 
 
 func _ready() -> void:
@@ -207,6 +208,7 @@ func _reset_measure() -> void:
 	_air_turns = 0
 	_status.clear()
 	_stations.clear()
+	_best_station = 0.0
 	if task["kind"] == "special":
 		var groups := {}
 		for p: FeaturePart in game.features.parts:
@@ -245,7 +247,7 @@ func _physics_process(delta: float) -> void:
 		return
 	if r.mode == Rider.Mode.CRASHED or not r.attached:
 		if task["kind"] in ["chain", "special"] and _count > 0:
-			_value = _count
+			_value = _count if task["kind"] == "chain" else _special_value()
 			_hit = true
 			_finish(true)
 			return
@@ -302,9 +304,10 @@ func _physics_process(delta: float) -> void:
 				return
 		"special":
 			_track_special(r)
-			if _past(s_now, float(task["end_s"]) + _off) and _cur.is_empty():
+			var all_done := _cur.is_empty() and not _stations.is_empty() and _st_next >= _stations.size()
+			if (_past(s_now, float(task["end_s"]) + _off) and _cur.is_empty()) or all_done:
 				if _count > 0:
-					_value = _count
+					_value = _special_value()
 					_hit = true
 					_finish(true)
 				else:
@@ -448,8 +451,15 @@ func _judge_station(out_turns: int) -> void:
 		why = ("kein Press" if press == "" else ("Nosepress" if press == "nose" else "Tailpress") + " statt " + ("Nosepress" if req["press"] == "nose" else "Tailpress"))
 	elif req.has("out") and out_turns != int(req["out"]):
 		why = "Abgang: %s statt %s" % [_turn_name(out_turns), _turn_name(int(req["out"]))]
+	if why == "" and task["metric"] != "count":
+		_best_station = maxf(_best_station, float(info.get(task["metric"], 0.0)))   # z. B. Meter im Slide
 	_station_done(_cur["idx"], why == "", why)
 	_cur = {}
+
+
+## Wert der Kombinations-Challenge: Anzahl geschaffter Slider oder bester Messwert einer geschafften Station.
+func _special_value() -> float:
+	return float(_count) if task["metric"] == "count" else _best_station
 
 
 ## Station (Index in _stations) eines Slider-Teils, -1 = keins.
