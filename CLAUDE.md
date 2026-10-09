@@ -204,8 +204,8 @@ Tricks/Optik:
   seitlich/nach oben auf die Slide-Linie (`Rider._catch_glide`), kein Hochspringen. Gehört zur Hilfe
   „Einloggen“. Debug: **F3** bzw. `--hitbox` blendet ein: Fangzonen **gelb**, glattes Plastik **blau**, Safety/Auffahrt und
   Kicker **orange** (fährt man wie einen Kicker).
-- **Brettstellung auf dem Slider rastet ein** (`Rider._slide_orient`): beim Draufkommen Boardslide, nur bei
-  ≤ 12° zur Achse (`SNAP_5050`) 50-50 – man slidet also meistens Boardslide. Auf dem Slider dreht ←/→ (Handy:
+- **Brettstellung auf dem Slider rastet ein** (`Rider._slide_orient`): beim Draufkommen in die nächste Stellung:
+  bis 45° zur Achse (`SNAP_5050`) 50-50, darüber Boardslide (früher 12° – schräges Aufspringen ergab ungewollt Boardslide). Auf dem Slider dreht ←/→ (Handy:
   deutlich neigen) je Tipp 90° (Boardslide ↔ 50-50), nicht stufenlos; Wechsel geben `SWITCH_BONUS` 80 und
   stehen im Namen („Boardslide to 50-50 – Rail“). Autopilot/NPC springen nicht um.
 - **Abgang quer** (Brett > 50° zur Fahrtrichtung) vom Feature ins Wasser oder quer gelandet = Sturz, außer mit **Drift**

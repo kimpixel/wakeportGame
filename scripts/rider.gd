@@ -106,7 +106,7 @@ const PRESS_BONUS := 100.0
 const CATCH_GLIDE := 5.0         # m/s seitlich in die Slide-Linie gleiten
 const CATCH_RISE := 3.0          # m/s nach oben auf die Oberkante gleiten
 const DRIFT_DRAG := 0.7          # Wasserwiderstand im Drift (Anteil): Brett liegt flach, leicht schneller
-const SNAP_5050 := deg_to_rad(12.0)   # nur so gerade angeflogen rastet ein 50-50 ein, sonst Boardslide
+const SNAP_5050 := deg_to_rad(45.0)   # Einrasten in die nächste Stellung: bis hier 50-50, darüber Boardslide
 const SNAP_RATE := 9.0           # rad/s: so schnell dreht das Brett in die eingerastete Stellung
 const SWITCH_BONUS := 80.0       # Punkte je Wechsel Boardslide <-> 50-50 auf dem Slider
 const SLIDE_TURN := 4.5         # rad/s: so schnell dreht das Brett auf dem Slider
@@ -1105,8 +1105,8 @@ func _slide_lock(delta: float) -> void:
 	pos.z += corr.z
 
 
-## Brettstellung auf dem Slider: beim Draufkommen je nach Winkel einrasten (schräg/quer ->
-## Boardslide, fast gerade -> 50-50), danach mit ←/→ (Handy: deutlich neigen) in 90°-Schritten
+## Brettstellung auf dem Slider: beim Draufkommen in die nächste Stellung einrasten (eher quer ->
+## Boardslide, eher längs -> 50-50), danach mit ←/→ (Handy: deutlich neigen) in 90°-Schritten
 ## umspringen (Boardslide <-> 50-50). Das Brett dreht zügig in die Zielstellung.
 func _slide_orient(rail: FeaturePart, delta: float) -> void:
 	var ax := rail.lock_axis()
