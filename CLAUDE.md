@@ -219,9 +219,9 @@ Tricks/Optik:
   **Absprung auf dem Kicker: Höhe = Steigung (mit Tempo) + Sprungkraft** (`_kick_vy` + `POP_ON_KICK` 0.6 ×
   Ollie-Schub): z. B. Kicker M an der Kante abgesprungen ca. 2,1 m über der Kante (ohne Absprung 0,5 m).
 - **Glattes Plastik** (`"slick"` in parts.json): Pyramid oben, Transition des Transition Rails,
-  Transition Curb, Ollie Box (nicht die Ledge), Bump nur die flache Spitze (`"slick": "top"`; alle
+  Ollie Box (nicht die Ledge), Bump nur die flache Spitze (`"slick": "top"`; alle
   Seiten des Bumps sind Kicker). **Safetys/Auffahrten** (`ramp_in`/`ramp_out`, z. B.
-  vorne an der Transition Curb, vorne/hinten an der Ollie Box) fährt man wie einen **Kicker**: nie glatt,
+  vorne/hinten an der Ollie Box) und die ganze **Transition Curb** (`"kicker": true`) fährt man wie einen **Kicker**: nie glatt,
   kein Slide, keine Slide-Punkte, kein Einloggen (`FeaturePart.on_ramp`). Glatt heißt sonst: kein
   Slide, keine Punkte, man rutscht in der bisherigen Richtung weiter und kann nicht lenken. Das Rail
   im Transition Rail bleibt slidebar.
@@ -233,6 +233,8 @@ Features/Setups:
 - Zwei Cheese Wedges zusammen stehen immer **Rücken an Rücken** (zweiter mit `dir` andersherum).
 - Down Ledge: 20 m, Profil `[[0,-0.1],[1.0,0.5],[5.5,1.9],[19.5,0.8],[20,-0.15]]` (kleine Safety
   vorne, steil hoch, lang abfallend, hintere Safety bis ins Wasser). Kein Add-on-Rail.
+- A-Frame Rail (Pyramid Series): 0,6 m breit, oben ganz schwarzes Halbrund-Rail, gerade hoch / flache Mitte / gerade runter,
+  vorne/hinten steile gerade Safety, die ins Halbrund schneidet (`top_rail`, `safety_slope`).
 - Uprail 7,5 m. Transition Rail: Rail 28 cm dick, im flachen Abschluss (ca. 26 cm) **versenkt**,
   ragt 7 cm heraus, von allen Seiten befahrbar, löst keinen Sturz aus.
 - Positionen kommen aus den Plan-Fotos (`fotos/`); die Pläne sind nicht maßstäblich, Maße aus

@@ -18,6 +18,8 @@ var part_id := ""
 ## Glatte Plastikfläche: dort wird nicht geslidet, man rutscht nur geradeaus weiter (kein Lenken).
 ## "all" = ganze Oberseite (Pyramid), "transition" = Transition, aber nicht das Rail.
 var slick := ""
+## Ganze Oberseite fährt man wie einen Kicker (kein Slide, nicht glatt), z. B. Transition Curb.
+var kicker := false
 var display_name := ""
 var row_index := -1           # Nummer der Zeile im Setup (Gruppen: alle Teile dieselbe)
 var group_name := ""          # gehört zu einem Modul aus mehreren Teilen (z. B. Pyramid Series)
@@ -38,6 +40,8 @@ var ramp_curve := 1.6          # Form der Auffahrten: 1 = gerade (A-Frame), > 1 
 var color := "white"           # Farbe des Körpers: white / grey
 var side_ramp := 0.0           # seitliche Transition auf der Seilseite (Breite in m, 0 = senkrechte Wand)
 var profile: Array = []         # Block: Längsprofil [[Abstand vom Anfang (m), Höhe], …] statt height/height_end
+var top_rail := 0.0             # Block: Oberseite als schwarzes Halbrund-Rail (Radius, z. B. A-Frame Rail); profile = Unterkante der Rundung
+var safety_slope := 0.0         # Block: steile, gerade Safety an beiden Enden (Steigung), schneidet oben ins Halbrund
 var lip := ENTRY               # Höhe, auf der Auffahrten beginnen (ENTRY = unter Wasser, > 0 = sichtbare Kante)
 var side_curve := 2.0          # Form der seitlichen Auffahrt: 1 = gerade Schräge, 2 = konkav
 var body_curve := 1.0          # Block: Verlauf height -> height_end (1 = gerade, 2 = konkav wie die Transition Curb)
@@ -81,7 +85,10 @@ func setup(id: String, p: Dictionary) -> void:
 	side_curve = p.get("side_curve", side_curve)
 	lip = p.get("lip", lip)
 	profile = p.get("profile", [])
+	top_rail = p.get("top_rail", 0.0)
+	safety_slope = p.get("safety_slope", 0.0)
 	slick = p.get("slick", "")
+	kicker = p.get("kicker", false)
 	if type == "pipe" or type == "ball":
 		width = radius * 2.0
 	if type == "ball":
@@ -251,6 +258,11 @@ func is_slick_at(world: Vector3) -> bool:
 ## Steht man auf einer Safety bzw. Auffahrt (kurze Schräge vorne/hinten)? Die fährt man wie
 ## einen Kicker: kein Slide, kein glattes Plastik, kein Einloggen.
 func on_ramp(world: Vector3) -> bool:
+	if kicker:
+		return true                      # ganzes Teil wie ein Kicker (Transition Curb)
+	if safety_slope > 0.0:
+		var uv := to_uv(world)
+		return _on_safety(uv.x, uv.y)    # steile Safety vor dem Halbrund-Rail (A-Frame Rail)
 	if type == "bump":
 		return not _on_bump_top(world)   # Bump: alle Seiten sind Kicker, nur oben flach
 	var u := -(_inv * world).z
@@ -319,7 +331,7 @@ func height_local(u: float, v: float, collision := false) -> float:
 			if absf(v) > width * 0.5:
 				return NONE
 			if not profile.is_empty():
-				return _with_side_ramp(v, _profile_h(u + hl))
+				return _with_top_rail(u, v, _with_side_ramp(v, _profile_h(u + hl)))
 			# Verlauf über den Körper (ohne Auffahrten): z. B. Transition Curb konkav von 0,35 auf 1,1 m
 			var tb := clampf((u + hl - ramp_in) / maxf(length - ramp_in - ramp_out, 0.01), 0.0, 1.0)
 			return _with_side_ramp(v, _with_ramps(u, lerpf(height, height_end, pow(tb, body_curve))))
@@ -386,6 +398,29 @@ func _with_ramps(u: float, h: float) -> float:
 	if ramp_out > 0.0 and u > hl - ramp_out:
 		h = minf(h, lerpf(lip, h, pow((hl - u) / ramp_out, ramp_curve)))
 	return h
+
+
+## Halbrund-Rail als Oberseite (A-Frame Rail) und davor/dahinter die steile, gerade Safety:
+## die Ebene der Safety schneidet ins Halbrund, von oben gesehen entsteht eine U-förmige Grenze.
+func _with_top_rail(u: float, v: float, h: float) -> float:
+	if top_rail > 0.0 and absf(v) < top_rail:
+		h += sqrt(top_rail * top_rail - v * v)
+	if safety_slope > 0.0:
+		h = minf(h, _safety_h(u))
+	return h
+
+
+## Höhe der Safety-Ebene (steigt von beiden Enden aus dem Wasser an).
+func _safety_h(u: float) -> float:
+	return ENTRY + safety_slope * (length * 0.5 - absf(u))
+
+
+## Liegt (u, v) auf der Safety statt auf dem Halbrund-Rail?
+func _on_safety(u: float, v: float) -> bool:
+	if safety_slope <= 0.0:
+		return false
+	var rail := _profile_h(u + length * 0.5) + (sqrt(top_rail * top_rail - v * v) if absf(v) < top_rail else 0.0)
+	return _safety_h(u) < rail
 
 
 ## Seitliche Auffahrt auf der Seilseite: von der Innenkante (Wasser) konkav hoch auf h.
@@ -505,7 +540,12 @@ func _ready() -> void:
 			var tube := Util.beam(self, Vector3(rx, ry, hl - ramp_in), Vector3(rx, ry, -hl + ramp_out), TR_RAIL_R, black)
 			tube.mesh.set("radial_segments", 16)
 		_:
-			_build_heightfield(white, 24 if profile.is_empty() else int(length * 8.0), 12 if side_ramp > 0.0 else 2)
+			if top_rail > 0.0:
+				# Halbrund-Rail schwarz, Safetys und Wände weiß
+				_build_heightfield(white, int(length * 4.0), 2, -INF, INF, func(_u: float, _v: float) -> bool: return false)
+				_build_rail_top(white, Util.mat(Color(0.06, 0.06, 0.07), 0.35))
+			else:
+				_build_heightfield(white, 24 if profile.is_empty() else int(length * 8.0), 12 if side_ramp > 0.0 else 2)
 	if collide:
 		_build_collider()
 
@@ -535,7 +575,8 @@ func _build_collider() -> void:
 
 ## Allgemeine Form: Oberfläche aus height_local() + senkrechte Wände bis unter Wasser.
 ## u_from/u_to begrenzen auf einen Abschnitt (z. B. nur die Auffahrrampen).
-func _build_heightfield(mat: Material, nu: int, nv: int, u_from := -INF, u_to := INF) -> void:
+## top_pred(u, v): nur diese Stücke der Oberseite (z. B. Safety weiß, Rail schwarz); walls: Wände mitbauen.
+func _build_heightfield(mat: Material, nu: int, nv: int, u_from := -INF, u_to := INF, top_pred := Callable(), walls := true) -> void:
 	var hl := length * 0.5
 	var u0 := maxf(-hl, u_from)
 	var u1 := minf(hl, u_to)
@@ -555,22 +596,27 @@ func _build_heightfield(mat: Material, nu: int, nv: int, u_from := -INF, u_to :=
 	# generate_normals() die Kanten zwischen Oberseite und Wänden ab (Ledges sähen rund aus).
 	# Nur geschwungene Oberseiten (Transitions, Kicker, Bump) werden in sich geglättet.
 	var curved := type in ["ramp", "transition", "bump", "pipe"] or (side_ramp > 0.0 and side_curve > 1.0) or body_curve > 1.0 \
-		or (ramp_curve > 1.0 and (ramp_in > 0.0 or ramp_out > 0.0))
+		or (ramp_curve > 1.0 and (ramp_in > 0.0 or ramp_out > 0.0)) or top_rail > 0.0
 	st.set_smooth_group(1 if curved else 0xFFFFFFFF)
 	# Oberseite
 	for i in nu:
 		for j in nv:
+			if top_pred.is_valid():
+				var um := lerpf(u0, u1, (i + 0.5) / nu)
+				var vm := lerpf(-hw, hw, (j + 0.5) / nv)
+				if not top_pred.call(um, vm):
+					continue
 			_quad(st, p.call(i, j), p.call(i + 1, j), p.call(i + 1, j + 1), p.call(i, j + 1), Vector3.UP)
 	# Wände immer flach (scharfe Kanten)
 	st.set_smooth_group(0xFFFFFFFF)
 	# Seitenwände
-	for i in nu:
+	for i in (nu if walls else 0):
 		for j: int in [0, nv]:
 			var a: Vector3 = p.call(i, j)
 			var b: Vector3 = p.call(i + 1, j)
 			_quad(st, a, b, Vector3(b.x, BOTTOM, b.z), Vector3(a.x, BOTTOM, a.z), Vector3(signf(a.x), 0, 0))
 	# Stirnseiten
-	for j in nv:
+	for j in (nv if walls else 0):
 		for i: int in [0, nu]:
 			var a: Vector3 = p.call(i, j)
 			var b: Vector3 = p.call(i, j + 1)
@@ -602,6 +648,58 @@ func _build_rail(white: Material) -> void:
 		var u := lerpf(a, b, float(i) / n)
 		Util.beam(self, Vector3(0, BOTTOM, -u), Vector3(0, height - radius, -u), 0.05, steel)
 		Util.box(self, Vector3(0.7, 0.35, 0.7), Vector3(0, -0.1, -u), white)
+
+
+## Oberseite des A-Frame Rails: Safetys weiß, Halbrund-Rail schwarz. Die Grenze (Safety-Ebene
+## schneidet die Rundung) wird je Spalte exakt berechnet, damit sie nicht treppig aussieht.
+func _build_rail_top(white: Material, black: Material) -> void:
+	var hl := length * 0.5
+	var hw := width * 0.5
+	var nv := 16
+	var vs: Array[float] = []
+	var ub: Array[float] = []          # Grenze vorne (u < 0); hinten gespiegelt
+	for j in nv + 1:
+		var v := lerpf(-hw + 0.001, hw - 0.001, float(j) / nv)
+		vs.append(v)
+		var lo := -hl
+		var hi := 0.0
+		for _k in 30:
+			var mid := (lo + hi) * 0.5
+			if _on_safety(mid, v):
+				lo = mid
+			else:
+				hi = mid
+		ub.append(hi)
+	var pt := func(u: float, v: float) -> Vector3:
+		return Vector3(v, maxf(height_local(clampf(u, -hl + 0.001, hl - 0.001), v), BOTTOM + 0.05), -u)
+	var strip := func(st: SurfaceTool, u_a: Callable, u_b: Callable, n: int) -> void:
+		for j in nv:
+			for i in n:
+				var t0 := float(i) / n
+				var t1 := float(i + 1) / n
+				var a: Vector3 = pt.call(lerpf(u_a.call(j), u_b.call(j), t0), vs[j])
+				var b: Vector3 = pt.call(lerpf(u_a.call(j), u_b.call(j), t1), vs[j])
+				var c: Vector3 = pt.call(lerpf(u_a.call(j + 1), u_b.call(j + 1), t1), vs[j + 1])
+				var d: Vector3 = pt.call(lerpf(u_a.call(j + 1), u_b.call(j + 1), t0), vs[j + 1])
+				_quad(st, a, b, c, d, Vector3.UP)
+	var front := func(_j: int) -> float: return -hl
+	var back := func(_j: int) -> float: return hl
+	var b_in := func(j: int) -> float: return ub[j]
+	var b_out := func(j: int) -> float: return -ub[j]
+	for part: Array in [[white, true], [black, false]]:
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		st.set_smooth_group(1)
+		if part[1]:
+			strip.call(st, front, b_in, 4)
+			strip.call(st, b_out, back, 4)
+		else:
+			strip.call(st, b_in, b_out, int(length * 4.0))
+		st.generate_normals()
+		var mi := MeshInstance3D.new()
+		mi.mesh = st.commit()
+		mi.material_override = part[0]
+		add_child(mi)
 
 
 ## Zwei Dreiecke, Reihenfolge so gedreht, dass die Normale nach "outward" zeigt.

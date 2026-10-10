@@ -10,7 +10,7 @@
     { "part": "down_ledge",      "s": 111.7, "x": 7.0,  "dir": "in" },
     { "part": "cheese_wedge",    "s": 118.8, "x": 8.8, "dir": "in" },
     { "part": "cheese_wedge",    "s": 114.8, "x": 8.8, "dir": "out" },
-    { "part": "uprail",          "s": 62.9,  "x": 4.5,  "dir": "out" },
+    { "part": "uprail",          "s": 62.9,  "x": 4.5,  "dir": "in" },
     { "part": "kicker_l",        "s": 66.5,  "x": 7.4,  "dir": "in", "yaw": -6 }
   ],
   "T1": [
