@@ -26,6 +26,7 @@ extends Node3D
 ##   --sup-at=SEK      Test: ein SUP aus der Seemitte kommt herüber, das rote Boot vertreibt ihn
 ##   --drop-at=S[,x,y,z]  Test: Fahrer zu dieser Zeit in die Luft setzen (Standard: über den Startsteg, Erfolg "steg")
 ##   --erfolg=ID,…     Test: geheime Erfolge als erreicht zeigen (z. B. --screen=@erfolge --erfolg=fisch)
+##   --dpress=W        Test: Drift-Press fest zeigen (-1 Tailpress … +1 Nosepress), auch ohne Drift
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
 ##   --pause-at=SEK    Test: zu dieser Zeit pausieren (mit --shot: Bild der Pause)
@@ -141,6 +142,7 @@ var _hitbox_arg := false        # Test: Fangzonen der Slider zeigen
 var _set_args: Array[String] = []   # Test: --set=NAME=WERT
 var _hold: Array = []           # Test: [Aktion, von, bis] (--hold)
 var _jump_at := -1.0           # Test: zu dieser Zeit abspringen
+var _test_dpress := INF       # Test: Drift-Press fest (--dpress)
 var _test_pitch := 0.0         # Test: ↑/↓ in der Luft
 var _touch_at: Array[float] = []   # Test: Finger auf den Bildschirm
 var _closeup := Vector3.INF     # Testkamera relativ zum Fahrer
@@ -175,6 +177,7 @@ func _ready() -> void:
 	add_child(cable_t1)
 	rider = Rider.new()
 	rider.test_pitch = _test_pitch
+	rider.test_dpress = _test_dpress
 	rider.water = water
 	rider.cable = cable
 	add_child(rider)
@@ -1231,6 +1234,8 @@ func _parse_args() -> void:
 				var a := h.split("@")
 				var tt := a[1].split("-")
 				_hold.append([a[0], tt[0].to_float(), tt[1].to_float()])
+		elif arg.begins_with("--dpress="):
+			_test_dpress = arg.substr(9).to_float()
 		elif arg.begins_with("--pitch="):
 			_test_pitch = arg.substr(8).to_float()
 		elif arg.begins_with("--pause-at="):

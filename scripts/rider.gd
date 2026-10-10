@@ -112,6 +112,13 @@ const CATCH_GLIDE := 5.0         # m/s seitlich in die Slide-Linie gleiten
 const CATCH_RISE := 3.0          # m/s nach oben auf die Oberkante gleiten
 const DRIFT_DRAG := 0.7          # Wasserwiderstand im Drift (Anteil): Brett liegt flach, leicht schneller
 const DRIFT_SPIN := 1.2          # im Drift dreht das flache Brett so viel schneller (Anteil; 5 + 5 360er zwischen den roten Bojen)
+# Drift-Press: im Drift auf dem Wasser ↑ = Nosepress, ↓ = Tailpress (Brett kippt weit um das Ende,
+# Oberkörper legt sich nach hinten, die freie Hand streift das Wasser – nach Fotoserie)
+const DPRESS_SPEED := 5.0        # m/s: erst ab diesem Tempo im Drift auslösbar
+const DPRESS_ANG := 0.85         # rad: so steil steht das Brett im vollen Drift-Press (Fotos: ca. 50°)
+const DPRESS_RISE := 2.5         # 1/s: so schnell baut sich der Drift-Press auf (Bewegung, kein Ruck)
+const DPRESS_END := 0.68         # m: Drehpunkt am Brett-Ende (Brett 1,49 m)
+const DPRESS_ALIGN := 3.0        # 1/s: so schnell dreht sich das Brett im Drift-Press in die Zugrichtung des Seils
 const SNAP_5050 := deg_to_rad(45.0)   # Einrasten in die nächste Stellung: bis hier 50-50, darüber Boardslide
 const SNAP_RATE := 9.0           # rad/s: so schnell dreht das Brett in die eingerastete Stellung
 const SWITCH_BONUS := 80.0       # Punkte je Wechsel Boardslide <-> 50-50 auf dem Slider
@@ -206,6 +213,8 @@ var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom K
 var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Oberkörper vor)
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
 var _press_bs_vis := 0.0        # 1 = Press im Boardslide (Brett seitlich versetzt, Ende über dem Slider)
+var _dpress_vis := 0.0          # sichtbarer Drift-Press (+ Nose, - Tail; Nose = Ende am vorderen Fuß)
+var test_dpress := INF          # Test: Drift-Press fest auf diesen Wert (--dpress)
 var press_tip := Vector3.ZERO   # Welt: gedrücktes Brett-Ende beim Press (darauf zielt die Kamera)
 var press_body := Vector3.ZERO  # Welt: Becken in der Press-Pose (Kamera)
 var _press_lead := 1.0          # +1: Nose zeigt in Fahrtrichtung, -1: switch (bleibt im Boardslide stehen)
@@ -371,6 +380,11 @@ func place(p: Vector3, facing: float, velocity: Vector3) -> void:
 
 
 # ---------------------------------------------------------------- Helfer
+
+## Drift-Press gerade (+ Nose, - Tail; 0 ohne Drift), z. B. für die Challenge.
+func drift_press() -> float:
+	return _dpress_vis if drifting and mode == Mode.WATER else 0.0
+
 
 func forward() -> Vector3:
 	return Vector3(-sin(yaw), 0.0, -cos(yaw))
@@ -1077,6 +1091,9 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var drift := _release > 0.5 and not autopilot and attached and not on_feature and not on_dock and speed > 2.0
 	drifting = drift
 	var force := Vector3(rope.x, 0.0, rope.z) + f * f_long + r * f_lat
+	# Drift-Press: weiter Drift (das ganze Momentum bleibt), nur dreht man das Brett nicht selbst –
+	# es dreht sich mit dem Seilzug in die Richtung, in die das Seil zieht
+	var dp_hold := smoothstep(0.2, 0.8, absf(_dpress_vis)) if drift else 0.0
 	if drift:
 		var drag := (DRAG_QUAD * speed * speed + DRAG_LIN * speed) * DRIFT_DRAG
 		force = Vector3(rope.x, 0.0, rope.z) - dir_before * drag
@@ -1094,7 +1111,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 
 	# Lenken über die Kante (im Drift dreht sich damit nur das Brett, die Fahrtrichtung bleibt)
 	# flaches (driftendes) Brett lässt sich schneller herumdrehen, belastete Kante zieht weite Bögen
-	var turn := TURN_RATE * clampf(0.6 + speed / 7.0, 0.6, 1.4) * (1.0 + DRIFT_SPIN * _release - 0.3 * _edge)
+	var turn := TURN_RATE * clampf(0.6 + speed / 7.0, 0.6, 1.4) * (1.0 + DRIFT_SPIN * _release - 0.3 * _edge) * (1.0 - dp_hold)
 	var rail := slick_part if slick_part else (features.part_at(pos.x, pos.z) if (features and on_feature) else null)
 	var sliding := rail != null and rail.is_slide() and not slick and not rail.on_ramp(pos)
 	if slick:
@@ -1107,6 +1124,8 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	if not sliding:
 		_on_slider = false
 	yaw -= _steer * turn * delta
+	if dp_hold > 0.0 and rope_dir.length() > 0.1:
+		yaw = lerp_angle(yaw, _aligned_yaw(atan2(-rope_dir.x, -rope_dir.z)), DPRESS_ALIGN * dp_hold * delta)
 	# Wasserstart: solange das Brett nicht gleitet, dreht es sich in Zugrichtung
 	if speed < 2.5 and tension > 30.0 and not on_feature:
 		var target := _aligned_yaw(atan2(-rope_dir.x, -rope_dir.z))
@@ -1346,6 +1365,7 @@ func _clear_air_pose() -> void:
 	_tuck = 0.0
 	_press_vis = 0.0
 	_press_bs_vis = 0.0
+	_dpress_vis = 0.0
 	_jump_start = false
 
 
@@ -1654,6 +1674,11 @@ func _process(delta: float) -> void:
 	_press_vis = lerpf(_press_vis, press_target, 1.0 - exp(-delta * 10.0))
 	var bs_target := 1.0 if (mode == Mode.WATER and _slide_part != null and _is_boardslide(_slide_part)) else 0.0
 	_press_bs_vis = lerpf(_press_bs_vis, bs_target, 1.0 - exp(-delta * 10.0))
+	var dp_min := DPRESS_SPEED if absf(_dpress_vis) < 0.2 else DPRESS_SPEED * 0.6     # einmal drin, hält er länger
+	var dp_target := _pitch_in if (mode == Mode.WATER and drifting and speed > dp_min) else 0.0
+	_dpress_vis = lerpf(_dpress_vis, dp_target, 1.0 - exp(-delta * DPRESS_RISE))
+	if test_dpress != INF and mode == Mode.WATER:
+		_dpress_vis = test_dpress
 	var k := 1.0 - exp(-delta * 8.0)
 	_edge_vis = lerpf(_edge_vis, _edge, k)
 	_release_vis = lerpf(_release_vis, _release, k)
@@ -1711,6 +1736,8 @@ func _process(delta: float) -> void:
 	if _rig and attached and mode != Mode.CRASHED:
 		# Die Hände bestimmen, wo der Griff ist: nie weiter weg, als die Arme reichen
 		handle_pos = _pose_arms(handle_pos, bar_axis)
+		if absf(_dpress_vis) > 0.01:
+			handle_pos = _pose_drift_press_arms(handle_pos, bar_axis)
 		# Press: Körper aus der Blender-Pose, die Handle in der vorderen Hand
 		var pw := smoothstep(0.1, 0.8, absf(_press_vis))
 		if pw > 0.001:
@@ -1895,6 +1922,8 @@ func _pose_human() -> void:
 		return
 	_rig.begin()
 	_pose_stand()
+	if absf(_dpress_vis) > 0.01:
+		_pose_drift_press()
 
 
 ## Fortschritt im Sprung 0..1: bisherige Flugzeit / (bisherige + geschätzte Restzeit bis zur Landung).
@@ -1947,6 +1976,12 @@ func _board_stand_xf() -> Transform3D:
 		var shift := -pv * _press_bs_vis * minf(absf(pl), 1.0)
 		press_tip = xf * (pv + shift)          # Brett-Ende, mit dem geslidet wird (Kamera)
 		xf *= Transform3D(b, pv - b * pv + shift)
+	if absf(_dpress_vis) > 0.001:
+		# Drift-Press: Brett kippt um das Ende im Wasser (lokal -Z = vorderer Fuß, auch bei Goofy)
+		var pv := Vector3(0.0, -0.03, DPRESS_END * signf(-_dpress_vis))
+		var b := Basis(Vector3.RIGHT, -DPRESS_ANG * _dpress_vis)
+		press_tip = xf * pv
+		xf *= Transform3D(b, pv - b * pv)
 	if goofy:
 		# Goofy: rechter Fuß vorne – das Twin-Tip-Brett steht einfach andersherum unter dem Fahrer
 		xf *= Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
@@ -2076,6 +2111,70 @@ func _pose_stand() -> void:
 	if look_dir.length() < 1.0:
 		look_dir = rope_h if rope_h.length() > 0.1 else forward()
 	_rig.look_at(skel_inv * (pelvis_world + rb * Vector3.UP * 0.8 + look_dir.normalized() * 10.0))
+
+
+## Drift-Press (nach Fotoserie): Becken tief über dem gedrückten Ende, das Bein dort tief gebeugt,
+## das andere gestreckt zum hochstehenden Ende; Oberkörper kippt zum gedrückten Ende und zur
+## Fersenseite (Rücken Richtung Wasser). Arme danach in _pose_drift_press_arms.
+func _pose_drift_press() -> void:
+	var w := smoothstep(0.0, 1.0, absf(_dpress_vis))
+	var before := _rig.snapshot()
+	_rig.begin()
+	var skel := _rig.skeleton.global_transform
+	var skel_inv := skel.affine_inverse()
+	var skel_b := skel.basis.orthonormalized()
+	var to_skel := func(bw: Basis) -> Basis: return skel_b.inverse() * bw * skel_b
+	var rb := _pose_frame().basis.orthonormalized()
+	var up := rb * Vector3.UP
+	var chest := rb * Vector3.RIGHT * _facing()
+	var along := rb * Vector3.BACK * signf(-_dpress_vis)       # zum gedrückten Ende
+	var ff := _board_xf * Wakeboard.ankle_local(true)
+	var fb := _board_xf * Wakeboard.ankle_local(false)
+	var low := ff if (ff - fb).dot(along) > 0.0 else fb          # Fuß am gedrückten Ende
+	var pelvis := low - chest * 0.3 + up * 0.38 + along * 0.12
+	# Oberkörper: zum gedrückten Ende und nach hinten gekippt (ca. 70°), Brust bleibt offen
+	var body_up := (up * 0.3 + along * 0.95 - chest * 0.4).normalized()
+	var pel_up := (up * 1.2 + body_up).normalized()              # Becken kippt nur gut zur Hälfte mit
+	var face := chest + up * 0.3
+	face = (face - pel_up * face.dot(pel_up)).normalized()
+	var pb := HumanRig._frame_rot(skel_b * Vector3.UP, skel_b * Vector3.BACK, pel_up, face)
+	_rig.set_pelvis(skel_inv * pelvis, to_skel.call(pb))
+	_rig.bend_spine(to_skel.call(Basis(Quaternion(pel_up, body_up))).get_rotation_quaternion())
+	_pose_legs(_board_xf, pelvis)
+	var look := Vector3(vel.x, 0.0, vel.z)
+	look = look.normalized() if look.length() > 1.0 else forward()
+	_rig.look_at(skel_inv * (pelvis + up * 0.9 + look * 6.0))
+	_rig.blend_from(before, 1.0 - w)
+
+
+## Arme im Drift-Press: die Hand auf der Seite des gedrückten Endes streift das Wasser,
+## die andere hält die Handle angewinkelt neben dem Kopf. Gibt die Griffposition zurück.
+func _pose_drift_press_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
+	var w := smoothstep(0.0, 1.0, absf(_dpress_vis))
+	var skel := _rig.skeleton.global_transform
+	var skel_inv := skel.affine_inverse()
+	var rb := _pose_frame().basis.orthonormalized()
+	var chest := rb * Vector3.RIGHT * _facing()
+	var along := rb * Vector3.BACK * signf(-_dpress_vis)
+	var tail_hand := "l" if goofy else "r"                      # Hand über dem hinteren Fuß
+	var drag := tail_hand if _dpress_vis < 0.0 else ("r" if tail_hand == "l" else "l")
+	var hold := "r" if drag == "l" else "l"
+	var before := _rig.snapshot()
+	var head := skel * _rig.global_pose("head").origin
+	var pelvis := skel * _rig.global_pose("pelvis").origin
+	var sh_hold := skel * _rig.global_pose("upperarm_" + hold).origin
+	var sh_drag := skel * _rig.global_pose("upperarm_" + drag).origin
+	# Handle: vor dem Gesicht etwas zur Brustseite, Ellbogen angewinkelt nach unten/außen
+	var grip := head + chest * 0.3 - along * 0.12 + Vector3.DOWN * 0.05
+	var to_c := bar_axis if (grip + bar_axis - sh_hold).length() > (grip - bar_axis - sh_hold).length() else -bar_axis
+	_rig.grip(hold, skel_inv * grip, skel_inv.basis * to_c,
+		skel_inv * (sh_hold + Vector3.DOWN * 0.5 - along * 0.3 + chest * 0.1))
+	# freie Hand: hinter dem Becken am gedrückten Ende ins Wasser
+	var wet := pelvis + along * 0.6 - chest * 0.2
+	wet.y = water.height_at(wet.x, wet.z) + 0.02
+	_rig.arm(drag, skel_inv * wet, skel_inv * (sh_drag - chest * 0.6 + Vector3.UP * 0.2))
+	_rig.blend_from(before, 1.0 - w)
+	return handle_pos.lerp(grip + to_c * 0.1, w)
 
 
 ## Beine per IK in die Bindungen: Knie Richtung Brust/Zehen, leicht nach außen; Füße kippen mit

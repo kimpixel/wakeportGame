@@ -7,7 +7,8 @@ extends RefCounted
 ##
 ## Felder einer Aufgabe:
 ##   id, name (kurz, Liste), title, goal, keys / keys_mobile (Steuerung), tip
-##   kind     turn | kick | slide | chain | raley | special | drift_spin | drift_turn | drift_after
+##   kind     turn | kick | slide | chain | raley | special | drift_spin | drift_turn | drift_after | dpress
+##   press    dpress: "tail" / "nose" (längster Press am Stück) oder "switch" (Wechsel in einem Drift)
 ##   setup    Setup-Datei (Terminal 2)
 ##   start    {s, x, dir}: s = Abstand vom Startmast wie in den Setup-Dateien (ohne Verschiebung),
 ##            dir +1 = Richtung Endmast, -1 = Richtung Startsteg. Wende: {turn: "a"|"b", before, x}
@@ -212,6 +213,27 @@ const MODES := [
 		 "keys": "Strg schon auf dem Feature halten und danach nicht loslassen",
 		 "keys_mobile": "DRIFT schon auf dem Feature halten und danach nicht loslassen",
 		 "tip": "Mit Drift darf das Brett beim Abgang auch quer stehen. Der Seilzug zieht dich im Drift zur Seilmitte – vorher weit außen auf das Feature fahren."},
+		{"id": "tailpress", "name": "Tailpress im Drift", "title": "Tailpress im Drift",
+		 "kind": "dpress", "press": "tail", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
+		 "metric": "time", "medals": [4.0, 7.0, 9.5],
+		 "goal": "Auf dem Weg zum vorderen Wendepunkt driften und dabei ins Tail drücken: das Brett kippt um das Tail, die Nose steht hoch, die freie Hand streift das Wasser. Du gleitest mit dem ganzen Schwung weiter, das Brett dreht sich mit dem Seilzug. Gemessen: der längste Tailpress am Stück (bis die Wende durch ist).",
+		 "keys": "Strg halten  driften     ↓ halten  Tailpress",
+		 "keys_mobile": "DRIFT halten  driften     ▼ halten  Tailpress",
+		 "tip": "Erst ab 18 km/h. Im Press nimmst du den ganzen Schwung mit, drehen kannst du nicht: das Brett dreht sich von selbst mit dem Seilzug. Mit Schwung bis durch die Wende halten."},
+		{"id": "nosepress", "name": "Nosepress im Drift", "title": "Nosepress im Drift",
+		 "kind": "dpress", "press": "nose", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
+		 "metric": "time", "medals": [4.0, 7.0, 9.5],
+		 "goal": "Wie der Tailpress, nur über die Nose: driften und ins vordere Ende drücken, das Tail steht hoch. Gemessen: der längste Nosepress am Stück (bis die Wende durch ist).",
+		 "keys": "Strg halten  driften     ↑ halten  Nosepress",
+		 "keys_mobile": "DRIFT halten  driften     ▲ halten  Nosepress",
+		 "tip": "Erst ab 18 km/h. Den Drift nicht loslassen – dann ist der Press sofort vorbei."},
+		{"id": "presswechsel", "name": "Press-Wechsel", "title": "Nose- und Tailpress im Wechsel",
+		 "kind": "dpress", "press": "switch", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
+		 "metric": "switches", "medals": [1.0, 3.0, 5.0],
+		 "goal": "In einem Drift zwischen Nosepress und Tailpress hin und her wechseln. Gemessen: Wechsel in einem Drift (jeder volle Press auf das andere Ende zählt; Drift loslassen fängt neu an).",
+		 "keys": "Strg halten  driften     ↑ / ↓  Nose- / Tailpress",
+		 "keys_mobile": "DRIFT halten  driften     ▲ / ▼  Nose- / Tailpress",
+		 "tip": "Der Press braucht knapp eine Sekunde, bis er ganz drin ist – nicht zu hektisch wechseln."},
 	]},
 	{"id": "transfer", "name": "Transfer", "text": "Von einem Feature auf ein anderes springen.", "tasks": [
 		{"id": "klein", "name": "Klein", "title": "Pyramid auf Pyramid-Rail",

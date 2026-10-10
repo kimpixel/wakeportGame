@@ -31,7 +31,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | Taste | Gamepad | Funktion |
 |---|---|---|
 | ← / → (A / D) | linker Stick ↔ | Über die Kante lenken. In der Luft und beim Raley: drehen. **Auf dem Slider:** je Tipp eine Vierteldrehung, Boardslide ↔ 50-50 (rastet ein) |
-| ↑ / ↓ (W / S) | linker Stick ↕ | In der Luft: **Frontroll / Backroll**. Halten dreht, loslassen dreht zur nächsten ganzen Umdrehung aus. Schief landen = Sturz. Auf dem Slider: **Nosepress / Tailpress** – schon kurz vor dem Aufkommen über dem Slider gedrückt, gibt es keine Rolle, sondern gleich den Press. Auf dem Startsteg: **Sprung-Start** – ↓ halten (Handy ▼), man stemmt sich gegen das anfahrende Seil, der Seilzug lädt sich bis zur maximalen Seilspannung auf (Anzeige „SPRUNG-START %“); dann reißt das Seil einen nach vorne vom Steg in einen großen Sprung (voller Sprung plus Auflade-Power, +100). Vorher loslassen = normaler Start ohne Sprung |
+| ↑ / ↓ (W / S) | linker Stick ↕ | In der Luft: **Frontroll / Backroll**. Halten dreht, loslassen dreht zur nächsten ganzen Umdrehung aus. Schief landen = Sturz. Im Drift (Strg, ab 18 km/h): **Drift-Press** (siehe unten). Auf dem Slider: **Nosepress / Tailpress** – schon kurz vor dem Aufkommen über dem Slider gedrückt, gibt es keine Rolle, sondern gleich den Press. Auf dem Startsteg: **Sprung-Start** – ↓ halten (Handy ▼), man stemmt sich gegen das anfahrende Seil, der Seilzug lädt sich bis zur maximalen Seilspannung auf (Anzeige „SPRUNG-START %“); dann reißt das Seil einen nach vorne vom Steg in einen großen Sprung (voller Sprung plus Auflade-Power, +100). Vorher loslassen = normaler Start ohne Sprung |
 | Strg (zur Not Alt) | LT | **Driften**: Kante gelöst – man rutscht weiter, Lenken ändert die Richtung nicht (nur der Seilzug zieht einen), das Brett lässt sich dabei frei drehen; weniger Wasserwiderstand, also leicht schneller. Nach Sturz: sofort weiterfahren (−1:00) |
 | Leertaste halten + loslassen | A | Absprung: langsam ein **Ollie**, über 40 km/h, voll aufgeladen und ohne Feature voraus automatisch ein **Raley** |
 | – | Start | Die Anlage startet von selbst nach dem Countdown 3 – 2 – 1 – GO (auch nach R oder einer Bergung am Steg) |
@@ -56,7 +56,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | SPRUNG (unten links) halten + loslassen | Absprung (schnell: Raley). Tippen auf den Bildschirm springt nicht |
 | Bildschirm halten | nach Sturz: zur Handle schwimmen |
 | ▲ / ▼ (unten rechts) | in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress |
-| DRIFT (rechts, über ▲ ▼) | Kante lösen = Driften; nach Sturz: sofort weiterfahren (−1:00) |
+| DRIFT (links, über SPRUNG) | Kante lösen = Driften; nach Sturz: sofort weiterfahren (−1:00) |
 | ☰ (oben links) | Menü: Hilfe, Zurück zum Steg (−2:00), Startseite, Ton, Seil-Abreißen an/aus |
 
 Auf dem iPhone fragt Safari beim ersten Tippen nach der Erlaubnis für Bewegungs- und Ausrichtungssensoren. Ohne sie kann man nicht lenken.
@@ -71,7 +71,7 @@ Solange der Carrier noch nicht zurückzieht, schwingst du quer zum Seil um ihn h
 
 **Driften (Technik):** Strg halten (am Handy DRIFT) löst die Kante. Das Brett liegt flach auf dem Wasser und greift nicht mehr: Lenken ändert die Fahrtrichtung nicht, man rutscht weiter, und nur der Seilzug zieht einen (zur Seilmitte). Dafür lässt sich das Brett frei herumdrehen – quer, rückwärts, ganze 360er –, und weil es flach aufliegt, bremst das Wasser weniger: man gleitet weiter. Wozu: mit Schwung durch die Wende gleiten, ohne einzusinken; quer vom Slider abgehen (ohne Drift hakt die Kante ein = Sturz) oder quer landen; Drehungen auf dem Wasser. Loslassen = die Kante greift wieder (steht das Brett dabei quer, bremst es hart).
 
-> **Ausbau-Idee (für Contributor): Nose-/Tailslides auf dem Wasser.** Das Drift-System lässt sich so erweitern, dass man in Kurven **Nose- bzw. Tailslides** fährt: Gewicht auf Nose oder Tail, das Brett schwenkt um das belastete Ende und schiebt quer über das Wasser (mit Spray). **Nicht verwechseln** mit Nose-/Tailpress auf dem Slider – das ist ein eigener Trick auf dem Feature. Es bietet sich an, weil **↑/↓ (W/S, am Handy ▲ ▼) auf dem Wasser noch frei** sind: Sie wirken bisher nur in der Luft (Front-/Backroll) und auf dem Slider (Press). Ansatzpunkte in `scripts/rider.gd`: `_pitch_in` wird in `_read_input` schon gelesen, die Drift-Physik steht in `_step_water` (`drift`, `DRIFT_DRAG`), die Haltung in den Posen-Funktionen (Vorbild: `_press_vis` / `_apply_press_pose`). Dazu passend: Punkte für den Trick, eine Challenge im Modus Driften und Hilfe/README nachziehen.
+**Drift-Press (Nose-/Tailpress auf dem Wasser):** im Drift ab 18 km/h ↑ halten (Handy ▲) = Nosepress, ↓ (▼) = Tailpress. Das Brett kippt weit um das belastete Ende, der Oberkörper legt sich nach hinten, die freie Hand streift das Wasser. Man bleibt im Drift und nimmt den ganzen Schwung mit – auch durch die Wende –, kann das Brett aber nicht selbst drehen: es dreht sich mit dem Seilzug in die Richtung, in die das Seil zieht. Am Handy liegt DRIFT dafür links über SPRUNG, damit rechts gleichzeitig ▲ ▼ geht. Challenges im Modus Driften: Tailpress, Nosepress und Press-Wechsel (Terminal 2, vorderer Wendepunkt).
 
 ## Im Browser spielen
 

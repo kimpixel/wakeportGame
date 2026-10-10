@@ -152,7 +152,7 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
 - **Driften** (`kind` drift_spin / drift_turn / drift_after, `Rider.drifting`): 360er im Drift zwischen den roten Bojen (Brett-Yaw im Drift
   aufsummiert, je volle Umdrehung eine, links/rechts getrennt, höchstens `SPIN_EACH` 5 je Richtung; Drift lösen setzt zurück), Wende im Drift (Anteil vom Bremsen des Carriers bis das Seil wieder zieht,
   nur gleitend: Sinkpegel < `DRIFT_SINK` 0,15; ohne Schwung Silber, mit Rauskanten Gold), Drift nach Feature (T2 Juli & August, längster Drift,
-  der bis 0,3 s nach Feature/Sprung beginnt). Test ohne Autopilot (der driftet nicht): `--hold=release@1-40,steer_right@1-40`.
+  der bis 0,3 s nach Feature/Sprung beginnt), **Drift-Press** (`kind: "dpress"`, `press` tail/nose/switch; immer T2 vor dem vorderen Wendepunkt, `turn: "a"`; voller Press ab `DPRESS_FULL` 0,6; im Press weiter Drift (Momentum bleibt), ←/→ dreht nicht, Brett dreht sich zum Seilzug (`DPRESS_ALIGN`); Tail/Nose = längster Press am Stück, Wechsel = Nose↔Tail in einem Drift; Ende, wenn die Wende durch ist). Test ohne Autopilot (der driftet nicht): `--hold=release@1-40,steer_right@1-40`.
 - Test: `--mode=kicker:2 --go=0.5` (Fenster bestätigen), `--mode-auto` (Autopilot fährt), `--lane=X` (Spur halten),
   `--jump-at=S`. Ausgabe `CHALLENGE …: Wert Medaille N`. Kalibrierung: Autopilot schafft Wenden mit Bronze (ca. 46 % eingesunken, seit schnellerem Einsinken `SINK_RATE` 0,9),
   Kicker M ohne Absprung 1,6 m, mit Absprung bis 3,0 m (L 3,8 m), Full Pipe 13 m.
@@ -214,7 +214,7 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
 - R, + / −, C, P, H, M, Tab (Startseite) wie in der README. **Keine Tasten T/F** mehr (Terminal/Setup nur auf der Startseite).
 
 Steuerung Handy: Neigen = lenken, Tippen = Start, **Springen nur mit der SPRUNG-Taste (links)**,
-rechts DRIFT über ▲ ▼; nach Sturz Bildschirm halten = schwimmen, DRIFT = sofort weiter;
+DRIFT links über SPRUNG (damit rechts gleichzeitig ▲ ▼ für den Drift-Press geht); nach Sturz Bildschirm halten = schwimmen, DRIFT = sofort weiter;
 ☰-Menü (Weiter, Hilfe, Zurück zum Steg, Startseite, Ton). Terminal/Setup nur auf der Startseite.
 **Mobil-Code strikt isolieren**: nur Aktionen loslassen, die er selbst gedrückt hat, nichts
 global; Web-Audio-Hacks nur auf Touch-Geräten (früher hakte sonst die Desktop-Tastatur).

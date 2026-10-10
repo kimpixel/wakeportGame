@@ -2,8 +2,9 @@ class_name TouchPad
 extends CanvasLayer
 ## Virtuelle Tasten fürs Handy (nur sichtbar, wenn MobileInput aktiv ist):
 ##  * unten links SPRUNG (halten = aufladen, loslassen = abspringen; Tippen auf den Bildschirm springt nicht)
-##  * rechts DRIFT (Kante lösen; nach einem Sturz: sofort weiter) und darunter ▲ / ▼
-##    (in der Luft Frontroll/Backroll, auf dem Slider Nose-/Tailpress)
+##    und darüber DRIFT (Kante lösen; nach einem Sturz: sofort weiter) – links, damit rechts
+##    gleichzeitig ▲ / ▼ geht (Drift-Press)
+##  * rechts ▲ / ▼ (in der Luft Frontroll/Backroll, auf dem Slider Nose-/Tailpress, im Drift Drift-Press)
 ##  * oben links ☰        Menü: Weiter, Hilfe, Zurück zum Steg, Startseite, Ton
 ## Die Finger verteilt MobileInput: wer eine Taste trifft, drückt sie; alle anderen Finger
 ## springen bzw. starten wie bisher. Stil wie die HUD-Leiste.
@@ -115,8 +116,8 @@ func _layout() -> void:
 	jump.size = Vector2(s, s) * 1.25
 	up.position = Vector2(vp.x - m - s, vp.y - m - s * 2.15)
 	down.position = Vector2(vp.x - m - s, vp.y - m - s)
-	drift.position = Vector2(vp.x - m - s, vp.y - m - s * 3.3)
 	jump.position = Vector2(m, vp.y - m - jump.size.y)
+	drift.position = Vector2(m + (jump.size.x - s) * 0.5, jump.position.y - s * 1.15)   # über SPRUNG
 	menu.size = Vector2(s * 0.62, s * 0.62)
 	menu.position = Vector2(m, m)
 	var w := minf(560.0 * _scale, vp.x - 2.0 * m)

@@ -12,6 +12,7 @@ const FAIL_DELAY := 1.4         # s nach Sturz, bis das Ergebnis kommt
 const TIMEOUT := 75.0
 const DRIFT_SINK := 0.15        # Wende im Drift: ab diesem Sinkpegel gleitet man nicht mehr (zählt nicht)
 const SPIN_EACH := 5            # 360er im Drift: so viele je Richtung zählen
+const DPRESS_FULL := 0.6         # Drift-Press zählt ab diesem Anteil (Brett deutlich gekippt)
 const OUTRO := 1.4              # s nach dem Ende weiterfahren (ausrollen), dann erst das Ergebnis
 
 var game: Node                  # main.gd (rider, pc, features, hud, cam, water, …)
@@ -60,6 +61,8 @@ var _drift_t := 0.0
 var _from_feat := false         # drift_after: kommt gerade von einem Feature (oder aus dem Sprung davon)
 var _water_t := 0.0             # s auf dem Wasser ohne Drift seit dem Feature
 var _drift_from := Vector3.INF  # Beginn des laufenden Drifts nach einem Feature
+var _press_t := 0.0             # dpress: Dauer des laufenden Drift-Press
+var _press_side := 0.0          # dpress switch: zuletzt voll gedrücktes Ende (+1 Nose, -1 Tail, 0 keins)
 
 
 func _ready() -> void:
@@ -233,6 +236,8 @@ func _reset_measure() -> void:
 	_from_feat = false
 	_water_t = 0.0
 	_drift_from = Vector3.INF
+	_press_t = 0.0
+	_press_side = 0.0
 	if task["kind"] == "special":
 		var groups := {}
 		for p: FeaturePart in game.features.parts:
@@ -342,6 +347,9 @@ func _physics_process(delta: float) -> void:
 				return
 		"drift_turn":
 			if _track_drift_turn(r, delta):
+				return
+		"dpress":
+			if _track_dpress(r, delta):
 				return
 		"drift_after":
 			_track_drift_after(r)
@@ -489,6 +497,41 @@ func _track_drift_turn(r: Rider, delta: float) -> bool:
 	if c.laps > _laps0 and c.state == CableSystem.State.RUN and r.tension_smooth > 200.0:
 		_hit = true
 		_finish(true)
+		return true
+	return false
+
+
+## Drift-Press auf dem Weg zum vorderen Wendepunkt: "tail"/"nose" = längster voller Press am Stück,
+## "switch" = Wechsel Nose <-> Tail in einem Drift. Zu Ende, sobald die Wende durch ist. true = zu Ende.
+func _track_dpress(r: Rider, delta: float) -> bool:
+	var dp := r.drift_press()
+	var full := absf(dp) > DPRESS_FULL
+	if task["press"] == "switch":
+		if not _drifting(r):
+			_press_side = 0.0
+			_press_t = 0.0                     # Wechsel zählen nur in einem Drift
+		elif full and signf(dp) != _press_side:
+			if _press_side != 0.0:
+				_press_t += 1.0
+				_value = maxf(_value, _press_t)
+				game.hud.show_trick("%s im Drift!  (%d Wechsel)" % ["Nosepress" if dp > 0.0 else "Tailpress", roundi(_press_t)])
+			_press_side = signf(dp)
+	else:
+		var want := 1.0 if task["press"] == "nose" else -1.0
+		if full and signf(dp) == want:
+			_press_t += delta
+			_value = maxf(_value, _press_t)
+		elif _press_t > 0.0:
+			if _press_t >= 0.5:
+				game.hud.show_trick("%s im Drift  %s" % ["Nosepress" if want > 0.0 else "Tailpress", Training.format_value(task, _press_t)])
+			_press_t = 0.0
+	var c: CableSystem = game.pc
+	if c.laps > _laps0 and c.state == CableSystem.State.RUN and r.tension_smooth > 200.0:
+		if _value > 0.0:
+			_hit = true
+			_finish(true)
+		else:
+			_fail("Kein Press im Drift – kein Wert")
 		return true
 	return false
 
@@ -727,6 +770,11 @@ func _update_hud() -> void:
 					live = Training.format_value(task, _value)
 			"drift_after":
 				live = "Bester Drift " + Training.format_value(task, _value)
+			"dpress":
+				if task["press"] == "switch":
+					live = "%d Wechsel   Bester %s" % [roundi(_press_t), Training.format_value(task, _value)]
+				else:
+					live = "Press %s   Bester %s" % [Training.format_value(task, _press_t), Training.format_value(task, _value)]
 			"special":
 				var n := _st_next - 1 if not _cur.is_empty() else _st_next
 				if n < task["combo"].size():
