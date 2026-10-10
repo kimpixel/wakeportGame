@@ -47,7 +47,7 @@ var _sink_vis := 0.0
 
 const UPS_TIME := 0.45
 var _ups := 0.0                  # Restzeit des "Ups"-Wacklers
-const AIR_KNEES := 0.6           # Sprung: am höchsten Punkt so tief in den Knien, zur Landung wieder gestreckt
+const AIR_KNEES := 0.95          # Sprung: am höchsten Punkt so tief in den Knien, zur Landung wieder gestreckt
 const LAND_TIME := 0.4           # Landung abfedern: so lange in die Knie und wieder hoch
 var _absorb := 0.0               # Restzeit des Abfederns
 var _absorb_amt := 0.0           # wie tief (nach Fallgeschwindigkeit)
@@ -1569,7 +1569,7 @@ func _land(surf: float) -> void:
 		return
 	if air_time > 0.25:
 		_absorb = LAND_TIME                  # Landung in den Knien abfedern, je härter, desto tiefer
-		_absorb_amt = clampf(-vel.y / 7.0, 0.3, 0.75)
+		_absorb_amt = clampf(-vel.y / 6.0, 0.45, 0.9)
 	pos.y = surf
 	vel.y = 0.0
 	vel.x *= 0.97
