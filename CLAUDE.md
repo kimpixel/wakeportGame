@@ -293,8 +293,8 @@ Features/Setups:
 - **Port Plaza** = ein Modul (kein eigener Plaza Kicker), Slider mit halbrunder Oberkante (0,9 → 1,55 m), vorne/hinten
   steile gerade Safety ins Halbrund (wie A-Frame Rail), hinten breiter Teil aus Safety 1,2 m + Kicker-Schräge 2,35 m auf 1,1 m; dahinter meist ein normaler Cheese Wedge (1,1 m, keine eigene Höhe) – Plaza + Wedge ist kein Hack.
   Interne Teile `_plaza_*` (mit `_` = nicht im Editor).
-- Uprail 7,5 m. Transition Rail: Rail 28 cm dick, im flachen Abschluss (ca. 26 cm) **versenkt**,
-  ragt 7 cm heraus, von allen Seiten befahrbar, löst keinen Sturz aus.
+- Uprail 7,5 m. Transition Rail: Rail 40 cm dick, im flachen Abschluss (ca. 36 cm) **versenkt**,
+  ragt 8 cm heraus (ca. 32 cm breit sichtbar), Teil der Oberfläche: die Auffahrten schneiden hinein; von allen Seiten befahrbar, löst keinen Sturz aus.
 - Positionen kommen aus den Plan-Fotos (`fotos/`); die Pläne sind nicht maßstäblich, Maße aus
   dem Katalog. Beim Nachstellen von Hacks: vorne/hinten und Seiten genau mit dem Foto abgleichen.
 - T1-Steg ist 5 cm höher als T2 (`Lake.DOCK_T1_Y`).

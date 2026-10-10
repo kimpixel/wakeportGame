@@ -10,9 +10,9 @@ extends Node3D
 const NONE := -100.0
 const BOTTOM := -0.45          # Unterkante der Schwimmkörper
 const ENTRY := -0.15           # Rampenanfang knapp unter Wasser
-const TR_FLAT := 0.26          # Transition Rail: flacher Abschluss oben, darin das Rail
-const TR_RAIL_R := 0.14        # Radius des Rails im Transition Rail
-const TR_RAIL_UP := 0.07       # so weit schaut es aus dem flachen Abschluss heraus
+const TR_FLAT := 0.36          # Transition Rail: flacher Abschluss oben, darin das Rail
+const TR_RAIL_R := 0.2         # Radius des Rails im Transition Rail
+const TR_RAIL_UP := 0.08       # so weit schaut es aus dem flachen Abschluss heraus
 
 var part_id := ""
 ## Glatte Plastikfläche: dort wird nicht geslidet, man rutscht nur geradeaus weiter (kein Lenken).
@@ -561,14 +561,7 @@ func _ready() -> void:
 			_mesh_only = true      # weißer Körper ohne Rail-Wölbung, das Rail ist ein eigenes Rohr
 			_build_heightfield(white, 30, 24)
 			_mesh_only = false
-			var black := Util.mat(Color(0.06, 0.06, 0.07), 0.35)
-			var hl := length * 0.5
-			var rx := -inner_v * (width * 0.5 - TR_FLAT * 0.5)
-			# Rail im flachen Abschluss versenkt (nur der obere Teil schaut heraus); beginnt und
-			# endet dort, wo die schrägen Auffahrten oben ankommen
-			var ry := height + TR_RAIL_UP - TR_RAIL_R
-			var tube := Util.beam(self, Vector3(rx, ry, hl - ramp_in), Vector3(rx, ry, -hl + ramp_out), TR_RAIL_R, black)
-			tube.mesh.set("radial_segments", 16)
+			_build_transition_rail(Util.mat(Color(0.06, 0.06, 0.07), 0.35))
 		_:
 			if top_rail > 0.0:
 				# Halbrund-Rail schwarz, Safetys und Wände weiß
@@ -774,6 +767,42 @@ func _build_rail_top(white: Material, black: Material) -> void:
 		mi.mesh = st.commit()
 		mi.material_override = part[0]
 		add_child(mi)
+
+
+## Rail im Transition Rail: im flachen Abschluss versenkt (nur der obere Teil schaut heraus) und
+## Teil der Oberfläche – die schrägen Auffahrten schneiden hinein wie die Safety beim A-Frame Rail.
+## Je Spalte wird die Grenze exakt berechnet (Rail-Höhe = Höhe der Auffahrt).
+func _build_transition_rail(black: Material) -> void:
+	var hl := length * 0.5
+	var rx := -inner_v * (width * 0.5 - TR_FLAT * 0.5)
+	var top := height + TR_RAIL_UP
+	var nv := 16
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_smooth_group(1)
+	var col := func(j: int) -> Vector3:          # x = v, y = u vorne, z = u hinten
+		var d := lerpf(-TR_RAIL_R + 0.001, TR_RAIL_R - 0.001, float(j) / nv)
+		var rh := height + TR_RAIL_UP - TR_RAIL_R + sqrt(TR_RAIL_R * TR_RAIL_R - d * d)
+		var t := clampf((rh - ENTRY) / (top - ENTRY), 0.0, 1.0)
+		var u_in := -hl + t * ramp_in if ramp_in > 0.0 else -hl
+		var u_out := hl - t * ramp_out if ramp_out > 0.0 else hl
+		return Vector3(rx - d * inner_v, u_in, u_out)
+	var pt := func(u: float, v: float) -> Vector3:
+		return Vector3(v, height_local(clampf(u, -hl + 0.001, hl - 0.001), v) + 0.002, -u)
+	var n := int(length * 4.0)
+	for j in nv:
+		var a: Vector3 = col.call(j)
+		var b: Vector3 = col.call(j + 1)
+		for i in n:
+			var t0 := float(i) / n
+			var t1 := float(i + 1) / n
+			_quad(st, pt.call(lerpf(a.y, a.z, t0), a.x), pt.call(lerpf(a.y, a.z, t1), a.x),
+				pt.call(lerpf(b.y, b.z, t1), b.x), pt.call(lerpf(b.y, b.z, t0), b.x), Vector3.UP)
+	st.generate_normals()
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = black
+	add_child(mi)
 
 
 ## Zwei Dreiecke, Reihenfolge so gedreht, dass die Normale nach "outward" zeigt.
