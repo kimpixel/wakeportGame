@@ -110,6 +110,7 @@ const PRESS_BONUS := 100.0
 const CATCH_GLIDE := 5.0         # m/s seitlich in die Slide-Linie gleiten
 const CATCH_RISE := 3.0          # m/s nach oben auf die Oberkante gleiten
 const DRIFT_DRAG := 0.7          # Wasserwiderstand im Drift (Anteil): Brett liegt flach, leicht schneller
+const DRIFT_SPIN := 1.2          # im Drift dreht das flache Brett so viel schneller (Anteil; 5 + 5 360er zwischen den roten Bojen)
 const SNAP_5050 := deg_to_rad(45.0)   # Einrasten in die nächste Stellung: bis hier 50-50, darüber Boardslide
 const SNAP_RATE := 9.0           # rad/s: so schnell dreht das Brett in die eingerastete Stellung
 const SWITCH_BONUS := 80.0       # Punkte je Wechsel Boardslide <-> 50-50 auf dem Slider
@@ -1035,7 +1036,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 
 	# Lenken über die Kante (im Drift dreht sich damit nur das Brett, die Fahrtrichtung bleibt)
 	# flaches (driftendes) Brett lässt sich schneller herumdrehen, belastete Kante zieht weite Bögen
-	var turn := TURN_RATE * clampf(0.6 + speed / 7.0, 0.6, 1.4) * (1.0 + 0.8 * _release - 0.3 * _edge)
+	var turn := TURN_RATE * clampf(0.6 + speed / 7.0, 0.6, 1.4) * (1.0 + DRIFT_SPIN * _release - 0.3 * _edge)
 	var rail := slick_part if slick_part else (features.part_at(pos.x, pos.z) if (features and on_feature) else null)
 	var sliding := rail != null and rail.is_slide() and not slick and not rail.on_ramp(pos)
 	if slick:
