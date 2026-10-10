@@ -7,6 +7,9 @@ extends Node3D
 ##  * "drone" – eine FPV-Drohne fliegt vorne-seitlich über dem Fahrer und filmt ihn; der Pilot steht mit
 ##              FPV-Brille und Funke auf dem Startsteg von T2.
 ## Ohne Challenge liegt das Boot am weißen Steg (Beach), Drohne und Pilot sind weg.
+## "patrol" (ohne Challenge): kommt ein SUP aus der Seemitte der T2-Bahn zu nah (zwischen den Bahnen
+## verboten), legt das Boot ab (nur der Fahrer an Bord), fährt seeseitig neben ihn, schickt ihn zurück
+## (sup_chased) und legt wieder am Liegeplatz an.
 ## make_boat() baut das Boot (auch für den Liegeplatz): lokal -Z = Bug, +X = rechts, y = 0 Wasserlinie.
 
 const LANE_X := -15.0          # Spur des Boots (lokal T2, Seeseite = -x)
@@ -20,6 +23,10 @@ const DRONE_AHEAD := 5.0       # Drohne: so weit vor dem Fahrer ...
 const DRONE_SIDE := 3.5        # ... seitlich (Seeseite) ...
 const DRONE_UP := 2.4          # ... und über dem Wasser
 const DRONE_MAX := 22.0        # m/s
+const PATROL_X := -19.0        # Patrouille: Spur seeseitig außerhalb der Features (lokal T2)
+const PATROL_GAP := 4.0        # so weit seeseitig neben dem SUP hält das Boot
+const PATROL_STAY := 5.0       # s bleibt es dort, bis der Paddler weg ist
+const PATROL_SPEED := 7.0      # m/s
 
 # Bootsmaße
 const STERN_Z := 1.9           # Spiegel
@@ -30,7 +37,9 @@ const PLASTIC := Color(0.93, 0.24, 0.1)
 const FLOOR_Y := 0.0           # Innenboden
 
 var game: Node                 # main.gd
-var mode := ""                 # "", "boat", "drone"
+signal sup_chased(person: Node3D)   # Patrouille: Boot ist beim Paddler angekommen
+
+var mode := ""                 # "", "boat", "drone", "patrol"
 
 var boat: Node3D
 var _driver: Person
@@ -42,6 +51,12 @@ var _bhead := 0.0              # Kurs: Winkel der Fahrtrichtung (lokal, 0 = +z)
 var _bv := 0.0
 var _bturn := 0.0
 var _t := 0.0
+var _target: Node3D            # Patrouille: der Paddler
+var _pstate := ""              # "out", "stay", "home"
+var _route: Array[Vector2] = []
+var _moor := Vector2.ZERO      # Liegeplatz (lokal) und Kurs dort
+var _moor_head := 0.0
+var _stay := 0.0
 
 var drone: Node3D
 var _props: Array[Node3D] = []
@@ -133,6 +148,7 @@ func start(choice: int) -> void:
 	for p: Person in [_driver, _filmer]:
 		if p:
 			p.watch = r
+			p.visible = true
 	boat.visible = mode == "boat"
 	if _motor:
 		if mode == "boat":
@@ -188,6 +204,111 @@ func _physics_process(delta: float) -> void:
 		_drive_boat(delta)
 	elif mode == "drone":
 		_fly_drone(delta)
+	elif mode == "patrol":
+		_patrol(delta)
+
+
+# ---------------------------------------------------------------- Patrouille
+
+## SUP kommt der T2-Bahn zu nah: Boot legt ab und fährt hin (nur ohne Challenge).
+func chase(sup: Node3D) -> void:
+	if mode != "" or game.beach.boat == null:
+		return
+	var moored: Node3D = game.beach.boat
+	var m := _local(moored.global_position)
+	var bow := _local_dir(-moored.global_basis.z)
+	_moor = Vector2(m.x, m.z)
+	_moor_head = atan2(bow.x, bow.z)
+	_bpos = _moor
+	_bhead = _moor_head
+	_bv = 0.0
+	_bturn = 0.0
+	_target = sup
+	_pstate = "out"
+	_route = [Vector2(PATROL_X, _moor.y - 4.0)]
+	mode = "patrol"
+	if _filmer:
+		_filmer.visible = false
+	if _driver:
+		_driver.watch = sup
+	boat.visible = true
+	moored.visible = false
+	if _motor:
+		_motor.play(randf())
+	set_physics_process(true)
+	_place_boat(0.0)
+	print("BOOT legt ab")
+
+
+func _patrol(delta: float) -> void:
+	match _pstate:
+		"out":
+			if not is_instance_valid(_target):
+				_go_home()
+			elif not _route.is_empty():
+				if _drive_to(_route[0], PATROL_SPEED, false, delta) < 5.0:
+					_route.remove_at(0)
+			else:
+				var t := _local(_target.global_position)
+				if _drive_to(Vector2(t.x - PATROL_GAP, t.z), PATROL_SPEED, true, delta) < 3.0 and _bv < 1.0:
+					_pstate = "stay"
+					_stay = PATROL_STAY
+					sup_chased.emit(_target)
+					print("BOOT beim SUP ", _target.global_position)
+		"stay":
+			_bv = move_toward(_bv, 0.0, BOAT_DEC * delta)
+			_bturn = move_toward(_bturn, 0.0, delta)
+			_place_boat(delta)
+			_stay -= delta
+			if _stay <= 0.0:
+				_go_home()
+		"home":
+			if not _route.is_empty():
+				if _drive_to(_route[0], PATROL_SPEED, false, delta) < 5.0:
+					_route.remove_at(0)
+			elif _drive_to(_moor, PATROL_SPEED, true, delta) < 1.5 and _bv < 1.2:
+				_dock()
+
+
+func _go_home() -> void:
+	_pstate = "home"
+	_route = [Vector2(PATROL_X, _moor.y - 4.0)]
+	if _driver:
+		_driver.watch = game.rider
+
+
+## Wieder am Liegeplatz: fahrendes Boot weg, das festgemachte wieder da.
+func _dock() -> void:
+	mode = ""
+	boat.visible = false
+	_spray.emitting = false
+	if _motor:
+		_motor.stop()
+	if _filmer:
+		_filmer.visible = true
+	if game.beach.boat:
+		game.beach.boat.visible = true
+	set_physics_process(false)
+	print("BOOT angelegt")
+
+
+## Kurs auf ein Ziel (lokal), bremst bei stop rechtzeitig davor. Liefert die Entfernung.
+func _drive_to(goal: Vector2, v_max: float, stop: bool, delta: float) -> float:
+	var aim := goal - _bpos
+	var dist := aim.length()
+	var d_ang := wrapf(atan2(aim.x, aim.y) - _bhead, -PI, PI)
+	var rate := BOAT_TURN * clampf(0.3 + _bv / 3.0, 0.3, 1.0)
+	_bturn = clampf(d_ang * 2.0, -rate, rate)
+	_bhead = wrapf(_bhead + _bturn * delta, -PI, PI)
+	var v_want := v_max * clampf(cos(d_ang), 0.25, 1.0)
+	if stop:
+		v_want = minf(v_want, sqrt(2.0 * BOAT_DEC * 0.7 * dist))
+	if dist > 3.0:
+		v_want = maxf(v_want, 1.2)                     # im Bogen weiter, nicht auf der Stelle drehen
+	_bv = move_toward(_bv, v_want, (BOAT_ACC if v_want > _bv else BOAT_DEC) * delta)
+	_bpos += Vector2(sin(_bhead), cos(_bhead)) * _bv * delta
+	_place_boat(delta)
+	return dist
 
 
 # ---------------------------------------------------------------- Boot

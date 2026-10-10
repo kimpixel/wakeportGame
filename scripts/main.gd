@@ -23,6 +23,7 @@ extends Node3D
 ##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30
 ##   --plane=S         Test: sofort ein Jet im Anflug, S m vor dem See (negativ) bzw. danach
 ##   --pike-at=SEK     Test: zu dieser Zeit springt der Hecht knapp vor dem Fahrer (Erfolg "fisch")
+##   --sup-at=SEK      Test: ein SUP aus der Seemitte kommt herüber, das rote Boot vertreibt ihn
 ##   --drop-at=S[,x,y,z]  Test: Fahrer zu dieser Zeit in die Luft setzen (Standard: über den Startsteg, Erfolg "steg")
 ##   --erfolg=ID,…     Test: geheime Erfolge als erreicht zeigen (z. B. --screen=@erfolge --erfolg=fisch)
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
@@ -131,6 +132,7 @@ var _view_arg := PackedFloat32Array()
 var _lane_arg := NAN
 var _crash_at := -1.0          # Test: Sturz zu dieser Zeit auslösen
 var _pike_at := -1.0           # Test: Hecht springt zu dieser Zeit knapp vor dem Fahrer
+var _sup_at := -1.0            # Test: ein SUP aus der Seemitte kommt zu dieser Zeit herüber
 var _drop_at := -1.0           # Test: Fahrer zu dieser Zeit an _drop_pos in die Luft setzen
 var _drop_pos := Vector3.INF   # Test: wohin (INF = über den Startsteg)
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
@@ -296,6 +298,9 @@ func _ready() -> void:
 	ambient.pike_hit.connect(func() -> void:
 		hud.show_trick("Hecht erwischt!")
 		_unlock_achievement("fisch"))
+	# SUP aus der Seemitte zu nah an der Bahn: rotes Boot fährt raus und schickt ihn zurück
+	ambient.sup_intruding.connect(film.chase)
+	film.sup_chased.connect(ambient.send_back)
 	ambient.sup_splashed.connect(func() -> void:
 		hud.show_trick("SUP nass gespritzt!")
 		_unlock_achievement("sup"))
@@ -839,6 +844,9 @@ func _physics_process(delta: float) -> void:
 	if _pike_at > 0.0 and _elapsed >= _pike_at:
 		_pike_at = -1.0
 		ambient.pike_now()
+	if _sup_at > 0.0 and _elapsed >= _sup_at:
+		_sup_at = -1.0
+		ambient.sup_come_now()
 	if _drop_at > 0.0 and _elapsed >= _drop_at:
 		_drop_at = -1.0
 		_test_drop()
@@ -1241,6 +1249,8 @@ func _parse_args() -> void:
 			_letgo_at = arg.substr(11).to_float()
 		elif arg.begins_with("--crash-at="):
 			_crash_at = arg.substr(11).to_float()
+		elif arg.begins_with("--sup-at="):
+			_sup_at = arg.substr(9).to_float()
 		elif arg.begins_with("--drop-at="):
 			var v := arg.substr(10).split_floats(",")
 			_drop_at = v[0]

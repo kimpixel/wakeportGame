@@ -160,8 +160,10 @@ Geheime Erfolge (`scripts/achievements.gd`, Liste auf der Startseite Taste „Er
 - **Fischkontakt** (`fisch`): mit dem springenden Hecht zusammenstoßen (`Ambient.pike_hit`). Damit er erreichbar ist,
   springt er in `PIKE_CLOSE` 15 % der Fälle knapp vor dem Fahrer (±2 m daneben, hinlenken). Test `--pike-at=S` (genau in der Spur).
 - **Nass gespritzt** (`sup`): mit > 6 m/s (`SPRAY_SPEED`) bis 3 m an einem SUP vorbei (`Ambient.sup_splashed`, Paddler wackelt).
-  Fünf SUPs: zwei im Badebereich, Touren `SUP_TOURS`: zwei zwischen T2 und T1 (x 15–18, außerhalb der Features ±11,3 m),
-  einer seeseitig bei x ≈ −20 (außerhalb der Bootsspur −15). Test `--autotest --lane=15`.
+  **Zwischen den Bahnen fährt nie ein SUP (verboten).** Zwei im Badebereich, zwei in der Seemitte (`SUP_CENTER`); ab und zu
+  kommt einer herüber bis x = −12,5 (`SUP_COME_X`, nur einer gleichzeitig). Ab x = −18 legt das **rote Boot** ab
+  (`FilmCrew.chase`, Modus "patrol", nur ohne Challenge, nur der Fahrer an Bord): Spur x = −19, hält 4 m seeseitig neben ihm,
+  er paddelt zurück (`Ambient.send_back`), Boot legt wieder an. Test `--sup-at=S` (Log `BOOT …`).
 - **Steg-Landung** (`steg`): aus der Luft (> 0,3 s) auf dem eigenen Startsteg landen (`Rider.landed_on_dock`). Mit 16 m Seil
   unerreichbar (Ufer-Wende 28 m), erst mit langem Seil (ab ca. 20 m). Test `--drop-at=2` (Fahrer über den Steg in die Luft).
 - **Insekten fressen** (`insekt`): Mückenschwärme (`INSECT_S`, 3 m vor dem Waldrand rechts neben T1, 8–20 m vom Seil, Kopfhöhe)
