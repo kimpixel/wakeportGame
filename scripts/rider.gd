@@ -125,9 +125,12 @@ const BOARD_HALF := 0.35
 # Sprung-Start: auf dem Startsteg ↓ halten = gegen das anfahrende Seil stemmen. Der Seilzug lädt sich
 # bis zur maximalen Seilspannung auf (Anteil der Seilzug-Grenze); ist sie erreicht, reißt das Seil
 # einen nach vorne vom Steg -> normaler Sprung plus Auflade-Power. Vorher loslassen: ohne Sprung.
+# Brett längs zum Seil (50-50) = Nolli, quer = Raley Start (Raley-Schwung).
 const DOCK_BRACE_MAX := 0.9
 const DOCK_YANK_LIFT := 2.6      # m/s zusätzliche Steiggeschwindigkeit bei voller Ladung
 const DOCK_YANK_POINTS := 100
+const DOCK_QUER := deg_to_rad(45.0)   # Brett mehr als so weit quer zum Seil: Raley Start statt Nolli
+const DOCK_RALEY_PHASE := 0.6   # Raley Start: so lange (Anteil der Flugzeit) bleibt das Brett quer, dann dreht es zur Landung ein
 
 const START_POS := Vector3(1.7, Lake.DOCK_Y, -10.0)   # auf dem Startsteg vor der T2-Hütte
 
@@ -220,7 +223,9 @@ var dock_charge := 0.0          # Sprung-Start: aufgeladener Seilzug (0..1), fü
 var _brace := false             # stemmt sich auf dem Steg gegen das Seil (↓)
 var _yanked := false            # Seil hat losgerissen: Absprung, sobald die Spannung raus ist
 var _yank_t := 0.0
-var _jump_start := false        # aktueller Sprung ist ein Sprung-Start (Name, Bonus)
+var _yank_kind := ""            # beim Losreißen: "nolli" (Brett längs zum Seil) oder "raley" (quer)
+var _yank_fit := 1.0            # wie genau die Stellung war (1 = genau längs bzw. quer)
+var _jump_start := ""           # aktueller Sprung ist ein Sprung-Start: "nolli" / "raley" (Name, Bonus)
 var _spin_accum := 0.0
 var _raley := false            # aktueller Sprung ist ein Raley
 var _raley_side := -1.0        # Schwung zur Seite (lokal ±X), weg vom Seil
@@ -647,12 +652,20 @@ func _step_dock_start(delta: float) -> void:
 		if mode != Mode.WATER or not attached:
 			_end_brace()
 		elif not on_dock or tension < 0.3 * _brace_limit() or _yank_t > 0.5:
+			# Stellung beim Losreißen: längs zum Seil (50-50) = Nolli, quer = Raley Start.
+			# Je genauer die Stellung, desto mehr Auflade-Power (45° daneben: nur die Hälfte).
+			var kind := _yank_kind
+			var fit := _yank_fit
 			_end_brace()
 			_load = 1.0
 			_pop()
-			vel.y += DOCK_YANK_LIFT
+			vel.y += DOCK_YANK_LIFT * fit * fit
 			_load = 0.0
-			_jump_start = true
+			_jump_start = kind
+			if kind == "raley":
+				_raley = true
+				var side := rope_dir.dot(right())
+				_raley_side = -signf(side) if absf(side) > 0.05 else -1.0
 		return
 	var want := on_dock and not autopilot and _pitch_in < -0.5 and cable.state != CableSystem.State.IDLE
 	if want and not _brace and horizontal_speed() > 1.5:
@@ -664,6 +677,10 @@ func _step_dock_start(delta: float) -> void:
 		_yanked = true
 		_yank_t = 0.0
 		dock_charge = 1.0
+		var rope_h := Vector3(rope_dir.x, 0.0, rope_dir.z).normalized()
+		var along := absf(forward().dot(rope_h))
+		_yank_kind = "nolli" if along >= cos(DOCK_QUER) else "raley"
+		_yank_fit = along if _yank_kind == "nolli" else sqrt(maxf(1.0 - along * along, 0.0))
 		dock_yanked.emit()
 
 
@@ -1050,9 +1067,9 @@ func _step_water(delta: float, rope: Vector3) -> void:
 		f_long = -fr * vl / maxf(speed, 0.5)
 		f_lat = -fr * (1.0 + 3.0 * _edge) * vs / maxf(absf(vs), 0.3)
 	elif on_dock:
-		# nasse Startrampe: rutschig längs, fest quer
+		# nasse Startrampe: rutschig längs, fest quer (beim Sprung-Start reißt das Seil einen auch quer weg)
 		f_long = -40.0 * vl
-		f_lat = -500.0 * vs
+		f_lat = (-40.0 if _yanked else -500.0) * vs
 	else:
 		var plow := (1.0 - clampf(speed / PLANE_SPEED, 0.0, 1.0)) * PLOW_DRAG
 		f_long = -(DRAG_QUAD * vl * absf(vl) + (DRAG_LIN + plow) * vl)
@@ -1108,7 +1125,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 		_on_slider = false
 	yaw -= _steer * turn * delta
 	# Wasserstart: solange das Brett nicht gleitet, dreht es sich in Zugrichtung
-	if speed < 2.5 and tension > 30.0 and not on_feature:
+	if speed < 2.5 and tension > 30.0 and not on_feature and not _brace and not _yanked:
 		var target := _aligned_yaw(atan2(-rope_dir.x, -rope_dir.z))
 		yaw = lerp_angle(yaw, target, (1.0 - speed / 2.5) * 2.0 * delta)
 
@@ -1346,7 +1363,7 @@ func _clear_air_pose() -> void:
 	_tuck = 0.0
 	_press_vis = 0.0
 	_press_bs_vis = 0.0
-	_jump_start = false
+	_jump_start = ""
 
 
 func _enter_air() -> void:
@@ -1376,7 +1393,9 @@ func _step_air(delta: float, rope: Vector3) -> void:
 		var vh := Vector3(vel.x, 0.0, vel.z)
 		# Brett dreht zur Flugrichtung zurück – aber nicht, wenn man auf einen Slider zufliegt: dort
 		# soll eine Vierteldrehung (Boardslide) stehen bleiben, das Einrasten macht die Landung
-		if vh.length() > 1.0 and (autopilot or not (features and features.slider_ahead(pos, vh, AIR_ASSIST_SLIDER))):
+		# Raley Start: das Brett bleibt quer, solange der Körper um den Griff schwingt
+		var raley_start := _jump_start == "raley" and _air_phase() < DOCK_RALEY_PHASE
+		if vh.length() > 1.0 and not raley_start and (autopilot or not (features and features.slider_ahead(pos, vh, AIR_ASSIST_SLIDER))):
 			yaw = rotate_toward(yaw, _aligned_yaw(atan2(-vh.x, -vh.z)), AIR_ASSIST * delta)
 	_spin_accum += wrapf(yaw - old_yaw, -PI, PI)
 	# ↑/↓: Frontroll/Backroll (Überschlag um die Brettlängsachse). Losgelassen läuft die
@@ -1510,14 +1529,16 @@ func _land(surf: float) -> void:
 	var flip_dir := signf(_flip)
 	_flip = 0.0
 	var jump_start := _jump_start
-	_jump_start = false
-	if air_time > 0.5 or half_turns > 0 or rolls > 0 or jump_start:
+	_jump_start = ""
+	if air_time > 0.5 or half_turns > 0 or rolls > 0 or jump_start != "":
 		# Name aus den Teilen, z. B. "Raley 360", "Backroll", "Double Frontroll 180"
 		var parts: Array[String] = []
 		var pts := int(air_time * AIR_PER_S) + half_turns * SPIN_PER_180 + rolls * FLIP_POINTS
 		if _raley:
-			parts.append("Raley")
+			parts.append("Raley Start" if jump_start == "raley" else "Raley")
 			pts += RALEY_POINTS
+		elif jump_start == "nolli":
+			parts.append("Nolli")
 		if rolls > 0:
 			var roll := "Frontroll" if flip_dir > 0.0 else "Backroll"
 			parts.append(("Double " if rolls == 2 else ("%dx " % rolls if rolls > 2 else "")) + roll)
@@ -1525,12 +1546,11 @@ func _land(surf: float) -> void:
 			parts.append(str(half_turns * 180))
 		if parts.is_empty():
 			parts.append("Ollie" if _popped else "Air")
-		if jump_start:
-			parts.insert(0, "Sprung-Start")
+		if jump_start != "":
 			pts += DOCK_YANK_POINTS
 		_score_trick(" ".join(parts), pts)
 		jump_landed.emit({"raley": _raley, "air_time": air_time, "half_turns": half_turns,
-			"rolls": rolls, "popped": _popped, "points": pts})
+			"rolls": rolls, "popped": _popped, "points": pts, "start": jump_start})
 
 
 func crash(reason: String) -> void:
@@ -1629,8 +1649,16 @@ func _process(delta: float) -> void:
 			if speed < 2.5 and not _in_dock(pos.x, pos.z):
 				target_crouch = maxf(target_crouch, 0.3)
 			if _brace or _yanked:
-				# Sprung-Start: tief in die Knie, gegen das Seil gestemmt
-				target_crouch = maxf(target_crouch, 0.35 + 0.5 * dock_charge)
+				# Sprung-Start: tief in die Knie, gegen das Seil gestemmt. Längs (Nolli) lehnt man
+				# Richtung Tail zurück; quer (Raley Start) sitzt man tief auf der Kante, Brust zum Seil
+				var quer := absf(forward().dot(Vector3(rope_dir.x, 0.0, rope_dir.z).normalized())) < cos(DOCK_QUER)
+				if quer:
+					target_roll = clampf(target_roll, -0.75, 0.75)
+					target_pitch = clampf(target_pitch, -0.2, 0.2)
+					target_crouch = maxf(target_crouch, 0.45 + 0.45 * dock_charge)
+				else:
+					target_roll = clampf(target_roll, -0.3, 0.3)
+					target_crouch = maxf(target_crouch, 0.35 + 0.5 * dock_charge)
 	# "Ups": kurz in die Knie und nach vorne geruckt (über Boje/Steg gerumpelt)
 	if _ups > 0.0:
 		_ups -= delta

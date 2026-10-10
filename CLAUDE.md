@@ -124,7 +124,7 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
   nie „Training“/„Aufgabe“ schreiben; im Code heißen sie weiter Training/Task): **Wenden, Kicker, Slider, Raley**, je
   mehrere Aufgaben (leicht → schwer), jede misst einen Wert → **Bronze/Silber/Gold** (Schwellen in `Training.MODES`,
   vom Nutzer fein justiert). Bestwerte in user://settings.cfg [medaillen]; **Tests speichern nichts**.
-- Modi: Wenden, Kicker, Slider, Raley, **Driften**, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
+- Modi: Wenden, Kicker, Slider, Raley, **Sprung-Start** (Nolli, Raley Start vom Steg), **Driften**, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
   `target` = Ziel, je per Anzeigename; zählt nur: auf dem Start-Feature fahren, abspringen, aus der Luft aufs Ziel). Nach gewertetem Versuch **1,4 s ausrollen** (`Challenge.OUTRO`), dann Fenster.
   Startseite im Querformat zweispaltig (links Modi, rechts Terminal/Setup bzw. Aufgaben; Handy quer: Start links).
 - Aufgabe setzt Fahrer + Carrier **in voller Fahrt** kurz vor die Stelle (`Rider.place`, `CableSystem.place_running`),
@@ -206,7 +206,11 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
 - **Sprung-Start** (nur auf dem Startsteg, `Rider._step_dock_start`): ↓ halten (Handy ▼) = gegen das anfahrende Seil stemmen
   (Fahrer bleibt stehen, Seilzug steigt). Bei `DOCK_BRACE_MAX` 90 % der Seilzug-Grenze reißt das Seil los: die gedehnte Leine
   schleudert einen nach vorne, sobald die Spannung raus ist (spätestens an der Stegkante) Absprung = voller Sprung + `DOCK_YANK_LIFT`;
-  Trick „Sprung-Start …“ +100. Vorher loslassen = ohne Sprung. Nur Spieler. Test: `--autotest --passive --hold=pitch_back@0-15`.
+  +100. Vorher loslassen = ohne Sprung. Nur Spieler. **↓ ist immer der Auslöser, egal wie das Brett steht**: Stellung beim Riss
+  längs zum Seil (bis 45°, `DOCK_QUER`) = **Nolli**, quer = **Raley Start** (Raley-Schwung, Brett bleibt quer bis `DOCK_RALEY_PHASE`,
+  Haltung: tief auf der Kante, Brust zum Seil); Auflade-Power × Genauigkeit². Beim Gegenhalten dreht das Brett nicht zum Seil, beim Riss
+  ist der Steg quer so rutschig wie längs. Challenge-Modus **Sprung-Start** (`kind: "dock"`, `jump`, `start: {dock: true}`: Steg, Anlage
+  startet bei GO). Test: `--autotest --passive --hold=pitch_back@0-15[,steer_right@0-1.55]`, `--mode=sprungstart:N`.
 - R, + / −, C, P, H, M, Tab (Startseite) wie in der README. **Keine Tasten T/F** mehr (Terminal/Setup nur auf der Startseite).
 
 Steuerung Handy: Neigen = lenken, Tippen = Start, **Springen nur mit der SPRUNG-Taste (links)**,

@@ -131,6 +131,8 @@ func start_attempt() -> void:
 	if not active:
 		return
 	game.rider.block_jump()
+	if task.get("start", {}).has("dock"):
+		game.pc.start()                    # Start vom Steg: die Anlage fährt bei GO los
 	running = true
 
 
@@ -175,6 +177,14 @@ func _place() -> void:
 	var c: CableSystem = game.pc
 	var r: Rider = game.rider
 	var st: Dictionary = task["start"]
+	if st.has("dock"):
+		# Sprung-Start: auf dem Startsteg, Anlage steht bis GO
+		r.autopilot = game.mode_auto
+		r.reset()
+		c.reset()
+		game.film.snap()
+		_laps0 = c.laps
+		return
 	var out: bool
 	var s_r: float
 	if st.has("turn"):
@@ -352,6 +362,12 @@ func _physics_process(delta: float) -> void:
 				else:
 					_fail("Kein Drift nach einem Feature – kein Wert")
 				return
+		"dock":
+			if r.mode == Rider.Mode.AIR:
+				_max_y = maxf(_max_y, r.pos.y)
+			elif _done_t < 0.0 and r.pos.y < 0.2 and not r.in_dock(r.pos.x, r.pos.z):
+				_fail("Kein Sprung-Start – auf dem Steg ↓ halten, bis das Seil losreißt")
+				return
 		"raley":
 			if r.mode == Rider.Mode.AIR:
 				if not _was_air:
@@ -402,6 +418,20 @@ func _on_landed(info: Dictionary) -> void:
 	if not running or _fail_t >= 0.0:
 		return
 	match task["kind"]:
+		"dock":
+			if info.get("start", "") != task["jump"]:
+				_fail("Das war kein Raley Start – Brett quer zum Seil stellen" if task["jump"] == "raley" \
+					else "Das war kein Nolli – Brett längs zum Seil lassen")
+				return
+			match task["metric"]:
+				"height":
+					_value = _max_y
+				"spin":
+					_value = int(info["half_turns"]) * 180.0
+				"points":
+					_value = float(info["points"])
+			_hit = true
+			_done_t = SETTLE
 		"raley":
 			if not info["raley"]:
 				return
@@ -715,7 +745,7 @@ func _update_hud() -> void:
 		match task["kind"]:
 			"turn":
 				live = Training.format_value(task, _value)
-			"kick", "raley":
+			"kick", "raley", "dock":
 				if task["metric"] == "height" and (game.rider.mode == Rider.Mode.AIR or _hit):
 					live = "Höhe " + Training.format_value(task, _max_y)
 			"chain":

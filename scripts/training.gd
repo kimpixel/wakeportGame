@@ -7,7 +7,8 @@ extends RefCounted
 ##
 ## Felder einer Aufgabe:
 ##   id, name (kurz, Liste), title, goal, keys / keys_mobile (Steuerung), tip
-##   kind     turn | kick | slide | chain | raley | special | drift_spin | drift_turn | drift_after
+##   kind     turn | kick | slide | chain | raley | special | drift_spin | drift_turn | drift_after | dock
+##   jump     dock: verlangter Sprung-Start "nolli" (Brett längs) oder "raley" (quer); start {dock: true} = auf dem Steg
 ##   setup    Setup-Datei (Terminal 2)
 ##   start    {s, x, dir}: s = Abstand vom Startmast wie in den Setup-Dateien (ohne Verschiebung),
 ##            dir +1 = Richtung Endmast, -1 = Richtung Startsteg. Wende: {turn: "a"|"b", before, x}
@@ -188,6 +189,36 @@ const MODES := [
 		 "keys": "In der Luft ↑  Frontroll   ↓  Backroll   ← / →  drehen",
 		 "keys_mobile": "In der Luft ▲  Frontroll   ▼  Backroll   neigen  drehen",
 		 "tip": "Die Rolle braucht Zeit: gleich nach dem Absprung ↑ oder ↓ drücken."},
+	]},
+	{"id": "sprungstart", "name": "Sprung-Start", "text": "Vom Startsteg: gegen das Seil stemmen, bis es dich losreißt.", "tasks": [
+		{"id": "nolli", "name": "Nolli", "title": "Nolli vom Steg",
+		 "kind": "dock", "jump": "nolli", "setup": LEER, "start": {"dock": true},
+		 "metric": "height", "medals": [3.0, 3.7, 4.1],
+		 "goal": "Bleib auf dem Startsteg mit dem Brett längs zum Seil (50-50) stehen und halte ↓: du stemmst dich gegen das anfahrende Seil, der Seilzug lädt sich auf. Bei maximaler Seilspannung reißt es dich nach vorne – ein Nolli. Gemessen: größte Höhe.",
+		 "keys": "↓ halten (schon beim Countdown), bis das Seil losreißt",
+		 "keys_mobile": "▼ halten (schon beim Countdown), bis das Seil losreißt",
+		 "tip": "Je genauer das Brett längs zum Seil steht, desto mehr Power. Nicht vorher loslassen – sonst ist es ein normaler Start."},
+		{"id": "nolli_spin", "name": "Nolli 180/360", "title": "Nolli mit Drehung",
+		 "kind": "dock", "jump": "nolli", "setup": LEER, "start": {"dock": true},
+		 "metric": "spin", "medals": [180.0, 360.0, 540.0],
+		 "goal": "Nolli vom Steg und in der Luft drehen: 180 = Bronze, 360 = Silber, 540 = Gold.",
+		 "keys": "↓ halten bis zum Riss, dann in der Luft ← / →  drehen",
+		 "keys_mobile": "▼ halten bis zum Riss, dann in der Luft neigen = drehen",
+		 "tip": "Gleich nach dem Riss drehen und rechtzeitig loslassen – das Brett muss zur Landung in Fahrtrichtung zeigen."},
+		{"id": "raley", "name": "Raley Start", "title": "Raley Start vom Steg",
+		 "kind": "dock", "jump": "raley", "setup": LEER, "start": {"dock": true},
+		 "metric": "height", "medals": [3.0, 3.7, 4.1],
+		 "goal": "Dreh dich auf dem Steg um 90°, sodass das Brett quer zum Seil steht, und halte ↓: du sitzt tief auf der Kante, Brust zum Seil. Reißt das Seil los, schwingt dein Körper um den Griff wie beim Raley. Gemessen: größte Höhe.",
+		 "keys": "← / →  auf dem Steg quer drehen     ↓ halten, bis das Seil losreißt",
+		 "keys_mobile": "Neigen  auf dem Steg quer drehen     ▼ halten, bis das Seil losreißt",
+		 "tip": "Schon beim Countdown drehen – je genauer quer, desto höher. Ab 45° Abweichung wird es ein Nolli."},
+		{"id": "raley_roll", "name": "Raley Start + Roll", "title": "Raley Start mit Überschlag",
+		 "kind": "dock", "jump": "raley", "setup": LEER, "start": {"dock": true},
+		 "metric": "points", "medals": [380.0, 640.0, 740.0],
+		 "goal": "Raley Start und in der Luft noch etwas dazu: 180 = Bronze, Frontroll oder Backroll = Silber, Rolle + 360 = Gold. Gemessen: Punkte des Sprungs.",
+		 "keys": "Quer drehen, ↓ halten bis zum Riss, in der Luft loslassen, dann ↑ Frontroll / ↓ Backroll, ← / →  drehen",
+		 "keys_mobile": "Quer drehen, ▼ halten bis zum Riss, in der Luft loslassen, dann ▲ Frontroll / ▼ Backroll, neigen  drehen",
+		 "tip": "Das gehaltene ↓ startet keine Rolle – erst loslassen, dann sofort wieder drücken: die Rolle braucht die ganze Flugzeit."},
 	]},
 	{"id": "drift", "name": "Driften", "text": "Kante lösen und gleiten: das Brett dreht frei, die Fahrtrichtung bleibt.", "tasks": [
 		{"id": "spin", "name": "360 im Drift", "title": "360er im Drift",
