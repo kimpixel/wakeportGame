@@ -7,11 +7,12 @@ extends RefCounted
 ##
 ## Felder einer Aufgabe:
 ##   id, name (kurz, Liste), title, goal, keys / keys_mobile (Steuerung), tip
-##   kind     turn | kick | slide | chain | raley | special
+##   kind     turn | kick | slide | chain | raley | special | drift_spin | drift_turn | drift_after
 ##   setup    Setup-Datei (Terminal 2)
 ##   start    {s, x, dir}: s = Abstand vom Startmast wie in den Setup-Dateien (ohne Verschiebung),
 ##            dir +1 = Richtung Endmast, -1 = Richtung Startsteg. Wende: {turn: "a"|"b", before, x}
-##   metric   Messwert: sink, height, dist, dist_5050, dist_bs, switches, press, time (s auf dem Slider), count, spin, points
+##   metric   Messwert: sink, height, dist, dist_5050, dist_bs, switches, press, time (s auf dem Slider), count, spin, points,
+##            spins (360er im Drift), share (Anteil der Wende im Drift)
 ##   medals   Schwellen [Bronze, Silber, Gold]; lower = true: kleiner ist besser
 ##   target   kick/slide: {s0, s1, side} – Features mit Mitte in diesem Bereich (Setup-Koordinaten),
 ##            side +1/-1 = rechte/linke Seite
@@ -188,6 +189,30 @@ const MODES := [
 		 "keys_mobile": "In der Luft ▲  Frontroll   ▼  Backroll   neigen  drehen",
 		 "tip": "Die Rolle braucht Zeit: gleich nach dem Absprung ↑ oder ↓ drücken."},
 	]},
+	{"id": "drift", "name": "Driften", "text": "Kante lösen und gleiten: das Brett dreht frei, die Fahrtrichtung bleibt.", "tasks": [
+		{"id": "spin", "name": "360 im Drift", "title": "360er im Drift",
+		 "kind": "drift_spin", "setup": LEER, "start": {"s": 18.0, "x": 0.0, "dir": 1},
+		 "metric": "spins", "medals": [3.0, 6.0, 9.0],
+		 "goal": "Driften heißt: die Kante lösen. Das Brett liegt flach und greift nicht mehr – Lenken ändert die Fahrtrichtung nicht, nur der Seilzug zieht dich, und das Brett lässt sich frei herumdrehen. Dreh so zwischen den roten Bojen (Ufer bis Endmast) so viele 360er wie möglich – gezählt wird jede volle Umdrehung im Drift.",
+		 "keys": "Strg halten  driften     ← / →  Brett drehen",
+		 "keys_mobile": "DRIFT halten  driften     Neigen  Brett drehen",
+		 "tip": "Immer in dieselbe Richtung drehen. Wer den Drift loslässt, verliert die angefangene Umdrehung – und quer greift die Kante hart und bremst."},
+		{"id": "wende", "name": "Wende im Drift", "title": "Die Wende durchgleiten",
+		 "kind": "drift_turn", "setup": LEER, "start": {"turn": "b", "before": 60.0, "x": 2.0},
+		 "metric": "share", "medals": [0.5, 0.75, 0.9],
+		 "goal": "Vor der Wende am Endmast mächtig Schwung holen und dann die ganze Wende im Drift durchgleiten – ohne einzusinken. Gemessen: Anteil der Wende, in dem du im Drift gleitest, ohne einzusinken (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht).",
+		 "keys": "← / →  lenken (Schwung holen)     Strg halten  driften",
+		 "keys_mobile": "Neigen  lenken (Schwung holen)     DRIFT halten  driften",
+		 "tip": "An der roten Boje weit rauskanten und Tempo aufbauen. Im Drift bremst das Wasser weniger – du gleitest weiter. Ist zu wenig Schwung da, sinkst du ein."},
+		{"id": "feature", "name": "Drift nach Feature", "title": "Nach dem Feature driften",
+		 "kind": "drift_after", "setup": "res://setups/setup_f.json", "terminal": "T2",
+		 "start": {"s": 150.0, "x": 0.0, "dir": -1}, "end_s": 40.0,
+		 "metric": "dist", "medals": [10.0, 20.0, 30.0],
+		 "goal": "Terminal 2, Setup Juli & August: von der Mitte Richtung Steg über ein Feature deiner Wahl und gleich danach driften – mindestens 10 m. Gemessen: der längste Drift, der direkt nach einem Feature beginnt (auch nach dem Sprung davon).",
+		 "keys": "Strg schon auf dem Feature halten und danach nicht loslassen",
+		 "keys_mobile": "DRIFT schon auf dem Feature halten und danach nicht loslassen",
+		 "tip": "Mit Drift darf das Brett beim Abgang auch quer stehen. Der Seilzug zieht dich im Drift zur Seilmitte – vorher weit außen auf das Feature fahren."},
+	]},
 	{"id": "transfer", "name": "Transfer", "text": "Von einem Feature auf ein anderes springen.", "tasks": [
 		{"id": "klein", "name": "Klein", "title": "Pyramid auf Pyramid-Rail",
 		 "kind": "slide", "setup": "res://setups/setup_c.json", "terminal": "T2",
@@ -270,6 +295,10 @@ static func format_value(task: Dictionary, value: float) -> String:
 			return "%d Wechsel" % roundi(value)
 		"count":
 			return "%d Slider" % roundi(value)
+		"spins":
+			return "%d Umdrehungen" % roundi(value)
+		"share":
+			return "%d %% im Drift" % roundi(value * 100.0)
 		"spin":
 			return "%d°" % roundi(value)
 		"points":

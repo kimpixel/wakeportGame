@@ -10,6 +10,7 @@ signal home_requested
 const SETTLE := 0.7             # s nach Landung/Slide ohne Sturz, bis der Versuch zählt
 const FAIL_DELAY := 1.4         # s nach Sturz, bis das Ergebnis kommt
 const TIMEOUT := 75.0
+const DRIFT_SINK := 0.15        # Wende im Drift: ab diesem Sinkpegel gleitet man nicht mehr (zählt nicht)
 const OUTRO := 1.4              # s nach dem Ende weiterfahren (ausrollen), dann erst das Ergebnis
 
 var game: Node                  # main.gd (rider, pc, features, hud, cam, water, …)
@@ -48,6 +49,15 @@ var _since_air := 99.0          # s seit der letzten Landung
 var _air_turns := 0             # halbe Drehungen des letzten Sprungs
 var _status: Array[String] = [] # je Station "", "OK", "X"
 var _best_station := 0.0        # bester Messwert einer geschafften Station (metric != count)
+# Driften
+var _spin := 0.0                # drift_spin: Brettdrehung im laufenden Drift (rad, mit Vorzeichen)
+var _prev_yaw := 0.0
+var _seg := false               # drift_turn: Wende läuft (Carrier bremst / steht / fährt wieder an)
+var _seg_t := 0.0
+var _drift_t := 0.0
+var _from_feat := false         # drift_after: kommt gerade von einem Feature (oder aus dem Sprung davon)
+var _water_t := 0.0             # s auf dem Wasser ohne Drift seit dem Feature
+var _drift_from := Vector3.INF  # Beginn des laufenden Drifts nach einem Feature
 
 
 func _ready() -> void:
@@ -55,7 +65,7 @@ func _ready() -> void:
 	r.jump_landed.connect(_on_landed)
 	r.slide_ended.connect(_on_slide)
 	r.sank.connect(func() -> void:
-		if running and task["kind"] == "turn":
+		if running and task["kind"] in ["turn", "drift_turn"]:
 			_fail("Abgesoffen – kein Wert"))
 	panel.go_pressed.connect(func() -> void: start_attempt())
 	panel.next_pressed.connect(func() -> void: begin(mode_id, task_idx + 1))
@@ -212,6 +222,14 @@ func _reset_measure() -> void:
 	_status.clear()
 	_stations.clear()
 	_best_station = 0.0
+	_spin = 0.0
+	_prev_yaw = game.rider.yaw
+	_seg = false
+	_seg_t = 0.0
+	_drift_t = 0.0
+	_from_feat = false
+	_water_t = 0.0
+	_drift_from = Vector3.INF
 	if task["kind"] == "special":
 		var groups := {}
 		for p: FeaturePart in game.features.parts:
@@ -249,8 +267,8 @@ func _physics_process(delta: float) -> void:
 			_finish(false)
 		return
 	if r.mode == Rider.Mode.CRASHED or not r.attached:
-		if task["kind"] in ["chain", "special"] and _count > 0:
-			_value = _count if task["kind"] == "chain" else _special_value()
+		if task["kind"] in ["chain", "special", "drift_spin"] and _count > 0:
+			_value = _special_value() if task["kind"] == "special" else _count
 			_hit = true
 			_finish(true)
 			return
@@ -315,6 +333,21 @@ func _physics_process(delta: float) -> void:
 					_finish(true)
 				else:
 					_fail("Keine Kombination geschafft – kein Wert")
+				return
+		"drift_spin":
+			if _track_drift_spin(r, s_now):
+				return
+		"drift_turn":
+			if _track_drift_turn(r, delta):
+				return
+		"drift_after":
+			_track_drift_after(r)
+			if _past(s_now, float(task["end_s"]) + _off) and _drift_from == Vector3.INF:
+				if _value > 0.0:
+					_hit = true
+					_finish(true)
+				else:
+					_fail("Kein Drift nach einem Feature – kein Wert")
 				return
 		"raley":
 			if r.mode == Rider.Mode.AIR:
@@ -401,6 +434,83 @@ func _track_via(r: Rider) -> void:
 	else:
 		_via = false                           # Wasser oder anderes Feature: neu ansetzen
 		_via_air = false
+
+
+## Driften: ist der Fahrer gerade im Drift auf dem Wasser?
+func _drifting(r: Rider) -> bool:
+	return r.drifting and r.mode == Rider.Mode.WATER and r.pos.y < 0.2
+
+
+## 360er im Drift zwischen den roten Bojen: Brettdrehung im Drift mitzählen, je volle Umdrehung
+## in eine Richtung eine. Drift lösen setzt die angefangene Drehung zurück. true = Versuch zu Ende.
+func _track_drift_spin(r: Rider, s_now: float) -> bool:
+	var c: CableSystem = game.pc
+	var s_a := c.mast_a_z - c.turn_a_z + TurnBuoys.RED_BEFORE
+	var s_b := c.mast_a_z - c.turn_b_z - TurnBuoys.RED_BEFORE
+	if s_now > s_a and s_now < s_b and _drifting(r):
+		_spin += wrapf(r.yaw - _prev_yaw, -PI, PI)
+		if absf(_spin) >= TAU:
+			_spin -= signf(_spin) * TAU
+			_count += 1
+			game.hud.show_trick("360 im Drift!  (%d)" % _count)
+	else:
+		_spin = 0.0
+	_prev_yaw = r.yaw
+	if s_now >= s_b:
+		if _count > 0:
+			_value = _count
+			_hit = true
+			_finish(true)
+		else:
+			_fail("Kein 360 im Drift – kein Wert")
+		return true
+	return false
+
+
+## Wende im Drift: von dem Moment, in dem der Carrier zur Wende bremst, bis das Seil in der neuen
+## Richtung wieder zieht – welcher Anteil davon im Drift gleitend (nicht schon einsinkend)? Absaufen = kein Wert.
+## true = zu Ende.
+func _track_drift_turn(r: Rider, delta: float) -> bool:
+	var c: CableSystem = game.pc
+	if not _seg and c.laps == _laps0 and c.state != CableSystem.State.RUN:
+		_seg = true
+	if not _seg:
+		return false
+	_seg_t += delta
+	if _drifting(r) and r.sink_level < DRIFT_SINK:
+		_drift_t += delta
+	_value = _drift_t / maxf(_seg_t, 0.01)
+	if c.laps > _laps0 and c.state == CableSystem.State.RUN and r.tension_smooth > 200.0:
+		_hit = true
+		_finish(true)
+		return true
+	return false
+
+
+## Drift nach einem Feature: wer vom Feature (auch aus dem Sprung davon) aufs Wasser kommt und
+## gleich (bis 0,3 s) driftet, dessen Drift-Strecke zählt; die längste gilt.
+func _track_drift_after(r: Rider) -> void:
+	var on_feat := r.pos.y > 0.05 and game.features.part_at(r.pos.x, r.pos.z) != null
+	var drifting := _drifting(r)
+	if on_feat:
+		_from_feat = true
+		_water_t = 0.0
+	elif r.mode == Rider.Mode.WATER and not drifting:
+		_water_t += get_physics_process_delta_time()
+		if _water_t > 0.3:
+			_from_feat = false
+	if drifting and _from_feat and _drift_from == Vector3.INF:
+		_drift_from = r.pos
+	if _drift_from == Vector3.INF:
+		return
+	var d := Vector2(r.pos.x - _drift_from.x, r.pos.z - _drift_from.z).length()
+	if drifting:
+		_value = maxf(_value, d)
+		return
+	_drift_from = Vector3.INF            # Drift gelöst: diese Strecke ist fertig
+	_from_feat = false
+	if d >= 1.0:
+		game.hud.show_trick("%s Drift" % Training.format_value(task, d))
 
 
 ## Slider Special: je Slider der Kette Aufspringen (aus der Luft, Drehung), Stellung, Press und
@@ -602,8 +712,13 @@ func _update_hud() -> void:
 			"kick", "raley":
 				if task["metric"] == "height" and (game.rider.mode == Rider.Mode.AIR or _hit):
 					live = "Höhe " + Training.format_value(task, _max_y)
-			"chain":
+			"chain", "drift_spin":
 				live = Training.format_value(task, _count)
+			"drift_turn":
+				if _seg:
+					live = Training.format_value(task, _value)
+			"drift_after":
+				live = "Bester Drift " + Training.format_value(task, _value)
 			"special":
 				var n := _st_next - 1 if not _cur.is_empty() else _st_next
 				if n < task["combo"].size():

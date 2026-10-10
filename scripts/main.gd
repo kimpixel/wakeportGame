@@ -16,6 +16,7 @@ extends Node3D
 ##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
 ##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
 ##   --jump-at=SEK     Test: zu dieser Zeit voll aufgeladen abspringen
+##   --hold=AKT@T0-T1,…  Test: Eingabe-Aktion (z. B. release, steer_right) von T0 bis T1 s halten
 ##   --pitch=±1        Test: in der Luft ↑ (+1, Frontroll) bzw. ↓ (-1, Backroll) halten
 ##   --game-time=SEK   Test: Spielzeit (normal 450 s); im Autotest läuft dann eine Runde mit Zeit
 ##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, regen, dunst)
@@ -29,7 +30,7 @@ extends Node3D
 ##   --pause-at=SEK    Test: zu dieser Zeit pausieren (mit --shot: Bild der Pause)
 ##   --hitbox          Fangzonen der Slider zeigen (im Spiel: F3)
 ##   --set=NAME=WERT   Test: Einstellung setzen (ohne zu speichern), z. B. --set=goofy=true
-##   --mode=ID[:N]     Spielmodus (wende, kicker, slider, raley) mit Aufgabe N (ab 1) direkt starten;
+##   --mode=ID[:N]     Spielmodus (wende, kicker, slider, raley, drift, transfer) mit Aufgabe N (ab 1) direkt starten;
 ##                     mit --go=SEK: Aufgaben-Fenster zu dieser Zeit bestätigen; --mode-auto: Autopilot fährt
 
 const RESET_DELAY := 3.0
@@ -136,6 +137,7 @@ var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
 var _pause_at := -1.0           # Test: zu dieser Zeit pausieren (und Screenshot)
 var _hitbox_arg := false        # Test: Fangzonen der Slider zeigen
 var _set_args: Array[String] = []   # Test: --set=NAME=WERT
+var _hold: Array = []           # Test: [Aktion, von, bis] (--hold)
 var _jump_at := -1.0           # Test: zu dieser Zeit abspringen
 var _test_pitch := 0.0         # Test: ↑/↓ in der Luft
 var _touch_at: Array[float] = []   # Test: Finger auf den Bildschirm
@@ -826,6 +828,11 @@ func _physics_process(delta: float) -> void:
 		elif t < 0.0 and _elapsed >= -t:
 			_touch_at[i] = 0.0
 			_fake_touch(false)
+	for h: Array in _hold:
+		if _elapsed >= h[1] and _elapsed < h[2]:
+			Input.action_press(h[0])
+		elif _elapsed >= h[2] and _elapsed - delta < h[2]:
+			Input.action_release(h[0])
 	if _crash_at > 0.0 and _elapsed >= _crash_at:
 		_crash_at = -1.0
 		rider.crash("Teststurz")
@@ -1209,6 +1216,11 @@ func _parse_args() -> void:
 			_shot_path = arg.substr(7)
 		elif arg.begins_with("--shot-time="):
 			_shot_time = arg.substr(12).to_float()
+		elif arg.begins_with("--hold="):
+			for h in arg.substr(7).split(","):
+				var a := h.split("@")
+				var tt := a[1].split("-")
+				_hold.append([a[0], tt[0].to_float(), tt[1].to_float()])
 		elif arg.begins_with("--pitch="):
 			_test_pitch = arg.substr(8).to_float()
 		elif arg.begins_with("--pause-at="):
