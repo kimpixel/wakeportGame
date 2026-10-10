@@ -44,6 +44,8 @@ var top_rail := 0.0             # Block: Oberseite als schwarzes Halbrund-Rail (
 var safety_slope := 0.0         # Block: steile, gerade Safety an beiden Enden (Steigung), schneidet oben ins Halbrund
 var lip := ENTRY               # Höhe, auf der Auffahrten beginnen (ENTRY = unter Wasser, > 0 = sichtbare Kante)
 var side_curve := 2.0          # Form der seitlichen Auffahrt: 1 = gerade Schräge, 2 = konkav
+var round_top := false         # Block: Oberkante quer halbrund (Coping, z. B. Plaza Rail)
+var black_top: Array = []       # Block: Abschnitt [von, bis] (m ab Anfang), dessen Oberseite schwarz ist (Plaza Rail)
 var body_curve := 1.0          # Block: Verlauf height -> height_end (1 = gerade, 2 = konkav wie die Transition Curb)
 var inner_v := 1.0             # +1/-1: in welche lokale v-Richtung das Seil liegt (setzt FeatureSet)
 
@@ -87,6 +89,8 @@ func setup(id: String, p: Dictionary) -> void:
 	profile = p.get("profile", [])
 	top_rail = p.get("top_rail", 0.0)
 	safety_slope = p.get("safety_slope", 0.0)
+	round_top = p.get("round_top", false)
+	black_top = p.get("black_top", [])
 	slick = p.get("slick", "")
 	kicker = p.get("kicker", false)
 	if type == "pipe" or type == "ball":
@@ -105,7 +109,7 @@ func is_slide() -> bool:
 # hineinfällt, gleitet aufs Rail statt daneben zu landen oder dagegen zu fliegen.
 const CATCH_SIDE := 0.55         # m seitlich neben der Rail-Achse
 const CATCH_DOWN := 0.45         # m unter der Oberkante (an den Seiten nach unten)
-const CATCH_UP := 0.4            # m über der Oberkante
+const CATCH_UP := 1.3            # m über der Oberkante (hoch: wer darüber ↑/↓ drückt, presst statt zu rollen)
 const CATCH_MIN_TOP := 0.15      # an den Enden (Auffahrt im Wasser) wird nicht gefangen
 
 
@@ -117,6 +121,16 @@ func can_catch() -> bool:
 ## Seitliche Lage der Slide-Linie (lokal v).
 func catch_v() -> float:
 	return -inner_v * (width * 0.5 - TR_FLAT * 0.5) if type == "transition" else 0.0
+
+
+## Liegt world (nur x/z) über dem Slider oder knapp daneben (margin m)? Höhe egal.
+func over_slider(world: Vector3, margin: float) -> bool:
+	if not is_slide():
+		return false
+	var l := _inv * world
+	if absf(l.z) > length * 0.5 + margin:
+		return false
+	return absf(l.x - catch_v()) <= maxf(width * 0.5, CATCH_SIDE) + margin
 
 
 ## Liegt world in der Fangzone? Dann Zielpunkt auf der Slide-Linie (Welt, auf der Oberkante),
@@ -330,6 +344,12 @@ func height_local(u: float, v: float, collision := false) -> float:
 		"block":
 			if absf(v) > width * 0.5:
 				return NONE
+			if round_top:
+				# Coping: quer halbrund, an den Seiten so tief wie der halbe Querschnitt
+				var r := width * 0.5
+				var drop := r - sqrt(maxf(r * r - v * v, 0.0))
+				var hr := _profile_h(u + hl) if not profile.is_empty() else _with_ramps(u, height)
+				return hr - drop if hr - drop > ENTRY else hr
 			if not profile.is_empty():
 				return _with_top_rail(u, v, _with_side_ramp(v, _profile_h(u + hl)))
 			# Verlauf über den Körper (ohne Auffahrten): z. B. Transition Curb konkav von 0,35 auf 1,1 m
@@ -545,7 +565,9 @@ func _ready() -> void:
 				_build_heightfield(white, int(length * 4.0), 2, -INF, INF, func(_u: float, _v: float) -> bool: return false)
 				_build_rail_top(white, Util.mat(Color(0.06, 0.06, 0.07), 0.35))
 			else:
-				_build_heightfield(white, 24 if profile.is_empty() else int(length * 8.0), 12 if side_ramp > 0.0 else 2)
+				_build_heightfield(white, 24 if profile.is_empty() else int(length * 8.0), 12 if side_ramp > 0.0 or round_top else 2)
+				if black_top.size() == 2:
+					_build_black_top(float(black_top[0]), float(black_top[1]))
 	if collide:
 		_build_collider()
 
@@ -596,7 +618,7 @@ func _build_heightfield(mat: Material, nu: int, nv: int, u_from := -INF, u_to :=
 	# generate_normals() die Kanten zwischen Oberseite und Wänden ab (Ledges sähen rund aus).
 	# Nur geschwungene Oberseiten (Transitions, Kicker, Bump) werden in sich geglättet.
 	var curved := type in ["ramp", "transition", "bump", "pipe"] or (side_ramp > 0.0 and side_curve > 1.0) or body_curve > 1.0 \
-		or (ramp_curve > 1.0 and (ramp_in > 0.0 or ramp_out > 0.0)) or top_rail > 0.0
+		or (ramp_curve > 1.0 and (ramp_in > 0.0 or ramp_out > 0.0)) or top_rail > 0.0 or round_top
 	st.set_smooth_group(1 if curved else 0xFFFFFFFF)
 	# Oberseite
 	for i in nu:
@@ -625,6 +647,33 @@ func _build_heightfield(mat: Material, nu: int, nv: int, u_from := -INF, u_to :=
 	var mi := MeshInstance3D.new()
 	mi.mesh = st.commit()
 	mi.material_override = mat
+	add_child(mi)
+
+
+## Schwarze Oberseite (nur Optik, knapp über der weißen): z. B. die runde Gleitfläche der Plaza Rail.
+## from/to in m ab dem Anfang des Teils.
+func _build_black_top(from: float, to: float) -> void:
+	var hl := length * 0.5
+	var u0 := clampf(from - hl, -hl, hl)
+	var u1 := clampf(to - hl, -hl, hl)
+	var nu := maxi(int((u1 - u0) * 4.0), 1)
+	var nv := 12
+	var hw := width * 0.5 + 0.004
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_smooth_group(1)
+	var p := func(i: int, j: int) -> Vector3:
+		var u := lerpf(u0, u1, float(i) / nu)
+		var v := lerpf(-hw, hw, float(j) / nv)
+		var h := height_local(u, clampf(v, -width * 0.5 + 0.001, width * 0.5 - 0.001))
+		return Vector3(v, h + 0.006, -u)
+	for i in nu:
+		for j in nv:
+			_quad(st, p.call(i, j), p.call(i + 1, j), p.call(i + 1, j + 1), p.call(i, j + 1), Vector3.UP)
+	st.generate_normals()
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = Util.mat(Color(0.06, 0.06, 0.07), 0.35)
 	add_child(mi)
 
 

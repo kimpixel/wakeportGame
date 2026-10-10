@@ -75,7 +75,7 @@ Godot liegt im Repo-Root: `./Godot_v4.7.2-stable_win64_console.exe`. Kein ffmpeg
 Wichtige Test-Argumente (vollständig im Kopf von `scripts/main.gd`): `--autotest`, `--quit=S`,
 `--shot=P --shot-time=S`, `--view=x,y,z,lx,ly,lz`, `--closeup=x,y,z[,lx,ly,lz]` (relativ zum Fahrer),
 `--terminal=T1|T2`, `--setup=ID`, `--screen[=NAME|@liste|@einstellungen]`, `--no-screen`,
-`--mobile --tilt=GRAD`, `--jump-at=S`, `--pitch=±1`, `--crash-at=S`, `--letgo-at=S`,
+`--mobile --tilt=GRAD`, `--jump-at=S`, `--pitch=±1`, `--hold=AKTION@T0-T1`, `--crash-at=S`, `--letgo-at=S`,
 `--game-time=S`, `--weather=ID --hour=H --day=T`, `--plane=S`, `--passive`.
 
 Fallstricke:
@@ -105,7 +105,7 @@ Fallstricke:
 | `scripts/ui/touch_pad.gd`, `scripts/mobile_input.gd` | Handy: virtuelle Tasten, Neigung, Touch |
 | `scripts/hud.gd` | HUD (Zeit, Seilzug-Anzeige, Punkte), Hilfe, Stil (`ACCENT` grün, `PANEL`) |
 | `scripts/weather.gd`, `scripts/sun_calc.gd`, `shaders/sky.gdshader` | Wetter, Sonnenstand nach echter Lage |
-| `scripts/sfx.gd`, `assets/sounds/` | Sounds; `positiv/` (Jubel), `feature_hit/`, `landing/` aus Videoaufnahmen |
+| `scripts/sfx.gd`, `assets/sounds/` | Sounds; `positiv/` (Jubel), `negativ/` (Ruf beim Sturz), `feature_hit/`, `landing/` aus Videoaufnahmen |
 | `scripts/npcs/` | Umgebung (Steuermänner, wartende Fahrer, SUPs), Flugzeuge im Anflug |
 | `scripts/wakeboard.gd`, `shaders/boot*.gdshader*` | Board + Bindungen (Schaft knickt per Shader mit dem Schienbein) |
 | `setups/parts.json`, `setups/setup_*.json`, `setups/index.json` | Bauteil-Katalog, Feature-Setups je Terminal |
@@ -120,10 +120,11 @@ Wendepunkt. Ufer-Wende T2 bei 28 m vom Startmast (`cable.turn_a_z` in main.gd).
 ## Festgelegte Regeln und Entscheidungen
 
 Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/ui/task_panel.gd` Fenster):
-- **Competition** = die Runde auf Zeit (alles unter „Spiel“). Daneben Training: **Wenden, Kicker, Slider, Raley**, je
+- **Competition** = die Runde auf Zeit (alles unter „Spiel“). Daneben die **Community Challenge** (im Spiel kurz „Challenge“,
+  nie „Training“/„Aufgabe“ schreiben; im Code heißen sie weiter Training/Task): **Wenden, Kicker, Slider, Raley**, je
   mehrere Aufgaben (leicht → schwer), jede misst einen Wert → **Bronze/Silber/Gold** (Schwellen in `Training.MODES`,
   vom Nutzer fein justiert). Bestwerte in user://settings.cfg [medaillen]; **Tests speichern nichts**.
-- Modi: Wenden, Kicker, Slider, Raley, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
+- Modi: Wenden, Kicker, Slider, Raley, **Sprung-Start** (Nolli, Raley Start vom Steg), **Driften**, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
   `target` = Ziel, je per Anzeigename; zählt nur: auf dem Start-Feature fahren, abspringen, aus der Luft aufs Ziel). Nach gewertetem Versuch **1,4 s ausrollen** (`Challenge.OUTRO`), dann Fenster.
   Startseite im Querformat zweispaltig (links Modi, rechts Terminal/Setup bzw. Aufgaben; Handy quer: Start links).
 - Aufgabe setzt Fahrer + Carrier **in voller Fahrt** kurz vor die Stelle (`Rider.place`, `CableSystem.place_running`),
@@ -134,9 +135,39 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
 - **Jeder Start mit Countdown 3 – 2 – 1 – GO** (`Challenge.countdown`), dazu Ansage **englisch** „three, two, one, go“
   (`assets/sounds/countdown/`, Windows-Stimme Zira, Stille abgeschnitten; `Sfx.say_count`, spielt auch in der Pause): Competition fährt bei GO los (Szene läuft; auch nach R/☰ zurück zum Steg),
   Aufgaben stehen bis GO (SceneTree.paused).
+- **Slider Special** und **Ollie in Boardslide Nosepress** (`kind: "special"`, `combo` je Slider; metric count = geschaffte Slider,
+  sonst bester Messwert einer geschafften Station, z. B. Meter; fertig, sobald alle Stationen gewertet sind): Stationen = Slider-Gruppen (Full Pipe = 2 Teile) nach s; je
+  Station Ollie on (Slide beginnt < 0,2 s nach Landung, nicht über die Auffahrt), Drehung on/out (halbe Drehungen), Stellung
+  überwiegend, Press > halbe Slide-Zeit; Abgang wird gewertet, wenn das Brett wieder im Wasser ist. Test-Ausgabe `SPECIAL …`.
+- **Filmteam** (`scripts/npcs/film_crew.gd`, Einstellung `film`: 0 Zufall, 1 Boot, 2 Drohne, 3 aus; pro Challenge gewählt): rotes
+  **Kunststoffboot** von T2 (kein Schlauchboot; `FilmCrew.make_boat()`, auch am Liegeplatz in `beach.gd`) fährt auf der Spur
+  x = −15 (Seeseite) 12 m vor dem Fahrer mit, bremst vor dem Spurende (15 m vor den Wendepunkten) und wartet, wendet immer
+  über die Seeseite; Fahrer an der Pinne (`Person` "boat_driver"), Kamerafrau stehend ("filmer"). Motorgeräusch `Sfx.make_outboard_loop`
+  (synthetisch, Zündstöße), Tonhöhe/Lautstärke nach Bootstempo. Oder **FPV-Drohne** vorne-seitlich
+  über dem Fahrer, Pilot mit FPV-Brille und Funke an der vorderen Ecke des T2-Startstegs ("pilot"). Jeder Versuch setzt beides neu (`snap`).
+- **Driften** (`kind` drift_spin / drift_turn / drift_after, `Rider.drifting`): 360er im Drift zwischen den roten Bojen (Brett-Yaw im Drift
+  aufsummiert, je volle Umdrehung eine, links/rechts getrennt, höchstens `SPIN_EACH` 5 je Richtung; Drift lösen setzt zurück), Wende im Drift (Anteil vom Bremsen des Carriers bis das Seil wieder zieht,
+  nur gleitend: Sinkpegel < `DRIFT_SINK` 0,15; ohne Schwung Silber, mit Rauskanten Gold), Drift nach Feature (T2 Juli & August, längster Drift,
+  der bis 0,3 s nach Feature/Sprung beginnt). Test ohne Autopilot (der driftet nicht): `--hold=release@1-40,steer_right@1-40`.
 - Test: `--mode=kicker:2 --go=0.5` (Fenster bestätigen), `--mode-auto` (Autopilot fährt), `--lane=X` (Spur halten),
-  `--jump-at=S`. Ausgabe `CHALLENGE …: Wert Medaille N`. Kalibrierung: Autopilot schafft Wenden mit Silber,
+  `--jump-at=S`. Ausgabe `CHALLENGE …: Wert Medaille N`. Kalibrierung: Autopilot schafft Wenden mit Bronze (ca. 46 % eingesunken, seit schnellerem Einsinken `SINK_RATE` 0,9),
   Kicker M ohne Absprung 1,6 m, mit Absprung bis 3,0 m (L 3,8 m), Full Pipe 13 m.
+
+Geheime Erfolge (`scripts/achievements.gd`, Liste auf der Startseite Taste „Erfolge“, Meldung `Hud.show_achievement`):
+- Immer **10 Plätze** (`SLOTS`), nicht erreichte ausgegraut („Geheim“, ohne Text); neue Erfolge hinten an `LIST` hängen.
+  Gespeichert in user://settings.cfg [erfolge] (Datum); **Tests speichern nichts** (jedes Kommandozeilen-Argument).
+  Freischalten über `main.gd _unlock_achievement(id)` (nicht hinter der Startseite). Test: `--screen=@erfolge --erfolg=fisch`.
+- **Fischkontakt** (`fisch`): mit dem springenden Hecht zusammenstoßen (`Ambient.pike_hit`). Damit er erreichbar ist,
+  springt er in `PIKE_CLOSE` 15 % der Fälle knapp vor dem Fahrer (±2 m daneben, hinlenken). Test `--pike-at=S` (genau in der Spur).
+- **Nass gespritzt** (`sup`): mit > 6 m/s (`SPRAY_SPEED`) bis 3 m an einem SUP vorbei (`Ambient.sup_splashed`, Paddler wackelt).
+  **Zwischen den Bahnen fährt nie ein SUP (verboten).** Zwei im Badebereich, zwei in der Seemitte (`SUP_CENTER`); ab und zu
+  kommt einer herüber bis x = −12,5 (`SUP_COME_X`, nur einer gleichzeitig). Ab x = −18 legt das **rote Boot** ab
+  (`FilmCrew.chase`, Modus "patrol", nur ohne Challenge, nur der Fahrer an Bord): Spur x = −19, hält 4 m seeseitig neben ihm,
+  er paddelt zurück (`Ambient.send_back`), Boot legt wieder an. Test `--sup-at=S` (Log `BOOT …`).
+- **Steg-Landung** (`steg`): aus der Luft (> 0,3 s) auf dem eigenen Startsteg landen (`Rider.landed_on_dock`). Mit 16 m Seil
+  unerreichbar (Ufer-Wende 28 m), erst mit langem Seil (ab ca. 20 m). Test `--drop-at=2` (Fahrer über den Steg in die Luft).
+- **Insekten fressen** (`insekt`): Mückenschwärme (`INSECT_S`, 3 m vor dem Waldrand rechts neben T1, 8–20 m vom Seil, Kopfhöhe)
+  durchfahren (`Ambient.insect_eaten`). Test `--terminal=T1 --drop-at=8,40.1,0.3,-25.6`.
 
 Spiel (Competition):
 - Runde **7:30** (Einstellung „Competition: Rundenlänge“), Start nach Countdown. Danach holt der Operator den Fahrer zum Start, dann Startseite mit Ergebnis.
@@ -149,7 +180,7 @@ Spiel (Competition):
   Wasserstart, keine Punkte für die Wende). Wende: 15 Punkte, außen um die weiße Boje 30.
 - Jeder Start: **sonniger Sommertag 10:30** (21. Juni). Wetter/Uhrzeit werden nicht gespeichert,
   „Jetzt“ nur auf Knopfdruck. (Grund: es darf nie nachts dunkel starten.)
-- Jubel: nur vom **eigenen Operator**, immer nur **ein** Ruf (kein neuer, solange einer läuft + 3 s).
+- Jubel (und beim Sturz ein enttäuschter Ruf aus `assets/sounds/negativ`, 0,4 s danach): nur vom **eigenen Operator**, immer nur **ein** Ruf (kein neuer, solange einer läuft + 3 s).
 - Flugzeuge: Anflug Frankfurt (Betriebsrichtung 07) tief über dem See. Geräusch **ohne reine Töne**
   (Pfeifen klang am Handy wie Piepen).
 
@@ -168,10 +199,21 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
   **Nach Sturz: Leertaste halten = schwimmen, Strg = sofort weiter (−1:00), R = Steg (−2:00)** –
   angezeigt in einem Panel mit Zeitkosten (`Hud.show_recovery`).
 - Strg (zur Not Alt): **Driften** – keine Kante greift: Lenken ändert die Fahrtrichtung nicht, nur der
-  Seilzug zieht einen (nicht festnageln, sonst reißt das Seil), ←/→ drehen nur das Brett, Wasserwiderstand × `DRIFT_DRAG` 0.7 (leicht schneller). Nur Spieler,
+  Seilzug zieht einen (nicht festnageln, sonst reißt das Seil), ←/→ drehen nur das Brett, Wasserwiderstand × `DRIFT_DRAG` 0.7 (leicht schneller), Brett dreht im Drift schneller (`DRIFT_SPIN`). Nur Spieler,
   Autopilot/NPC driften wie früher. „Maximaler Grip“ gibt es nicht mehr.
 - **Esc = Pause** (`scripts/ui/pause_menu.gd`, SceneTree.paused; Fenster Weiter/Hilfe/Startseite). Am Handy
   pausiert das offene ☰-Menü (TouchPad/MobileInput laufen mit PROCESS_MODE_ALWAYS). Test `--pause-at=S`.
+- **Sprung-Start** (nur auf dem Startsteg, `Rider._step_dock_start`): ↓ halten (Handy ▼) = gegen das anfahrende Seil stemmen
+  (Fahrer bleibt stehen, Seilzug steigt). Bei `DOCK_BRACE_MAX` 90 % der Seilzug-Grenze reißt das Seil los: die gedehnte Leine
+  schleudert einen nach vorne, sobald die Spannung raus ist (spätestens an der Stegkante) Absprung = voller Sprung + `DOCK_YANK_LIFT`;
+  +100. Vorher loslassen = ohne Sprung. Nur Spieler. **↓ ist immer der Auslöser, egal wie das Brett steht**: Stellung beim Riss
+  längs zum Seil (bis 45°, `DOCK_QUER`) = **Nolli**, quer = **Raley Start** (Raley-Schwung, Brett bleibt quer bis `DOCK_RALEY_PHASE`,
+  Haltung: tief auf der Kante, Brust zum Seil); Auflade-Power × Genauigkeit². Beim Gegenhalten dreht das Brett nicht zum Seil, beim Riss
+  ist der Steg quer so rutschig wie längs. Challenge-Modus **Sprung-Start** (`kind: "dock"`, `jump`, `start: {dock: true}`: Steg, Anlage
+  startet bei GO). Test: `--autotest --passive --hold=pitch_back@0-15[,steer_right@0-1.55]`, `--mode=sprungstart:N`.
+  **Nolli-Animation** nach Fotoserie: beim Riss Oberkörper nach vorne zum Griff, Brett kippt um die Nose (Ende Richtung Seil,
+  `_nolli_lead`) bis `NOLLI_ANG` ca. 60°, Tail hoch, Knie angezogen (Becken macht nur `NOLLI_PELVIS` mit); in der ersten
+  Flughälfte wieder flach.
 - R, + / −, C, P, H, M, Tab (Startseite) wie in der README. **Keine Tasten T/F** mehr (Terminal/Setup nur auf der Startseite).
 
 Steuerung Handy: Neigen = lenken, Tippen = Start, **Springen nur mit der SPRUNG-Taste (links)**,
@@ -188,9 +230,17 @@ Tricks/Optik:
 - **Frontroll eingerollt** (Knie zur Brust), **Backroll gestreckt**.
 - **Press-Pose aus Blender** (Nutzer posiert selbst): `blender/*.blend` (Godot ignoriert den Ordner) -> `tools/export_pose.py` (Nutzer: `.	oolsexport_poses.ps1` in PowerShell, exportiert alle)
   (Blender 5.2 im Hintergrund, IK ausgewertet) -> `assets/poses/nosepress.json`. Übernommen: Becken (Lage im Brettraum),
-  Rücken, Kopf, Arme; Füße per IK in den Bindungen, Hände Faust, Handle in der vorderen Hand. Tailpress/Goofy gespiegelt,
+  Rücken, Kopf, Arme; Füße per IK in den Bindungen, Hände Faust, Handle in der vorderen Hand. 50-50-Tailpress: eigene Pose `tailpress.json` (aus `blender/tailpress.blend`), Boardslide-Tailpress/Goofy gespiegelt,
   Press relativ zur Fahrtrichtung (switch). Animierter Root läuft in Schleife. Vorlage: `blender/nosepress_vorlage.glb`.
-- **Kamera** (Verfolger): auf dem Slider 70 % Abstand, beim Press 50 % und von der Brustseite; danach weich zurück.
+  Weitere Vorlagen (aus nosepress.blend abgeleitet, Foto als `Referenz_Foto` eingepackt, Pfeil `Fahrtrichtung`, Nutzer posiert nach):
+  `tailpress` (50-50), `bs_vorwaerts_/bs_rueckwaerts_` + `nosepress`/`tailpress` (Boardslide; vorwärts = Brust in Fahrtrichtung).
+  Noch nicht im Spiel verwendet – bisher nur nosepress.json (gespiegelt für Tailpress). Im Spiel kippt das Brett um Nose/Tail,
+  beim Boardslide-Press rücken Fahrer und Brett seitlich, bis Nose bzw. Tail über dem Slider liegt (`_press_bs_vis`;
+  Vorlagen: Rail quer unter Nose bzw. Tail, 22 cm vor der Spitze).
+- **Kamera** (Verfolger): auf dem Slider 70 % Abstand, beim Press 50 % (Handy hochkant ×1,35) schräg von hinten auf der Brustseite, Blick in Fahrtrichtung
+  (`PRESS_BEHIND`; „vorne“ heißt beim Nutzer: in Fahrtrichtung sehen), Blick zwischen Becken (`Rider.press_body`) und gedrücktem Brett-Ende (`Rider.press_tip`); danach weich zurück.
+  Der Blickpunkt zieht mit der Fahrgeschwindigkeit mit (sonst hängt er von der Seite sichtbar ca. 1 m hinterher).
+- Handle beim Press immer in der vorderen Hand (auch 50-50-Tailpress, obwohl die Pose gespiegelt ist).
 - Nach Sturz/Absaufen/Neustart wird Raley/Überschlag/Press sofort zurückgesetzt.
 - Features haben **Kollisionskörper** aus ihrer Form (`FeaturePart._build_collider`, Ebene `LAYER_COLLIDE`):
   die Ragdoll prallt ab bzw. bleibt darauf liegen. Fahrphysik nutzt weiter `height_local()`.
@@ -200,16 +250,19 @@ Tricks/Optik:
   Geschwommen wird **in runden Bögen** wie ein Mensch, nicht Ecke für Ecke: Zielpunkt 2,5 m voraus auf dem
   Weg (`SWIM_LOOKAHEAD`), Schwimmrichtung dreht höchstens `SWIM_TURN` 1,2 rad/s.
 - **Fangzone der Slider** (Rail, Pipe, schmale Ledge ≤ 1 m, Rail im Transition Rail): ±0,55 m seitlich,
-  0,45 m unter bis 0,4 m über der Oberkante (`FeaturePart.CATCH_*`). Wer im Sinkflug hineinkommt, gleitet
+  0,45 m unter bis 1,3 m über der Oberkante (`FeaturePart.CATCH_*`). Im Sinkflug in der Zone startet ↑/↓ keine Rolle (`FLIP_PRESS_MAX`: kaum angefangene wird zurückgenommen) – man will pressen. Wer im Sinkflug hineinkommt, gleitet
   seitlich/nach oben auf die Slide-Linie (`Rider._catch_glide`), kein Hochspringen. Gehört zur Hilfe
   „Einloggen“. Debug: **F3** bzw. `--hitbox` blendet ein: Fangzonen **gelb**, glattes Plastik **blau**, Safety/Auffahrt und
   Kicker **orange** (fährt man wie einen Kicker).
-- **Brettstellung auf dem Slider rastet ein** (`Rider._slide_orient`): beim Draufkommen Boardslide, nur bei
-  ≤ 12° zur Achse (`SNAP_5050`) 50-50 – man slidet also meistens Boardslide. Auf dem Slider dreht ←/→ (Handy:
+- **Brettstellung auf dem Slider rastet ein** (`Rider._slide_orient`): beim Draufkommen in die nächste Stellung:
+  bis 45° zur Achse (`SNAP_5050`) 50-50, darüber Boardslide (früher 12° – schräges Aufspringen ergab ungewollt Boardslide). Auf dem Slider dreht ←/→ (Handy:
   deutlich neigen) je Tipp 90° (Boardslide ↔ 50-50), nicht stufenlos; Wechsel geben `SWITCH_BONUS` 80 und
   stehen im Namen („Boardslide to 50-50 – Rail“). Autopilot/NPC springen nicht um.
 - **Abgang quer** (Brett > 50° zur Fahrtrichtung) vom Feature ins Wasser oder quer gelandet = Sturz, außer mit **Drift**
   (Strg) – dann rutscht es quer weiter (`Rider.last_exit_drift`). Autopilot/NPC ausgenommen.
+- **Luft-Hilfe** (`AIR_ASSIST`): ohne Lenken dreht das Brett in der Luft zur Flugrichtung zurück – **nicht**, wenn ein Slider
+  bis 8 m voraus auf dem Flugweg liegt (`FeatureSet.slider_ahead`, nur Spieler): sonst wäre die Vierteldrehung für den
+  Boardslide beim Aufspringen wieder weg. Gelandet wird per Einrasten (nächste Stellung).
 - Slider **einloggen** (Auto-Rutschen): bis 35° Abweichung richtet das System die Fahrtrichtung
   entlang des Features aus und zieht zur Spur; erst darüber rutscht man ab.
 - Sprung aufladen: stufenlos tiefer in die Knie.
@@ -235,6 +288,9 @@ Features/Setups:
   vorne, steil hoch, lang abfallend, hintere Safety bis ins Wasser). Kein Add-on-Rail.
 - A-Frame Rail (Pyramid Series): 0,6 m breit, oben ganz schwarzes Halbrund-Rail, gerade hoch / flache Mitte / gerade runter,
   vorne/hinten steile gerade Safety, die ins Halbrund schneidet (`top_rail`, `safety_slope`).
+- **Port Plaza** = ein Modul (kein eigener Plaza Kicker), Maße verbindlich nach Plan „Juli & August“: Slider mit runder Oberkante und
+  runder Safety vorne/hinten, hinten breiter Teil aus Safety + Rampe; dahinter meist ein Cheese Wedge (0,75 m) – Plaza + Wedge ist kein Hack.
+  Interne Teile `_plaza_*` (mit `_` = nicht im Editor).
 - Uprail 7,5 m. Transition Rail: Rail 28 cm dick, im flachen Abschluss (ca. 26 cm) **versenkt**,
   ragt 7 cm heraus, von allen Seiten befahrbar, löst keinen Sturz aus.
 - Positionen kommen aus den Plan-Fotos (`fotos/`); die Pläne sind nicht maßstäblich, Maße aus

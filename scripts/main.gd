@@ -12,21 +12,26 @@ extends Node3D
 ##   --mobile          Handy-Steuerung erzwingen (mit --tilt=GRAD feste Neigung)
 ##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
 ##   --screen[=NAME]   Startbildschirm erzwingen (NAME: Feature/Hack auswählen, z. B. "hack";
-##                     @liste, @einstellungenN, @editor = Setup-Editor);
+##                     @liste, @einstellungenN, @erfolge, @editor = Setup-Editor);
 ##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
 ##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
 ##   --jump-at=SEK     Test: zu dieser Zeit voll aufgeladen abspringen
+##   --hold=AKT@T0-T1,…  Test: Eingabe-Aktion (z. B. release, steer_right) von T0 bis T1 s halten
 ##   --pitch=±1        Test: in der Luft ↑ (+1, Frontroll) bzw. ↓ (-1, Backroll) halten
 ##   --game-time=SEK   Test: Spielzeit (normal 450 s); im Autotest läuft dann eine Runde mit Zeit
 ##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, regen, dunst)
 ##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30
 ##   --plane=S         Test: sofort ein Jet im Anflug, S m vor dem See (negativ) bzw. danach
+##   --pike-at=SEK     Test: zu dieser Zeit springt der Hecht knapp vor dem Fahrer (Erfolg "fisch")
+##   --sup-at=SEK      Test: ein SUP aus der Seemitte kommt herüber, das rote Boot vertreibt ihn
+##   --drop-at=S[,x,y,z]  Test: Fahrer zu dieser Zeit in die Luft setzen (Standard: über den Startsteg, Erfolg "steg")
+##   --erfolg=ID,…     Test: geheime Erfolge als erreicht zeigen (z. B. --screen=@erfolge --erfolg=fisch)
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
 ##   --pause-at=SEK    Test: zu dieser Zeit pausieren (mit --shot: Bild der Pause)
 ##   --hitbox          Fangzonen der Slider zeigen (im Spiel: F3)
 ##   --set=NAME=WERT   Test: Einstellung setzen (ohne zu speichern), z. B. --set=goofy=true
-##   --mode=ID[:N]     Spielmodus (wende, kicker, slider, raley) mit Aufgabe N (ab 1) direkt starten;
+##   --mode=ID[:N]     Spielmodus (wende, kicker, slider, raley, sprungstart, drift, transfer) mit Aufgabe N (ab 1) direkt starten;
 ##                     mit --go=SEK: Aufgaben-Fenster zu dieser Zeit bestätigen; --mode-auto: Autopilot fährt
 
 const RESET_DELAY := 3.0
@@ -88,6 +93,7 @@ var _terminal_arg := ""
 var _start := {}                 # "T1"/"T2" -> {pos, yaw, dock, mast_b}
 var sfx: Sfx
 var ambient: Ambient
+var film: FilmCrew                 # Filmteam der Challenges (rotes Boot oder FPV-Drohne)
 var weather: Weather
 var airplanes: Airplanes
 var _plane_arg := NAN
@@ -125,10 +131,15 @@ var _cam_arg := ""
 var _view_arg := PackedFloat32Array()
 var _lane_arg := NAN
 var _crash_at := -1.0          # Test: Sturz zu dieser Zeit auslösen
+var _pike_at := -1.0           # Test: Hecht springt zu dieser Zeit knapp vor dem Fahrer
+var _sup_at := -1.0            # Test: ein SUP aus der Seemitte kommt zu dieser Zeit herüber
+var _drop_at := -1.0           # Test: Fahrer zu dieser Zeit an _drop_pos in die Luft setzen
+var _drop_pos := Vector3.INF   # Test: wohin (INF = über den Startsteg)
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
 var _pause_at := -1.0           # Test: zu dieser Zeit pausieren (und Screenshot)
 var _hitbox_arg := false        # Test: Fangzonen der Slider zeigen
 var _set_args: Array[String] = []   # Test: --set=NAME=WERT
+var _hold: Array = []           # Test: [Aktion, von, bis] (--hold)
 var _jump_at := -1.0           # Test: zu dieser Zeit abspringen
 var _test_pitch := 0.0         # Test: ↑/↓ in der Luft
 var _touch_at: Array[float] = []   # Test: Finger auf den Bildschirm
@@ -273,6 +284,10 @@ func _ready() -> void:
 	ambient.player = rider
 	add_child(ambient)
 	ambient.build()
+	film = FilmCrew.new()
+	film.game = self
+	add_child(film)
+	film.build()
 	# Einflugschneise Frankfurt: Jets im Landeanflug über dem See
 	airplanes = Airplanes.new()
 	airplanes.jet_sound = sfx.make_jet_loop()
@@ -280,7 +295,21 @@ func _ready() -> void:
 	if not is_nan(_plane_arg):
 		airplanes.spawn_at(_plane_arg)
 	cam.doppler_tracking = Camera3D.DOPPLER_TRACKING_IDLE_STEP
-	ambient.pike_hit.connect(func() -> void: hud.show_trick("Hecht erwischt!"))
+	ambient.pike_hit.connect(func() -> void:
+		hud.show_trick("Hecht erwischt!")
+		_unlock_achievement("fisch"))
+	# SUP aus der Seemitte zu nah an der Bahn: rotes Boot fährt raus und schickt ihn zurück
+	ambient.sup_intruding.connect(film.chase)
+	film.sup_chased.connect(ambient.send_back)
+	ambient.sup_splashed.connect(func() -> void:
+		hud.show_trick("SUP nass gespritzt!")
+		_unlock_achievement("sup"))
+	ambient.insect_eaten.connect(func() -> void:
+		hud.show_trick("Igitt – Insekt verschluckt!")
+		_unlock_achievement("insekt"))
+	rider.landed_on_dock.connect(func() -> void:
+		hud.show_trick("Steg-Landung!")
+		_unlock_achievement("steg"))
 	if not _test_log:
 		settings.load_file(mobile.active)     # Tests laufen immer mit Standardwerten
 	_apply_terminal(_initial_terminal())
@@ -804,9 +833,29 @@ func _physics_process(delta: float) -> void:
 		elif t < 0.0 and _elapsed >= -t:
 			_touch_at[i] = 0.0
 			_fake_touch(false)
+	for h: Array in _hold:
+		if _elapsed >= h[1] and _elapsed < h[2]:
+			if h[0] in ["reset", "start"] and _elapsed - delta < h[1]:
+				# Tasten, die als Ereignis wirken (R, Start): einmal als Tastendruck schicken
+				var ev := InputEventAction.new()
+				ev.action = h[0]
+				ev.pressed = true
+				Input.parse_input_event(ev)
+			Input.action_press(h[0])
+		elif _elapsed >= h[2] and _elapsed - delta < h[2]:
+			Input.action_release(h[0])
 	if _crash_at > 0.0 and _elapsed >= _crash_at:
 		_crash_at = -1.0
 		rider.crash("Teststurz")
+	if _pike_at > 0.0 and _elapsed >= _pike_at:
+		_pike_at = -1.0
+		ambient.pike_now()
+	if _sup_at > 0.0 and _elapsed >= _sup_at:
+		_sup_at = -1.0
+		ambient.sup_come_now()
+	if _drop_at > 0.0 and _elapsed >= _drop_at:
+		_drop_at = -1.0
+		_test_drop()
 	if _letgo_at > 0.0 and _elapsed >= _letgo_at:
 		_letgo_at = -1.0
 		rider.let_go("Test: Seil verloren")
@@ -999,6 +1048,9 @@ func _process(_delta: float) -> void:
 		else:
 			hud.set_center("")
 
+	if rider.dock_charge > 0.0:
+		hud.set_center("SPRUNG-START  %d %%" % roundi(rider.dock_charge * 100.0))   # auch in den Challenges
+
 	if _pause_at > 0.0 and _elapsed >= _pause_at:
 		_pause_at = -1.0
 		pause_menu.set_paused(true)
@@ -1081,6 +1133,7 @@ func _reset() -> void:
 	rider.reset()
 	pc.reset()
 	water.clear_wake()
+	cam.snap()                       # Kamera gleich am Steg, nicht vom letzten Ort herüberschwenken
 	_crash_t = 0.0
 
 
@@ -1148,7 +1201,30 @@ func _bind(action: String, physical_keys: Array, buttons: Array, axes: Array, lo
 		InputMap.action_add_event(action, e)
 
 
+## Geheimen Erfolg freischalten (nur im Spiel, nicht hinter der Startseite) und melden.
+func _unlock_achievement(id: String) -> void:
+	if start_screen and start_screen.visible:
+		return
+	if Achievements.unlock(id):
+		hud.show_achievement(Achievements.get_def(id)["name"])
+		print("ERFOLG ", id)
+
+
+## Test --drop-at: Fahrer mit etwas Tempo in die Luft setzen (z. B. über den Steg oder in einen Mückenschwarm).
+func _test_drop() -> void:
+	var p := _drop_pos
+	if p == Vector3.INF:
+		var d := rider.dock_rect.get_center()
+		p = Vector3(d.x, rider.start_pos.y + 1.2, d.y)
+	rider.pos = p
+	rider.vel = Vector3(0.0, 1.0, -3.0)
+	rider.mode = Rider.Mode.AIR
+	rider.air_time = 0.0
+	print("DROP ", p)
+
+
 func _parse_args() -> void:
+	Achievements.no_save = not OS.get_cmdline_user_args().is_empty()   # Tests speichern keine Erfolge
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--autotest":
 			_test_log = true
@@ -1158,6 +1234,11 @@ func _parse_args() -> void:
 			_shot_path = arg.substr(7)
 		elif arg.begins_with("--shot-time="):
 			_shot_time = arg.substr(12).to_float()
+		elif arg.begins_with("--hold="):
+			for h in arg.substr(7).split(","):
+				var a := h.split("@")
+				var tt := a[1].split("-")
+				_hold.append([a[0], tt[0].to_float(), tt[1].to_float()])
 		elif arg.begins_with("--pitch="):
 			_test_pitch = arg.substr(8).to_float()
 		elif arg.begins_with("--pause-at="):
@@ -1178,6 +1259,18 @@ func _parse_args() -> void:
 			_letgo_at = arg.substr(11).to_float()
 		elif arg.begins_with("--crash-at="):
 			_crash_at = arg.substr(11).to_float()
+		elif arg.begins_with("--sup-at="):
+			_sup_at = arg.substr(9).to_float()
+		elif arg.begins_with("--drop-at="):
+			var v := arg.substr(10).split_floats(",")
+			_drop_at = v[0]
+			if v.size() >= 4:
+				_drop_pos = Vector3(v[1], v[2], v[3])
+		elif arg.begins_with("--pike-at="):
+			_pike_at = arg.substr(10).to_float()
+		elif arg.begins_with("--erfolg="):
+			for id in arg.substr(9).split(","):
+				Achievements.unlock(id)
 		elif arg.begins_with("--terminal="):
 			_terminal_arg = arg.substr(11).to_upper()
 		elif arg.begins_with("--setup="):

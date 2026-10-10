@@ -18,6 +18,7 @@ var _north_yaw := 0.0
 var people: Array[Dictionary] = []
 ## Wie people, für den T1-Startsteg (dort steht nur der Steuermann).
 var people_t1: Array[Dictionary] = []
+var boat: Node3D                    # rotes Boot am Liegeplatz (in Challenges mit Filmteam unterwegs)
 
 ## Laufwege der Steuermänner (Welt, als Kette begehbar) – die Figuren baut Ambient.
 var operator_paths := {}            # "T1"/"T2" -> Array[Vector3]
@@ -849,25 +850,10 @@ func _palm(base: Vector3, seed_value: float) -> void:
 # ---------------------------------------------------------------- Wasser
 
 func _build_water_items() -> void:
-	# Rotes Schlauchboot (Rettungsboot) am weißen Steg, Bug nach Norden, Außenborder hinten
-	var boat := _node(11.4, 5.4, 0.12, 4.0)
-	var rubber := Util.mat(Color(0.82, 0.16, 0.2), 0.55)
-	for side: float in [-1.0, 1.0]:
-		var tube := CapsuleMesh.new()
-		tube.radius = 0.22
-		tube.height = 3.0
-		var t := MeshInstance3D.new()
-		t.mesh = tube
-		t.material_override = rubber
-		t.rotation.x = PI * 0.5
-		t.position = Vector3(side * 0.55, 0.0, 0.1)
-		boat.add_child(t)
-	Util.beam(boat, Vector3(-0.55, 0.0, -1.35), Vector3(0.55, 0.0, -1.35), 0.22, rubber)   # Bug
-	_b(boat, Vector3(1.1, 0.06, 2.8), Vector3(0, -0.15, 0.1), Util.mat(Color(0.35, 0.35, 0.37), 0.7))  # Boden
-	_b(boat, Vector3(1.0, 0.35, 0.06), Vector3(0, 0.0, 1.55), _wood_dark)                    # Spiegel
-	_b(boat, Vector3(0.28, 0.4, 0.35), Vector3(0, 0.35, 1.75), _black)                       # Außenborder
-	_b(boat, Vector3(0.08, 0.5, 0.1), Vector3(0, -0.05, 1.82), _black)
-	_b(boat, Vector3(1.0, 0.05, 0.3), Vector3(0, 0.1, -0.1), _wood_grey)                     # Sitzbank
+	# Rotes Kunststoffboot von T2 am weißen Steg, Bug nach Norden (fährt in den Challenges mit, siehe FilmCrew)
+	boat = FilmCrew.make_boat()
+	var moor := _node(11.4, 5.9, 0.03, 4.0)
+	moor.add_child(boat)
 	# Gelbe Bojenleine (Abgrenzung zum Badebereich im Norden): ca. 2 m lange gelbe
 	# Schwimmzylinder, aneinandergekettet
 	var tube := CylinderMesh.new()

@@ -31,11 +31,18 @@
   "transition_rail_half": { "name": "1/2 Transition Rail", "type": "transition", "length": 11.0, "width": 3.2, "height": 1.5, "ramp_in": 5.0, "ramp_out": 0.0, "slick": "transition" },
   "pro_rail":        { "name": "Pro Rail",          "type": "rail",  "length": 12.0, "height": 0.8,  "radius": 0.05, "ramp_in": 2.5, "color": "grey" },
 
-  "plaza_kicker":    { "name": "Plaza Kicker", "article": "den",      "type": "block", "length": 9.0,  "width": 3.0, "height": 1.0, "ramp_in": 3.5 },
-  "plaza_rail":      { "name": "Plaza Rail",        "type": "rail",  "length": 14.0, "height": 1.05, "radius": 0.05, "ramp_in": 3.0, "color": "black" },
   "port_plaza":      { "name": "Port Plaza",        "type": "group", "parts": [
-                       { "part": "plaza_kicker", "s": 0.0, "x": 0.0 },
-                       { "part": "plaza_rail",   "s": 9.0, "x": 0.0, "ramp_in": 0.0 } ] },
+                       { "part": "_plaza_wall",   "s": -0.45, "x": 0.0 },
+                       { "part": "_plaza_safety", "s": 2.4,   "x": 0.0 },
+                       { "part": "_plaza_ramp",   "s": 5.125, "x": 0.0 } ],
+                       "_info": "Ein Modul (Port Plaza Uprail), 13,9 m nach Plan Juli & August (Maßstab: Cheese Wedge 4 m): Slider 0–13 m mit runder Safety vorne (1,5 m) und hinten (11,3–13 m), darunter ab 8,45 m der breite Teil: Safety (bis 10,25 m) und Rampe bis zur senkrechten Hinterkante (13,9 m). Hinten steht meist ein Cheese Wedge (0,75 m) dran – eigene Zeile im Setup, gilt nicht als Hack." },
+  "_plaza_wall":     { "name": "Plaza Rail",   "type": "block", "length": 13.0, "width": 0.6, "height": 1.12, "round_top": true, "black_top": [1.5, 11.3],
+                       "profile": [[0.0, -0.1], [0.4, 0.45], [0.8, 0.72], [1.2, 0.86], [1.5, 0.9], [11.3, 1.12], [11.75, 1.06], [12.15, 0.95], [12.5, 0.82], [13.0, 0.6]],
+                       "_info": "Teil der Port Plaza: Slider mit runder Oberkante, vorne und hinten runde Safety, oben leicht steigend" },
+  "_plaza_safety":   { "name": "Plaza Safety", "type": "ramp",  "length": 1.8,  "width": 3.0, "height": 0.3, "curve": 1.0,
+                       "_info": "Teil der Port Plaza: kurze Safety vor der Rampe" },
+  "_plaza_ramp":     { "name": "Plaza Rampe",  "type": "block", "length": 3.65, "width": 3.0, "height": 0.75, "ramp_in": 3.65, "ramp_curve": 1.0, "lip": 0.3,
+                       "_info": "Teil der Port Plaza: Rampe von 0,3 auf 0,75 m (fährt man wie einen Kicker), hinten senkrecht" },
 
   "pipe_half":       { "name": "Pipe 1/2",          "type": "pipe",  "body": 6.5, "radius": 0.6, "center_y": 0.45, "ramp_in": 2.2, "ramp_out": 2.2 },
   "pipe_long":       { "name": "Pipe lang",         "type": "group", "parts": [

@@ -8,7 +8,7 @@ const PARTS_FILE := "res://setups/parts.json"
 const INDEX_FILE := "res://setups/index.json"
 const USER_DIR := "user://setups"                  # eigene Setups aus dem Setup-Editor
 const USER_INDEX := "user://setups/index.json"
-const OVERRIDES := ["length", "width", "height", "height_end", "ramp_in", "ramp_out", "ramp_curve", "side_ramp", "curve", "radius", "center_y", "color", "name", "body", "inner_v", "article", "body_curve", "profile", "side_curve", "lip"]
+const OVERRIDES := ["length", "width", "height", "height_end", "ramp_in", "ramp_out", "ramp_curve", "side_ramp", "curve", "radius", "center_y", "color", "name", "body", "inner_v", "article", "body_curve", "profile", "side_curve", "lip", "round_top", "black_top"]
 
 var parts: Array[FeaturePart] = []
 var setup_name := ""
@@ -243,6 +243,18 @@ func catch_at(world: Vector3) -> Array:
 				best_d = d
 				best = [part, t]
 	return best
+
+
+## Fliegt man gerade auf einen Slider zu (Weg ab world entlang dir, bis dist m)? Höhe egal.
+func slider_ahead(world: Vector3, dir: Vector3, dist: float) -> bool:
+	var d := Vector3(dir.x, 0.0, dir.z).normalized()
+	for part in parts:
+		var k := 0.0
+		while k <= dist:
+			if part.over_slider(world + d * k, 0.3):
+				return true
+			k += 1.0
+	return false
 
 
 ## Debug: Fangzonen aller Slider ein-/ausblenden.

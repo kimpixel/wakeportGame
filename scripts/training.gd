@@ -7,15 +7,21 @@ extends RefCounted
 ##
 ## Felder einer Aufgabe:
 ##   id, name (kurz, Liste), title, goal, keys / keys_mobile (Steuerung), tip
-##   kind     turn | kick | slide | chain | raley
+##   kind     turn | kick | slide | chain | raley | special | drift_spin | drift_turn | drift_after | dock
+##   jump     dock: verlangter Sprung-Start "nolli" (Brett längs) oder "raley" (quer); start {dock: true} = auf dem Steg
 ##   setup    Setup-Datei (Terminal 2)
 ##   start    {s, x, dir}: s = Abstand vom Startmast wie in den Setup-Dateien (ohne Verschiebung),
 ##            dir +1 = Richtung Endmast, -1 = Richtung Startsteg. Wende: {turn: "a"|"b", before, x}
-##   metric   Messwert: sink, height, dist, dist_5050, dist_bs, switches, press, time (s auf dem Slider), count, spin, points
+##   metric   Messwert: sink, height, dist, dist_5050, dist_bs, switches, press, time (s auf dem Slider), count, spin, points,
+##            spins (360er im Drift), share (Anteil der Wende im Drift)
 ##   medals   Schwellen [Bronze, Silber, Gold]; lower = true: kleiner ist besser
 ##   target   kick/slide: {s0, s1, side} – Features mit Mitte in diesem Bereich (Setup-Koordinaten),
 ##            side +1/-1 = rechte/linke Seite
 ##   end_s    Versuch endet spätestens hier (Setup-Koordinaten, in Fahrtrichtung)
+##   combo    special: je Slider der Kette (nach s sortiert) eine Kombination {name, on, stance, press, out}:
+##            immer Ollie on (aus der Luft direkt auf den Slider, nicht über die Auffahrt), on/out =
+##            halbe Drehungen beim Aufspringen/Abgang (1 = 180, 2 = 360; fehlt = egal bzw. 0 beim on),
+##            stance "5050"/"bs" (überwiegend), press "nose"/"tail" (mehr als die halbe Slide-Zeit)
 
 const COMPETITION := "competition"
 const MEDALS := ["", "Bronze", "Silber", "Gold"]
@@ -94,16 +100,16 @@ const MODES := [
 		 "target": {"s0": 45.0, "s1": 65.0, "side": 1}, "end_s": 75.0,
 		 "metric": "dist_bs", "medals": [4.0, 8.0, 12.0],
 		 "goal": "Quer über die Pipe: nur Meter im Boardslide zählen. Am Ende das Brett wieder gerade stellen – wer quer ins Wasser fährt, stürzt.",
-		 "keys": "Schräg anfahren – das Brett rastet quer ein; vor dem Ende ← / → tippen (zurück auf 50-50)",
-		 "keys_mobile": "Schräg anfahren – das Brett rastet quer ein; vor dem Ende deutlich neigen (zurück auf 50-50)",
-		 "tip": "Leicht schräg auf die Auffahrt fahren. Kurz vor dem Ende umspringen oder auf der Abfahrt gerade drehen."},
+		 "keys": "Auf der Pipe ← / → tippen (Boardslide), vor dem Ende nochmal tippen (zurück auf 50-50)",
+		 "keys_mobile": "Auf der Pipe deutlich neigen (Boardslide), vor dem Ende nochmal neigen (zurück auf 50-50)",
+		 "tip": "Oder schon in der Luft quer drehen – das Brett rastet in die nächste Stellung ein. Kurz vor dem Ende umspringen oder auf der Abfahrt gerade drehen."},
 		{"id": "board_drift", "name": "Drift", "title": "Boardslide mit Drift-Abgang", "drift_exit": true,
 		 "kind": "slide", "setup": SLIDER, "start": {"s": 22.0, "x": 6.0, "dir": 1},
 		 "target": {"s0": 45.0, "s1": 65.0, "side": 1}, "end_s": 75.0,
 		 "metric": "dist_bs", "medals": [4.0, 8.0, 12.0],
 		 "goal": "Boardslide über die Pipe und quer bleiben – beim Abgang Drift halten: dann rutscht das Brett quer weiter, ohne einzuhaken.",
-		 "keys": "Strg (Drift) halten, wenn das Brett das Wasser berührt",
-		 "keys_mobile": "DRIFT halten, wenn das Brett das Wasser berührt",
+		 "keys": "Auf der Pipe ← / → tippen (Boardslide), Strg (Drift) halten, wenn das Brett das Wasser berührt",
+		 "keys_mobile": "Auf der Pipe deutlich neigen (Boardslide), DRIFT halten, wenn das Brett das Wasser berührt",
 		 "tip": "Drift rechtzeitig drücken – kurz vor dem Ende der Pipe. Wer das Brett gerade stellt, bekommt hier keinen Wert."},
 		{"id": "switch", "name": "Umspringen", "title": "Boardslide / 50-50 umspringen",
 		 "kind": "slide", "setup": SLIDER, "start": {"s": 22.0, "x": -6.0, "dir": 1},
@@ -137,6 +143,29 @@ const MODES := [
 		 "keys": "← / →  lenken     Leertaste  Absprung",
 		 "keys_mobile": "Neigen  lenken     SPRUNG  Absprung",
 		 "tip": "Nach jedem Slider zieht dich das Seil nach innen: sofort wieder nach außen auf Linie lenken – alle stehen auf derselben Spur."},
+		{"id": "bs_nose", "name": "BS Nosepress", "title": "Ollie in Boardslide Nosepress",
+		 "kind": "special", "setup": SLIDER, "start": {"s": 22.0, "x": 6.0, "dir": 1},
+		 "target": {"s0": 45.0, "s1": 65.0, "side": 1}, "end_s": 75.0,
+		 "metric": "dist", "medals": [4.0, 7.0, 10.0],
+		 "combo": [{"name": "Full Pipe", "stance": "bs", "press": "nose"}],
+		 "goal": "Mit einem Ollie aus dem Wasser direkt auf die Full Pipe, in der Luft quer drehen und im Boardslide mit Nosepress rutschen. Gemessen: gerutschte Meter – nur wenn Ollie on, Boardslide und Nosepress stimmen.",
+		 "keys": "Leertaste  Ollie     in der Luft ← / → kurz tippen (Vierteldrehung)     auf der Pipe ↑ halten",
+		 "keys_mobile": "SPRUNG  Ollie     in der Luft kurz neigen (Vierteldrehung)     auf der Pipe ▲ halten",
+		 "tip": "Nicht über die Auffahrt fahren, sondern vor der Pipe abspringen. Eine Vierteldrehung reicht – das Brett rastet quer ein. Am Ende das Brett gerade stellen (← / →) oder Drift halten, sonst stürzt man quer ins Wasser."},
+		{"id": "special", "name": "Special", "title": "Slider Special",
+		 "kind": "special", "setup": SLIDER, "start": {"s": 22.0, "x": 6.0, "dir": 1},
+		 "target": {"s0": 45.0, "s1": 155.0, "side": 1}, "end_s": 160.0,
+		 "metric": "count", "medals": [2.0, 3.0, 4.0],
+		 "combo": [
+			{"name": "Full Pipe", "stance": "5050", "press": "nose"},
+			{"name": "Rail", "stance": "bs", "press": "tail"},
+			{"name": "A-Frame", "stance": "bs", "press": "nose", "out": 1},
+			{"name": "Pipe", "on": 1, "stance": "5050", "press": "tail", "out": 2},
+		 ],
+		 "goal": "Die Slider-Kette rechts, an jedem Slider eine feste Kombination. Gezählt: geschaffte Slider.",
+		 "keys": "Leertaste  Ollie on / out     ← / →  in der Luft drehen, auf dem Slider Boardslide / 50-50     ↑ / ↓  Nose- / Tailpress",
+		 "keys_mobile": "SPRUNG  Ollie on / out     Neigen  in der Luft drehen, auf dem Slider Boardslide / 50-50     ▲ / ▼  Nose- / Tailpress",
+		 "tip": "Ollie on heißt: aus dem Wasser direkt auf das Rohr springen, nicht über die Auffahrt fahren. Den Press mehr als die halbe Slide-Zeit halten."},
 	]},
 	{"id": "raley", "name": "Raley", "text": "Raley: mit viel Power nach der Wende.", "tasks": [
 		{"id": "first", "name": "Erster Raley", "title": "Den ersten Raley stehen",
@@ -160,6 +189,60 @@ const MODES := [
 		 "keys": "In der Luft ↑  Frontroll   ↓  Backroll   ← / →  drehen",
 		 "keys_mobile": "In der Luft ▲  Frontroll   ▼  Backroll   neigen  drehen",
 		 "tip": "Die Rolle braucht Zeit: gleich nach dem Absprung ↑ oder ↓ drücken."},
+	]},
+	{"id": "sprungstart", "name": "Sprung-Start", "text": "Vom Startsteg: gegen das Seil stemmen, bis es dich losreißt.", "tasks": [
+		{"id": "nolli", "name": "Nolli", "title": "Nolli vom Steg",
+		 "kind": "dock", "jump": "nolli", "setup": LEER, "start": {"dock": true},
+		 "metric": "height", "medals": [3.0, 3.7, 4.1],
+		 "goal": "Bleib auf dem Startsteg mit dem Brett längs zum Seil (50-50) stehen und halte ↓: du stemmst dich gegen das anfahrende Seil, der Seilzug lädt sich auf. Bei maximaler Seilspannung reißt es dich nach vorne – ein Nolli. Gemessen: größte Höhe.",
+		 "keys": "↓ halten (schon beim Countdown), bis das Seil losreißt",
+		 "keys_mobile": "▼ halten (schon beim Countdown), bis das Seil losreißt",
+		 "tip": "Je genauer das Brett längs zum Seil steht, desto mehr Power. Nicht vorher loslassen – sonst ist es ein normaler Start."},
+		{"id": "nolli_spin", "name": "Nolli 180/360", "title": "Nolli mit Drehung",
+		 "kind": "dock", "jump": "nolli", "setup": LEER, "start": {"dock": true},
+		 "metric": "spin", "medals": [180.0, 360.0, 540.0],
+		 "goal": "Nolli vom Steg und in der Luft drehen: 180 = Bronze, 360 = Silber, 540 = Gold.",
+		 "keys": "↓ halten bis zum Riss, dann in der Luft ← / →  drehen",
+		 "keys_mobile": "▼ halten bis zum Riss, dann in der Luft neigen = drehen",
+		 "tip": "Gleich nach dem Riss drehen und rechtzeitig loslassen – das Brett muss zur Landung in Fahrtrichtung zeigen."},
+		{"id": "raley", "name": "Raley Start", "title": "Raley Start vom Steg",
+		 "kind": "dock", "jump": "raley", "setup": LEER, "start": {"dock": true},
+		 "metric": "height", "medals": [3.0, 3.7, 4.1],
+		 "goal": "Dreh dich auf dem Steg um 90°, sodass das Brett quer zum Seil steht, und halte ↓: du sitzt tief auf der Kante, Brust zum Seil. Reißt das Seil los, schwingt dein Körper um den Griff wie beim Raley. Gemessen: größte Höhe.",
+		 "keys": "← / →  auf dem Steg quer drehen     ↓ halten, bis das Seil losreißt",
+		 "keys_mobile": "Neigen  auf dem Steg quer drehen     ▼ halten, bis das Seil losreißt",
+		 "tip": "Schon beim Countdown drehen – je genauer quer, desto höher. Ab 45° Abweichung wird es ein Nolli."},
+		{"id": "raley_roll", "name": "Raley Start + Roll", "title": "Raley Start mit Überschlag",
+		 "kind": "dock", "jump": "raley", "setup": LEER, "start": {"dock": true},
+		 "metric": "points", "medals": [380.0, 640.0, 740.0],
+		 "goal": "Raley Start und in der Luft noch etwas dazu: 180 = Bronze, Frontroll oder Backroll = Silber, Rolle + 360 = Gold. Gemessen: Punkte des Sprungs.",
+		 "keys": "Quer drehen, ↓ halten bis zum Riss, in der Luft loslassen, dann ↑ Frontroll / ↓ Backroll, ← / →  drehen",
+		 "keys_mobile": "Quer drehen, ▼ halten bis zum Riss, in der Luft loslassen, dann ▲ Frontroll / ▼ Backroll, neigen  drehen",
+		 "tip": "Das gehaltene ↓ startet keine Rolle – erst loslassen, dann sofort wieder drücken: die Rolle braucht die ganze Flugzeit."},
+	]},
+	{"id": "drift", "name": "Driften", "text": "Kante lösen und gleiten: das Brett dreht frei, die Fahrtrichtung bleibt.", "tasks": [
+		{"id": "spin", "name": "360 im Drift", "title": "360er im Drift",
+		 "kind": "drift_spin", "setup": LEER, "start": {"s": 18.0, "x": 0.0, "dir": 1},
+		 "metric": "spins", "medals": [4.0, 7.0, 10.0],
+		 "goal": "Driften heißt: die Kante lösen. Das Brett liegt flach und greift nicht mehr – Lenken ändert die Fahrtrichtung nicht, nur der Seilzug zieht dich, und das Brett lässt sich frei herumdrehen. Dreh so zwischen den roten Bojen (Ufer bis Endmast) fünf 360er in die eine und fünf in die andere Richtung – gezählt wird jede volle Umdrehung im Drift, höchstens fünf je Richtung.",
+		 "keys": "Strg halten  driften     ← / →  Brett drehen",
+		 "keys_mobile": "DRIFT halten  driften     Neigen  Brett drehen",
+		 "tip": "Erst fünf in eine Richtung, dann umsteuern – die Strecke reicht nur knapp, also nicht trödeln. Wer den Drift loslässt, verliert die angefangene Umdrehung – und quer greift die Kante hart und bremst."},
+		{"id": "wende", "name": "Wende im Drift", "title": "Die Wende durchgleiten",
+		 "kind": "drift_turn", "setup": LEER, "start": {"turn": "b", "before": 60.0, "x": 2.0},
+		 "metric": "share", "medals": [0.5, 0.75, 0.9],
+		 "goal": "Vor der Wende am Endmast mächtig Schwung holen und dann die ganze Wende im Drift durchgleiten – ohne einzusinken. Gemessen: Anteil der Wende, in dem du im Drift gleitest, ohne einzusinken (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht).",
+		 "keys": "← / →  lenken (Schwung holen)     Strg halten  driften",
+		 "keys_mobile": "Neigen  lenken (Schwung holen)     DRIFT halten  driften",
+		 "tip": "An der roten Boje weit rauskanten und Tempo aufbauen. Im Drift bremst das Wasser weniger – du gleitest weiter. Ist zu wenig Schwung da, sinkst du ein."},
+		{"id": "feature", "name": "Drift nach Feature", "title": "Nach dem Feature driften",
+		 "kind": "drift_after", "setup": "res://setups/setup_f.json", "terminal": "T2",
+		 "start": {"s": 150.0, "x": 0.0, "dir": -1}, "end_s": 40.0,
+		 "metric": "dist", "medals": [10.0, 20.0, 30.0],
+		 "goal": "Terminal 2, Setup Juli & August: von der Mitte Richtung Steg über ein Feature deiner Wahl und gleich danach driften – mindestens 10 m. Gemessen: der längste Drift, der direkt nach einem Feature beginnt (auch nach dem Sprung davon).",
+		 "keys": "Strg schon auf dem Feature halten und danach nicht loslassen",
+		 "keys_mobile": "DRIFT schon auf dem Feature halten und danach nicht loslassen",
+		 "tip": "Mit Drift darf das Brett beim Abgang auch quer stehen. Der Seilzug zieht dich im Drift zur Seilmitte – vorher weit außen auf das Feature fahren."},
 	]},
 	{"id": "transfer", "name": "Transfer", "text": "Von einem Feature auf ein anderes springen.", "tasks": [
 		{"id": "klein", "name": "Klein", "title": "Pyramid auf Pyramid-Rail",
@@ -243,6 +326,10 @@ static func format_value(task: Dictionary, value: float) -> String:
 			return "%d Wechsel" % roundi(value)
 		"count":
 			return "%d Slider" % roundi(value)
+		"spins":
+			return "%d Umdrehungen" % roundi(value)
+		"share":
+			return "%d %% im Drift" % roundi(value * 100.0)
 		"spin":
 			return "%d°" % roundi(value)
 		"points":

@@ -19,7 +19,8 @@
     { "part": "transition_rail", "s": 117.1, "x": -6.8, "dir": "out" },
     { "part": "ollie_box",       "s": 67.1,  "x": -5.9, "dir": "out" },
     { "part": "ollie_ledge",     "s": 67.1,  "x": -7.4, "dir": "out" },
-    { "part": "port_plaza",      "s": 104.7, "x": 6.5,  "dir": "out" },
+    { "part": "port_plaza",      "s": 112.5, "x": 6.5, "dir": "in" },
+    { "part": "cheese_wedge",    "s": 103.55, "x": 6.5, "dir": "out", "height": 0.75 },
     { "part": "bump",            "s": 113.3, "x": 3.6 },
     { "part": "kicker_m",        "s": 68.3,  "x": 5.0,  "dir": "in", "yaw": -8 }
   ]

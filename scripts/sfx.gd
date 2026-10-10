@@ -4,6 +4,8 @@ extends Node
 ##  * Jubel bei Punkten – ruft nur der Steuermann der eigenen Anlage, räumlich
 ##    vom Startsteg aus zu hören. Aufnahmen aus assets/sounds/positiv/*.wav (einfach weitere
 ##    WAVs dazulegen); fehlt der Ordner, gibt es synthetische "Yeah!"/"Wooo!"-Rufe
+##  * Ruf beim Sturz (enttäuscht) – ebenfalls vom eigenen Steuermann, Aufnahmen aus
+##    assets/sounds/negativ/*.wav
 ##  * Whoosh beim Absprung, großer Platscher beim Sturz (synthetisch)
 ##  * Landung auf dem Wasser und Brett trifft Feature: Aufnahmen aus assets/sounds/landing
 ##    und assets/sounds/feature_hit (lauter je nach Wucht)
@@ -15,6 +17,8 @@ const RATE := 22050
 const CHEER_MIN := 300      # ab so vielen Punkten jubelt der Startblock
 const CHEER_PAUSE := 3.0    # Sekunden Ruhe nach einem Ruf
 const CHEER_DIR := "res://assets/sounds/positiv"
+const NEG_DIR := "res://assets/sounds/negativ"          # Ruf des Steuermanns beim Sturz (Aufnahmen)
+const NEG_DELAY := 0.4      # s nach dem Sturz, dann ruft der Steuermann
 const HIT_DIR := "res://assets/sounds/feature_hit"      # Brett trifft ein Feature (Aufnahmen)
 const LANDING_DIR := "res://assets/sounds/landing"      # Brett landet auf dem Wasser (Aufnahmen)
 const COUNT_DIR := "res://assets/sounds/countdown"     # Countdown-Ansage (englisch): three, two, one, go
@@ -27,6 +31,7 @@ var haptics := false                 # Handy: bei Aufprall/Sturz kurz vibrieren 
 
 var _yeah: Array[AudioStreamWAV] = []
 var _cheers: Array[AudioStream] = []     # aufgenommene Jubelrufe
+var _negs: Array[AudioStream] = []       # aufgenommene Rufe beim Sturz
 var _hits: Array[AudioStream] = []
 var _landings: Array[AudioStream] = []
 var _impact: AudioStreamPlayer
@@ -48,6 +53,7 @@ var _prev_mode := Rider.Mode.WATER
 var _prev_vy := 0.0
 var _bird_t := 3.0
 var _muted := false
+var _gen := 0                        # zählt Neustarts: verspätete Rufe vom letzten Versuch verwerfen
 
 
 ## Lautstärke-Kanäle (Einstellungen): Effekte, Jubel, Flugzeuge – alle laufen in den Master.
@@ -84,6 +90,7 @@ func _ready() -> void:
 	_yeah = [_make_voice("yeah", 1.0), _make_voice("yeah", 1.12), _make_voice("yeah", 0.9)]
 	_woo = _make_voice("woo", 1.05)
 	_cheers = _load_dir(CHEER_DIR)
+	_negs = _load_dir(NEG_DIR)
 	_hits = _load_dir(HIT_DIR)
 	_landings = _load_dir(LANDING_DIR)
 	_whoosh = _make_whoosh()
@@ -109,13 +116,33 @@ func _ready() -> void:
 	add_child(_bird)
 
 	rider.trick_landed.connect(_on_trick)
+	rider.restarted.connect(stop_all)
 	rider.crashed.connect(func(_r: String) -> void:
 		_play(_fx, _crash, 1.0)
-		_buzz(250))
+		_buzz(250)
+		var gen := _gen
+		get_tree().create_timer(NEG_DELAY, false).timeout.connect(func() -> void:
+			if gen == _gen:
+				_on_crash_call()))
 	# "Ups" über Boje/Steg: kurzes, helles Plopp
 	rider.bumped.connect(func() -> void:
 		_play(_fx, _thud, randf_range(1.6, 1.9))
 		_buzz(20))
+
+
+## Neustart (zurück zum Steg, neuer Versuch, Spielstart): laufende Effekte und Rufe sofort stoppen,
+## Wasser- und Grind-Rauschen stumm – sonst läuft der letzte Sound (z. B. in der Pause bis GO) weiter.
+func stop_all() -> void:
+	_gen += 1
+	_fx.stop()
+	_impact.stop()
+	for v in _voices:
+		v.stop()
+	_water.volume_db = -80.0
+	_grind.volume_db = -80.0
+	_prev_mode = Rider.Mode.WATER
+	_prev_vy = 0.0
+	_prev_sliding = false
 
 
 ## Leute im Startblock des Spieler-Terminals: pro Person eine Stimme
@@ -233,6 +260,22 @@ func _on_trick(trick: String, points: int) -> void:
 	else:
 		v.stream = _woo if big else _yeah.pick_random()
 		v.pitch_scale = float(people[0]["pitch"]) * randf_range(0.96, 1.04)
+	v.play()
+
+
+## Sturz: der Steuermann ruft enttäuscht (gleiche Regel wie beim Jubel: immer nur ein Ruf).
+func _on_crash_call() -> void:
+	if _voices.is_empty() or _negs.is_empty() or get_tree().paused:
+		return
+	var now := Time.get_ticks_msec() / 1000.0
+	if _voices[0].playing or now - _last_cheer < CHEER_PAUSE:
+		return
+	_last_cheer = now
+	var v := _voices[0]
+	if operator:
+		v.global_position = operator.global_position + Vector3.UP * 1.6
+	v.stream = _negs.pick_random()
+	v.pitch_scale = randf_range(0.96, 1.04)
 	v.play()
 
 
@@ -442,6 +485,33 @@ func make_jet_loop() -> AudioStreamWAV:
 		var k := float(i) / fade
 		s[n - fade + i] = lerpf(s[n - fade + i], s[i], k)
 	return _to_wav(_normalize(s, 0.85), true)
+
+
+## Außenborder (rotes Boot, FilmCrew): Zündstöße als knatternde Pulskette (60 je Sekunde, im Spiel per
+## pitch_scale je nach Gas), jeder Stoß ein kurzer Rauschstoß mit dumpfer Auspuff-Resonanz, dazu
+## mechanisches Rauschen und Blubbern am Auspuff unter Wasser. Genau 1 s lang, damit die Schleife nahtlos ist.
+func make_outboard_loop() -> AudioStreamWAV:
+	const PULSES := 60
+	var n := RATE
+	var per := float(n) / PULSES
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 91
+	var amp := PackedFloat32Array()
+	for k in PULSES:
+		amp.append(rng.randf_range(0.7, 1.0) * (1.0 if k % 2 == 0 else 0.82))   # zwei Zylinder, ungleich
+	var burst := _lowpass(_noise(n, 17), 0.35)
+	var mech := _noise(n, 23)
+	var mech_low := _lowpass(mech.duplicate(), 0.08)
+	var bubble := _lowpass(_lowpass(_noise(n, 29), 0.01), 0.03)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	for i in n:
+		var k := int(i / per)
+		var ts := (i - k * per) / RATE                     # Zeit seit dem letzten Zündstoß
+		var env := exp(-ts / 0.0045)
+		var res := sin(TAU * 165.0 * ts) * exp(-ts / 0.009)
+		s[i] = amp[k] * (burst[i] * env * 1.2 + res * 0.7) + (mech[i] - mech_low[i]) * 0.05 + bubble[i] * 4.0
+	return _to_wav(_normalize(s, 0.8), true)
 
 
 func _make_grind_loop() -> AudioStreamWAV:

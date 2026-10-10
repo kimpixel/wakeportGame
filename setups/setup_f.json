@@ -3,8 +3,8 @@
   "date": "????-07",
   "source": "763671261_18611823181052956_5164468777267333484_n.jpg",
   "T2": [
-    { "part": "cheese_wedge",    "s": 106.0, "x": -7.6, "dir": "out" },
-    { "part": "plaza_rail",      "s": 115.0, "x": -7.6, "dir": "out", "ramp_in": 0 },
+    { "part": "cheese_wedge",    "s": 106.0, "x": -7.6, "dir": "out", "height": 0.75 },
+    { "part": "port_plaza",      "s": 114.95, "x": -7.6, "dir": "in" },
     { "part": "transition_rail", "s": 106.1, "x": -4.6, "dir": "out" },
     { "part": "kicker_l",        "s": 68.4,  "x": -8.4, "dir": "in", "yaw": -4 },
     { "part": "kicker_s",        "s": 66.4,  "x": -4.6, "dir": "in", "yaw": -4 },
