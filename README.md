@@ -71,6 +71,8 @@ Solange der Carrier noch nicht zurückzieht, schwingst du quer zum Seil um ihn h
 
 **Driften (Technik):** Strg halten (am Handy DRIFT) löst die Kante. Das Brett liegt flach auf dem Wasser und greift nicht mehr: Lenken ändert die Fahrtrichtung nicht, man rutscht weiter, und nur der Seilzug zieht einen (zur Seilmitte). Dafür lässt sich das Brett frei herumdrehen – quer, rückwärts, ganze 360er –, und weil es flach aufliegt, bremst das Wasser weniger: man gleitet weiter. Wozu: mit Schwung durch die Wende gleiten, ohne einzusinken; quer vom Slider abgehen (ohne Drift hakt die Kante ein = Sturz) oder quer landen; Drehungen auf dem Wasser. Loslassen = die Kante greift wieder (steht das Brett dabei quer, bremst es hart).
 
+> **Ausbau-Idee (für Contributor): Nose-/Tailslides auf dem Wasser.** Das Drift-System lässt sich so erweitern, dass man in Kurven **Nose- bzw. Tailslides** fährt: Gewicht auf Nose oder Tail, das Brett schwenkt um das belastete Ende und schiebt quer über das Wasser (mit Spray). **Nicht verwechseln** mit Nose-/Tailpress auf dem Slider – das ist ein eigener Trick auf dem Feature. Es bietet sich an, weil **↑/↓ (W/S, am Handy ▲ ▼) auf dem Wasser noch frei** sind: Sie wirken bisher nur in der Luft (Front-/Backroll) und auf dem Slider (Press). Ansatzpunkte in `scripts/rider.gd`: `_pitch_in` wird in `_read_input` schon gelesen, die Drift-Physik steht in `_step_water` (`drift`, `DRIFT_DRAG`), die Haltung in den Posen-Funktionen (Vorbild: `_press_vis` / `_apply_press_pose`). Dazu passend: Punkte für den Trick, eine Challenge im Modus Driften und Hilfe/README nachziehen.
+
 ## Im Browser spielen
 
 **▶ https://kimpixel.github.io/wakeportGame/**
