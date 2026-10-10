@@ -270,8 +270,6 @@ var _rig: HumanRig
 var _helmet: Node3D
 var _handle: MeshInstance3D
 var _bridle: Array[MeshInstance3D] = []   # Dreieck: Glieder der zwei Leinen (Griff-Enden -> Spitze)
-var _apex := Vector3.INF         # Spitze des Dreiecks (Massepunkt, Verlet)
-var _apex_prev := Vector3.ZERO
 var _rope_mesh: ImmediateMesh
 var _rope_mat: StandardMaterial3D
 var _spray: CPUParticles3D
@@ -1814,13 +1812,16 @@ func _process(delta: float) -> void:
 		Util.place_beam(_arm_l, body * Vector3(0.0, 1.38, 0.17), handle_pos - bar_axis * 0.08)
 		Util.place_beam(_arm_r, body * Vector3(0.0, 1.38, -0.17), handle_pos + bar_axis * 0.08)
 	# Seil hängt nicht mittig am Griff: zwei Leinen von den Griff-Enden laufen nach ca. 30 cm zusammen (Dreieck)
+	# Zugseil + Dreieck verhalten sich wie ein durchgehendes Seil: der Knoten liegt auf der Seilkurve ab Griffmitte
 	var end_l := handle_pos - bar_axis * BRIDLE_HALF
 	var end_r := handle_pos + bar_axis * BRIDLE_HALF
-	var apex := _update_apex(end_l, end_r, anchor, delta)
+	var sag := _rope_sag(handle_pos, anchor)
+	var t0 := _knot_t(handle_pos, anchor, sag)
+	var knot := _rope_at(handle_pos, anchor, sag, t0)
 	var side := Vector2(BRIDLE_LEN, BRIDLE_HALF).length()
-	_draw_line_segs(0, end_l, apex, side)
-	_draw_line_segs(BRIDLE_SEGS, end_r, apex, side)
-	_draw_rope(apex, anchor)
+	_draw_line_segs(0, end_l, knot, side)
+	_draw_line_segs(BRIDLE_SEGS, end_r, knot, side)
+	_draw_rope(handle_pos, anchor, sag, t0)
 
 	_update_spray(speed)
 
@@ -2391,32 +2392,33 @@ func _pose_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
 	return handle_pos
 
 
-## Spitze des Dreiecks ohne Schwerkraft (nur gedämpfte Trägheit), gehalten von drei Seilen (nur Zug, kein Druck):
-## den zwei Leinen zu den Griff-Enden und dem Zugseil zum Carrier. Schlaffes Seil -> Spitze bleibt, wo sie ist, Leinen hängen
-## durch; unter Zug liegt alles gerade.
-func _update_apex(a: Vector3, b: Vector3, anchor: Vector3, delta: float) -> Vector3:
-	var mid := (a + b) * 0.5
-	var side := Vector2(BRIDLE_LEN, BRIDLE_HALF).length()
-	# Zugseil: Spiel aus der Physik (die gezeichnete Handle sitzt nicht genau auf Seillänge); gespannt -> Spitze gerade vorne
-	var r_main := mid.distance_to(anchor) - BRIDLE_LEN + rope_slack()
-	if _apex == Vector3.INF or _apex.distance_to(mid) > 2.0:     # erster Frame / Neustart / versetzt
-		_apex = mid + (anchor - mid).normalized() * BRIDLE_LEN
-		_apex_prev = _apex
-	var vel := (_apex - _apex_prev) * pow(0.97, delta * 60.0)   # gedämpft, unabhängig von der Bildrate
-	_apex_prev = _apex
-	_apex += vel
-	for i in 6:
-		_apex = _rope_limit(_apex, anchor, r_main)
-		_apex = _rope_limit(_apex, a, side)
-		_apex = _rope_limit(_apex, b, side)
-		_apex.y = maxf(_apex.y, 0.03)
-	return _apex
+## Durchhang der Seilkurve Griffmitte -> Carrier: Parabel mit gleicher Bogenlänge wie das (lose) Seil.
+func _rope_sag(a: Vector3, b: Vector3) -> float:
+	var chord := a.distance_to(b)
+	return sqrt(3.0 * chord * maxf(rope_length - chord, 0.0) / 8.0)
 
 
-## Seil-Bedingung: p höchstens len von fix entfernt (Seil zieht nur).
-static func _rope_limit(p: Vector3, fix: Vector3, len: float) -> Vector3:
-	var d := p - fix
-	return fix + d * (len / d.length()) if d.length() > len else p
+static func _rope_at(a: Vector3, b: Vector3, sag: float, t: float) -> Vector3:
+	var p := a.lerp(b, t)
+	p.y = maxf(p.y - 4.0 * sag * t * (1.0 - t), 0.05)
+	return p
+
+
+## Kurvenstelle des Knotens: BRIDLE_LEN entlang der Seilkurve ab der Griffmitte.
+static func _knot_t(a: Vector3, b: Vector3, sag: float) -> float:
+	var walked := 0.0
+	var prev := a
+	var t := 0.0
+	while t < 0.5:
+		var nt := t + 0.002
+		var p := _rope_at(a, b, sag, nt)
+		var d := prev.distance_to(p)
+		if walked + d >= BRIDLE_LEN:
+			return t + (nt - t) * (BRIDLE_LEN - walked) / maxf(d, 0.000001)
+		walked += d
+		prev = p
+		t = nt
+	return t
 
 
 ## Eine Leine aus Gliedern zeichnen, durchhängend je nach Spiel (Länge minus Abstand).
@@ -2433,16 +2435,10 @@ func _draw_line_segs(first: int, a: Vector3, b: Vector3, length: float) -> void:
 		prev = p
 
 
-func _draw_rope(a: Vector3, b: Vector3) -> void:
+## Zugseil vom Knoten (Kurvenstelle t0) bis zum Carrier.
+func _draw_rope(a: Vector3, b: Vector3, sag: float, t0: float) -> void:
 	_rope_mesh.clear_surfaces()
 	_rope_mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, _rope_mat)
-	var chord := a.distance_to(b)
-	# Durchhang einer Parabel mit gleicher Bogenlänge wie das (lose) Seil
-	var slack := maxf(rope_length - BRIDLE_LEN - chord, 0.0)
-	var sag := sqrt(3.0 * chord * slack / 8.0)
 	for i in 21:
-		var t := i / 20.0
-		var p := a.lerp(b, t)
-		p.y = maxf(p.y - 4.0 * sag * t * (1.0 - t), 0.05)
-		_rope_mesh.surface_add_vertex(p)
+		_rope_mesh.surface_add_vertex(_rope_at(a, b, sag, lerpf(t0, 1.0, i / 20.0)))
 	_rope_mesh.surface_end()
