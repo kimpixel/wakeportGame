@@ -55,6 +55,10 @@ Ledge, „cheesewedge“ = Cheese Wedge, „Transitionrail“ = Transition Rail.
 - Sagt der Nutzer „zeige das Ergebnis und warte auf Freigabe“ (oder ist eine Pose/Optik strittig):
   Screenshots schicken, **nicht committen**, bis er „passt so“ sagt.
 - „passt so“ = Freigabe, dann commit.
+- **Im Worktree** (nicht auf main – dort startet der Nutzer selbst über seine Verknüpfung): vor jedem Push
+  das Spiel **aus dem Worktree mit Fenster starten** (Preview), damit der Nutzer selbst testen kann, und
+  erst nach seiner Freigabe pushen. Godot liegt im Haupt-Checkout:
+  `/c/projecte/wakeportGame/Godot_v4.7.2-stable_win64.exe --path . &` (im Worktree-Ordner ausführen).
 - Bei Optik/Animation immer Screenshots machen und selbst ansehen, bevor man Erfolg meldet.
 - README.md und die Hilfe im HUD (`scripts/hud.gd`, `HELP`/`HELP_MOBILE`) bei Steuerungs- und
   Regeländerungen mitpflegen.
