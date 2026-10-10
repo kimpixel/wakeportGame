@@ -22,6 +22,7 @@ extends Node3D
 ##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30
 ##   --plane=S         Test: sofort ein Jet im Anflug, S m vor dem See (negativ) bzw. danach
 ##   --pike-at=SEK     Test: zu dieser Zeit springt der Hecht knapp vor dem Fahrer (Erfolg "fisch")
+##   --drop-at=S[,x,y,z]  Test: Fahrer zu dieser Zeit in die Luft setzen (Standard: über den Startsteg, Erfolg "steg")
 ##   --erfolg=ID,…     Test: geheime Erfolge als erreicht zeigen (z. B. --screen=@erfolge --erfolg=fisch)
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
@@ -129,6 +130,8 @@ var _view_arg := PackedFloat32Array()
 var _lane_arg := NAN
 var _crash_at := -1.0          # Test: Sturz zu dieser Zeit auslösen
 var _pike_at := -1.0           # Test: Hecht springt zu dieser Zeit knapp vor dem Fahrer
+var _drop_at := -1.0           # Test: Fahrer zu dieser Zeit an _drop_pos in die Luft setzen
+var _drop_pos := Vector3.INF   # Test: wohin (INF = über den Startsteg)
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
 var _pause_at := -1.0           # Test: zu dieser Zeit pausieren (und Screenshot)
 var _hitbox_arg := false        # Test: Fangzonen der Slider zeigen
@@ -291,6 +294,15 @@ func _ready() -> void:
 	ambient.pike_hit.connect(func() -> void:
 		hud.show_trick("Hecht erwischt!")
 		_unlock_achievement("fisch"))
+	ambient.sup_splashed.connect(func() -> void:
+		hud.show_trick("SUP nass gespritzt!")
+		_unlock_achievement("sup"))
+	ambient.insect_eaten.connect(func() -> void:
+		hud.show_trick("Igitt – Insekt verschluckt!")
+		_unlock_achievement("insekt"))
+	rider.landed_on_dock.connect(func() -> void:
+		hud.show_trick("Steg-Landung!")
+		_unlock_achievement("steg"))
 	if not _test_log:
 		settings.load_file(mobile.active)     # Tests laufen immer mit Standardwerten
 	_apply_terminal(_initial_terminal())
@@ -820,6 +832,9 @@ func _physics_process(delta: float) -> void:
 	if _pike_at > 0.0 and _elapsed >= _pike_at:
 		_pike_at = -1.0
 		ambient.pike_now()
+	if _drop_at > 0.0 and _elapsed >= _drop_at:
+		_drop_at = -1.0
+		_test_drop()
 	if _letgo_at > 0.0 and _elapsed >= _letgo_at:
 		_letgo_at = -1.0
 		rider.let_go("Test: Seil verloren")
@@ -1170,6 +1185,19 @@ func _unlock_achievement(id: String) -> void:
 		print("ERFOLG ", id)
 
 
+## Test --drop-at: Fahrer mit etwas Tempo in die Luft setzen (z. B. über den Steg oder in einen Mückenschwarm).
+func _test_drop() -> void:
+	var p := _drop_pos
+	if p == Vector3.INF:
+		var d := rider.dock_rect.get_center()
+		p = Vector3(d.x, rider.start_pos.y + 1.2, d.y)
+	rider.pos = p
+	rider.vel = Vector3(0.0, 1.0, -3.0)
+	rider.mode = Rider.Mode.AIR
+	rider.air_time = 0.0
+	print("DROP ", p)
+
+
 func _parse_args() -> void:
 	Achievements.no_save = not OS.get_cmdline_user_args().is_empty()   # Tests speichern keine Erfolge
 	for arg in OS.get_cmdline_user_args():
@@ -1201,6 +1229,11 @@ func _parse_args() -> void:
 			_letgo_at = arg.substr(11).to_float()
 		elif arg.begins_with("--crash-at="):
 			_crash_at = arg.substr(11).to_float()
+		elif arg.begins_with("--drop-at="):
+			var v := arg.substr(10).split_floats(",")
+			_drop_at = v[0]
+			if v.size() >= 4:
+				_drop_pos = Vector3(v[1], v[2], v[3])
 		elif arg.begins_with("--pike-at="):
 			_pike_at = arg.substr(10).to_float()
 		elif arg.begins_with("--erfolg="):

@@ -15,6 +15,7 @@ signal bumped                    # kleines "Ups": über eine Boje oder einen Ste
 signal rope_lost(reason: String) # Handle verloren (kein Sturz): ausgleiten, absinken, schwimmen
 signal grabbed                   # nach dem Schwimmen die Handle wieder gegriffen
 signal sank                      # zu langsam geworden und abgesoffen: wie ein Wasserstart
+signal landed_on_dock            # aus der Luft auf dem Startsteg gelandet (geheimer Erfolg)
 signal skipped                   # Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
 ## Für die Spielmodi (Challenge): Landung nach einem Sprung bzw. Ende eines Slides, mit Messwerten
 signal jump_landed(info: Dictionary)   # raley, air_time, half_turns, rolls, popped, points
@@ -1440,6 +1441,8 @@ func _land(surf: float) -> void:
 	vel.x *= 0.97
 	vel.z *= 0.97
 	mode = Mode.WATER
+	if air_time > 0.3 and _in_dock(pos.x, pos.z):
+		landed_on_dock.emit()
 	var half_turns := int(round(absf(_spin_accum) / PI))
 	var rolls := int(round(absf(_flip) / TAU))
 	var flip_dir := signf(_flip)

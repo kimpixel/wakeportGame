@@ -9,6 +9,9 @@ const SLOTS := 10                 # so viele Plätze zeigt die Liste (auch noch 
 
 const LIST := [
 	{"id": "fisch", "name": "Fischkontakt", "text": "Mit einem springenden Hecht zusammengestoßen."},
+	{"id": "sup", "name": "Nass gespritzt", "text": "Einen SUP-Paddler mit voller Fahrt nass gespritzt."},
+	{"id": "steg", "name": "Steg-Landung", "text": "Aus der Luft auf dem Startsteg gelandet."},
+	{"id": "insekt", "name": "Insekten fressen", "text": "Am Waldrand von Terminal 1 durch einen Mückenschwarm gefahren. Mahlzeit!"},
 ]
 
 static var no_save := false       # Tests: nur für diese Sitzung merken

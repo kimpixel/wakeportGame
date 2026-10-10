@@ -3,17 +3,36 @@ extends Node3D
 ## Leben am See:
 ##  * Steuermänner an T1 und T2 laufen zwischen Hütte und Steg umher, Blick auf "ihren" Fahrer
 ##  * wartende Fahrer mit Helm und Brett auf den Stegen
-##  * SUP-Paddler ganz links (nördlich der gelben Bojenkette, im Badebereich)
+##  * SUP-Paddler: zwei im Badebereich (nördlich der gelben Bojenkette), drei auf Touren durch den See
+##    (zwei zwischen T2 und T1, einer seeseitig neben T2) – wer schnell dicht vorbeifährt, spritzt sie
+##    nass (geheimer Erfolg "Nass gespritzt")
+##  * Mückenschwärme am Waldrand neben T1 – wer durchfährt, verschluckt ein Insekt (Erfolg "Insekten fressen")
 ##  * ab und zu springt ein Hecht in einem Halbbogen aus dem Wasser – wer ihn trifft, macht "Ups"
 ##    (geheimer Erfolg "Fischkontakt", siehe Achievements)
 
 signal pike_hit
+signal sup_splashed                 # Spieler hat einen SUP-Paddler nass gespritzt
+signal insect_eaten                 # Spieler ist durch einen Mückenschwarm gefahren
 
 const PIKE_LEN := 0.9
 const PIKE_JUMP := 1.6              # Weite des Bogens
 const PIKE_HEIGHT := 0.75           # Höhe des Bogens
 const PIKE_TIME := 0.8
 const PIKE_CLOSE := 0.15            # Anteil der Sprünge knapp vor dem Fahrer (sonst ist er immer schon weg)
+## SUP-Touren (Spielkoordinaten): Mitte (x, z), Halbachsen (x, z), Startphase 0..1, Tempo m/s, Figur
+const SUP_TOURS := [
+	[Vector2(16.5, -125.0), Vector2(1.6, 58.0), 0.1, 0.8, 0],
+	[Vector2(16.5, -125.0), Vector2(1.6, 58.0), 0.6, 0.7, 1],
+	[Vector2(-20.0, -135.0), Vector2(1.5, 50.0), 0.35, 0.75, 1],
+]
+const SPRAY_SPEED := 6.0            # m/s: so schnell muss man sein, damit es spritzt
+const SPRAY_DIST := 3.0             # m: so dicht am SUP vorbei
+const SUP_WOBBLE := 1.6             # s wackelt der Paddler danach
+## Mückenschwärme: Abstand entlang T1 vom Startmast (m); je Stelle ein Schwarm INSECT_SHORE vor dem Ufer
+const INSECT_S := [32.0, 36.0, 41.0, 48.0, 58.0]
+const INSECT_SHORE := 3.0
+const INSECT_Y := 1.6               # Höhe der Wolke über dem Wasser (Kopfhöhe)
+const INSECT_R := 1.1               # Radius der Wolke
 
 var beach: Beach
 var water: Water
@@ -30,6 +49,8 @@ var _pike_from := Vector3.ZERO
 var _pike_dir := Vector3.FORWARD
 var _pike_hit := false
 var _splash: CPUParticles3D
+var _insects: Array[Dictionary] = []   # {node, home, phase, cool}
+var _t := 0.0
 
 
 func build() -> void:
@@ -58,6 +79,7 @@ func build() -> void:
 		i += 1
 	_build_sups()
 	_build_pike()
+	_build_insects()
 
 
 ## Steuermann einer Anlage ("T1"/"T2") oder null.
@@ -79,9 +101,9 @@ func set_watch(t2_rider: Node3D, t1_rider: Node3D) -> void:
 # ---------------------------------------------------------------- SUP
 
 func _build_sups() -> void:
+	var models := ["res://assets/characters/guest_f.glb", "res://assets/characters/guest_m.glb"]
 	# zwei Paddler auf einer großen Runde im Badebereich (Wasser nördlich der Bojenkette)
 	var loops := [[Vector2(30.0, 58.0), Vector2(16.0, 7.0), 0.0, 0.75], [Vector2(46.0, 66.0), Vector2(12.0, 6.0), PI, 0.6]]
-	var models := ["res://assets/characters/guest_f.glb", "res://assets/characters/guest_m.glb"]
 	for k in loops.size():
 		var l: Array = loops[k]
 		var pts: Array[Vector3] = []
@@ -91,25 +113,40 @@ func _build_sups() -> void:
 			var g := Geo.rel_to_game(rel.x, rel.y)
 			if Geo.height(g.x, g.y) < -0.8:
 				pts.append(Vector3(g.x, 0.0, g.y))
-		if pts.size() < 8:
-			continue
-		var p := Person.new()
-		p.kind = "sup"
-		add_child(p)
-		if not p.setup(models[k]):
-			p.queue_free()
-			continue
-		_sups.append({"person": p, "path": pts, "s": float(l[2]) / TAU * pts.size(), "speed": l[3]})
+		_add_sup(pts, float(l[2]) / TAU, l[3], models[k])
+	# Touren durch den See (Spielkoordinaten, lange schmale Runden): zwei zwischen T2 und T1, einer
+	# seeseitig neben T2 (außerhalb der Features, x bis ±11,3 m) – dort kommen sie in Reichweite
+	for t: Array in SUP_TOURS:
+		var c: Vector2 = t[0]
+		var r: Vector2 = t[1]
+		var pts: Array[Vector3] = []
+		for j in 48:
+			var a := TAU * j / 48.0
+			pts.append(Vector3(c.x + cos(a) * r.x, 0.0, c.y + sin(a) * r.y))
+		_add_sup(pts, t[2], t[3], models[int(t[4])])
+
+
+func _add_sup(pts: Array[Vector3], phase: float, speed: float, model: String) -> void:
+	if pts.size() < 8:
+		return
+	var p := Person.new()
+	p.kind = "sup"
+	add_child(p)
+	if not p.setup(model):
+		p.queue_free()
+		return
+	_sups.append({"person": p, "path": pts, "s": phase * pts.size(), "speed": speed, "wet": 0.0, "cool": 0.0})
 
 
 func _move_sups(delta: float) -> void:
 	for sup: Dictionary in _sups:
 		var pts: Array[Vector3] = sup["path"]
 		var n := pts.size()
-		var seg_len := pts[0].distance_to(pts[1 % n])
+		var i := int(sup["s"])
+		var seg_len := pts[i % n].distance_to(pts[(i + 1) % n])
 		sup["s"] = fmod(float(sup["s"]) + float(sup["speed"]) * delta / maxf(seg_len, 0.5), float(n))
 		var s: float = sup["s"]
-		var i := int(s)
+		i = int(s)
 		var a := pts[i % n]
 		var b := pts[(i + 1) % n]
 		var pos := a.lerp(b, s - i)
@@ -118,6 +155,88 @@ func _move_sups(delta: float) -> void:
 		p.global_position = pos
 		var d := b - a
 		p.rotation.y = lerp_angle(p.rotation.y, atan2(d.x, d.z), clampf(delta * 1.5, 0.0, 1.0))
+		# nass gespritzt: Paddler wackelt kurz auf dem Board
+		sup["wet"] = maxf(float(sup["wet"]) - delta / SUP_WOBBLE, 0.0)
+		sup["cool"] = maxf(float(sup["cool"]) - delta, 0.0)
+		p.rotation.z = 0.14 * float(sup["wet"]) * sin(float(sup["wet"]) * 30.0)
+		_check_spray(sup, pos)
+
+
+## Spieler fährt schnell dicht am SUP vorbei (oder landet daneben): Gischt trifft den Paddler.
+func _check_spray(sup: Dictionary, pos: Vector3) -> void:
+	if player == null or player.mode != Rider.Mode.WATER or float(sup["cool"]) > 0.0:
+		return
+	if player.horizontal_speed() < SPRAY_SPEED or player.pos.y > 0.3:
+		return
+	if Vector2(player.pos.x - pos.x, player.pos.z - pos.z).length() > SPRAY_DIST:
+		return
+	sup["wet"] = 1.0
+	sup["cool"] = 6.0
+	_splash_at(pos.lerp(player.pos, 0.4))
+	sup_splashed.emit()
+
+
+# ---------------------------------------------------------------- Insekten
+
+## Mückenschwärme am Waldrand rechts neben T1 (vom Start aus gesehen): über dem Wasser ein paar
+## Meter vor dem Ufer. Wer ganz weit rausfährt und durchfährt, verschluckt ein Insekt.
+func _build_insects() -> void:
+	if not Geo.masts.has("t1_start"):
+		return
+	var a: Vector3 = Geo.masts["t1_start"]
+	var b: Vector3 = Geo.masts["t1_end"]
+	var dir := Vector3(b.x - a.x, 0.0, b.z - a.z).normalized()
+	var right := dir.cross(Vector3.UP)
+	var dot := BoxMesh.new()
+	dot.size = Vector3.ONE * 0.035
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.06, 0.05, 0.04)
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dot.material = mat
+	for s: float in INSECT_S:
+		var base := a + dir * s
+		var off := 0.0
+		while off < 40.0 and Lake.in_lake(base.x + right.x * off, base.z + right.z * off, 0.0):
+			off += 0.5
+		if off >= 40.0 or off < INSECT_SHORE + 4.0:
+			continue
+		var c := base + right * (off - INSECT_SHORE)
+		var swarm := CPUParticles3D.new()
+		swarm.amount = 70
+		swarm.lifetime = 1.6
+		swarm.preprocess = 2.0
+		swarm.mesh = dot
+		swarm.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+		swarm.emission_sphere_radius = INSECT_R * 0.7
+		swarm.direction = Vector3.UP
+		swarm.spread = 180.0
+		swarm.gravity = Vector3.ZERO
+		swarm.initial_velocity_min = 0.2
+		swarm.initial_velocity_max = 0.7
+		swarm.radial_accel_min = -1.2          # zieht zur Mitte zurück: bleibt eine Wolke
+		swarm.radial_accel_max = -0.6
+		swarm.tangential_accel_min = -1.5
+		swarm.tangential_accel_max = 1.5
+		swarm.top_level = true
+		add_child(swarm)
+		var home := Vector3(c.x, INSECT_Y, c.z)
+		swarm.global_position = home
+		_insects.append({"node": swarm, "home": home, "phase": randf() * TAU, "cool": 0.0})
+
+
+func _move_insects(delta: float) -> void:
+	for sw: Dictionary in _insects:
+		var ph: float = sw["phase"] + _t * 0.7
+		var node: CPUParticles3D = sw["node"]
+		node.global_position = sw["home"] + Vector3(sin(ph) * 0.6, sin(ph * 1.7) * 0.25, cos(ph * 0.8) * 0.6)
+		sw["cool"] = maxf(float(sw["cool"]) - delta, 0.0)
+		if player == null or player.mode == Rider.Mode.CRASHED or float(sw["cool"]) > 0.0:
+			continue
+		var head := player.pos + Vector3(0.0, 1.55, 0.0)
+		var d := head - node.global_position
+		if Vector2(d.x, d.z).length() < INSECT_R and absf(d.y) < INSECT_R:
+			sw["cool"] = 8.0
+			insect_eaten.emit()
 
 
 # ---------------------------------------------------------------- Hecht
@@ -249,5 +368,7 @@ func _move_pike(delta: float) -> void:
 func _process(delta: float) -> void:
 	if water == null:
 		return
+	_t += delta
 	_move_sups(delta)
 	_move_pike(delta)
+	_move_insects(delta)
