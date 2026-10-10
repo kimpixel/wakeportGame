@@ -835,6 +835,12 @@ func _physics_process(delta: float) -> void:
 			_fake_touch(false)
 	for h: Array in _hold:
 		if _elapsed >= h[1] and _elapsed < h[2]:
+			if h[0] in ["reset", "start"] and _elapsed - delta < h[1]:
+				# Tasten, die als Ereignis wirken (R, Start): einmal als Tastendruck schicken
+				var ev := InputEventAction.new()
+				ev.action = h[0]
+				ev.pressed = true
+				Input.parse_input_event(ev)
 			Input.action_press(h[0])
 		elif _elapsed >= h[2] and _elapsed - delta < h[2]:
 			Input.action_release(h[0])
@@ -1127,6 +1133,7 @@ func _reset() -> void:
 	rider.reset()
 	pc.reset()
 	water.clear_wake()
+	cam.snap()                       # Kamera gleich am Steg, nicht vom letzten Ort herüberschwenken
 	_crash_t = 0.0
 
 

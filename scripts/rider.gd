@@ -16,6 +16,7 @@ signal rope_lost(reason: String) # Handle verloren (kein Sturz): ausgleiten, abs
 signal grabbed                   # nach dem Schwimmen die Handle wieder gegriffen
 signal sank                      # zu langsam geworden und abgesoffen: wie ein Wasserstart
 signal landed_on_dock            # aus der Luft auf dem Startsteg gelandet (geheimer Erfolg)
+signal restarted                 # Neustart (Steg/Versuch): Sounds stoppen
 signal dock_yanked               # Sprung-Start: Seil reißt einen vom Steg
 signal skipped                   #Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
 ## Für die Spielmodi (Challenge): Landung nach einem Sprung bzw. Ende eines Slides, mit Messwerten
@@ -353,6 +354,32 @@ func reset() -> void:
 	_getup = 1.0
 	if _ragdoll:
 		_ragdoll.stop()
+	# Neustart: keine Haltung, kein Sprung und keine Bewegung vom letzten Versuch übernehmen
+	# (die sichtbaren Werte werden sonst weich weitergeblendet – z. B. halber Raley am Steg)
+	mode = Mode.WATER
+	sink_level = 0.0
+	_sink_vis = 0.0
+	_combo = 0
+	_popped = false
+	_flip_lock = false
+	_jump_held = false
+	_jump_start = ""
+	_yank_kind = ""
+	_ups = 0.0
+	_lean_roll = 0.0
+	_lean_pitch = 0.0
+	_crouch = 0.0
+	_edge_vis = 0.0
+	_release_vis = 0.0
+	_swim_blend = 1.0
+	_swim_path.clear()
+	_swim_heading = Vector2.ZERO
+	_prev_on_feature = false
+	last_exit_drift = false
+	_slide_part = null
+	_on_slider = false
+	_catch_part = null
+	restarted.emit()
 
 
 ## Spielmodi: Fahrer mitten in der Fahrt absetzen (auf dem Wasser, gleitend, Seil am Carrier).
