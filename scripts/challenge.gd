@@ -11,6 +11,7 @@ const SETTLE := 0.7             # s nach Landung/Slide ohne Sturz, bis der Versu
 const FAIL_DELAY := 1.4         # s nach Sturz, bis das Ergebnis kommt
 const TIMEOUT := 75.0
 const DRIFT_SINK := 0.15        # Wende im Drift: ab diesem Sinkpegel gleitet man nicht mehr (zählt nicht)
+const SPIN_EACH := 5            # 360er im Drift: so viele je Richtung zählen
 const OUTRO := 1.4              # s nach dem Ende weiterfahren (ausrollen), dann erst das Ergebnis
 
 var game: Node                  # main.gd (rider, pc, features, hud, cam, water, …)
@@ -52,6 +53,7 @@ var _best_station := 0.0        # bester Messwert einer geschafften Station (met
 # Driften
 var _spin := 0.0                # drift_spin: Brettdrehung im laufenden Drift (rad, mit Vorzeichen)
 var _prev_yaw := 0.0
+var _spins := [0, 0]            # drift_spin: volle 360er im Drift [links, rechts]
 var _seg := false               # drift_turn: Wende läuft (Carrier bremst / steht / fährt wieder an)
 var _seg_t := 0.0
 var _drift_t := 0.0
@@ -223,6 +225,7 @@ func _reset_measure() -> void:
 	_stations.clear()
 	_best_station = 0.0
 	_spin = 0.0
+	_spins = [0, 0]
 	_prev_yaw = game.rider.yaw
 	_seg = false
 	_seg_t = 0.0
@@ -442,7 +445,8 @@ func _drifting(r: Rider) -> bool:
 
 
 ## 360er im Drift zwischen den roten Bojen: Brettdrehung im Drift mitzählen, je volle Umdrehung
-## in eine Richtung eine. Drift lösen setzt die angefangene Drehung zurück. true = Versuch zu Ende.
+## eine, links und rechts getrennt; gewertet werden bis SPIN_EACH je Richtung (Ziel: 5 + 5).
+## Drift lösen setzt die angefangene Drehung zurück. true = Versuch zu Ende.
 func _track_drift_spin(r: Rider, s_now: float) -> bool:
 	var c: CableSystem = game.pc
 	var s_a := c.mast_a_z - c.turn_a_z + TurnBuoys.RED_BEFORE
@@ -450,13 +454,15 @@ func _track_drift_spin(r: Rider, s_now: float) -> bool:
 	if s_now > s_a and s_now < s_b and _drifting(r):
 		_spin += wrapf(r.yaw - _prev_yaw, -PI, PI)
 		if absf(_spin) >= TAU:
+			var side := 0 if _spin > 0.0 else 1          # Yaw wächst nach links
 			_spin -= signf(_spin) * TAU
-			_count += 1
-			game.hud.show_trick("360 im Drift!  (%d)" % _count)
+			_spins[side] += 1
+			_count = mini(_spins[0], SPIN_EACH) + mini(_spins[1], SPIN_EACH)
+			game.hud.show_trick("360 %s im Drift!  (%d / %d)" % [["links", "rechts"][side], mini(_spins[side], SPIN_EACH), SPIN_EACH])
 	else:
 		_spin = 0.0
 	_prev_yaw = r.yaw
-	if s_now >= s_b:
+	if s_now >= s_b or _count >= SPIN_EACH * 2:
 		if _count > 0:
 			_value = _count
 			_hit = true
@@ -712,8 +718,10 @@ func _update_hud() -> void:
 			"kick", "raley":
 				if task["metric"] == "height" and (game.rider.mode == Rider.Mode.AIR or _hit):
 					live = "Höhe " + Training.format_value(task, _max_y)
-			"chain", "drift_spin":
+			"chain":
 				live = Training.format_value(task, _count)
+			"drift_spin":
+				live = "links %d / %d   rechts %d / %d" % [mini(_spins[0], SPIN_EACH), SPIN_EACH, mini(_spins[1], SPIN_EACH), SPIN_EACH]
 			"drift_turn":
 				if _seg:
 					live = Training.format_value(task, _value)
