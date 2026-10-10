@@ -53,6 +53,7 @@ var _prev_mode := Rider.Mode.WATER
 var _prev_vy := 0.0
 var _bird_t := 3.0
 var _muted := false
+var _gen := 0                        # zählt Neustarts: verspätete Rufe vom letzten Versuch verwerfen
 
 
 ## Lautstärke-Kanäle (Einstellungen): Effekte, Jubel, Flugzeuge – alle laufen in den Master.
@@ -115,14 +116,33 @@ func _ready() -> void:
 	add_child(_bird)
 
 	rider.trick_landed.connect(_on_trick)
+	rider.restarted.connect(stop_all)
 	rider.crashed.connect(func(_r: String) -> void:
 		_play(_fx, _crash, 1.0)
 		_buzz(250)
-		get_tree().create_timer(NEG_DELAY, false).timeout.connect(_on_crash_call))
+		var gen := _gen
+		get_tree().create_timer(NEG_DELAY, false).timeout.connect(func() -> void:
+			if gen == _gen:
+				_on_crash_call()))
 	# "Ups" über Boje/Steg: kurzes, helles Plopp
 	rider.bumped.connect(func() -> void:
 		_play(_fx, _thud, randf_range(1.6, 1.9))
 		_buzz(20))
+
+
+## Neustart (zurück zum Steg, neuer Versuch, Spielstart): laufende Effekte und Rufe sofort stoppen,
+## Wasser- und Grind-Rauschen stumm – sonst läuft der letzte Sound (z. B. in der Pause bis GO) weiter.
+func stop_all() -> void:
+	_gen += 1
+	_fx.stop()
+	_impact.stop()
+	for v in _voices:
+		v.stop()
+	_water.volume_db = -80.0
+	_grind.volume_db = -80.0
+	_prev_mode = Rider.Mode.WATER
+	_prev_vy = 0.0
+	_prev_sliding = false
 
 
 ## Leute im Startblock des Spieler-Terminals: pro Person eine Stimme

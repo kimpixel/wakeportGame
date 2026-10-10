@@ -43,6 +43,7 @@ var _via := false               # Transfer: gerade über das Start-Feature gekom
 var _via_ok := false            # Transfer: beim Draufkommen aufs Ziel kam man vom Start-Feature
 var _target_started := false
 var _via_air := false           # Transfer: seit dem Start-Feature in der Luft gewesen (Absprung)
+var _xfer_h := 0.0              # Transfer: höchster Punkt im Flug vom Start-Feature aufs Ziel (Wertung)
 # special (Kombinationen auf der Slider-Kette)
 var _stations: Array = []       # Slider der Kette in Fahrtrichtung (je Station die Teile, z. B. Full Pipe = 2)
 var _st_next := 0               # nächste noch offene Station
@@ -134,6 +135,8 @@ func start_attempt() -> void:
 	if not active:
 		return
 	game.rider.block_jump()
+	if task.get("start", {}).has("dock"):
+		game.pc.start()                    # Start vom Steg: die Anlage fährt bei GO los
 	running = true
 
 
@@ -178,6 +181,14 @@ func _place() -> void:
 	var c: CableSystem = game.pc
 	var r: Rider = game.rider
 	var st: Dictionary = task["start"]
+	if st.has("dock"):
+		# Sprung-Start: auf dem Startsteg, Anlage steht bis GO
+		r.autopilot = game.mode_auto
+		r.reset()
+		c.reset()
+		game.film.snap()
+		_laps0 = c.laps
+		return
 	var out: bool
 	var s_r: float
 	if st.has("turn"):
@@ -219,6 +230,7 @@ func _reset_measure() -> void:
 	_via = false
 	_via_ok = false
 	_via_air = false
+	_xfer_h = 0.0
 	_target_started = false
 	_cur = {}
 	_st_next = 0
@@ -360,6 +372,12 @@ func _physics_process(delta: float) -> void:
 				else:
 					_fail("Kein Drift nach einem Feature – kein Wert")
 				return
+		"dock":
+			if r.mode == Rider.Mode.AIR:
+				_max_y = maxf(_max_y, r.pos.y)
+			elif _done_t < 0.0 and r.pos.y < 0.2 and not r.in_dock(r.pos.x, r.pos.z):
+				_fail("Kein Sprung-Start – auf dem Steg ↓ halten, bis das Seil losreißt")
+				return
 		"raley":
 			if r.mode == Rider.Mode.AIR:
 				if not _was_air:
@@ -410,6 +428,20 @@ func _on_landed(info: Dictionary) -> void:
 	if not running or _fail_t >= 0.0:
 		return
 	match task["kind"]:
+		"dock":
+			if info.get("start", "") != task["jump"]:
+				_fail("Das war kein Raley Start – Brett quer zum Seil stellen" if task["jump"] == "raley" \
+					else "Das war kein Nolli – Brett längs zum Seil lassen")
+				return
+			match task["metric"]:
+				"height":
+					_value = _max_y
+				"spin":
+					_value = int(info["half_turns"]) * 180.0
+				"points":
+					_value = float(info["points"])
+			_hit = true
+			_done_t = SETTLE
 		"raley":
 			if not info["raley"]:
 				return
@@ -434,14 +466,17 @@ func _track_via(r: Rider) -> void:
 	if r.mode == Rider.Mode.AIR:
 		if _via:
 			_via_air = true                     # vom Start-Feature abgehoben
+			_max_y = maxf(_max_y, r.pos.y)      # Sprunghöhe (über dem Wasser)
 		return
 	if under and _matches(under, task["via"]):
 		_via = true
 		_via_air = false
+		_max_y = 0.0
 	elif under and _in_target(under):
 		if not _target_started:
 			_target_started = true
 			_via_ok = _via and _via_air       # direkt aus dem Sprung vom Start-Feature aufs Ziel
+			_xfer_h = _max_y
 	else:
 		_via = false                           # Wasser oder anderes Feature: neu ansetzen
 		_via_air = false
@@ -689,7 +724,10 @@ func _on_slide(info: Dictionary) -> void:
 		return
 	if task["kind"] != "slide":
 		return
-	_value = maxf(_value, float(info[task["metric"]]) if info.has(task["metric"]) else 0.0)
+	if task["metric"] == "height":
+		_value = _xfer_h                       # Transfer: so hoch wie möglich, aber den Slider erwischen
+	else:
+		_value = maxf(_value, float(info[task["metric"]]) if info.has(task["metric"]) else 0.0)
 	_hit = true
 	_done_t = SETTLE
 
@@ -758,11 +796,14 @@ func _update_hud() -> void:
 		match task["kind"]:
 			"turn":
 				live = Training.format_value(task, _value)
-			"kick", "raley":
+			"kick", "raley", "dock":
 				if task["metric"] == "height" and (game.rider.mode == Rider.Mode.AIR or _hit):
 					live = "Höhe " + Training.format_value(task, _max_y)
 			"chain":
 				live = Training.format_value(task, _count)
+			"slide":
+				if task["metric"] == "height" and (_via_air or _target_started):
+					live = "Höhe " + Training.format_value(task, _xfer_h if _target_started else _max_y)
 			"drift_spin":
 				live = "links %d / %d   rechts %d / %d" % [mini(_spins[0], SPIN_EACH), SPIN_EACH, mini(_spins[1], SPIN_EACH), SPIN_EACH]
 			"drift_turn":

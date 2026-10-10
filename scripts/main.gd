@@ -32,7 +32,7 @@ extends Node3D
 ##   --pause-at=SEK    Test: zu dieser Zeit pausieren (mit --shot: Bild der Pause)
 ##   --hitbox          Fangzonen der Slider zeigen (im Spiel: F3)
 ##   --set=NAME=WERT   Test: Einstellung setzen (ohne zu speichern), z. B. --set=goofy=true
-##   --mode=ID[:N]     Spielmodus (wende, kicker, slider, raley, drift, transfer) mit Aufgabe N (ab 1) direkt starten;
+##   --mode=ID[:N]     Spielmodus (wende, kicker, slider, raley, sprungstart, drift, transfer) mit Aufgabe N (ab 1) direkt starten;
 ##                     mit --go=SEK: Aufgaben-Fenster zu dieser Zeit bestätigen; --mode-auto: Autopilot fährt
 
 const RESET_DELAY := 3.0
@@ -838,6 +838,12 @@ func _physics_process(delta: float) -> void:
 			_fake_touch(false)
 	for h: Array in _hold:
 		if _elapsed >= h[1] and _elapsed < h[2]:
+			if h[0] in ["reset", "start"] and _elapsed - delta < h[1]:
+				# Tasten, die als Ereignis wirken (R, Start): einmal als Tastendruck schicken
+				var ev := InputEventAction.new()
+				ev.action = h[0]
+				ev.pressed = true
+				Input.parse_input_event(ev)
 			Input.action_press(h[0])
 		elif _elapsed >= h[2] and _elapsed - delta < h[2]:
 			Input.action_release(h[0])
@@ -1042,10 +1048,11 @@ func _process(_delta: float) -> void:
 				_countdown_start()
 		elif mobile.active and not mobile.tilt_available:
 			hud.set_center("Neigungssensor nicht verfügbar –\nBewegungssensoren im Browser erlauben")
-		elif rider.dock_charge > 0.0:
-			hud.set_center("SPRUNG-START  %d %%" % roundi(rider.dock_charge * 100.0))
 		else:
 			hud.set_center("")
+
+	if rider.dock_charge > 0.0:
+		hud.set_center("SPRUNG-START  %d %%" % roundi(rider.dock_charge * 100.0))   # auch in den Challenges
 
 	if _pause_at > 0.0 and _elapsed >= _pause_at:
 		_pause_at = -1.0
@@ -1129,6 +1136,7 @@ func _reset() -> void:
 	rider.reset()
 	pc.reset()
 	water.clear_wake()
+	cam.snap()                       # Kamera gleich am Steg, nicht vom letzten Ort herüberschwenken
 	_crash_t = 0.0
 
 

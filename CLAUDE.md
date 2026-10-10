@@ -128,8 +128,8 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
   nie „Training“/„Aufgabe“ schreiben; im Code heißen sie weiter Training/Task): **Wenden, Kicker, Slider, Raley**, je
   mehrere Aufgaben (leicht → schwer), jede misst einen Wert → **Bronze/Silber/Gold** (Schwellen in `Training.MODES`,
   vom Nutzer fein justiert). Bestwerte in user://settings.cfg [medaillen]; **Tests speichern nichts**.
-- Modi: Wenden, Kicker, Slider, Raley, **Driften**, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
-  `target` = Ziel, je per Anzeigename; zählt nur: auf dem Start-Feature fahren, abspringen, aus der Luft aufs Ziel). Nach gewertetem Versuch **1,4 s ausrollen** (`Challenge.OUTRO`), dann Fenster.
+- Modi: Wenden, Kicker, Slider, Raley, **Sprung-Start** (Nolli, Raley Start vom Steg), **Driften**, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
+  `target` = Ziel, je per Anzeigename; zählt nur: auf dem Start-Feature fahren, abspringen, aus der Luft aufs Ziel; Klein/Groß/Special messen die Sprunghöhe im Flug Start-Feature → Ziel (`_xfer_h`), Special Press die Press-Sekunden). Nach gewertetem Versuch **1,4 s ausrollen** (`Challenge.OUTRO`), dann Fenster.
   Startseite im Querformat zweispaltig (links Modi, rechts Terminal/Setup bzw. Aufgaben; Handy quer: Start links).
 - Aufgabe setzt Fahrer + Carrier **in voller Fahrt** kurz vor die Stelle (`Rider.place`, `CableSystem.place_running`),
   jeder Versuch wieder dort (auch Kamera). Sturz/Seil verloren/verpasst: **kein Bergungs- oder Ergebnis-Fenster**,
@@ -210,7 +210,14 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
 - **Sprung-Start** (nur auf dem Startsteg, `Rider._step_dock_start`): ↓ halten (Handy ▼) = gegen das anfahrende Seil stemmen
   (Fahrer bleibt stehen, Seilzug steigt). Bei `DOCK_BRACE_MAX` 90 % der Seilzug-Grenze reißt das Seil los: die gedehnte Leine
   schleudert einen nach vorne, sobald die Spannung raus ist (spätestens an der Stegkante) Absprung = voller Sprung + `DOCK_YANK_LIFT`;
-  Trick „Sprung-Start …“ +100. Vorher loslassen = ohne Sprung. Nur Spieler. Test: `--autotest --passive --hold=pitch_back@0-15`.
+  +100. Vorher loslassen = ohne Sprung. Nur Spieler. **↓ ist immer der Auslöser, egal wie das Brett steht**: Stellung beim Riss
+  längs zum Seil (bis 45°, `DOCK_QUER`) = **Nolli**, quer = **Raley Start** (Raley-Schwung, Brett bleibt quer bis `DOCK_RALEY_PHASE`,
+  Haltung: tief auf der Kante, Brust zum Seil); Auflade-Power × Genauigkeit². Beim Gegenhalten dreht das Brett nicht zum Seil, beim Riss
+  ist der Steg quer so rutschig wie längs. Challenge-Modus **Sprung-Start** (`kind: "dock"`, `jump`, `start: {dock: true}`: Steg, Anlage
+  startet bei GO). Test: `--autotest --passive --hold=pitch_back@0-15[,steer_right@0-1.55]`, `--mode=sprungstart:N`.
+  **Nolli-Animation** nach Fotoserie: beim Riss Oberkörper nach vorne zum Griff, Brett kippt um die Nose (Ende Richtung Seil,
+  `_nolli_lead`) bis `NOLLI_ANG` ca. 60°, Tail hoch, Knie angezogen (Becken macht nur `NOLLI_PELVIS` mit); in der ersten
+  Flughälfte wieder flach.
 - R, + / −, C, P, H, M, Tab (Startseite) wie in der README. **Keine Tasten T/F** mehr (Terminal/Setup nur auf der Startseite).
 
 Steuerung Handy: Neigen = lenken, Tippen = Start, **Springen nur mit der SPRUNG-Taste (links)**,
@@ -220,7 +227,7 @@ DRIFT links über SPRUNG (damit rechts gleichzeitig ▲ ▼ für den Drift-Press
 global; Web-Audio-Hacks nur auf Touch-Geräten (früher hakte sonst die Desktop-Tastatur).
 
 Tricks/Optik:
-- **Ollie** = normaler Sprung. **Raley** nur mit viel Power: > 40 km/h, Sprung voll aufgeladen,
+- **Ollie** = normaler Sprung aus dem Wasser; Name nach Absprung (`Rider._launch_surface`): Ollie / **Kicker Air** / **Safety Air**. Haltung: in der Luft am höchsten Punkt am tiefsten in den Knien (`AIR_KNEES`), vor der Landung gestreckt, Landung abfedern (`LAND_TIME`). **Raley** nur mit viel Power: > 40 km/h, Sprung voll aufgeladen,
   **kein Feature voraus** (damit man schräg auf Features springen kann). Pose nach Fotoserie:
   Körper schwingt um den Griff, am höchsten Punkt kopfüber unter dem Brett, Hohlkreuz, Knie
   angewinkelt, **Griff vor dem Gesicht** mit angewinkelten Armen (nicht hinter dem Kopf).
@@ -269,9 +276,9 @@ Tricks/Optik:
   **Absprung auf dem Kicker: Höhe = Steigung (mit Tempo) + Sprungkraft** (`_kick_vy` + `POP_ON_KICK` 0.6 ×
   Ollie-Schub): z. B. Kicker M an der Kante abgesprungen ca. 2,1 m über der Kante (ohne Absprung 0,5 m).
 - **Glattes Plastik** (`"slick"` in parts.json): Pyramid oben, Transition des Transition Rails,
-  Transition Curb, Ollie Box (nicht die Ledge), Bump nur die flache Spitze (`"slick": "top"`; alle
+  Ollie Box (nicht die Ledge), Bump nur die flache Spitze (`"slick": "top"`; alle
   Seiten des Bumps sind Kicker). **Safetys/Auffahrten** (`ramp_in`/`ramp_out`, z. B.
-  vorne an der Transition Curb, vorne/hinten an der Ollie Box) fährt man wie einen **Kicker**: nie glatt,
+  vorne/hinten an der Ollie Box) und die ganze **Transition Curb** (`"kicker": true`) fährt man wie einen **Kicker**: nie glatt,
   kein Slide, keine Slide-Punkte, kein Einloggen (`FeaturePart.on_ramp`). Glatt heißt sonst: kein
   Slide, keine Punkte, man rutscht in der bisherigen Richtung weiter und kann nicht lenken. Das Rail
   im Transition Rail bleibt slidebar.
@@ -283,11 +290,15 @@ Features/Setups:
 - Zwei Cheese Wedges zusammen stehen immer **Rücken an Rücken** (zweiter mit `dir` andersherum).
 - Down Ledge: 20 m, Profil `[[0,-0.1],[1.0,0.5],[5.5,1.9],[19.5,0.8],[20,-0.15]]` (kleine Safety
   vorne, steil hoch, lang abfallend, hintere Safety bis ins Wasser). Kein Add-on-Rail.
-- **Port Plaza** = ein Modul (kein eigener Plaza Kicker), Maße verbindlich nach Plan „Juli & August“: Slider mit runder Oberkante und
-  runder Safety vorne/hinten, hinten breiter Teil aus Safety + Rampe; dahinter meist ein Cheese Wedge (0,75 m) – Plaza + Wedge ist kein Hack.
+- A-Frame Rail (Pyramid Series): 0,6 m breit, oben ganz schwarzes Halbrund-Rail, gerade hoch / flache Mitte / gerade runter,
+  vorne/hinten steile gerade Safety, die ins Halbrund schneidet (`top_rail`, `safety_slope`); Oberkante 1,5 m.
+  Pyramid: Auffahrten vorne/hinten sind Transitions (konkav, beginnen unter Wasser), seitlich 12 cm Kante (`side_lip`).
+- Pop auf Rampen/Kickern nie schwächer als ein Ollie (`Rider._pop`).
+- **Port Plaza** = ein Modul (kein eigener Plaza Kicker), Slider mit halbrunder Oberkante (0,9 → 1,55 m), vorne/hinten
+  steile gerade Safety ins Halbrund (wie A-Frame Rail), hinten breiter Teil aus Safety 1,2 m + Kicker-Schräge 2,35 m auf 1,1 m; dahinter meist ein normaler Cheese Wedge (1,1 m, keine eigene Höhe) – Plaza + Wedge ist kein Hack.
   Interne Teile `_plaza_*` (mit `_` = nicht im Editor).
-- Uprail 7,5 m. Transition Rail: Rail 28 cm dick, im flachen Abschluss (ca. 26 cm) **versenkt**,
-  ragt 7 cm heraus, von allen Seiten befahrbar, löst keinen Sturz aus.
+- Uprail 7,5 m. Transition Rail: Rail 40 cm dick, im flachen Abschluss (ca. 36 cm) **versenkt**,
+  ragt 8 cm heraus (ca. 32 cm breit sichtbar), Teil der Oberfläche: die Auffahrten schneiden hinein; von allen Seiten befahrbar, löst keinen Sturz aus.
 - Positionen kommen aus den Plan-Fotos (`fotos/`); die Pläne sind nicht maßstäblich, Maße aus
   dem Katalog. Beim Nachstellen von Hacks: vorne/hinten und Seiten genau mit dem Foto abgleichen.
 - T1-Steg ist 5 cm höher als T2 (`Lake.DOCK_T1_Y`).

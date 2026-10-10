@@ -87,7 +87,7 @@ func _process(delta: float) -> void:
 	if not _initialized:
 		_initialized = true
 		_focus = target
-		_yaw = rider.yaw - (1.2 if rider.in_dock(rider.pos.x, rider.pos.z) else 0.0)
+		_yaw = rider.start_yaw - 1.2 if rider.in_dock(rider.pos.x, rider.pos.z) else rider.yaw
 	# erst mit dem Fahrer mitziehen, dann glätten: sonst hängt der Blick bei 8 m/s ca. 0,7 m hinterher
 	# (von hinten unsichtbar, von der Seite beim Press deutlich)
 	var move := Vector3(rider.vel.x, 0.0, rider.vel.z) * delta
@@ -116,9 +116,11 @@ func _process(delta: float) -> void:
 			look_dir += Vector3(rider.rope_dir.x, 0.0, rider.rope_dir.z) * (1.0 - w)
 		if look_dir.length() > 0.15:
 			desired = atan2(-look_dir.x, -look_dir.z)
-		# Auf dem Startsteg steht hinter dem Fahrer die T2-Hütte – von der Seite (Norden) schauen
+		# Auf dem Startsteg steht hinter dem Fahrer die T2-Hütte – von der Seite (Norden) schauen.
+		# Fest nach der Steg-Ausrichtung, nicht nach dem Brett: wer sich (Raley Start) quer dreht,
+		# würde die Kamera sonst in die Hütte schieben.
 		if rider.in_dock(rider.pos.x, rider.pos.z) and speed < 2.0:
-			desired = rider.yaw - 1.2
+			desired = rider.start_yaw - 1.2
 		# Press: von der Seite (Brustseite des Fahrers) zuschauen
 		if _press_k > 0.01:
 			# schräg von hinten auf der Brustseite: Blick in Fahrtrichtung, Brett und gedrücktes Ende im Bild

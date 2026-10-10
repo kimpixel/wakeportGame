@@ -16,6 +16,7 @@ signal rope_lost(reason: String) # Handle verloren (kein Sturz): ausgleiten, abs
 signal grabbed                   # nach dem Schwimmen die Handle wieder gegriffen
 signal sank                      # zu langsam geworden und abgesoffen: wie ein Wasserstart
 signal landed_on_dock            # aus der Luft auf dem Startsteg gelandet (geheimer Erfolg)
+signal restarted                 # Neustart (Steg/Versuch): Sounds stoppen
 signal dock_yanked               # Sprung-Start: Seil reißt einen vom Steg
 signal skipped                   #Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
 ## Für die Spielmodi (Challenge): Landung nach einem Sprung bzw. Ende eines Slides, mit Messwerten
@@ -46,6 +47,12 @@ var _sink_vis := 0.0
 
 const UPS_TIME := 0.45
 var _ups := 0.0                  # Restzeit des "Ups"-Wacklers
+const AIR_KNEES := 1.5           # Sprung: am höchsten Punkt so tief in den Knien, zur Landung wieder gestreckt
+const LAND_TIME := 0.4           # Landung abfedern: so lange in die Knie und wieder hoch
+var _absorb := 0.0               # Restzeit des Abfederns
+var _absorb_amt := 0.0           # wie tief (nach Fallgeschwindigkeit)
+var _launch_kind := ""           # Absprung von: water, kicker, safety, feature (für den Namen)
+var _ground_kind := "water"      # zuletzt befahrene Fläche (wie _launch_kind)
 
 enum Mode { WATER, AIR, CRASHED }
 
@@ -55,6 +62,9 @@ const ROPE_LENGTH := 16.0       # Zugseil Griff bis Carrier (Standard)
 const ROPE_STIFFNESS := 2600.0
 const ROPE_DAMPING := 250.0
 const HANDLE_HEIGHT := 1.0
+const BRIDLE_LEN := 0.3          # Dreieck am Griff: Leinen laufen nach 30 cm zum Seil zusammen
+const BRIDLE_HALF := 0.19        # Leinen sitzen an den Griff-Enden (halbe Griffbreite)
+const BRIDLE_SEGS := 6           # Glieder je Leine (zum Durchhängen)
 const CRASH_TENSION := 5400.0
 const AIR_MAX_TENSION := 1400.0      # in der Luft federn die Arme den Seilzug ab
 
@@ -132,9 +142,14 @@ const BOARD_HALF := 0.35
 # Sprung-Start: auf dem Startsteg ↓ halten = gegen das anfahrende Seil stemmen. Der Seilzug lädt sich
 # bis zur maximalen Seilspannung auf (Anteil der Seilzug-Grenze); ist sie erreicht, reißt das Seil
 # einen nach vorne vom Steg -> normaler Sprung plus Auflade-Power. Vorher loslassen: ohne Sprung.
+# Brett längs zum Seil (50-50) = Nolli, quer = Raley Start (Raley-Schwung).
 const DOCK_BRACE_MAX := 0.9
 const DOCK_YANK_LIFT := 2.6      # m/s zusätzliche Steiggeschwindigkeit bei voller Ladung
 const DOCK_YANK_POINTS := 100
+const DOCK_QUER := deg_to_rad(45.0)   # Brett mehr als so weit quer zum Seil: Raley Start statt Nolli
+const NOLLI_ANG := 1.05         # rad: Nolli – Brett kippt um die Nose, Tail hoch (Fotos: ca. 60°)
+const NOLLI_PELVIS := 0.35      # so viel vom Anheben der Brettmitte macht das Becken mit (Rest: Knie ran)
+const DOCK_RALEY_PHASE := 0.6   # Raley Start: so lange (Anteil der Flugzeit) bleibt das Brett quer, dann dreht es zur Landung ein
 
 const START_POS := Vector3(1.7, Lake.DOCK_Y, -10.0)   # auf dem Startsteg vor der T2-Hütte
 
@@ -229,7 +244,11 @@ var dock_charge := 0.0          # Sprung-Start: aufgeladener Seilzug (0..1), fü
 var _brace := false             # stemmt sich auf dem Steg gegen das Seil (↓)
 var _yanked := false            # Seil hat losgerissen: Absprung, sobald die Spannung raus ist
 var _yank_t := 0.0
-var _jump_start := false        # aktueller Sprung ist ein Sprung-Start (Name, Bonus)
+var _yank_kind := ""            # beim Losreißen: "nolli" (Brett längs zum Seil) oder "raley" (quer)
+var _yank_fit := 1.0            # wie genau die Stellung war (1 = genau längs bzw. quer)
+var _nolli_lead := 1.0          # Nolli: +1 Nose = lokal -Z (Ende Richtung Seil beim Riss), -1 andersherum
+var _nolli_vis := 0.0           # sichtbarer Nolli-Kippwinkel des Bretts (rad)
+var _jump_start := ""           # aktueller Sprung ist ein Sprung-Start: "nolli" / "raley" (Name, Bonus)
 var _spin_accum := 0.0
 var _raley := false            # aktueller Sprung ist ein Raley
 var _raley_side := -1.0        # Schwung zur Seite (lokal ±X), weg vom Seil
@@ -265,6 +284,7 @@ var _ragdoll: Ragdoll
 var _rig: HumanRig
 var _helmet: Node3D
 var _handle: MeshInstance3D
+var _bridle: Array[MeshInstance3D] = []   # Dreieck: Glieder der zwei Leinen (Griff-Enden -> Spitze)
 var _rope_mesh: ImmediateMesh
 var _rope_mat: StandardMaterial3D
 var _spray: CPUParticles3D
@@ -296,6 +316,9 @@ func _ready() -> void:
 	_arm_l = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.045, skin)
 	_arm_r = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.045, skin)
 	_handle = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.017, black)
+	for i in BRIDLE_SEGS * 2:
+		_bridle.append(Util.beam(self, Vector3.ZERO, Vector3.UP, 0.005, black))
+		_bridle[i].top_level = true
 	_load_model()
 	for n: Node3D in [_arm_l, _arm_r, _handle]:
 		n.top_level = true
@@ -357,6 +380,32 @@ func reset() -> void:
 	_getup = 1.0
 	if _ragdoll:
 		_ragdoll.stop()
+	# Neustart: keine Haltung, kein Sprung und keine Bewegung vom letzten Versuch übernehmen
+	# (die sichtbaren Werte werden sonst weich weitergeblendet – z. B. halber Raley am Steg)
+	mode = Mode.WATER
+	sink_level = 0.0
+	_sink_vis = 0.0
+	_combo = 0
+	_popped = false
+	_flip_lock = false
+	_jump_held = false
+	_jump_start = ""
+	_yank_kind = ""
+	_ups = 0.0
+	_lean_roll = 0.0
+	_lean_pitch = 0.0
+	_crouch = 0.0
+	_edge_vis = 0.0
+	_release_vis = 0.0
+	_swim_blend = 1.0
+	_swim_path.clear()
+	_swim_heading = Vector2.ZERO
+	_prev_on_feature = false
+	last_exit_drift = false
+	_slide_part = null
+	_on_slider = false
+	_catch_part = null
+	restarted.emit()
 
 
 ## Spielmodi: Fahrer mitten in der Fahrt absetzen (auf dem Wasser, gleitend, Seil am Carrier).
@@ -661,12 +710,20 @@ func _step_dock_start(delta: float) -> void:
 		if mode != Mode.WATER or not attached:
 			_end_brace()
 		elif not on_dock or tension < 0.3 * _brace_limit() or _yank_t > 0.5:
+			# Stellung beim Losreißen: längs zum Seil (50-50) = Nolli, quer = Raley Start.
+			# Je genauer die Stellung, desto mehr Auflade-Power (45° daneben: nur die Hälfte).
+			var kind := _yank_kind
+			var fit := _yank_fit
 			_end_brace()
 			_load = 1.0
 			_pop()
-			vel.y += DOCK_YANK_LIFT
+			vel.y += DOCK_YANK_LIFT * fit * fit
 			_load = 0.0
-			_jump_start = true
+			_jump_start = kind
+			if kind == "raley":
+				_raley = true
+				var side := rope_dir.dot(right())
+				_raley_side = -signf(side) if absf(side) > 0.05 else -1.0
 		return
 	var want := on_dock and not autopilot and _pitch_in < -0.5 and cable.state != CableSystem.State.IDLE
 	if want and not _brace and horizontal_speed() > 1.5:
@@ -678,6 +735,11 @@ func _step_dock_start(delta: float) -> void:
 		_yanked = true
 		_yank_t = 0.0
 		dock_charge = 1.0
+		var rope_h := Vector3(rope_dir.x, 0.0, rope_dir.z).normalized()
+		var along := absf(forward().dot(rope_h))
+		_yank_kind = "nolli" if along >= cos(DOCK_QUER) else "raley"
+		_yank_fit = along if _yank_kind == "nolli" else sqrt(maxf(1.0 - along * along, 0.0))
+		_nolli_lead = 1.0 if forward().dot(rope_h) >= 0.0 else -1.0
 		dock_yanked.emit()
 
 
@@ -1033,6 +1095,7 @@ func _rope_force(delta: float) -> Vector3:
 
 
 func _step_water(delta: float, rope: Vector3) -> void:
+	_ground_kind = _launch_surface()     # worauf man fährt: beim Abheben ist man oft schon über die Kante hinaus
 	var f := forward()
 	var r := right()
 	var vh := Vector3(vel.x, 0.0, vel.z)
@@ -1064,9 +1127,9 @@ func _step_water(delta: float, rope: Vector3) -> void:
 		f_long = -fr * vl / maxf(speed, 0.5)
 		f_lat = -fr * (1.0 + 3.0 * _edge) * vs / maxf(absf(vs), 0.3)
 	elif on_dock:
-		# nasse Startrampe: rutschig längs, fest quer
+		# nasse Startrampe: rutschig längs, fest quer (beim Sprung-Start reißt das Seil einen auch quer weg)
 		f_long = -40.0 * vl
-		f_lat = -500.0 * vs
+		f_lat = (-40.0 if _yanked else -500.0) * vs
 	else:
 		var plow := (1.0 - clampf(speed / PLANE_SPEED, 0.0, 1.0)) * PLOW_DRAG
 		f_long = -(DRAG_QUAD * vl * absf(vl) + (DRAG_LIN + plow) * vl)
@@ -1127,7 +1190,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	if dp_hold > 0.0 and rope_dir.length() > 0.1:
 		yaw = lerp_angle(yaw, _aligned_yaw(atan2(-rope_dir.x, -rope_dir.z)), DPRESS_ALIGN * dp_hold * delta)
 	# Wasserstart: solange das Brett nicht gleitet, dreht es sich in Zugrichtung
-	if speed < 2.5 and tension > 30.0 and not on_feature:
+	if speed < 2.5 and tension > 30.0 and not on_feature and not _brace and not _yanked:
 		var target := _aligned_yaw(atan2(-rope_dir.x, -rope_dir.z))
 		yaw = lerp_angle(yaw, target, (1.0 - speed / 2.5) * 2.0 * delta)
 
@@ -1340,7 +1403,8 @@ func _pop() -> void:
 	# abspringt, bekommt den Wurf der Rampe und den Ollie zusammen – je steiler, desto mehr.
 	var kick := _kick_vy(_slope_here())
 	if kick > 0.0:
-		vel.y = minf(kick + POP_ON_KICK * lift, KICK_MAX_VY)
+		# nie schwächer als ein Ollie: auf flacher Steigung (Pyramid-Auffahrt) fehlt sonst der Pop
+		vel.y = minf(maxf(kick + POP_ON_KICK * lift, lift), KICK_MAX_VY)
 	else:
 		var up := maxf(vel.y, 0.0)
 		vel.y = maxf(up, lift) + POP_ON_RAMP * minf(up, lift)
@@ -1359,6 +1423,7 @@ func _pop() -> void:
 ## Sprung-Haltung (Raley-Schwung, Überschlag, Press) sofort zurücksetzen – nach Sturz, Absaufen
 ## oder Neustart darf die Figur nicht verdreht bleiben.
 func _clear_air_pose() -> void:
+	_absorb = 0.0
 	_raley = false
 	_raley_ang = 0.0
 	_flip = 0.0
@@ -1366,10 +1431,12 @@ func _clear_air_pose() -> void:
 	_press_vis = 0.0
 	_press_bs_vis = 0.0
 	_dpress_vis = 0.0
-	_jump_start = false
+	_jump_start = ""
+	_nolli_vis = 0.0
 
 
 func _enter_air() -> void:
+	_launch_kind = _ground_kind
 	_prev_on_feature = false
 	mode = Mode.AIR
 	air_time = 0.0
@@ -1396,7 +1463,9 @@ func _step_air(delta: float, rope: Vector3) -> void:
 		var vh := Vector3(vel.x, 0.0, vel.z)
 		# Brett dreht zur Flugrichtung zurück – aber nicht, wenn man auf einen Slider zufliegt: dort
 		# soll eine Vierteldrehung (Boardslide) stehen bleiben, das Einrasten macht die Landung
-		if vh.length() > 1.0 and (autopilot or not (features and features.slider_ahead(pos, vh, AIR_ASSIST_SLIDER))):
+		# Raley Start: das Brett bleibt quer, solange der Körper um den Griff schwingt
+		var raley_start := _jump_start == "raley" and _air_phase() < DOCK_RALEY_PHASE
+		if vh.length() > 1.0 and not raley_start and (autopilot or not (features and features.slider_ahead(pos, vh, AIR_ASSIST_SLIDER))):
 			yaw = rotate_toward(yaw, _aligned_yaw(atan2(-vh.x, -vh.z)), AIR_ASSIST * delta)
 	_spin_accum += wrapf(yaw - old_yaw, -PI, PI)
 	# ↑/↓: Frontroll/Backroll (Überschlag um die Brettlängsachse). Losgelassen läuft die
@@ -1518,6 +1587,9 @@ func _land(surf: float) -> void:
 	if absf(wrapf(_flip, -PI, PI)) > FLIP_LAND_TOL:
 		crash("Überschlag nicht geschafft!")
 		return
+	if air_time > 0.25:
+		_absorb = LAND_TIME                  # Landung in den Knien abfedern, je härter, desto tiefer
+		_absorb_amt = clampf(-vel.y / 6.0, 0.45, 0.9)
 	pos.y = surf
 	vel.y = 0.0
 	vel.x *= 0.97
@@ -1530,27 +1602,34 @@ func _land(surf: float) -> void:
 	var flip_dir := signf(_flip)
 	_flip = 0.0
 	var jump_start := _jump_start
-	_jump_start = false
-	if air_time > 0.5 or half_turns > 0 or rolls > 0 or jump_start:
+	_jump_start = ""
+	if air_time > 0.5 or half_turns > 0 or rolls > 0 or jump_start != "":
 		# Name aus den Teilen, z. B. "Raley 360", "Backroll", "Double Frontroll 180"
 		var parts: Array[String] = []
 		var pts := int(air_time * AIR_PER_S) + half_turns * SPIN_PER_180 + rolls * FLIP_POINTS
 		if _raley:
-			parts.append("Raley")
+			parts.append("Raley Start" if jump_start == "raley" else "Raley")
 			pts += RALEY_POINTS
+		elif jump_start == "nolli":
+			parts.append("Nolli")
 		if rolls > 0:
 			var roll := "Frontroll" if flip_dir > 0.0 else "Backroll"
 			parts.append(("Double " if rolls == 2 else ("%dx " % rolls if rolls > 2 else "")) + roll)
 		if half_turns > 0:
 			parts.append(str(half_turns * 180))
 		if parts.is_empty():
-			parts.append("Ollie" if _popped else "Air")
-		if jump_start:
-			parts.insert(0, "Sprung-Start")
+			match _launch_kind:
+				"kicker":
+					parts.append("Kicker Air")
+				"safety":
+					parts.append("Safety Air")
+				_:
+					parts.append("Ollie" if _popped else "Air")
+		if jump_start != "":
 			pts += DOCK_YANK_POINTS
 		_score_trick(" ".join(parts), pts)
 		jump_landed.emit({"raley": _raley, "air_time": air_time, "half_turns": half_turns,
-			"rolls": rolls, "popped": _popped, "points": pts})
+			"rolls": rolls, "popped": _popped, "points": pts, "start": jump_start})
 
 
 func crash(reason: String) -> void:
@@ -1630,7 +1709,13 @@ func _process(delta: float) -> void:
 		Mode.CRASHED:
 			target_roll = 1.45
 		Mode.AIR:
-			target_crouch = 0.3
+			# gestreckt abspringen, am höchsten Punkt am tiefsten in den Knien, vor der Landung wieder strecken
+			target_crouch = AIR_KNEES * sqrt(sin(PI * clampf(_air_phase() / 0.85, 0.0, 1.0)))   # über 1: Knie bis fast zur Brust
+			if _jump_start == "nolli":
+				# Nolli: Knie angezogen, Oberkörper nach vorne zum Griff, zur Landung wieder aufrichten
+				var s := _air_phase()
+				target_crouch = lerpf(0.85, 0.45, smoothstep(0.55, 0.95, s))
+				target_pitch = -0.6 * _nolli_lead * (1.0 - smoothstep(0.5, 0.9, s))
 			if _raley:
 				# gestreckt durch die Luft, zur Landung wieder Knie ran
 				# Knie gebeugt, damit das Brett flach über dem Kopf liegt; zur Landung wieder ran
@@ -1649,14 +1734,39 @@ func _process(delta: float) -> void:
 			if speed < 2.5 and not _in_dock(pos.x, pos.z):
 				target_crouch = maxf(target_crouch, 0.3)
 			if _brace or _yanked:
-				# Sprung-Start: tief in die Knie, gegen das Seil gestemmt
-				target_crouch = maxf(target_crouch, 0.35 + 0.5 * dock_charge)
+				# Sprung-Start: tief in die Knie, gegen das Seil gestemmt. Längs (Nolli) lehnt man
+				# Richtung Tail zurück; quer (Raley Start) sitzt man tief auf der Kante, Brust zum Seil
+				var quer := absf(forward().dot(Vector3(rope_dir.x, 0.0, rope_dir.z).normalized())) < cos(DOCK_QUER)
+				if quer:
+					target_roll = clampf(target_roll, -0.75, 0.75)
+					target_pitch = clampf(target_pitch, -0.2, 0.2)
+					target_crouch = maxf(target_crouch, 0.45 + 0.45 * dock_charge)
+				else:
+					target_roll = clampf(target_roll, -0.3, 0.3)
+					target_crouch = maxf(target_crouch, 0.35 + 0.5 * dock_charge)
+					if _yanked:
+						# Nolli: das Seil reißt -> Oberkörper nach vorne Richtung Griff
+						target_pitch = -0.6 * _nolli_lead
+						target_crouch = 0.6
+	# Nolli: beim Riss kippt das Brett um die Nose (Tail hoch), in der Luft wird es wieder flach
+	var nolli_target := 0.0
+	if _yanked and _yank_kind == "nolli":
+		nolli_target = NOLLI_ANG * clampf(_yank_t / 0.2, 0.0, 1.0)
+	elif mode == Mode.AIR and _jump_start == "nolli":
+		nolli_target = NOLLI_ANG * (1.0 - smoothstep(0.0, 0.45, _air_phase()))
+	_nolli_vis = lerpf(_nolli_vis, nolli_target, 1.0 - exp(-delta * 14.0))
 	# "Ups": kurz in die Knie und nach vorne geruckt (über Boje/Steg gerumpelt)
 	if _ups > 0.0:
 		_ups -= delta
 		var w := sin(PI * clampf(1.0 - _ups / UPS_TIME, 0.0, 1.0))
 		target_crouch = maxf(target_crouch, 0.38 * w)
 		target_pitch += 0.3 * w
+	if _absorb > 0.0:
+		_absorb -= delta
+		if mode == Mode.AIR or mode == Mode.CRASHED:
+			_absorb = 0.0
+		var wa := sin(PI * clampf(1.0 - _absorb / LAND_TIME, 0.0, 1.0))
+		target_crouch = maxf(target_crouch, _absorb_amt * wa)
 	var raley_target := 0.0
 	if mode == Mode.AIR and _raley:
 		var s := _air_phase()
@@ -1691,7 +1801,7 @@ func _process(delta: float) -> void:
 	if _rig:
 		_pose_human()
 	_body_pivot.rotation = Vector3(_lean_pitch, 0.0, _lean_roll)
-	_body_pivot.scale = Vector3(1.0, 1.0 - 0.5 * _crouch * (1.0 - _raley_ang / RALEY_MAX), 1.0)   # beim Raley nicht stauchen
+	_body_pivot.scale = Vector3(1.0, 1.0 - 0.5 * minf(_crouch, 1.0) * (1.0 - _raley_ang / RALEY_MAX), 1.0)   # beim Raley nicht stauchen
 	_body_pivot.position.y = -0.3 if mode == Mode.CRASHED else 0.06
 	if _ragdoll and _ragdoll.active:
 		_board_on_feet()
@@ -1709,13 +1819,13 @@ func _process(delta: float) -> void:
 	var handle_pos: Vector3
 	var to_anchor := Vector3.FORWARD
 	if attached:
-		var hand := vpos + Vector3(0.0, HANDLE_HEIGHT * (1.0 - _crouch * 0.5), 0.0)
+		var hand := vpos + Vector3(0.0, HANDLE_HEIGHT * (1.0 - minf(_crouch, 1.0) * 0.5), 0.0)
 		to_anchor = (anchor - hand).normalized()
 		handle_pos = hand + to_anchor * 0.35
 		if _rig:
 			# Realistischer Griff: vor der vorderen Hüfte, Arme fast gestreckt
 			var rb := global_transform.basis.orthonormalized()
-			handle_pos = vpos + rb * Vector3(0.2 * _facing(), 0.86 - 0.34 * _crouch, -0.2) + to_anchor * 0.5
+			handle_pos = vpos + rb * Vector3(0.2 * _facing(), 0.86 - 0.34 * minf(_crouch, 1.0), -0.2) + to_anchor * 0.5
 			if _getup < 1.0:
 				handle_pos = _dw_handle.lerp(handle_pos, smoothstep(0.0, 1.0, _getup))
 			if _raley_ang > 0.001:
@@ -1753,7 +1863,17 @@ func _process(delta: float) -> void:
 		var body := _body_pivot.global_transform
 		Util.place_beam(_arm_l, body * Vector3(0.0, 1.38, 0.17), handle_pos - bar_axis * 0.08)
 		Util.place_beam(_arm_r, body * Vector3(0.0, 1.38, -0.17), handle_pos + bar_axis * 0.08)
-	_draw_rope(handle_pos, anchor)
+	# Seil hängt nicht mittig am Griff: zwei Leinen von den Griff-Enden laufen nach ca. 30 cm zusammen (Dreieck)
+	# Zugseil + Dreieck verhalten sich wie ein durchgehendes Seil: der Knoten liegt auf der Seilkurve ab Griffmitte
+	var end_l := handle_pos - bar_axis * BRIDLE_HALF
+	var end_r := handle_pos + bar_axis * BRIDLE_HALF
+	var sag := _rope_sag(handle_pos, anchor)
+	var t0 := _knot_t(handle_pos, anchor, sag)
+	var knot := _rope_at(handle_pos, anchor, sag, t0)
+	var side := Vector2(BRIDLE_LEN, BRIDLE_HALF).length()
+	_draw_line_segs(0, end_l, knot, side)
+	_draw_line_segs(BRIDLE_SEGS, end_r, knot, side)
+	_draw_rope(handle_pos, anchor, sag, t0)
 
 	_update_spray(speed)
 
@@ -1933,12 +2053,25 @@ func _air_phase() -> float:
 	return clampf(air_time / maxf(air_time + rest, 0.01), 0.0, 1.0)
 
 
+## Wovon man abspringt (für den Trick-Namen): aus dem Wasser = Ollie, vom Kicker (auch Cheese Wedge,
+## Bump-Seite, Transition Curb) oder von einer Safety/Auffahrt; sonst von einem Slider o. Ä.
+func _launch_surface() -> String:
+	var p: FeaturePart = features.part_at(pos.x, pos.z) if (features and pos.y > 0.05) else null
+	if p == null:
+		return "water"
+	if (p.type == "ramp" and not p.part_id.contains("safety")) or p.kicker or (p.type == "bump" and p.on_ramp(pos)):
+		return "kicker"
+	if p.on_ramp(pos) or p.part_id.contains("safety"):
+		return "safety"
+	return "feature"
+
+
 ## Bezugsrahmen der Figur: normal der Fahrer selbst, beim Raley um den Griff geschwungen
 ## (Drehung um die Brettlängsachse, Füße weg vom Seil nach oben, Brust zum Wasser).
 func _pose_frame() -> Transform3D:
 	var xf := global_transform
 	if _raley_ang > 0.001:
-		var p := Vector3(0.2 * _facing(), 0.86 - 0.34 * _crouch, -0.2)      # Griff vor der vorderen Hüfte
+		var p := Vector3(0.2 * _facing(), 0.86 - 0.34 * minf(_crouch, 1.0), -0.2)      # Griff vor der vorderen Hüfte
 		var r := Basis(Vector3.BACK, _raley_side * _raley_ang)
 		xf *= Transform3D(r, p - r * p)
 	if absf(_flip) > 0.001:
@@ -1964,7 +2097,7 @@ func _press_local() -> float:
 
 
 ## Brettlage im Stehen (Fahrerposition, gekippt mit der Kante).
-func _board_stand_xf() -> Transform3D:
+func _board_stand_xf(nolli := true) -> Transform3D:
 	var roll := _lean_roll * (0.35 + 0.45 * _edge_vis) * (1.0 - 0.85 * _release_vis)
 	var xf := _pose_frame() * Transform3D(Basis.from_euler(Vector3(0.0, 0.0, roll)), Vector3(0.0, BOARD_Y, 0.0))
 	var pl := _press_local()
@@ -1982,6 +2115,11 @@ func _board_stand_xf() -> Transform3D:
 		var b := Basis(Vector3.RIGHT, -DPRESS_ANG * _dpress_vis)
 		press_tip = xf * pv
 		xf *= Transform3D(b, pv - b * pv)
+	if nolli and _nolli_vis > 0.001:
+		# Nolli: Brett kippt um die Nose (Ende Richtung Seil), das Tail hebt ab
+		var nv := Vector3(0.0, 0.0, -0.62 * _nolli_lead)
+		var nb := Basis(Vector3.RIGHT, -_nolli_vis * _nolli_lead)
+		xf *= Transform3D(nb, nv - nb * nv)
 	if goofy:
 		# Goofy: rechter Fuß vorne – das Twin-Tip-Brett steht einfach andersherum unter dem Fahrer
 		xf *= Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
@@ -2085,6 +2223,11 @@ func _pose_stand() -> void:
 	var foot_front := board * Wakeboard.ankle_local(true)    # linker Fuß Richtung Nose
 	var foot_back := board * Wakeboard.ankle_local(false)
 	var mid := (foot_front + foot_back) * 0.5
+	if _nolli_vis > 0.001:
+		# Nolli: Becken hebt nur wenig mit, die Knie ziehen das Tail hoch
+		var flat := _board_stand_xf(false)
+		var mid0 := (flat * Wakeboard.ankle_local(true) + flat * Wakeboard.ankle_local(false)) * 0.5
+		mid = mid0.lerp(mid, NOLLI_PELVIS)
 	var hip_h := 0.84 - 0.36 * _crouch            # tief in den Knien: Becken ~0,5 m über den Füßen
 	var lean_local := Vector3(-sin(_lean_roll) * 0.55, hip_h * cos(_lean_roll) * cos(_lean_pitch), sin(_lean_pitch) * 0.4)
 	var pelvis_world := mid + rb * lean_local
@@ -2386,16 +2529,53 @@ func _pose_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
 	return handle_pos
 
 
-func _draw_rope(a: Vector3, b: Vector3) -> void:
+## Durchhang der Seilkurve Griffmitte -> Carrier: Parabel mit gleicher Bogenlänge wie das (lose) Seil.
+func _rope_sag(a: Vector3, b: Vector3) -> float:
+	var chord := a.distance_to(b)
+	return sqrt(3.0 * chord * maxf(rope_length - chord, 0.0) / 8.0)
+
+
+static func _rope_at(a: Vector3, b: Vector3, sag: float, t: float) -> Vector3:
+	var p := a.lerp(b, t)
+	p.y = maxf(p.y - 4.0 * sag * t * (1.0 - t), 0.05)
+	return p
+
+
+## Kurvenstelle des Knotens: BRIDLE_LEN entlang der Seilkurve ab der Griffmitte.
+static func _knot_t(a: Vector3, b: Vector3, sag: float) -> float:
+	var walked := 0.0
+	var prev := a
+	var t := 0.0
+	while t < 0.5:
+		var nt := t + 0.002
+		var p := _rope_at(a, b, sag, nt)
+		var d := prev.distance_to(p)
+		if walked + d >= BRIDLE_LEN:
+			return t + (nt - t) * (BRIDLE_LEN - walked) / maxf(d, 0.000001)
+		walked += d
+		prev = p
+		t = nt
+	return t
+
+
+## Eine Leine aus Gliedern zeichnen, durchhängend je nach Spiel (Länge minus Abstand).
+func _draw_line_segs(first: int, a: Vector3, b: Vector3, length: float) -> void:
+	var chord := a.distance_to(b)
+	var slack := maxf(length - chord, 0.0)
+	var sag := maxf(sqrt(3.0 * chord * slack / 8.0), slack * 0.5)
+	var prev := a
+	for i in BRIDLE_SEGS:
+		var t := float(i + 1) / BRIDLE_SEGS
+		var p := a.lerp(b, t)
+		p.y = maxf(p.y - 4.0 * sag * t * (1.0 - t), 0.03)
+		Util.place_beam(_bridle[first + i], prev, p)
+		prev = p
+
+
+## Zugseil vom Knoten (Kurvenstelle t0) bis zum Carrier.
+func _draw_rope(a: Vector3, b: Vector3, sag: float, t0: float) -> void:
 	_rope_mesh.clear_surfaces()
 	_rope_mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, _rope_mat)
-	var chord := a.distance_to(b)
-	# Durchhang einer Parabel mit gleicher Bogenlänge wie das (lose) Seil
-	var slack := maxf(rope_length - chord, 0.0)
-	var sag := sqrt(3.0 * chord * slack / 8.0)
 	for i in 21:
-		var t := i / 20.0
-		var p := a.lerp(b, t)
-		p.y = maxf(p.y - 4.0 * sag * t * (1.0 - t), 0.05)
-		_rope_mesh.surface_add_vertex(p)
+		_rope_mesh.surface_add_vertex(_rope_at(a, b, sag, lerpf(t0, 1.0, i / 20.0)))
 	_rope_mesh.surface_end()
