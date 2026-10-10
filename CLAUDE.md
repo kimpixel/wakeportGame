@@ -287,7 +287,9 @@ Features/Setups:
 - Down Ledge: 20 m, Profil `[[0,-0.1],[1.0,0.5],[5.5,1.9],[19.5,0.8],[20,-0.15]]` (kleine Safety
   vorne, steil hoch, lang abfallend, hintere Safety bis ins Wasser). Kein Add-on-Rail.
 - A-Frame Rail (Pyramid Series): 0,6 m breit, oben ganz schwarzes Halbrund-Rail, gerade hoch / flache Mitte / gerade runter,
-  vorne/hinten steile gerade Safety, die ins Halbrund schneidet (`top_rail`, `safety_slope`).
+  vorne/hinten steile gerade Safety, die ins Halbrund schneidet (`top_rail`, `safety_slope`); Oberkante 1,5 m.
+  Pyramid: Auffahrten vorne/hinten sind Transitions (konkav, beginnen unter Wasser), seitlich 12 cm Kante (`side_lip`).
+- Pop auf Rampen/Kickern nie schwächer als ein Ollie (`Rider._pop`).
 - **Port Plaza** = ein Modul (kein eigener Plaza Kicker), Maße verbindlich nach Plan „Juli & August“: Slider mit runder Oberkante und
   runder Safety vorne/hinten, hinten breiter Teil aus Safety + Rampe; dahinter meist ein Cheese Wedge (0,75 m) – Plaza + Wedge ist kein Hack.
   Interne Teile `_plaza_*` (mit `_` = nicht im Editor).

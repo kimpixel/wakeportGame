@@ -43,6 +43,7 @@ var profile: Array = []         # Block: Längsprofil [[Abstand vom Anfang (m), 
 var top_rail := 0.0             # Block: Oberseite als schwarzes Halbrund-Rail (Radius, z. B. A-Frame Rail); profile = Unterkante der Rundung
 var safety_slope := 0.0         # Block: steile, gerade Safety an beiden Enden (Steigung), schneidet oben ins Halbrund
 var lip := ENTRY               # Höhe, auf der Auffahrten beginnen (ENTRY = unter Wasser, > 0 = sichtbare Kante)
+var side_lip := NAN            # dasselbe für die seitliche Auffahrt (NAN = wie lip)
 var side_curve := 2.0          # Form der seitlichen Auffahrt: 1 = gerade Schräge, 2 = konkav
 var round_top := false         # Block: Oberkante quer halbrund (Coping, z. B. Plaza Rail)
 var black_top: Array = []       # Block: Abschnitt [von, bis] (m ab Anfang), dessen Oberseite schwarz ist (Plaza Rail)
@@ -86,6 +87,7 @@ func setup(id: String, p: Dictionary) -> void:
 	body_curve = p.get("body_curve", body_curve)
 	side_curve = p.get("side_curve", side_curve)
 	lip = p.get("lip", lip)
+	side_lip = p.get("side_lip", lip)
 	profile = p.get("profile", [])
 	top_rail = p.get("top_rail", 0.0)
 	safety_slope = p.get("safety_slope", 0.0)
@@ -450,7 +452,7 @@ func _with_side_ramp(v: float, h: float) -> float:
 	var d := width * 0.5 - v * inner_v         # 0 an der Innenkante
 	if d >= side_ramp:
 		return h
-	return minf(h, lerpf(lip, h, pow(clampf(d / side_ramp, 0.0, 1.0), side_curve)))
+	return minf(h, lerpf(side_lip, h, pow(clampf(d / side_ramp, 0.0, 1.0), side_curve)))
 
 
 ## Vorwärtsrichtung des Teils (Befahrrichtung) in Weltkoordinaten.

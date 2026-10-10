@@ -1370,7 +1370,8 @@ func _pop() -> void:
 	# abspringt, bekommt den Wurf der Rampe und den Ollie zusammen – je steiler, desto mehr.
 	var kick := _kick_vy(_slope_here())
 	if kick > 0.0:
-		vel.y = minf(kick + POP_ON_KICK * lift, KICK_MAX_VY)
+		# nie schwächer als ein Ollie: auf flacher Steigung (Pyramid-Auffahrt) fehlt sonst der Pop
+		vel.y = minf(maxf(kick + POP_ON_KICK * lift, lift), KICK_MAX_VY)
 	else:
 		var up := maxf(vel.y, 0.0)
 		vel.y = maxf(up, lift) + POP_ON_RAMP * minf(up, lift)
