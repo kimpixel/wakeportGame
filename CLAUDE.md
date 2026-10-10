@@ -211,6 +211,9 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
   Haltung: tief auf der Kante, Brust zum Seil); Auflade-Power × Genauigkeit². Beim Gegenhalten dreht das Brett nicht zum Seil, beim Riss
   ist der Steg quer so rutschig wie längs. Challenge-Modus **Sprung-Start** (`kind: "dock"`, `jump`, `start: {dock: true}`: Steg, Anlage
   startet bei GO). Test: `--autotest --passive --hold=pitch_back@0-15[,steer_right@0-1.55]`, `--mode=sprungstart:N`.
+  **Nolli-Animation** nach Fotoserie: beim Riss Oberkörper nach vorne zum Griff, Brett kippt um die Nose (Ende Richtung Seil,
+  `_nolli_lead`) bis `NOLLI_ANG` ca. 60°, Tail hoch, Knie angezogen (Becken macht nur `NOLLI_PELVIS` mit); in der ersten
+  Flughälfte wieder flach.
 - R, + / −, C, P, H, M, Tab (Startseite) wie in der README. **Keine Tasten T/F** mehr (Terminal/Setup nur auf der Startseite).
 
 Steuerung Handy: Neigen = lenken, Tippen = Start, **Springen nur mit der SPRUNG-Taste (links)**,

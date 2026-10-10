@@ -131,6 +131,8 @@ const DOCK_BRACE_MAX := 0.9
 const DOCK_YANK_LIFT := 2.6      # m/s zusätzliche Steiggeschwindigkeit bei voller Ladung
 const DOCK_YANK_POINTS := 100
 const DOCK_QUER := deg_to_rad(45.0)   # Brett mehr als so weit quer zum Seil: Raley Start statt Nolli
+const NOLLI_ANG := 1.05         # rad: Nolli – Brett kippt um die Nose, Tail hoch (Fotos: ca. 60°)
+const NOLLI_PELVIS := 0.35      # so viel vom Anheben der Brettmitte macht das Becken mit (Rest: Knie ran)
 const DOCK_RALEY_PHASE := 0.6   # Raley Start: so lange (Anteil der Flugzeit) bleibt das Brett quer, dann dreht es zur Landung ein
 
 const START_POS := Vector3(1.7, Lake.DOCK_Y, -10.0)   # auf dem Startsteg vor der T2-Hütte
@@ -226,6 +228,8 @@ var _yanked := false            # Seil hat losgerissen: Absprung, sobald die Spa
 var _yank_t := 0.0
 var _yank_kind := ""            # beim Losreißen: "nolli" (Brett längs zum Seil) oder "raley" (quer)
 var _yank_fit := 1.0            # wie genau die Stellung war (1 = genau längs bzw. quer)
+var _nolli_lead := 1.0          # Nolli: +1 Nose = lokal -Z (Ende Richtung Seil beim Riss), -1 andersherum
+var _nolli_vis := 0.0           # sichtbarer Nolli-Kippwinkel des Bretts (rad)
 var _jump_start := ""           # aktueller Sprung ist ein Sprung-Start: "nolli" / "raley" (Name, Bonus)
 var _spin_accum := 0.0
 var _raley := false            # aktueller Sprung ist ein Raley
@@ -708,6 +712,7 @@ func _step_dock_start(delta: float) -> void:
 		var along := absf(forward().dot(rope_h))
 		_yank_kind = "nolli" if along >= cos(DOCK_QUER) else "raley"
 		_yank_fit = along if _yank_kind == "nolli" else sqrt(maxf(1.0 - along * along, 0.0))
+		_nolli_lead = 1.0 if forward().dot(rope_h) >= 0.0 else -1.0
 		dock_yanked.emit()
 
 
@@ -1391,6 +1396,7 @@ func _clear_air_pose() -> void:
 	_press_vis = 0.0
 	_press_bs_vis = 0.0
 	_jump_start = ""
+	_nolli_vis = 0.0
 
 
 func _enter_air() -> void:
@@ -1658,6 +1664,11 @@ func _process(delta: float) -> void:
 			target_roll = 1.45
 		Mode.AIR:
 			target_crouch = 0.3
+			if _jump_start == "nolli":
+				# Nolli: Knie angezogen, Oberkörper nach vorne zum Griff, zur Landung wieder aufrichten
+				var s := _air_phase()
+				target_crouch = lerpf(0.85, 0.45, smoothstep(0.55, 0.95, s))
+				target_pitch = -0.6 * _nolli_lead * (1.0 - smoothstep(0.5, 0.9, s))
 			if _raley:
 				# gestreckt durch die Luft, zur Landung wieder Knie ran
 				# Knie gebeugt, damit das Brett flach über dem Kopf liegt; zur Landung wieder ran
@@ -1686,6 +1697,17 @@ func _process(delta: float) -> void:
 				else:
 					target_roll = clampf(target_roll, -0.3, 0.3)
 					target_crouch = maxf(target_crouch, 0.35 + 0.5 * dock_charge)
+					if _yanked:
+						# Nolli: das Seil reißt -> Oberkörper nach vorne Richtung Griff
+						target_pitch = -0.6 * _nolli_lead
+						target_crouch = 0.6
+	# Nolli: beim Riss kippt das Brett um die Nose (Tail hoch), in der Luft wird es wieder flach
+	var nolli_target := 0.0
+	if _yanked and _yank_kind == "nolli":
+		nolli_target = NOLLI_ANG * clampf(_yank_t / 0.2, 0.0, 1.0)
+	elif mode == Mode.AIR and _jump_start == "nolli":
+		nolli_target = NOLLI_ANG * (1.0 - smoothstep(0.0, 0.45, _air_phase()))
+	_nolli_vis = lerpf(_nolli_vis, nolli_target, 1.0 - exp(-delta * 14.0))
 	# "Ups": kurz in die Knie und nach vorne geruckt (über Boje/Steg gerumpelt)
 	if _ups > 0.0:
 		_ups -= delta
@@ -1990,7 +2012,7 @@ func _press_local() -> float:
 
 
 ## Brettlage im Stehen (Fahrerposition, gekippt mit der Kante).
-func _board_stand_xf() -> Transform3D:
+func _board_stand_xf(nolli := true) -> Transform3D:
 	var roll := _lean_roll * (0.35 + 0.45 * _edge_vis) * (1.0 - 0.85 * _release_vis)
 	var xf := _pose_frame() * Transform3D(Basis.from_euler(Vector3(0.0, 0.0, roll)), Vector3(0.0, BOARD_Y, 0.0))
 	var pl := _press_local()
@@ -2002,6 +2024,11 @@ func _board_stand_xf() -> Transform3D:
 		var shift := -pv * _press_bs_vis * minf(absf(pl), 1.0)
 		press_tip = xf * (pv + shift)          # Brett-Ende, mit dem geslidet wird (Kamera)
 		xf *= Transform3D(b, pv - b * pv + shift)
+	if nolli and _nolli_vis > 0.001:
+		# Nolli: Brett kippt um die Nose (Ende Richtung Seil), das Tail hebt ab
+		var nv := Vector3(0.0, 0.0, -0.62 * _nolli_lead)
+		var nb := Basis(Vector3.RIGHT, -_nolli_vis * _nolli_lead)
+		xf *= Transform3D(nb, nv - nb * nv)
 	if goofy:
 		# Goofy: rechter Fuß vorne – das Twin-Tip-Brett steht einfach andersherum unter dem Fahrer
 		xf *= Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
@@ -2105,6 +2132,11 @@ func _pose_stand() -> void:
 	var foot_front := board * Wakeboard.ankle_local(true)    # linker Fuß Richtung Nose
 	var foot_back := board * Wakeboard.ankle_local(false)
 	var mid := (foot_front + foot_back) * 0.5
+	if _nolli_vis > 0.001:
+		# Nolli: Becken hebt nur wenig mit, die Knie ziehen das Tail hoch
+		var flat := _board_stand_xf(false)
+		var mid0 := (flat * Wakeboard.ankle_local(true) + flat * Wakeboard.ankle_local(false)) * 0.5
+		mid = mid0.lerp(mid, NOLLI_PELVIS)
 	var hip_h := 0.84 - 0.36 * _crouch            # tief in den Knien: Becken ~0,5 m über den Füßen
 	var lean_local := Vector3(-sin(_lean_roll) * 0.55, hip_h * cos(_lean_roll) * cos(_lean_pitch), sin(_lean_pitch) * 0.4)
 	var pelvis_world := mid + rb * lean_local
