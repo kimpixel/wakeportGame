@@ -47,6 +47,12 @@ var _sink_vis := 0.0
 
 const UPS_TIME := 0.45
 var _ups := 0.0                  # Restzeit des "Ups"-Wacklers
+const AIR_KNEES := 0.6           # Sprung: am höchsten Punkt so tief in den Knien, zur Landung wieder gestreckt
+const LAND_TIME := 0.4           # Landung abfedern: so lange in die Knie und wieder hoch
+var _absorb := 0.0               # Restzeit des Abfederns
+var _absorb_amt := 0.0           # wie tief (nach Fallgeschwindigkeit)
+var _launch_kind := ""           # Absprung von: water, kicker, safety, feature (für den Namen)
+var _ground_kind := "water"      # zuletzt befahrene Fläche (wie _launch_kind)
 
 enum Mode { WATER, AIR, CRASHED }
 
@@ -1075,6 +1081,7 @@ func _rope_force(delta: float) -> Vector3:
 
 
 func _step_water(delta: float, rope: Vector3) -> void:
+	_ground_kind = _launch_surface()     # worauf man fährt: beim Abheben ist man oft schon über die Kante hinaus
 	var f := forward()
 	var r := right()
 	var vh := Vector3(vel.x, 0.0, vel.z)
@@ -1397,6 +1404,7 @@ func _pop() -> void:
 ## Sprung-Haltung (Raley-Schwung, Überschlag, Press) sofort zurücksetzen – nach Sturz, Absaufen
 ## oder Neustart darf die Figur nicht verdreht bleiben.
 func _clear_air_pose() -> void:
+	_absorb = 0.0
 	_raley = false
 	_raley_ang = 0.0
 	_flip = 0.0
@@ -1408,6 +1416,7 @@ func _clear_air_pose() -> void:
 
 
 func _enter_air() -> void:
+	_launch_kind = _ground_kind
 	_prev_on_feature = false
 	mode = Mode.AIR
 	air_time = 0.0
@@ -1558,6 +1567,9 @@ func _land(surf: float) -> void:
 	if absf(wrapf(_flip, -PI, PI)) > FLIP_LAND_TOL:
 		crash("Überschlag nicht geschafft!")
 		return
+	if air_time > 0.25:
+		_absorb = LAND_TIME                  # Landung in den Knien abfedern, je härter, desto tiefer
+		_absorb_amt = clampf(-vel.y / 7.0, 0.3, 0.75)
 	pos.y = surf
 	vel.y = 0.0
 	vel.x *= 0.97
@@ -1586,7 +1598,13 @@ func _land(surf: float) -> void:
 		if half_turns > 0:
 			parts.append(str(half_turns * 180))
 		if parts.is_empty():
-			parts.append("Ollie" if _popped else "Air")
+			match _launch_kind:
+				"kicker":
+					parts.append("Kicker Air")
+				"safety":
+					parts.append("Safety Air")
+				_:
+					parts.append("Ollie" if _popped else "Air")
 		if jump_start != "":
 			pts += DOCK_YANK_POINTS
 		_score_trick(" ".join(parts), pts)
@@ -1671,7 +1689,8 @@ func _process(delta: float) -> void:
 		Mode.CRASHED:
 			target_roll = 1.45
 		Mode.AIR:
-			target_crouch = 0.3
+			# gestreckt abspringen, am höchsten Punkt am tiefsten in den Knien, vor der Landung wieder strecken
+			target_crouch = AIR_KNEES * sin(PI * clampf(_air_phase() / 0.85, 0.0, 1.0))
 			if _jump_start == "nolli":
 				# Nolli: Knie angezogen, Oberkörper nach vorne zum Griff, zur Landung wieder aufrichten
 				var s := _air_phase()
@@ -1722,6 +1741,12 @@ func _process(delta: float) -> void:
 		var w := sin(PI * clampf(1.0 - _ups / UPS_TIME, 0.0, 1.0))
 		target_crouch = maxf(target_crouch, 0.38 * w)
 		target_pitch += 0.3 * w
+	if _absorb > 0.0:
+		_absorb -= delta
+		if mode == Mode.AIR or mode == Mode.CRASHED:
+			_absorb = 0.0
+		var wa := sin(PI * clampf(1.0 - _absorb / LAND_TIME, 0.0, 1.0))
+		target_crouch = maxf(target_crouch, _absorb_amt * wa)
 	var raley_target := 0.0
 	if mode == Mode.AIR and _raley:
 		var s := _air_phase()
@@ -1997,6 +2022,19 @@ func _air_phase() -> float:
 	var h := maxf(pos.y - maxf(_board_surface(), 0.0), 0.0)
 	var rest := (vel.y + sqrt(vel.y * vel.y + 2.0 * GRAVITY * h)) / GRAVITY
 	return clampf(air_time / maxf(air_time + rest, 0.01), 0.0, 1.0)
+
+
+## Wovon man abspringt (für den Trick-Namen): aus dem Wasser = Ollie, vom Kicker (auch Cheese Wedge,
+## Bump-Seite, Transition Curb) oder von einer Safety/Auffahrt; sonst von einem Slider o. Ä.
+func _launch_surface() -> String:
+	var p: FeaturePart = features.part_at(pos.x, pos.z) if (features and pos.y > 0.05) else null
+	if p == null:
+		return "water"
+	if (p.type == "ramp" and not p.part_id.contains("safety")) or p.kicker or (p.type == "bump" and p.on_ramp(pos)):
+		return "kicker"
+	if p.on_ramp(pos) or p.part_id.contains("safety"):
+		return "safety"
+	return "feature"
 
 
 ## Bezugsrahmen der Figur: normal der Fahrer selbst, beim Raley um den Griff geschwungen

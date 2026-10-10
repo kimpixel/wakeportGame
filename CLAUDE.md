@@ -223,7 +223,7 @@ rechts DRIFT über ▲ ▼; nach Sturz Bildschirm halten = schwimmen, DRIFT = so
 global; Web-Audio-Hacks nur auf Touch-Geräten (früher hakte sonst die Desktop-Tastatur).
 
 Tricks/Optik:
-- **Ollie** = normaler Sprung. **Raley** nur mit viel Power: > 40 km/h, Sprung voll aufgeladen,
+- **Ollie** = normaler Sprung aus dem Wasser; Name nach Absprung (`Rider._launch_surface`): Ollie / **Kicker Air** / **Safety Air**. Haltung: in der Luft am höchsten Punkt am tiefsten in den Knien (`AIR_KNEES`), vor der Landung gestreckt, Landung abfedern (`LAND_TIME`). **Raley** nur mit viel Power: > 40 km/h, Sprung voll aufgeladen,
   **kein Feature voraus** (damit man schräg auf Features springen kann). Pose nach Fotoserie:
   Körper schwingt um den Griff, am höchsten Punkt kopfüber unter dem Brett, Hohlkreuz, Knie
   angewinkelt, **Griff vor dem Gesicht** mit angewinkelten Armen (nicht hinter dem Kopf).
