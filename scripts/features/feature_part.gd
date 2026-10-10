@@ -164,7 +164,7 @@ func _show_slick(on: bool) -> void:
 		return
 	if slick != "":
 		_slick_mesh = _paint_surface(func(w: Vector3) -> bool: return is_slick_at(w), Color(0.05, 0.35, 1.0, 0.7))
-	if type == "ramp" or type == "bump" or ramp_in > 0.0 or ramp_out > 0.0:
+	if type == "ramp" or type == "bump" or ramp_in > 0.0 or ramp_out > 0.0 or safety_slope > 0.0 or kicker:
 		_ramp_mesh = _paint_surface(func(w: Vector3) -> bool: return type == "ramp" or on_ramp(w), Color(1.0, 0.45, 0.05, 0.75))
 
 
