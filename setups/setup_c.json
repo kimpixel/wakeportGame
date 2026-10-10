@@ -20,7 +20,7 @@
     { "part": "kicker_m",        "s": 67.1,  "x": -7.0, "dir": "in", "yaw": -8 },
     { "part": "bump",            "s": 67.1,  "x": -4.0 },
     { "part": "port_plaza",      "s": 113.0, "x": 5.1, "dir": "in" },
-    { "part": "cheese_wedge",    "s": 104.05, "x": 5.1, "dir": "out", "height": 0.75 },
+    { "part": "cheese_wedge",    "s": 104.05, "x": 5.1, "dir": "out" },
     { "part": "kicker_m",        "s": 67.8,  "x": 5.0,  "dir": "in", "yaw": -4 }
   ]
 }

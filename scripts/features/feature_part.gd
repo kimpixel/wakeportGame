@@ -42,6 +42,8 @@ var side_ramp := 0.0           # seitliche Transition auf der Seilseite (Breite 
 var profile: Array = []         # Block: Längsprofil [[Abstand vom Anfang (m), Höhe], …] statt height/height_end
 var top_rail := 0.0             # Block: Oberseite als schwarzes Halbrund-Rail (Radius, z. B. A-Frame Rail); profile = Unterkante der Rundung
 var safety_slope := 0.0         # Block: steile, gerade Safety an beiden Enden (Steigung), schneidet oben ins Halbrund
+var safety_back_slope := NAN    # Block: Steigung der Safety hinten (NAN = wie vorne, 0 = keine)
+var safety_back_h := ENTRY      # Block: Höhe, auf der die Safety hinten beginnt (z. B. auf der Box der Port Plaza)
 var lip := ENTRY               # Höhe, auf der Auffahrten beginnen (ENTRY = unter Wasser, > 0 = sichtbare Kante)
 var side_lip := NAN            # dasselbe für die seitliche Auffahrt (NAN = wie lip)
 var side_curve := 2.0          # Form der seitlichen Auffahrt: 1 = gerade Schräge, 2 = konkav
@@ -91,6 +93,8 @@ func setup(id: String, p: Dictionary) -> void:
 	profile = p.get("profile", [])
 	top_rail = p.get("top_rail", 0.0)
 	safety_slope = p.get("safety_slope", 0.0)
+	safety_back_slope = p.get("safety_back_slope", safety_slope)
+	safety_back_h = p.get("safety_back_h", ENTRY)
 	round_top = p.get("round_top", false)
 	black_top = p.get("black_top", [])
 	slick = p.get("slick", "")
@@ -432,9 +436,13 @@ func _with_top_rail(u: float, v: float, h: float) -> float:
 	return h
 
 
-## Höhe der Safety-Ebene (steigt von beiden Enden aus dem Wasser an).
+## Höhe der Safety-Ebene (steigt von beiden Enden an, vorne aus dem Wasser).
 func _safety_h(u: float) -> float:
-	return ENTRY + safety_slope * (length * 0.5 - absf(u))
+	if u > 0.0:
+		if safety_back_slope <= 0.0:
+			return INF
+		return safety_back_h + safety_back_slope * (length * 0.5 - u)
+	return ENTRY + safety_slope * (length * 0.5 + u)
 
 
 ## Liegt (u, v) auf der Safety statt auf dem Halbrund-Rail?
@@ -708,7 +716,8 @@ func _build_rail_top(white: Material, black: Material) -> void:
 	var hw := width * 0.5
 	var nv := 16
 	var vs: Array[float] = []
-	var ub: Array[float] = []          # Grenze vorne (u < 0); hinten gespiegelt
+	var ub: Array[float] = []          # Grenze vorne (u < 0)
+	var ubb: Array[float] = []         # Grenze hinten (u > 0; hl = keine Safety hinten)
 	for j in nv + 1:
 		var v := lerpf(-hw + 0.001, hw - 0.001, float(j) / nv)
 		vs.append(v)
@@ -721,6 +730,15 @@ func _build_rail_top(white: Material, black: Material) -> void:
 			else:
 				hi = mid
 		ub.append(hi)
+		lo = 0.0
+		hi = hl
+		for _k in 30:
+			var mid := (lo + hi) * 0.5
+			if _on_safety(mid, v):
+				hi = mid
+			else:
+				lo = mid
+		ubb.append(hi)
 	var pt := func(u: float, v: float) -> Vector3:
 		return Vector3(v, maxf(height_local(clampf(u, -hl + 0.001, hl - 0.001), v), BOTTOM + 0.05), -u)
 	var strip := func(st: SurfaceTool, u_a: Callable, u_b: Callable, n: int) -> void:
@@ -736,16 +754,21 @@ func _build_rail_top(white: Material, black: Material) -> void:
 	var front := func(_j: int) -> float: return -hl
 	var back := func(_j: int) -> float: return hl
 	var b_in := func(j: int) -> float: return ub[j]
-	var b_out := func(j: int) -> float: return -ub[j]
+	var b_out := func(j: int) -> float: return ubb[j]
+	# black_top [von, bis]: hinter "bis" ist die Oberseite wieder weiß (z. B. runde Safety hinten an der Plaza Rail)
+	var black_end := hl
+	if black_top.size() == 2:
+		black_end = clampf(float(black_top[1]) - hl, -hl, hl)
+	var b_black := func(j: int) -> float: return minf(b_out.call(j), black_end)
 	for part: Array in [[white, true], [black, false]]:
 		var st := SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
 		st.set_smooth_group(1)
 		if part[1]:
 			strip.call(st, front, b_in, 4)
-			strip.call(st, b_out, back, 4)
+			strip.call(st, b_black, back, int((hl - black_end) * 8.0) + 4)
 		else:
-			strip.call(st, b_in, b_out, int(length * 4.0))
+			strip.call(st, b_in, b_black, int(length * 4.0))
 		st.generate_normals()
 		var mi := MeshInstance3D.new()
 		mi.mesh = st.commit()

@@ -290,8 +290,8 @@ Features/Setups:
   vorne/hinten steile gerade Safety, die ins Halbrund schneidet (`top_rail`, `safety_slope`); Oberkante 1,5 m.
   Pyramid: Auffahrten vorne/hinten sind Transitions (konkav, beginnen unter Wasser), seitlich 12 cm Kante (`side_lip`).
 - Pop auf Rampen/Kickern nie schwächer als ein Ollie (`Rider._pop`).
-- **Port Plaza** = ein Modul (kein eigener Plaza Kicker), Maße verbindlich nach Plan „Juli & August“: Slider mit runder Oberkante und
-  runder Safety vorne/hinten, hinten breiter Teil aus Safety + Rampe; dahinter meist ein Cheese Wedge (0,75 m) – Plaza + Wedge ist kein Hack.
+- **Port Plaza** = ein Modul (kein eigener Plaza Kicker), Slider mit halbrunder Oberkante (0,9 → 1,55 m), vorne/hinten
+  steile gerade Safety ins Halbrund (wie A-Frame Rail), hinten breiter Teil aus Safety 1,2 m + Kicker-Schräge 2,35 m auf 1,1 m; dahinter meist ein normaler Cheese Wedge (1,1 m, keine eigene Höhe) – Plaza + Wedge ist kein Hack.
   Interne Teile `_plaza_*` (mit `_` = nicht im Editor).
 - Uprail 7,5 m. Transition Rail: Rail 28 cm dick, im flachen Abschluss (ca. 26 cm) **versenkt**,
   ragt 7 cm heraus, von allen Seiten befahrbar, löst keinen Sturz aus.
