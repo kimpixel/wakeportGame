@@ -56,6 +56,7 @@ const ROPE_LENGTH := 16.0       # Zugseil Griff bis Carrier (Standard)
 const ROPE_STIFFNESS := 2600.0
 const ROPE_DAMPING := 250.0
 const HANDLE_HEIGHT := 1.0
+const BRIDLE_LEN := 0.3          # Dreieck am Griff: Leinen laufen nach 30 cm zum Seil zusammen
 const CRASH_TENSION := 5400.0
 const AIR_MAX_TENSION := 1400.0      # in der Luft federn die Arme den Seilzug ab
 
@@ -266,6 +267,8 @@ var _ragdoll: Ragdoll
 var _rig: HumanRig
 var _helmet: Node3D
 var _handle: MeshInstance3D
+var _bridle_l: MeshInstance3D   # Dreieck: Leinen von den Griff-Enden zur Spitze
+var _bridle_r: MeshInstance3D
 var _rope_mesh: ImmediateMesh
 var _rope_mat: StandardMaterial3D
 var _spray: CPUParticles3D
@@ -297,8 +300,10 @@ func _ready() -> void:
 	_arm_l = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.045, skin)
 	_arm_r = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.045, skin)
 	_handle = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.017, black)
+	_bridle_l = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.005, black)
+	_bridle_r = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.005, black)
 	_load_model()
-	for n: Node3D in [_arm_l, _arm_r, _handle]:
+	for n: Node3D in [_arm_l, _arm_r, _handle, _bridle_l, _bridle_r]:
 		n.top_level = true
 
 	_rope_mesh = ImmediateMesh.new()
@@ -1804,7 +1809,11 @@ func _process(delta: float) -> void:
 		var body := _body_pivot.global_transform
 		Util.place_beam(_arm_l, body * Vector3(0.0, 1.38, 0.17), handle_pos - bar_axis * 0.08)
 		Util.place_beam(_arm_r, body * Vector3(0.0, 1.38, -0.17), handle_pos + bar_axis * 0.08)
-	_draw_rope(handle_pos, anchor)
+	# Seil hängt nicht mittig am Griff: zwei Leinen von den Griff-Enden laufen nach ca. 30 cm zusammen (Dreieck)
+	var apex := handle_pos + (anchor - handle_pos).normalized() * BRIDLE_LEN
+	Util.place_beam(_bridle_l, handle_pos - bar_axis * 0.19, apex)
+	Util.place_beam(_bridle_r, handle_pos + bar_axis * 0.19, apex)
+	_draw_rope(apex, anchor)
 
 	_update_spray(speed)
 
@@ -2380,7 +2389,7 @@ func _draw_rope(a: Vector3, b: Vector3) -> void:
 	_rope_mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, _rope_mat)
 	var chord := a.distance_to(b)
 	# Durchhang einer Parabel mit gleicher Bogenlänge wie das (lose) Seil
-	var slack := maxf(rope_length - chord, 0.0)
+	var slack := maxf(rope_length - BRIDLE_LEN - chord, 0.0)
 	var sag := sqrt(3.0 * chord * slack / 8.0)
 	for i in 21:
 		var t := i / 20.0
