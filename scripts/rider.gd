@@ -16,7 +16,8 @@ signal rope_lost(reason: String) # Handle verloren (kein Sturz): ausgleiten, abs
 signal grabbed                   # nach dem Schwimmen die Handle wieder gegriffen
 signal sank                      # zu langsam geworden und abgesoffen: wie ein Wasserstart
 signal landed_on_dock            # aus der Luft auf dem Startsteg gelandet (geheimer Erfolg)
-signal skipped                   # Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
+signal dock_yanked               # Sprung-Start: Seil reißt einen vom Steg
+signal skipped                   #Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
 ## Für die Spielmodi (Challenge): Landung nach einem Sprung bzw. Ende eines Slides, mit Messwerten
 signal jump_landed(info: Dictionary)   # raley, air_time, half_turns, rolls, popped, points
 signal slide_ended(info: Dictionary)   # part, time, dist, dist_5050, dist_bs, switches, press, press_nose, press_tail, bs_share
@@ -121,6 +122,12 @@ const LOCK_PULL := 4.0          # 1/s: Zug zur Slide-Spur
 const BOARD_Y := 0.012          # Unterkante Brettmitte über der Fahrerposition
 const ARM_REACH := 0.88         # Griff höchstens so weit weg (Anteil der Armlänge) – Arme leicht gebeugt
 const BOARD_HALF := 0.35
+# Sprung-Start: auf dem Startsteg ↓ halten = gegen das anfahrende Seil stemmen. Der Seilzug lädt sich
+# bis zur maximalen Seilspannung auf (Anteil der Seilzug-Grenze); ist sie erreicht, reißt das Seil
+# einen nach vorne vom Steg -> normaler Sprung plus Auflade-Power. Vorher loslassen: ohne Sprung.
+const DOCK_BRACE_MAX := 0.9
+const DOCK_YANK_LIFT := 2.6      # m/s zusätzliche Steiggeschwindigkeit bei voller Ladung
+const DOCK_YANK_POINTS := 100
 
 const START_POS := Vector3(1.7, Lake.DOCK_Y, -10.0)   # auf dem Startsteg vor der T2-Hütte
 
@@ -209,6 +216,11 @@ var _edge_vis := 0.0
 var _release_vis := 0.0
 var _jump_held := false
 var _load := 0.0
+var dock_charge := 0.0          # Sprung-Start: aufgeladener Seilzug (0..1), fürs HUD
+var _brace := false             # stemmt sich auf dem Steg gegen das Seil (↓)
+var _yanked := false            # Seil hat losgerissen: Absprung, sobald die Spannung raus ist
+var _yank_t := 0.0
+var _jump_start := false        # aktueller Sprung ist ein Sprung-Start (Name, Bonus)
 var _spin_accum := 0.0
 var _raley := false            # aktueller Sprung ist ein Raley
 var _raley_side := -1.0        # Schwung zur Seite (lokal ±X), weg vom Seil
@@ -326,6 +338,7 @@ func reset() -> void:
 	tension = 0.0
 	tension_smooth = 0.0
 	_load = 0.0
+	_end_brace()
 	_spin_accum = 0.0
 	crash_reason = ""
 	air_time = 0.0
@@ -601,6 +614,7 @@ func step(delta: float) -> void:
 		_update_free_handle(delta)
 		return
 	var rope_force := _rope_force(delta)
+	_step_dock_start(delta)
 	# Deep-Water-Start: liegen bleiben, bis das Seil spannt, dann langsam aufstehen
 	if attached and _getup < 1.0 and (tension_smooth > 250.0 or horizontal_speed() > 2.0):
 		_getup = minf(_getup + delta / 1.6, 1.0)
@@ -620,6 +634,47 @@ func step(delta: float) -> void:
 		if mode == Mode.WATER and horizontal_speed() < SINK_SPEED:
 			_sink()
 		_update_free_handle(delta)
+
+
+## Sprung-Start auf dem Startsteg: ↓ halten = gegen das anfahrende Seil stemmen (man bleibt stehen,
+## der Seilzug steigt). Erreicht er die maximale Seilspannung, reißt das Seil los: die gedehnte
+## Leine schleudert einen nach vorne, und sobald die Spannung raus ist (spätestens an der
+## Stegkante), springt man ab – normaler voller Sprung plus Auflade-Power.
+func _step_dock_start(delta: float) -> void:
+	var on_dock := mode == Mode.WATER and attached and _in_dock(pos.x, pos.z) and pos.y > start_pos.y - 0.05
+	if _yanked:
+		_yank_t += delta
+		if mode != Mode.WATER or not attached:
+			_end_brace()
+		elif not on_dock or tension < 0.3 * _brace_limit() or _yank_t > 0.5:
+			_end_brace()
+			_load = 1.0
+			_pop()
+			vel.y += DOCK_YANK_LIFT
+			_load = 0.0
+			_jump_start = true
+		return
+	var want := on_dock and not autopilot and _pitch_in < -0.5 and cable.state != CableSystem.State.IDLE
+	if want and not _brace and horizontal_speed() > 1.5:
+		want = false                       # schon losgerutscht: zu spät zum Gegenhalten
+	_brace = want
+	dock_charge = clampf(tension_smooth / _brace_limit(), 0.0, 1.0) if _brace else 0.0
+	if _brace and tension_smooth >= _brace_limit():
+		_brace = false
+		_yanked = true
+		_yank_t = 0.0
+		dock_charge = 1.0
+		dock_yanked.emit()
+
+
+func _brace_limit() -> float:
+	return minf(crash_tension, CRASH_TENSION) * DOCK_BRACE_MAX
+
+
+func _end_brace() -> void:
+	_brace = false
+	_yanked = false
+	dock_charge = 0.0
 
 
 ## Sinkpegel: steigt, wenn weder Tempo noch Seilzug das Brett tragen. Voll = abgesoffen ->
@@ -1027,6 +1082,9 @@ func _step_water(delta: float, rope: Vector3) -> void:
 		force = Vector3(rope.x, 0.0, rope.z) - dir_before * drag
 	vel.x += force.x / MASS * delta
 	vel.z += force.z / MASS * delta
+	if _brace:
+		vel.x = 0.0                    # Sprung-Start: Fersen gegen den Steg gestemmt
+		vel.z = 0.0
 	if slick and not drift and dir_before != Vector3.ZERO:
 		var keep := dir_before * maxf(Vector3(vel.x, 0.0, vel.z).dot(dir_before), 0.0)
 		vel.x = keep.x
@@ -1288,6 +1346,7 @@ func _clear_air_pose() -> void:
 	_tuck = 0.0
 	_press_vis = 0.0
 	_press_bs_vis = 0.0
+	_jump_start = false
 
 
 func _enter_air() -> void:
@@ -1450,7 +1509,9 @@ func _land(surf: float) -> void:
 	var rolls := int(round(absf(_flip) / TAU))
 	var flip_dir := signf(_flip)
 	_flip = 0.0
-	if air_time > 0.5 or half_turns > 0 or rolls > 0:
+	var jump_start := _jump_start
+	_jump_start = false
+	if air_time > 0.5 or half_turns > 0 or rolls > 0 or jump_start:
 		# Name aus den Teilen, z. B. "Raley 360", "Backroll", "Double Frontroll 180"
 		var parts: Array[String] = []
 		var pts := int(air_time * AIR_PER_S) + half_turns * SPIN_PER_180 + rolls * FLIP_POINTS
@@ -1464,6 +1525,9 @@ func _land(surf: float) -> void:
 			parts.append(str(half_turns * 180))
 		if parts.is_empty():
 			parts.append("Ollie" if _popped else "Air")
+		if jump_start:
+			parts.insert(0, "Sprung-Start")
+			pts += DOCK_YANK_POINTS
 		_score_trick(" ".join(parts), pts)
 		jump_landed.emit({"raley": _raley, "air_time": air_time, "half_turns": half_turns,
 			"rolls": rolls, "popped": _popped, "points": pts})
@@ -1564,6 +1628,9 @@ func _process(delta: float) -> void:
 			target_crouch = minf(_load * 0.95 + _edge_vis * 0.12, 1.0)
 			if speed < 2.5 and not _in_dock(pos.x, pos.z):
 				target_crouch = maxf(target_crouch, 0.3)
+			if _brace or _yanked:
+				# Sprung-Start: tief in die Knie, gegen das Seil gestemmt
+				target_crouch = maxf(target_crouch, 0.35 + 0.5 * dock_charge)
 	# "Ups": kurz in die Knie und nach vorne geruckt (über Boje/Steg gerumpelt)
 	if _ups > 0.0:
 		_ups -= delta

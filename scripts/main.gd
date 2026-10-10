@@ -1039,6 +1039,8 @@ func _process(_delta: float) -> void:
 				_countdown_start()
 		elif mobile.active and not mobile.tilt_available:
 			hud.set_center("Neigungssensor nicht verfügbar –\nBewegungssensoren im Browser erlauben")
+		elif rider.dock_charge > 0.0:
+			hud.set_center("SPRUNG-START  %d %%" % roundi(rider.dock_charge * 100.0))
 		else:
 			hud.set_center("")
 
