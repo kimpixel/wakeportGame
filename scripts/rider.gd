@@ -57,6 +57,8 @@ const ROPE_STIFFNESS := 2600.0
 const ROPE_DAMPING := 250.0
 const HANDLE_HEIGHT := 1.0
 const BRIDLE_LEN := 0.3          # Dreieck am Griff: Leinen laufen nach 30 cm zum Seil zusammen
+const BRIDLE_HALF := 0.19        # Leinen sitzen an den Griff-Enden (halbe Griffbreite)
+const BRIDLE_SEGS := 6           # Glieder je Leine (zum Durchhängen)
 const CRASH_TENSION := 5400.0
 const AIR_MAX_TENSION := 1400.0      # in der Luft federn die Arme den Seilzug ab
 
@@ -267,8 +269,9 @@ var _ragdoll: Ragdoll
 var _rig: HumanRig
 var _helmet: Node3D
 var _handle: MeshInstance3D
-var _bridle_l: MeshInstance3D   # Dreieck: Leinen von den Griff-Enden zur Spitze
-var _bridle_r: MeshInstance3D
+var _bridle: Array[MeshInstance3D] = []   # Dreieck: Glieder der zwei Leinen (Griff-Enden -> Spitze)
+var _apex := Vector3.INF         # Spitze des Dreiecks (Massepunkt, Verlet)
+var _apex_prev := Vector3.ZERO
 var _rope_mesh: ImmediateMesh
 var _rope_mat: StandardMaterial3D
 var _spray: CPUParticles3D
@@ -300,10 +303,11 @@ func _ready() -> void:
 	_arm_l = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.045, skin)
 	_arm_r = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.045, skin)
 	_handle = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.017, black)
-	_bridle_l = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.005, black)
-	_bridle_r = Util.beam(self, Vector3.ZERO, Vector3.UP, 0.005, black)
+	for i in BRIDLE_SEGS * 2:
+		_bridle.append(Util.beam(self, Vector3.ZERO, Vector3.UP, 0.005, black))
+		_bridle[i].top_level = true
 	_load_model()
-	for n: Node3D in [_arm_l, _arm_r, _handle, _bridle_l, _bridle_r]:
+	for n: Node3D in [_arm_l, _arm_r, _handle]:
 		n.top_level = true
 
 	_rope_mesh = ImmediateMesh.new()
@@ -1810,9 +1814,12 @@ func _process(delta: float) -> void:
 		Util.place_beam(_arm_l, body * Vector3(0.0, 1.38, 0.17), handle_pos - bar_axis * 0.08)
 		Util.place_beam(_arm_r, body * Vector3(0.0, 1.38, -0.17), handle_pos + bar_axis * 0.08)
 	# Seil hängt nicht mittig am Griff: zwei Leinen von den Griff-Enden laufen nach ca. 30 cm zusammen (Dreieck)
-	var apex := handle_pos + (anchor - handle_pos).normalized() * BRIDLE_LEN
-	Util.place_beam(_bridle_l, handle_pos - bar_axis * 0.19, apex)
-	Util.place_beam(_bridle_r, handle_pos + bar_axis * 0.19, apex)
+	var end_l := handle_pos - bar_axis * BRIDLE_HALF
+	var end_r := handle_pos + bar_axis * BRIDLE_HALF
+	var apex := _update_apex(end_l, end_r, anchor, delta)
+	var side := Vector2(BRIDLE_LEN, BRIDLE_HALF).length()
+	_draw_line_segs(0, end_l, apex, side)
+	_draw_line_segs(BRIDLE_SEGS, end_r, apex, side)
 	_draw_rope(apex, anchor)
 
 	_update_spray(speed)
@@ -2382,6 +2389,48 @@ func _pose_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
 	_rig.grip("r", skel_inv * back, skel_inv.basis * (handle_pos - back),
 		skel_inv * (sh_r + Vector3.DOWN * 0.6 + (sh_r - mid_sh).normalized() * 0.25))
 	return handle_pos
+
+
+## Spitze des Dreiecks ohne Schwerkraft (nur gedämpfte Trägheit), gehalten von drei Seilen (nur Zug, kein Druck):
+## den zwei Leinen zu den Griff-Enden und dem Zugseil zum Carrier. Schlaffes Seil -> Spitze bleibt, wo sie ist, Leinen hängen
+## durch; unter Zug liegt alles gerade.
+func _update_apex(a: Vector3, b: Vector3, anchor: Vector3, delta: float) -> Vector3:
+	var mid := (a + b) * 0.5
+	var side := Vector2(BRIDLE_LEN, BRIDLE_HALF).length()
+	# Zugseil: Spiel aus der Physik (die gezeichnete Handle sitzt nicht genau auf Seillänge); gespannt -> Spitze gerade vorne
+	var r_main := mid.distance_to(anchor) - BRIDLE_LEN + rope_slack()
+	if _apex == Vector3.INF or _apex.distance_to(mid) > 2.0:     # erster Frame / Neustart / versetzt
+		_apex = mid + (anchor - mid).normalized() * BRIDLE_LEN
+		_apex_prev = _apex
+	var vel := (_apex - _apex_prev) * pow(0.97, delta * 60.0)   # gedämpft, unabhängig von der Bildrate
+	_apex_prev = _apex
+	_apex += vel
+	for i in 6:
+		_apex = _rope_limit(_apex, anchor, r_main)
+		_apex = _rope_limit(_apex, a, side)
+		_apex = _rope_limit(_apex, b, side)
+		_apex.y = maxf(_apex.y, 0.03)
+	return _apex
+
+
+## Seil-Bedingung: p höchstens len von fix entfernt (Seil zieht nur).
+static func _rope_limit(p: Vector3, fix: Vector3, len: float) -> Vector3:
+	var d := p - fix
+	return fix + d * (len / d.length()) if d.length() > len else p
+
+
+## Eine Leine aus Gliedern zeichnen, durchhängend je nach Spiel (Länge minus Abstand).
+func _draw_line_segs(first: int, a: Vector3, b: Vector3, length: float) -> void:
+	var chord := a.distance_to(b)
+	var slack := maxf(length - chord, 0.0)
+	var sag := maxf(sqrt(3.0 * chord * slack / 8.0), slack * 0.5)
+	var prev := a
+	for i in BRIDLE_SEGS:
+		var t := float(i + 1) / BRIDLE_SEGS
+		var p := a.lerp(b, t)
+		p.y = maxf(p.y - 4.0 * sag * t * (1.0 - t), 0.03)
+		Util.place_beam(_bridle[first + i], prev, p)
+		prev = p
 
 
 func _draw_rope(a: Vector3, b: Vector3) -> void:
