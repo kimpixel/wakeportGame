@@ -47,7 +47,7 @@ var _sink_vis := 0.0
 
 const UPS_TIME := 0.45
 var _ups := 0.0                  # Restzeit des "Ups"-Wacklers
-const AIR_KNEES := 0.95          # Sprung: am höchsten Punkt so tief in den Knien, zur Landung wieder gestreckt
+const AIR_KNEES := 1.5           # Sprung: am höchsten Punkt so tief in den Knien, zur Landung wieder gestreckt
 const LAND_TIME := 0.4           # Landung abfedern: so lange in die Knie und wieder hoch
 var _absorb := 0.0               # Restzeit des Abfederns
 var _absorb_amt := 0.0           # wie tief (nach Fallgeschwindigkeit)
@@ -1690,7 +1690,7 @@ func _process(delta: float) -> void:
 			target_roll = 1.45
 		Mode.AIR:
 			# gestreckt abspringen, am höchsten Punkt am tiefsten in den Knien, vor der Landung wieder strecken
-			target_crouch = AIR_KNEES * sin(PI * clampf(_air_phase() / 0.85, 0.0, 1.0))
+			target_crouch = AIR_KNEES * sqrt(sin(PI * clampf(_air_phase() / 0.85, 0.0, 1.0)))   # über 1: Knie bis fast zur Brust
 			if _jump_start == "nolli":
 				# Nolli: Knie angezogen, Oberkörper nach vorne zum Griff, zur Landung wieder aufrichten
 				var s := _air_phase()
@@ -1776,7 +1776,7 @@ func _process(delta: float) -> void:
 	if _rig:
 		_pose_human()
 	_body_pivot.rotation = Vector3(_lean_pitch, 0.0, _lean_roll)
-	_body_pivot.scale = Vector3(1.0, 1.0 - 0.5 * _crouch * (1.0 - _raley_ang / RALEY_MAX), 1.0)   # beim Raley nicht stauchen
+	_body_pivot.scale = Vector3(1.0, 1.0 - 0.5 * minf(_crouch, 1.0) * (1.0 - _raley_ang / RALEY_MAX), 1.0)   # beim Raley nicht stauchen
 	_body_pivot.position.y = -0.3 if mode == Mode.CRASHED else 0.06
 	if _ragdoll and _ragdoll.active:
 		_board_on_feet()
@@ -1794,13 +1794,13 @@ func _process(delta: float) -> void:
 	var handle_pos: Vector3
 	var to_anchor := Vector3.FORWARD
 	if attached:
-		var hand := vpos + Vector3(0.0, HANDLE_HEIGHT * (1.0 - _crouch * 0.5), 0.0)
+		var hand := vpos + Vector3(0.0, HANDLE_HEIGHT * (1.0 - minf(_crouch, 1.0) * 0.5), 0.0)
 		to_anchor = (anchor - hand).normalized()
 		handle_pos = hand + to_anchor * 0.35
 		if _rig:
 			# Realistischer Griff: vor der vorderen Hüfte, Arme fast gestreckt
 			var rb := global_transform.basis.orthonormalized()
-			handle_pos = vpos + rb * Vector3(0.2 * _facing(), 0.86 - 0.34 * _crouch, -0.2) + to_anchor * 0.5
+			handle_pos = vpos + rb * Vector3(0.2 * _facing(), 0.86 - 0.34 * minf(_crouch, 1.0), -0.2) + to_anchor * 0.5
 			if _getup < 1.0:
 				handle_pos = _dw_handle.lerp(handle_pos, smoothstep(0.0, 1.0, _getup))
 			if _raley_ang > 0.001:
@@ -2042,7 +2042,7 @@ func _launch_surface() -> String:
 func _pose_frame() -> Transform3D:
 	var xf := global_transform
 	if _raley_ang > 0.001:
-		var p := Vector3(0.2 * _facing(), 0.86 - 0.34 * _crouch, -0.2)      # Griff vor der vorderen Hüfte
+		var p := Vector3(0.2 * _facing(), 0.86 - 0.34 * minf(_crouch, 1.0), -0.2)      # Griff vor der vorderen Hüfte
 		var r := Basis(Vector3.BACK, _raley_side * _raley_ang)
 		xf *= Transform3D(r, p - r * p)
 	if absf(_flip) > 0.001:
