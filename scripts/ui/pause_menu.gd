@@ -1,14 +1,16 @@
 class_name PauseMenu
 extends CanvasLayer
 ## Pause (Esc): hält das Spiel an (SceneTree.paused) und zeigt ein Fenster im HUD-Stil mit
-## Weiter, Hilfe und Startseite. Läuft selbst auch während der Pause (PROCESS_MODE_ALWAYS).
+## Weiter, Hilfe, Nächster Titel (eigene Musik) und Startseite. Läuft selbst auch während der Pause (PROCESS_MODE_ALWAYS).
 
 signal help_pressed
 signal home_pressed
 
+var music: Music                 # eigene Musik (Taste „Nächster Titel“ nur, wenn Titel da sind)
 var can_pause: Callable          # main.gd: darf jetzt pausiert werden? (nicht auf der Startseite)
 var _dim: ColorRect
 var _box: VBoxContainer
+var _next_btn: Button
 
 
 func _init() -> void:
@@ -48,12 +50,15 @@ func _ready() -> void:
 	_box.add_child(title)
 	_button("Weiter  (Esc)", func() -> void: set_paused(false))
 	_button("Hilfe ein/aus", func() -> void: help_pressed.emit())
+	_next_btn = _button("Nächster Titel", func() -> void:
+		music.next()
+		_update_music())
 	_button("Startseite", func() -> void:
 		set_paused(false)
 		home_pressed.emit())
 
 
-func _button(text: String, on_press: Callable) -> void:
+func _button(text: String, on_press: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.custom_minimum_size = Vector2(320, 56)
@@ -61,6 +66,14 @@ func _button(text: String, on_press: Callable) -> void:
 	b.focus_mode = Control.FOCUS_NONE
 	b.pressed.connect(on_press)
 	_box.add_child(b)
+	return b
+
+
+func _update_music() -> void:
+	var on := music != null and music.current != ""
+	_next_btn.visible = on
+	if on:
+		_next_btn.text = "Nächster Titel   (♪ %s)" % music.current.left(28)
 
 
 func set_paused(on: bool) -> void:
@@ -70,6 +83,7 @@ func set_paused(on: bool) -> void:
 	_dim.visible = on
 	if on:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		_update_music()
 
 
 func is_paused() -> bool:

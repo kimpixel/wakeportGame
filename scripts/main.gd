@@ -33,6 +33,7 @@ extends Node3D
 ##   --debug-params    Debug-Overlay (Parameter-Regler, im Spiel F4) gleich offen
 ##   --hitbox          Fangzonen der Slider zeigen (im Spiel: F3)
 ##   --set=NAME=WERT   Test: Einstellung setzen (ohne zu speichern), z. B. --set=goofy=true
+##   --music=DATEI[,…] Test: Musik aus diesen Dateien (nichts kopiert; eigene Titel werden im Test nie gespielt)
 ##   --mode=ID[:N]     Spielmodus (wende, kicker, slider, raley, sprungstart, drift, transfer) mit Aufgabe N (ab 1) direkt starten;
 ##                     mit --go=SEK: Aufgaben-Fenster zu dieser Zeit bestätigen; --mode-auto: Autopilot fährt
 
@@ -99,6 +100,7 @@ var ambient: Ambient
 var film: FilmCrew                 # Filmteam der Challenges (rotes Boot oder FPV-Drohne)
 var weather: Weather
 var airplanes: Airplanes
+var music: Music
 var _plane_arg := NAN
 var _load_arg := NAN
 var _passive_arg := false       # Test: Fahrer ohne Autopilot, ohne Eingaben
@@ -143,6 +145,7 @@ var _pause_at := -1.0           # Test: zu dieser Zeit pausieren (und Screenshot
 var _debug_params_arg := false  # Test: Debug-Overlay gleich offen (--debug-params)
 var _hitbox_arg := false        # Test: Fangzonen der Slider zeigen
 var _set_args: Array[String] = []   # Test: --set=NAME=WERT
+var _music_args := PackedStringArray()   # Test: --music=DATEI[,DATEI]
 var _hold: Array = []           # Test: [Aktion, von, bis] (--hold)
 var _jump_at := -1.0           # Test: zu dieser Zeit abspringen
 var _test_dpress := INF       # Test: Drift-Press fest (--dpress)
@@ -318,10 +321,18 @@ func _ready() -> void:
 		_unlock_achievement("steg"))
 	if not _test_log:
 		settings.load_file(mobile.active)     # Tests laufen immer mit Standardwerten
+	# eigene Musik des Spielers (an/aus kommt mit den Einstellungen)
+	music = Music.new()
+	music.enabled = false
+	music.no_save = not OS.get_cmdline_user_args().is_empty()   # Tests: keine eigenen Titel, nichts kopieren
+	add_child(music)
+	if not _music_args.is_empty():
+		music.add_paths(_music_args)
 	_apply_terminal(_initial_terminal())
 	_build_start_screen()
 	# Pause (Esc): Spiel anhalten, Fenster mit Weiter / Hilfe / Startseite
 	pause_menu = PauseMenu.new()
+	pause_menu.music = music
 	pause_menu.can_pause = func() -> bool: return not start_screen.visible and hud.visible 		and not task_panel.is_open() and not hud._count.visible
 	pause_menu.help_pressed.connect(hud.toggle_help)
 	pause_menu.home_pressed.connect(_open_start_screen)
@@ -408,6 +419,7 @@ func _build_start_screen() -> void:
 	start_screen.s_offset = _s_offset()
 	start_screen.mobile = mobile.active
 	start_screen.settings = settings
+	start_screen.music = music
 	var names: Array = []
 	for e: Dictionary in _setups:
 		names.append(e["name"])
@@ -672,6 +684,10 @@ func _apply_setting(key: String) -> void:
 			Sfx.set_volume(Sfx.BUS_CHEER, float(v))
 		"vol_planes":
 			Sfx.set_volume(Sfx.BUS_PLANES, float(v))
+		"vol_music":
+			Sfx.set_volume(Sfx.BUS_MUSIC, float(v))
+		"music":
+			music.set_enabled(bool(v))
 		"quality":
 			_apply_quality(int(v))
 		"tilt":
@@ -1306,6 +1322,8 @@ func _parse_args() -> void:
 			_hitbox_arg = true
 		elif arg.begins_with("--set="):
 			_set_args.append(arg.substr(6))
+		elif arg.begins_with("--music="):
+			_music_args = arg.substr(8).split(",")
 		elif arg.begins_with("--jump-at="):
 			_jump_at = arg.substr(10).to_float()
 		elif arg.begins_with("--letgo-at="):

@@ -56,10 +56,11 @@ var _muted := false
 var _gen := 0                        # zählt Neustarts: verspätete Rufe vom letzten Versuch verwerfen
 
 
-## Lautstärke-Kanäle (Einstellungen): Effekte, Jubel, Flugzeuge – alle laufen in den Master.
+## Lautstärke-Kanäle (Einstellungen): Effekte, Jubel, Flugzeuge, Musik – alle laufen in den Master.
 const BUS_FX := "Effekte"
 const BUS_CHEER := "Jubel"
 const BUS_PLANES := "Flugzeuge"
+const BUS_MUSIC := "Musik"
 
 
 ## Die Kanäle stehen in default_bus_layout.tres. Im Browser dürfen sie nicht zur Laufzeit
@@ -67,7 +68,7 @@ const BUS_PLANES := "Flugzeuge"
 static func setup_buses() -> void:
 	if OS.has_feature("web"):
 		return
-	for n: String in [BUS_FX, BUS_CHEER, BUS_PLANES]:
+	for n: String in [BUS_FX, BUS_CHEER, BUS_PLANES, BUS_MUSIC]:
 		if AudioServer.get_bus_index(n) < 0:
 			AudioServer.add_bus()
 			var i := AudioServer.bus_count - 1
@@ -203,6 +204,7 @@ func say_count(text: String) -> void:
 	if a:
 		_count_player.stream = a
 		_count_player.play()
+		Music.duck(a.get_length() + 0.3)
 
 
 func _player(db: float) -> AudioStreamPlayer:
@@ -261,6 +263,7 @@ func _on_trick(trick: String, points: int) -> void:
 		v.stream = _woo if big else _yeah.pick_random()
 		v.pitch_scale = float(people[0]["pitch"]) * randf_range(0.96, 1.04)
 	v.play()
+	Music.duck(v.stream.get_length() / v.pitch_scale)
 
 
 ## Sturz: der Steuermann ruft enttäuscht (gleiche Regel wie beim Jubel: immer nur ein Ruf).
@@ -277,6 +280,7 @@ func _on_crash_call() -> void:
 	v.stream = _negs.pick_random()
 	v.pitch_scale = randf_range(0.96, 1.04)
 	v.play()
+	Music.duck(v.stream.get_length() / v.pitch_scale)
 
 
 func _process(delta: float) -> void:

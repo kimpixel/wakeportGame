@@ -40,6 +40,8 @@ const DEFAULTS := {
 	"vol_fx": 1.0,          # Lautstärke Effekte (0..1)
 	"vol_cheer": 1.0,       # Lautstärke Jubel
 	"vol_planes": 1.0,      # Lautstärke Flugzeuge
+	"music": true,          # eigene Musik abspielen (Titel wählt der Spieler, siehe Music)
+	"vol_music": 0.6,       # Lautstärke Musik
 	"quality": 2,           # Grafik 0 niedrig, 1 mittel, 2 hoch
 	"tilt": 1,              # Handy: Neigungs-Empfindlichkeit 0 niedrig, 1 mittel, 2 hoch
 	"tilt_invert": false,   # Handy: Neigung umkehren

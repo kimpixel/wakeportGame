@@ -31,6 +31,7 @@ var weather: Weather
 var cable_of := {}               # "T1"/"T2" -> CableSystem
 var s_offset := {}               # wie FeatureSet.load_setup (für die Setups im Katalog)
 var settings: GameSettings      # Einstellungen (von main.gd gesetzt, vor build)
+var music: Music                 # eigene Musik des Spielers (von main.gd gesetzt, vor build)
 var mobile := false              # Handy: keine Tastenhinweise
 
 var _terminals: Array = []
@@ -537,7 +538,7 @@ func _popup_open() -> bool:
 	return _dim.visible
 
 
-## Einstellungen in vier Reitern: Spiel, Fahrer, Welt, Technik. Alles außer Wetter/Uhrzeit
+## Einstellungen in fünf Reitern: Spiel, Fahrer, Welt, Technik, Musik. Alles außer Wetter/Uhrzeit
 ## landet in GameSettings (gespeichert); main.gd wendet die Werte an.
 func _build_settings() -> void:
 	var f := _popup_frame("EINSTELLUNGEN")
@@ -555,15 +556,16 @@ func _build_settings() -> void:
 	scroll.add_child(holder)
 	var tg := ButtonGroup.new()
 	var pages: Array[VBoxContainer] = []
-	for title: String in ["Spiel", "Fahrer", "Welt", "Technik"]:
+	for title: String in ["Spiel", "Fahrer", "Welt", "Technik", "Musik"]:
 		var page := VBoxContainer.new()
 		page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		page.add_theme_constant_override("separation", 10)
 		holder.add_child(page)
 		pages.append(page)
-		var b := _button(title, 19)
+		var b := _button(title, 14 if mobile else 19)
 		b.toggle_mode = true
 		b.button_group = tg
+		b.clip_text = true            # fünf Reiter: am Handy hochkant schmaler werden dürfen
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var idx := pages.size() - 1
 		b.pressed.connect(func() -> void:
@@ -582,6 +584,8 @@ func _build_settings() -> void:
 	_page_world(pages[2])
 	if settings:
 		_page_tech(pages[3])
+	if settings and music:
+		_page_music(pages[4])
 	var ok := _button("FERTIG", 24, true)
 	ok.pressed.connect(_close_popups)
 	v.add_child(ok)
@@ -691,6 +695,52 @@ func _page_tech(p: VBoxContainer) -> void:
 	if mobile:
 		_opt_row(p, "NEIGUNG ZUM LENKEN", ["Wenig empfindlich", "Mittel", "Sehr empfindlich"], "tilt", [0, 1, 2], 3)
 		_opt_row(p, "NEIGUNG UMKEHREN", ["Nein", "Ja"], "tilt_invert", [false, true])
+
+
+## Eigene Musik: das Spiel bringt keine mit (Lizenzen), der Spieler wählt seine Titel selbst.
+func _page_music(p: VBoxContainer) -> void:
+	var info := _label("Das Spiel bringt keine Musik mit. Wähle deine eigenen Titel (MP3, OGG, WAV) – sie bleiben "
+		+ "auf diesem Gerät bzw. in diesem Browser gespeichert und laufen gemischt im Hintergrund.", 16, Color(1, 1, 1, 0.8))
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	p.add_child(info)
+	_opt_row(p, "MUSIK", ["An", "Aus"], "music", [true, false])
+	var pct := func(x: float) -> String: return "%d %%" % roundi(x * 100.0)
+	_slider_row(p, "LAUTSTÄRKE MUSIK", "vol_music", 0.0, 1.0, 0.05, pct)
+	var status := _label("", 18)
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	p.add_child(status)
+	var grid := GridContainer.new()
+	grid.columns = 2 if mobile else 3
+	grid.add_theme_constant_override("h_separation", 8)
+	grid.add_theme_constant_override("v_separation", 8)
+	p.add_child(grid)
+	var add := _button("Titel hinzufügen", 18, true)
+	add.pressed.connect(music.pick_files)
+	var nxt := _button("Nächster Titel", 18)
+	nxt.pressed.connect(music.next)
+	var clr := _button("Alle entfernen", 18)
+	clr.pressed.connect(music.clear_all)
+	for b: Button in [add, nxt, clr]:
+		b.clip_text = true
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		grid.add_child(b)
+	var update := func() -> void:
+		var n := music.tracks.size()
+		if n == 0:
+			status.text = "Noch keine Titel."
+		else:
+			status.text = "%d Titel" % n + ("   ♪ " + music.current if music.current != "" else "")
+		nxt.disabled = n == 0 or not music.enabled
+		clr.disabled = n == 0
+	music.changed.connect(update)
+	update.call()
+	p.add_child(_label("", 4))
+	var alt := _small("ODER NEBENHER HÖREN, z. B. mit Spotify (dann hier Musik aus)")
+	alt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	p.add_child(alt)
+	var open := _button("Skate-Punk bei Spotify", 17)
+	open.pressed.connect(func() -> void: OS.shell_open(Music.PLAYLIST_URL))
+	p.add_child(open)
 
 
 ## Auswahl als Tasten (eine aktiv). values: gespeicherte Werte je Taste (leer = Index).

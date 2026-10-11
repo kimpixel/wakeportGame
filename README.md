@@ -95,11 +95,12 @@ Die Haltung wird im Spiel live aus der Physik berechnet, mit einer eigenen IK in
 
 **Wetter, Jahreszeit und Uhrzeit** stellst du auf der Startseite unter Einstellungen ein (Wetter, Datum, Uhrzeit). Die Sonne steht dabei wie in echt am Raunheimer Waldsee (50,01° N, 8,48° E, deutsche Zeit mit Sommerzeit): Mittagssonne im Süden, im Sommer lange Abende, im Winter tief stehende Sonne, nachts Mondlicht und Sterne. Wetter: Sonnig, Heiter, Bewölkt, Bedeckt, Regen, Dunst. **Jetzt** übernimmt das heutige Datum und die Uhrzeit (läuft dann mit) und holt das aktuelle Wetter am See von open-meteo.com. Jeder Spielstart beginnt an einem sonnigen Sommertag um 10:30, damit es nie dunkel ist. Die Wahl gilt nur bis zum Neustart.
 
-**Einstellungen** (Startseite, vier Reiter; alles außer Wetter und Uhrzeit wird gespeichert):
+**Einstellungen** (Startseite, fünf Reiter; alles außer Wetter und Uhrzeit wird gespeichert):
 - **Spiel:** Rundenlänge der Competition *Runde 7:30*, *Runde 10:00*, *Runde 15:00* oder *Freies Fahren* (keine Uhr – oben steht „FREI“, kein Zeitende, keine Strafzeit). Hilfen *Auf dem Slider einloggen* und *Überschlag dreht von selbst zu Ende* – jede ausgeschaltete Hilfe gibt +15 % auf alle Tricks. *Seilzug-Grenze* Locker / Normal / Streng / Aus (Handle wird nie aus der Hand gerissen; im Spiel G).
 - **Fahrer:** Brett aus der Brett-Bibliothek, Stance *Regular* (links vorne) oder *Goofy* (rechts vorne), Helm und Westenfarbe.
 - **Welt:** Wetter, Datum, Uhrzeit, Jetzt; **Seillänge** (12–22 m, Standard 16) und **Anlagen-Tempo** (16–40 km/h, Standard 30) deiner Anlage (+ / − im Spiel ändert das Tempo ebenfalls); Flugzeuge *Aus / Normal / Rush Hour*; Fahrer auf der anderen Anlage an/aus; **Challenge: Filmteam** *Zufall / Boot / Drohne / Aus*.
 - **Technik:** Grafik *Niedrig / Mittel / Hoch* (Auflösung, Schatten, Baumdichte; am Handy Standard *Mittel*), Lautstärke für Effekte, Jubel und Flugzeuge, Kamera und Kamera-Abstand, am Handy Neigungs-Empfindlichkeit und Neigung umkehren.
+- **Musik:** Das Spiel bringt keine Musik mit (Lizenzen). Mit *Titel hinzufügen* wählst du eigene MP3-, OGG- oder WAV-Dateien; sie bleiben auf dem Gerät bzw. im Browser gespeichert und laufen gemischt im Hintergrund (auch in der Pause), bei Jubel und Countdown kurz leiser. Dazu Musik an/aus, Lautstärke, *Nächster Titel* (auch im Pausenmenü) und *Alle entfernen*. Alternativ öffnet *Skate-Punk bei Spotify* Playlists zum Nebenher-Hören.
 
 **Spielmodi** (Startseite, ganz oben):
 - **Competition:** die Runde auf Zeit (Regeln unten). Terminal, Feature-Setup und Rundenlänge sind frei wählbar.
