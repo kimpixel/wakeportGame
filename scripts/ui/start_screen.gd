@@ -330,6 +330,7 @@ func set_setup_names(setup_names: Array) -> void:
 ## nicht gerendert.
 func open_editor() -> void:
 	_close_popups()
+	Analytics.count("editor")
 	var list := FeatureSet.list_setups()
 	_editor.open(list[clampi(_setup_idx, 0, list.size() - 1)], _terminal)
 	get_viewport().disable_3d = true

@@ -312,6 +312,8 @@ Weste, Seillänge, Anlagen-Tempo, Flugzeuge, NPC, Grafik, Lautstärken (Busse Ef
 Kamera, Handy-Neigung. Gespeichert in user://settings.cfg [optionen]; Wetter/Uhrzeit **nicht**.
 Test: `--set=NAME=WERT` (ohne Speichern), `--screen=@einstellungenN` (Reiter N).
 
+**Nutzungsstatistik** (`scripts/analytics.gd`, GoatCounter-Seite `kimpixel`, Auswertung https://kimpixel.goatcounter.com): nur Web-Hauptversion (nicht lokal, PR-Vorschau, Tests), count.js wird per JavaScriptBridge geladen; Ereignisse als Pfade `Analytics.count("start/…")` (Start, `runde/ende/…`, `challenge/MODUS/ID/MEDAILLE`, `erfolg/ID`, `editor`, `geraet/…`, `spielzeit/Nmin`). Keine personenbezogenen Daten.
+
 **Musik** (`scripts/music.gd`, Reiter „Musik“, Kanal `Musik`): **keine Musik im Repo** (Lizenzen – bekannte Titel bräuchten Master- und Verlagsrechte). Der Spieler wählt eigene MP3/OGG/WAV (Desktop: nativer Dateidialog, Web: `<input type=file>` über JavaScriptBridge), Kopie nach `user://musik`, gemischt abgespielt (`PROCESS_MODE_ALWAYS`), `Music.duck()` bei Jubel/Sturzruf/Countdown. Einstellungen `music`, `vol_music`; Pausenmenü „Nächster Titel“; Link `Music.PLAYLIST_URL`. Tests spielen nie eigene Titel: `--music=DATEI[,…]`.
 
 Startseite merkt sich das **zuletzt gespielte Spiel** (Modus + Challenge-id in user://settings.cfg [game] `mode`/`task`, gespeichert bei Start und beim Verlassen der Challenge, Tests speichern nichts; `main.gd _remember_game`/`_recall_game`). Startseite: echte Szene im Hintergrund, Kamera schwenkt von der Seeseite; Menü im HUD-Stil

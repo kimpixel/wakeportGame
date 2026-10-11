@@ -160,6 +160,7 @@ var _log_t := 0.0
 func _ready() -> void:
 	_setup_input()
 	_parse_args()
+	Analytics.init()                         # Nutzungsstatistik (nur Web-Hauptversion)
 	_build_environment()
 	Geo.ensure_loaded()
 	terrain = Terrain.new()
@@ -503,6 +504,7 @@ func _open_start_screen() -> void:
 ## "Spiel starten": Competition beginnt direkt mit Countdown, die Spielmodi mit ihrer Aufgabe.
 func _on_start_pressed() -> void:
 	_remember_game()
+	_count_start()
 	_close_start_screen()
 	if game_mode == Training.COMPETITION:
 		_countdown_start()
@@ -577,6 +579,18 @@ func _close_start_screen() -> void:
 	rider.autopilot = _autopilot_before
 	_reset()
 	cam.snap()
+
+
+## Nutzungsstatistik: welches Spiel gestartet wurde (Competition mit Terminal/Setup/Rundenlänge, sonst die Challenge).
+func _count_start() -> void:
+	if game_mode == Training.COMPETITION:
+		var st: Dictionary = _setups[_setup_idx]
+		var setup: String = "eigenes" if st.get("user", false) else str(st.get("id", "?"))
+		Analytics.count("start/competition/%s/%s/%s" % [terminal, setup, "frei" if _free else "runde"])
+	else:
+		var list := Training.tasks(game_mode)
+		var id: String = list[clampi(_task_idx, 0, list.size() - 1)]["id"] if not list.is_empty() else "?"
+		Analytics.count("start/challenge/%s/%s" % [game_mode, id])
 
 
 # ---------------------------------------------------------------- Letztes Spiel
@@ -998,6 +1012,7 @@ func _end_session() -> void:
 	_finishing = false
 	_last_result = "Letzte Runde: %d Punkte" % _final_score
 	hud.show_trick("Ende!  %d Punkte" % _final_score)
+	Analytics.count("runde/ende/" + Analytics.score_bucket(_final_score))
 	get_tree().create_timer(3.0).timeout.connect(func() -> void:
 		if not start_screen.visible:
 			_open_start_screen())
@@ -1047,6 +1062,7 @@ func _fake_touch(pressed: bool) -> void:
 
 
 func _process(_delta: float) -> void:
+	Analytics.tick(_delta)
 	if _closeup != Vector3.INF:
 		cam.set_process(false)
 		hud.visible = false
@@ -1272,6 +1288,7 @@ func _unlock_achievement(id: String) -> void:
 		return
 	if Achievements.unlock(id):
 		hud.show_achievement(Achievements.get_def(id)["name"])
+		Analytics.count("erfolg/" + id)
 		print("ERFOLG ", id)
 
 

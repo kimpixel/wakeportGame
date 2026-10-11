@@ -755,6 +755,7 @@ func _finish(ok: bool) -> void:
 		medal = Training.medal_for(task, _value)
 		text = Training.format_value(task, _value)
 		new_best = Training.record(mode_id, task, _value) if not game._test_log else false   # Tests speichern nichts
+		Analytics.count("challenge/%s/%s/%s" % [mode_id, task["id"], Training.MEDALS[medal] if medal > 0 else "ohne"])
 		if medal == 0:
 			text += "   –   noch keine Medaille"
 		if game._test_log:

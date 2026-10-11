@@ -79,6 +79,14 @@ Solange der Carrier noch nicht zurückzieht, schwingst du quer zum Seil um ihn h
 
 Funktioniert am besten in Chrome, Edge oder Firefox am PC. Einmal ins Bild klicken, damit Tastatur und Maus reagieren.
 
+## Nutzungsstatistik
+
+Die Web-Version zählt anonym mit [GoatCounter](https://www.goatcounter.com) (ohne Cookies, ohne IP-Adressen,
+keine personenbezogenen Daten): Seitenaufrufe, Gerät (Touch/Desktop), gestartete Spiele (Competition mit
+Terminal/Setup, Challenge), Rundenende (Punkte grob), Challenge-Medaillen, Erfolge, Setup-Editor und
+Spielzeit-Marken (1, 5, 15, 30, 60, 120 min). Nur auf kimpixel.github.io, nicht lokal, in PR-Vorschauen
+oder Tests (`scripts/analytics.gd`).
+
 ## Figuren
 
 Fahrer, NPC, Steuermann und Gäste sind realistische Menschen aus **MakeHuman** (MPFB für Blender, alle Assets CC0). Erzeugt werden sie per Skript:
