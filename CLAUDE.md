@@ -107,7 +107,8 @@ Fallstricke:
 | `scripts/ui/setup_editor.gd` | Setup-Editor (eigene Seite, Draufsicht/3D, Bauteile, Hacks, Auswahl, Speichern in `user://setups`, JSON); Test `--screen=@editor:t2:sel=2:3d…` |
 | `scripts/ui/feature_preview.gd` | drehbare 3D-Vorschau eines Features/Hacks (eigene Welt) |
 | `scripts/ui/touch_pad.gd`, `scripts/mobile_input.gd` | Handy: virtuelle Tasten, Neigung, Touch |
-| `scripts/hud.gd` | HUD (Zeit, Seilzug-Anzeige, Punkte), Hilfe, Stil (`ACCENT` grün, `PANEL`) |
+| `scripts/ui/debug_params.gd` | Debug-Overlay **F4** (nur lokal, nicht Web): Parameter live per Schieberegler (Reiter je Bereich, Kommentar aus dem Quelltext, „Geänderte kopieren“ in die Zwischenablage, nichts gespeichert). Regelbare Werte sind `static var` statt `const` (z. B. `Rider.DPRESS_DRAG`); neue in `GROUPS` eintragen. Test `--debug-params` |
+| `scripts/hud.gd` | HUD (Zeit, Seilzug-Anzeige, **Tempo** mit Marken PRESS/RALEY aus `Rider.DPRESS_SPEED`/`RALEY_SPEED`, Punkte), Hilfe, Stil (`ACCENT` grün, `PANEL`) |
 | `scripts/weather.gd`, `scripts/sun_calc.gd`, `shaders/sky.gdshader` | Wetter, Sonnenstand nach echter Lage |
 | `scripts/sfx.gd`, `assets/sounds/` | Sounds; `positiv/` (Jubel), `negativ/` (Ruf beim Sturz), `feature_hit/`, `landing/` aus Videoaufnahmen |
 | `scripts/npcs/` | Umgebung (Steuermänner, wartende Fahrer, SUPs), Flugzeuge im Anflug |
@@ -152,7 +153,7 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
 - **Driften** (`kind` drift_spin / drift_turn / drift_after, `Rider.drifting`): 360er im Drift zwischen den roten Bojen (Brett-Yaw im Drift
   aufsummiert, je volle Umdrehung eine, links/rechts getrennt, höchstens `SPIN_EACH` 5 je Richtung; Drift lösen setzt zurück), Wende im Drift (Anteil vom Bremsen des Carriers bis das Seil wieder zieht,
   nur gleitend: Sinkpegel < `DRIFT_SINK` 0,15; ohne Schwung Silber, mit Rauskanten Gold), Drift nach Feature (T2 Juli & August, längster Drift,
-  der bis 0,3 s nach Feature/Sprung beginnt), **Drift-Press** (`kind: "dpress"`, `press` tail/nose/switch; immer T2 vor dem vorderen Wendepunkt, `turn: "a"`; voller Press ab `DPRESS_FULL` 0,6; im Press weiter Drift (Momentum bleibt), ←/→ dreht nicht, Brett dreht sich zum Seilzug (`DPRESS_ALIGN`); Tail/Nose = längster Press am Stück, Wechsel = Nose↔Tail in einem Drift; Ende, wenn die Wende durch ist). Test ohne Autopilot (der driftet nicht): `--hold=release@1-40,steer_right@1-40`.
+  der bis 0,3 s nach Feature/Sprung beginnt), **Drift-Press** (`kind: "dpress"`, `press` tail/nose/switch; immer T2 vor dem vorderen Wendepunkt, `turn: "a"`; voller Press ab `DPRESS_FULL` 0,6; im Press weiter Drift (Momentum bleibt), ←/→ dreht das Brett langsam (`DPRESS_TURN`), geht bei jedem Tempo; erlaubter Drift-Winkel zur **Fahrtrichtung** (`Rider._drift_angle`, mit Vorzeichen: Tailpress zur Seite `DPRESS_SIDE`, Nosepress spiegelverkehrt, Toleranz `DPRESS_WRONG` 10° zur falschen Seite) = `DPRESS_FALL_ANG` 86° × Tempo/`DPRESS_SPEED` (33 km/h), darüber Sturz; Bremse `DPRESS_DRAG` sinkt mit dem Drift-Winkel (längs voll, an der Sturzgrenze 0); Tail/Nose = längster Press am Stück, Wechsel = Nose↔Tail in einem Drift; Ende, wenn die Wende durch ist). Test ohne Autopilot (der driftet nicht): `--hold=release@1-40,steer_right@1-40`.
 - Test: `--mode=kicker:2 --go=0.5` (Fenster bestätigen), `--mode-auto` (Autopilot fährt), `--lane=X` (Spur halten),
   `--jump-at=S`. Ausgabe `CHALLENGE …: Wert Medaille N`. Kalibrierung: Autopilot schafft Wenden mit Bronze (ca. 46 % eingesunken, seit schnellerem Einsinken `SINK_RATE` 0,9),
   Kicker M ohne Absprung 1,6 m, mit Absprung bis 3,0 m (L 3,8 m), Full Pipe 13 m.
@@ -203,7 +204,7 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
   **Nach Sturz: Leertaste halten = schwimmen, Strg = sofort weiter (−1:00), R = Steg (−2:00)** –
   angezeigt in einem Panel mit Zeitkosten (`Hud.show_recovery`).
 - Strg (zur Not Alt): **Driften** – keine Kante greift: Lenken ändert die Fahrtrichtung nicht, nur der
-  Seilzug zieht einen (nicht festnageln, sonst reißt das Seil), ←/→ drehen nur das Brett, Wasserwiderstand × `DRIFT_DRAG` 0.7 (leicht schneller), Brett dreht im Drift schneller (`DRIFT_SPIN`). Nur Spieler,
+  Seilzug zieht einen (nicht festnageln, sonst reißt das Seil); das Seil ist im Drift **keine Feder, sondern fest wie beim Kettenkarussell** (`Rider._drift_rope`: fängt nur die Bewegung vom Carrier weg weich ab, `DRIFT_ROPE_GIVE`; der Schwung nach außen bleibt, kein Schnalzen nach vorne), ←/→ drehen nur das Brett, Wasserwiderstand × `DRIFT_DRAG` 0.7 (leicht schneller), Brett dreht im Drift schneller (`DRIFT_SPIN`). Nur Spieler,
   Autopilot/NPC driften wie früher. „Maximaler Grip“ gibt es nicht mehr.
 - **Esc = Pause** (`scripts/ui/pause_menu.gd`, SceneTree.paused; Fenster Weiter/Hilfe/Startseite). Am Handy
   pausiert das offene ☰-Menü (TouchPad/MobileInput laufen mit PROCESS_MODE_ALWAYS). Test `--pause-at=S`.
@@ -311,7 +312,7 @@ Weste, Seillänge, Anlagen-Tempo, Flugzeuge, NPC, Grafik, Lautstärken (Busse Ef
 Kamera, Handy-Neigung. Gespeichert in user://settings.cfg [optionen]; Wetter/Uhrzeit **nicht**.
 Test: `--set=NAME=WERT` (ohne Speichern), `--screen=@einstellungenN` (Reiter N).
 
-Startseite: echte Szene im Hintergrund, Kamera schwenkt von der Seeseite; Menü im HUD-Stil
+Startseite merkt sich das **zuletzt gespielte Spiel** (Modus + Challenge-id in user://settings.cfg [game] `mode`/`task`, gespeichert bei Start und beim Verlassen der Challenge, Tests speichern nichts; `main.gd _remember_game`/`_recall_game`). Startseite: echte Szene im Hintergrund, Kamera schwenkt von der Seeseite; Menü im HUD-Stil
 (Terminal, Feature-Setup als Tasten, Einstellungen, Spiel starten), keine Tasten-Legende, keine
 Shortcuts T/F (nur Leertaste = Start, Esc). Taste **Setup-Editor** öffnet den Editor (eigene Seite). Eigene Setups liegen in `user://setups/`
 (`FeatureSet.save_user_setup`) und hängen hinten an `list_setups()`. Das Popup „Features & Hacks“ bleibt im Code, aber nicht im Menü.

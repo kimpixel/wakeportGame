@@ -25,30 +25,30 @@ signal slide_ended(info: Dictionary)   # part, time, dist, dist_5050, dist_bs, s
 
 ## Bergung nach Sturz/Seilverlust (2-Mast-Anlage: niemand muss zurück zum Start):
 ## der Operator bringt die Handle auf die Höhe des Fahrers, der schwimmt hin und greift sie.
-const SINK_SPEED := 1.0          # so langsam ohne Seil -> man sinkt ins Wasser
+static var SINK_SPEED := 1.0          # so langsam ohne Seil -> man sinkt ins Wasser
 const SETTLE_TIME := 1.5         # so lange nach dem Sturz treibt man, bevor man schwimmen kann
 const SWIM_LOOKAHEAD := 2.5      # m: so weit voraus auf dem Weg peilt der Schwimmer an (runde Bögen)
 const SWIM_TURN := 1.2           # rad/s: so schnell dreht die Schwimmrichtung
 const SWIM_MARGIN := 2.0         # m Abstand beim Schwimmen um Features herum
-const SWIM_SPEED := 1.1          # Rückenschwimmen mit Brett an den Füßen (m/s)
+static var SWIM_SPEED := 1.1          # Rückenschwimmen mit Brett an den Füßen (m/s)
 const GRAB_DIST := 1.0
 const AUTO_TURN_START := 20.0     # Autopilot beginnt die Wende so weit vor dem Wendepunkt
 
 ## Einsinken: Das Brett trägt nur mit Tempo oder Seilzug. Hängt das Seil durch und wird man
 ## langsam (z. B. eine Wende ohne Druck), steigt der Sinkpegel; ist er voll, ist man abgesoffen
 ## und liegt im Wasser wie beim Wasserstart (keine Punkte für die Wende).
-const SINK_DEPTH := 0.45         # so tief sinkt man (m) kurz vor dem Absaufen
-const SINK_HOLD_SPEED := 5.5     # ohne Seilzug trägt erst so viel Tempo das Brett ganz (20 km/h)
-const SINK_HOLD_PULL := 110.0    # ab diesem Seilzug (N) trägt das Seil allein
-const SINK_RATE := 0.9           # Pegel pro Sekunde ohne Tempo und ohne Zug (ganz absaufen: gut 1 s)
-const SINK_RECOVER := 1.0        # nur echter Seilzug holt einen wieder hoch
+static var SINK_DEPTH := 0.45         # so tief sinkt man (m) kurz vor dem Absaufen
+static var SINK_HOLD_SPEED := 5.5     # ohne Seilzug trägt erst so viel Tempo das Brett ganz (20 km/h)
+static var SINK_HOLD_PULL := 110.0    # ab diesem Seilzug (N) trägt das Seil allein
+static var SINK_RATE := 0.9           # Pegel pro Sekunde ohne Tempo und ohne Zug (ganz absaufen: gut 1 s)
+static var SINK_RECOVER := 1.0        # nur echter Seilzug holt einen wieder hoch
 var sink_level := 0.0            # 0 = gleitet, 1 = abgesoffen
 var _sink_vis := 0.0
 
 const UPS_TIME := 0.45
 var _ups := 0.0                  # Restzeit des "Ups"-Wacklers
-const AIR_KNEES := 1.5           # Sprung: am höchsten Punkt so tief in den Knien, zur Landung wieder gestreckt
-const LAND_TIME := 0.4           # Landung abfedern: so lange in die Knie und wieder hoch
+static var AIR_KNEES := 1.5           # Sprung: am höchsten Punkt so tief in den Knien, zur Landung wieder gestreckt
+static var LAND_TIME := 0.4           # Landung abfedern: so lange in die Knie und wieder hoch
 var _absorb := 0.0               # Restzeit des Abfederns
 var _absorb_amt := 0.0           # wie tief (nach Fallgeschwindigkeit)
 var _launch_kind := ""           # Absprung von: water, kicker, safety, feature (für den Namen)
@@ -59,56 +59,56 @@ enum Mode { WATER, AIR, CRASHED }
 const MASS := 80.0
 const GRAVITY := 9.81
 const ROPE_LENGTH := 16.0       # Zugseil Griff bis Carrier (Standard)
-const ROPE_STIFFNESS := 2600.0
-const ROPE_DAMPING := 250.0
+static var ROPE_STIFFNESS := 2600.0
+static var ROPE_DAMPING := 250.0
 const HANDLE_HEIGHT := 1.0
 const BRIDLE_LEN := 0.3          # Dreieck am Griff: Leinen laufen nach 30 cm zum Seil zusammen
 const BRIDLE_HALF := 0.19        # Leinen sitzen an den Griff-Enden (halbe Griffbreite)
 const BRIDLE_SEGS := 6           # Glieder je Leine (zum Durchhängen)
-const CRASH_TENSION := 5400.0
-const AIR_MAX_TENSION := 1400.0      # in der Luft federn die Arme den Seilzug ab
+static var CRASH_TENSION := 5400.0
+static var AIR_MAX_TENSION := 1400.0      # in der Luft federn die Arme den Seilzug ab
 
-const DRAG_QUAD := 2.4          # Längswiderstand (gleitend) – klein, damit man in der Wende durchgleitet
-const DRAG_LIN := 6.0
-const PLOW_DRAG := 260.0        # Zusatzwiderstand, solange das Brett noch nicht gleitet
-const PLANE_SPEED := 2.3
-const GRIP_QUAD := 160.0        # Querwiderstand der Kante
-const GRIP_LIN := 180.0
-const TURN_RATE := 1.7
-const SPIN_RATE := 7.5
-const AIR_ASSIST := 5.0         # Brett dreht in der Luft langsam zur Flugrichtung
+static var DRAG_QUAD := 2.4          # Längswiderstand (gleitend) – klein, damit man in der Wende durchgleitet
+static var DRAG_LIN := 6.0
+static var PLOW_DRAG := 260.0        # Zusatzwiderstand, solange das Brett noch nicht gleitet
+static var PLANE_SPEED := 2.3
+static var GRIP_QUAD := 160.0        # Querwiderstand der Kante
+static var GRIP_LIN := 180.0
+static var TURN_RATE := 1.7
+static var SPIN_RATE := 7.5
+static var AIR_ASSIST := 5.0         # Brett dreht in der Luft langsam zur Flugrichtung
 const AIR_ASSIST_SLIDER := 8.0  # m: liegt ein Slider so weit voraus auf dem Flugweg, dreht nichts zurück
-const POP_BASE := 2.2
-const SLIDE_FRICTION := 0.1     # Reibung Brett auf Feature-Oberfläche
+static var POP_BASE := 2.2
+static var SLIDE_FRICTION := 0.1     # Reibung Brett auf Feature-Oberfläche
 # Punkte: Slides sind mehr wert als Drehungen, Kombinationen am meisten
-const SLIDE_BASE := 150.0
-const SLIDE_PER_S := 150.0
-const BOARDSLIDE_BONUS := 100.0
+static var SLIDE_BASE := 150.0
+static var SLIDE_PER_S := 150.0
+static var BOARDSLIDE_BONUS := 100.0
 const SLIDE_FACTOR := {"rail": 1.5, "pipe": 1.5, "transition": 1.3, "block": 1.0}
-const AIR_PER_S := 50.0
+static var AIR_PER_S := 50.0
 const SPIN_PER_180 := 50
-const COMBO_WINDOW := 3.0       # s Zeit für den nächsten Trick, damit die Kombination weiterläuft
-const POP_LOAD := 2.8
-const POP_ROPE := 1.8
-const POP_SCALE := 0.93         # Sprunghöhe insgesamt (Ollie): Verhältnis Tempo/Höhe
-const POP_ON_RAMP := 0.35       # Absprung an der Rampe: Anteil des schwächeren Schubs
-const KICK_REF := 0.31          # Bezugs-Steigung kurz vor der Kante: steiler wirft überproportional mehr
-const POP_ON_KICK := 0.7        # Anteil der Sprungkraft, der auf dem Kicker zum Wurf dazukommt
-const KICK_MAX_VY := 8.0        # m/s Obergrenze beim Absprung von der Kante
-const RAMP_LAUNCH := 0.85       # Abwurf von der Rampenkante (Anteil der Steiggeschwindigkeit)
+static var COMBO_WINDOW := 3.0       # s Zeit für den nächsten Trick, damit die Kombination weiterläuft
+static var POP_LOAD := 2.8
+static var POP_ROPE := 1.8
+static var POP_SCALE := 0.93         # Sprunghöhe insgesamt (Ollie): Verhältnis Tempo/Höhe
+static var POP_ON_RAMP := 0.35       # Absprung an der Rampe: Anteil des schwächeren Schubs
+static var KICK_REF := 0.31          # Bezugs-Steigung kurz vor der Kante: steiler wirft überproportional mehr
+static var POP_ON_KICK := 0.7        # Anteil der Sprungkraft, der auf dem Kicker zum Wurf dazukommt
+static var KICK_MAX_VY := 8.0        # m/s Obergrenze beim Absprung von der Kante
+static var RAMP_LAUNCH := 0.85       # Abwurf von der Rampenkante (Anteil der Steiggeschwindigkeit)
 # Raley: wer beim Absprung besonders schnell ist (Anschneiden), schwingt mit gestrecktem Körper
 # um den Griff nach hinten oben – Brett höher als der Kopf, Brust zum Wasser. Langsamer = Ollie.
-const RALEY_SPEED := 40.0 / 3.6
-const RALEY_LOAD := 0.95        # nur mit voll aufgeladenem Sprung (Leertaste lange halten)
-const RALEY_MAX := 2.8          # rad: so weit schwingen Beine und Brett um den Griff (≈160°, Brett über dem Kopf)
+static var RALEY_SPEED := 40.0 / 3.6
+static var RALEY_LOAD := 0.95        # nur mit voll aufgeladenem Sprung (Leertaste lange halten)
+static var RALEY_MAX := 2.8          # rad: so weit schwingen Beine und Brett um den Griff (≈160°, Brett über dem Kopf)
 const RALEY_TORSO := 0.55       # Anteil davon für Becken/Oberkörper – der Rest wird Hohlkreuz
-const RALEY_POINTS := 150
+static var RALEY_POINTS := 150
 # ↑/↓ in der Luft: Frontroll/Backroll um die Brettlängsachse; auf dem Slider: Nose-/Tailpress
-const FLIP_RATE := 6.5          # rad/s Überschlag
-const FLIP_LAND_TOL := 0.7      # rad: so schief darf man nach einem Überschlag landen
+static var FLIP_RATE := 6.5          # rad/s Überschlag
+static var FLIP_LAND_TOL := 0.7      # rad: so schief darf man nach einem Überschlag landen
 const FLIP_PRESS_MAX := 1.2    # rad: so weit angefangene Rolle wird über einem Slider noch zum Press (zurückgenommen)
-const FLIP_POINTS := 300
-const PRESS_ANG := 0.45         # rad: Brett beim Press gekippt (Fotos: ca. 25°, anderes Ende deutlich in der Luft)
+static var FLIP_POINTS := 300
+static var PRESS_ANG := 0.45         # rad: Brett beim Press gekippt (Fotos: ca. 25°, anderes Ende deutlich in der Luft)
 ## Körperhaltung beim Press kommt aus Blender (blender/nosepress.blend -> tools/export_pose.py)
 const PRESS_POSE := "res://assets/poses/nosepress.json"
 const TAIL_POSE := "res://assets/poses/tailpress.json"      # 50-50-Tailpress (eigene Pose, nicht gespiegelt)
@@ -117,25 +117,31 @@ const TAIL_POSE := "res://assets/poses/tailpress.json"      # 50-50-Tailpress (e
 const POSE_BONES := ["pelvis", "spine_01", "spine_02", "spine_03", "neck_01", "head",
 	"clavicle_l", "upperarm_l", "lowerarm_l", "clavicle_r", "upperarm_r", "lowerarm_r"]
 static var _pose_cache := {}
-const PRESS_BONUS := 100.0
-const CATCH_GLIDE := 5.0         # m/s seitlich in die Slide-Linie gleiten
-const CATCH_RISE := 3.0          # m/s nach oben auf die Oberkante gleiten
-const DRIFT_DRAG := 0.7          # Wasserwiderstand im Drift (Anteil): Brett liegt flach, leicht schneller
-const DRIFT_SPIN := 1.2          # im Drift dreht das flache Brett so viel schneller (Anteil; 5 + 5 360er zwischen den roten Bojen)
+static var PRESS_BONUS := 100.0
+static var CATCH_GLIDE := 5.0         # m/s seitlich in die Slide-Linie gleiten
+static var CATCH_RISE := 3.0          # m/s nach oben auf die Oberkante gleiten
+static var DRIFT_DRAG := 0.7          # Wasserwiderstand im Drift (Anteil): Brett liegt flach, leicht schneller
+static var DRIFT_ROPE_GIVE := 6.0     # 1/s: so schnell fängt das Seil im Drift die Bewegung vom Carrier weg ab (kleiner = weicher)
+static var DRIFT_ROPE_SETTLE := 2.0   # 1/s: im Drift wird die gedehnte Leine so schnell auf Länge gebracht
+static var DRIFT_SPIN := 1.2          # im Drift dreht das flache Brett so viel schneller (Anteil; 5 + 5 360er zwischen den roten Bojen)
 # Drift-Press: im Drift auf dem Wasser ↑ = Nosepress, ↓ = Tailpress (Brett kippt weit um das Ende,
 # Oberkörper legt sich nach hinten, die freie Hand streift das Wasser – nach Fotoserie)
-const DPRESS_SPEED := 5.0        # m/s: erst ab diesem Tempo im Drift auslösbar
-const DPRESS_ANG := 0.85         # rad: so steil steht das Brett im vollen Drift-Press (Fotos: ca. 50°)
-const DPRESS_RISE := 2.5         # 1/s: so schnell baut sich der Drift-Press auf (Bewegung, kein Ruck)
-const DPRESS_END := 0.68         # m: Drehpunkt am Brett-Ende (Brett 1,49 m)
-const DPRESS_ALIGN := 3.0        # 1/s: so schnell dreht sich das Brett im Drift-Press in die Zugrichtung des Seils
+static var DPRESS_SPEED := 9.048      # m/s: ab diesem Tempo ist im Drift-Press der volle Winkel möglich (ca. 33 km/h), darunter anteilig weniger
+static var DPRESS_WRONG := deg_to_rad(10.0)   # so weit darf das Brett im Press zur falschen Seite stehen (Toleranz)
+static var DPRESS_SIDE := -1           # Seite des Tailpress-Winkels (+1 / -1); Nosepress spiegelverkehrt
+static var DPRESS_ANG := 0.85         # rad: so steil steht das Brett im vollen Drift-Press (Fotos: ca. 50°)
+static var DPRESS_RISE := 2.5         # 1/s: so schnell baut sich der Drift-Press auf (Bewegung, kein Ruck)
+static var DPRESS_END := 0.68         # m: Drehpunkt am Brett-Ende (Brett 1,49 m)
+static var DPRESS_DRAG := 0.8         # zusätzlicher Wasserwiderstand im vollen Drift-Press (Anteil): man verliert Tempo
+static var DPRESS_TURN := 0.5         # im Drift-Press dreht das Brett so viel langsamer (Anteil) – zum feinen Justieren
+static var DPRESS_FALL_ANG := 1.501   # rad (86°): Brett im Drift-Press weiter als so quer zur Fahrtrichtung (Drift-Winkel): Sturz
 const SNAP_5050 := deg_to_rad(45.0)   # Einrasten in die nächste Stellung: bis hier 50-50, darüber Boardslide
-const SNAP_RATE := 9.0           # rad/s: so schnell dreht das Brett in die eingerastete Stellung
-const SWITCH_BONUS := 80.0       # Punkte je Wechsel Boardslide <-> 50-50 auf dem Slider
-const SLIDE_TURN := 4.5         # rad/s: so schnell dreht das Brett auf dem Slider
+static var SNAP_RATE := 9.0           # rad/s: so schnell dreht das Brett in die eingerastete Stellung
+static var SWITCH_BONUS := 80.0       # Punkte je Wechsel Boardslide <-> 50-50 auf dem Slider
+static var SLIDE_TURN := 4.5         # rad/s: so schnell dreht das Brett auf dem Slider
 const LOCK_ANGLE := deg_to_rad(35.0)   # bis zu diesem Winkel zur Feature-Achse bleibt man eingeloggt
-const LOCK_RATE := 8.0          # 1/s: seitliches Wegrutschen wird so schnell abgebaut
-const LOCK_PULL := 4.0          # 1/s: Zug zur Slide-Spur
+static var LOCK_RATE := 8.0          # 1/s: seitliches Wegrutschen wird so schnell abgebaut
+static var LOCK_PULL := 4.0          # 1/s: Zug zur Slide-Spur
 const BOARD_Y := 0.012          # Unterkante Brettmitte über der Fahrerposition
 const ARM_REACH := 0.88         # Griff höchstens so weit weg (Anteil der Armlänge) – Arme leicht gebeugt
 const BOARD_HALF := 0.35
@@ -143,11 +149,11 @@ const BOARD_HALF := 0.35
 # bis zur maximalen Seilspannung auf (Anteil der Seilzug-Grenze); ist sie erreicht, reißt das Seil
 # einen nach vorne vom Steg -> normaler Sprung plus Auflade-Power. Vorher loslassen: ohne Sprung.
 # Brett längs zum Seil (50-50) = Nolli, quer = Raley Start (Raley-Schwung).
-const DOCK_BRACE_MAX := 0.9
-const DOCK_YANK_LIFT := 2.6      # m/s zusätzliche Steiggeschwindigkeit bei voller Ladung
+static var DOCK_BRACE_MAX := 0.9
+static var DOCK_YANK_LIFT := 2.6      # m/s zusätzliche Steiggeschwindigkeit bei voller Ladung
 const DOCK_YANK_POINTS := 100
 const DOCK_QUER := deg_to_rad(45.0)   # Brett mehr als so weit quer zum Seil: Raley Start statt Nolli
-const NOLLI_ANG := 1.05         # rad: Nolli – Brett kippt um die Nose, Tail hoch (Fotos: ca. 60°)
+static var NOLLI_ANG := 1.05         # rad: Nolli – Brett kippt um die Nose, Tail hoch (Fotos: ca. 60°)
 const NOLLI_PELVIS := 0.35      # so viel vom Anheben der Brettmitte macht das Becken mit (Rest: Knie ran)
 const DOCK_RALEY_PHASE := 0.6   # Raley Start: so lange (Anteil der Flugzeit) bleibt das Brett quer, dann dreht es zur Landung ein
 
@@ -164,6 +170,7 @@ var yaw := 0.0
 var attached := true
 var tension := 0.0
 var tension_smooth := 0.0
+var _tension_prev := 0.0         # Seilzug vor diesem Schritt (Drift: eigene Berechnung)
 var rope_dir := Vector3.FORWARD
 var autopilot := false
 
@@ -228,6 +235,8 @@ var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom K
 var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Oberkörper vor)
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
 var _press_bs_vis := 0.0        # 1 = Press im Boardslide (Brett seitlich versetzt, Ende über dem Slider)
+var dpress_angle := 0.0         # Drift-Press: Drift-Winkel zur Fahrtrichtung, zur erlaubten Seite positiv (rad)
+var dpress_allowed := 0.0       # Drift-Press: so weit darf er bei diesem Tempo gerade sein (rad)
 var _dpress_vis := 0.0          # sichtbarer Drift-Press (+ Nose, - Tail; Nose = Ende am vorderen Fuß)
 var test_dpress := INF          # Test: Drift-Press fest auf diesen Wert (--dpress)
 var press_tip := Vector3.ZERO   # Welt: gedrücktes Brett-Ende beim Press (darauf zielt die Kamera)
@@ -288,6 +297,7 @@ var _bridle: Array[MeshInstance3D] = []   # Dreieck: Glieder der zwei Leinen (Gr
 var _rope_mesh: ImmediateMesh
 var _rope_mat: StandardMaterial3D
 var _spray: CPUParticles3D
+var _dspray: CPUParticles3D     # Drift-Press: große Gischt am Brett-Ende im Wasser
 
 
 # ---------------------------------------------------------------- Aufbau
@@ -355,6 +365,21 @@ func _ready() -> void:
 	_spray.mesh = drop
 	_spray.emitting = false
 	add_child(_spray)
+	# Drift-Press: das gedrückte Ende pflügt durchs Wasser und wirft einen breiten Fächer auf
+	_dspray = CPUParticles3D.new()
+	_dspray.amount = 260
+	_dspray.lifetime = 0.9
+	_dspray.local_coords = false
+	_dspray.top_level = true
+	_dspray.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	_dspray.emission_sphere_radius = 0.18
+	_dspray.spread = 38.0
+	_dspray.gravity = Vector3(0.0, -9.8, 0.0)
+	_dspray.scale_amount_min = 0.8
+	_dspray.scale_amount_max = 2.2
+	_dspray.mesh = drop
+	_dspray.emitting = false
+	add_child(_dspray)
 
 
 
@@ -1065,6 +1090,7 @@ func _npc_tricks(delta: float, speed: float) -> void:
 
 
 func _rope_force(delta: float) -> Vector3:
+	_tension_prev = tension_smooth
 	tension = 0.0
 	if not attached:
 		tension_smooth = 0.0
@@ -1076,6 +1102,10 @@ func _rope_force(delta: float) -> Vector3:
 		return Vector3.ZERO
 	rope_dir = d / dist
 	_rope_dist = dist
+	if drifting and mode == Mode.WATER:
+		tension_smooth = _tension_prev      # im Drift: festes Seil statt Feder (_drift_rope)
+		tension = _tension_prev
+		return Vector3.ZERO
 	var stretch := dist - rope_length
 	if stretch > 0.0:
 		var ext_rate := (cable.get_velocity() - vel).dot(rope_dir)
@@ -1092,6 +1122,43 @@ func _rope_force(delta: float) -> Vector3:
 				vel += rope_dir * ext_rate
 	tension_smooth = lerpf(tension_smooth, tension, 1.0 - exp(-delta * 12.0))
 	return rope_dir * tension
+
+
+## Seil im Drift wie beim Kettenkarussell: keine Feder (die gedehnte Leine würde einen nach vorne
+## schnalzen), sondern eine feste Länge. Gespannt nimmt sie nur die Bewegung vom Carrier weg; der
+## Schwung quer dazu bleibt, man pendelt im Bogen um den Carrier. Seilzug = was das Seil dafür abfängt.
+func _drift_rope(delta: float) -> void:
+	var rh := Vector3(rope_dir.x, 0.0, rope_dir.z)
+	if rh.length() < 0.1 or _rope_dist < rope_length:
+		tension = 0.0
+		tension_smooth = lerpf(_tension_prev, 0.0, 1.0 - exp(-delta * 12.0))
+		return
+	rh = rh.normalized()
+	var cv := cable.get_velocity()
+	var away := -(Vector3(vel.x - cv.x, 0.0, vel.z - cv.z)).dot(rh)    # > 0: entfernt sich vom Carrier
+	var take := maxf(away, 0.0) * minf(DRIFT_ROPE_GIVE * delta, 1.0)   # weich abfangen, ohne Rückschlag
+	vel.x += rh.x * take
+	vel.z += rh.z * take
+	# gedehnte Leine langsam auf Länge bringen (ohne Ruck)
+	var stretch := _rope_dist - rope_length
+	pos += rh * stretch * minf(DRIFT_ROPE_SETTLE * delta, 1.0)
+	tension = MASS * take / delta
+	tension_smooth = lerpf(_tension_prev, tension, 1.0 - exp(-delta * 12.0))
+
+
+## Drift-Winkel mit Vorzeichen: Brett-Längsachse gegen die Fahrtrichtung, zur erlaubten Seite des
+## Press positiv (Tailpress zur einen, Nosepress spiegelverkehrt zur anderen Seite; Goofy gespiegelt).
+## Fährt man switch (Tail voraus), tauschen Nose und Tail – die Seite dreht mit.
+func _drift_angle() -> float:
+	var vh := Vector3(vel.x, 0.0, vel.z)
+	if vh.length() < 0.5:
+		return 0.0
+	var a := wrapf(yaw - atan2(-vh.x, -vh.z), -PI, PI)
+	var side := (-1.0 if DPRESS_SIDE < 0 else 1.0) * _facing() * (1.0 if _dpress_vis < 0.0 else -1.0)
+	if absf(a) > PI * 0.5:
+		a = wrapf(a - PI, -PI, PI)
+		side = -side
+	return a * side
 
 
 func _step_water(delta: float, rope: Vector3) -> void:
@@ -1154,14 +1221,23 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var drift := _release > 0.5 and not autopilot and attached and not on_feature and not on_dock and speed > 2.0
 	drifting = drift
 	var force := Vector3(rope.x, 0.0, rope.z) + f * f_long + r * f_lat
-	# Drift-Press: weiter Drift (das ganze Momentum bleibt), nur dreht man das Brett nicht selbst –
-	# es dreht sich mit dem Seilzug in die Richtung, in die das Seil zieht
+	# Drift-Press: weiter Drift (Momentum bleibt), das Brett lässt sich drehen. Das Ende im Wasser
+	# bremst (DPRESS_DRAG) – je weiter das Brett quer zur Fahrtrichtung steht (Drift-Winkel), desto weniger; ab
+	# DPRESS_FALL_ANG reißt es einen um. Man muss also mit ←/→ den Winkel halten.
 	var dp_hold := smoothstep(0.2, 0.8, absf(_dpress_vis)) if drift else 0.0
+	dpress_angle = _drift_angle() if dp_hold > 0.0 else 0.0
+	dpress_allowed = DPRESS_FALL_ANG * clampf(speed / DPRESS_SPEED, 0.0, 1.0)   # mehr Tempo = mehr Winkel
+	if dp_hold > 0.5 and (dpress_angle > dpress_allowed or dpress_angle < -DPRESS_WRONG):
+		crash("Drift-Press zu quer gedriftet!" if dpress_angle > 0.0 else "Drift-Press zur falschen Seite!")
+		return
+	var dp_drag := DPRESS_DRAG * dp_hold * clampf(1.0 - maxf(dpress_angle, 0.0) / DPRESS_FALL_ANG, 0.0, 1.0)
 	if drift:
-		var drag := (DRAG_QUAD * speed * speed + DRAG_LIN * speed) * DRIFT_DRAG
-		force = Vector3(rope.x, 0.0, rope.z) - dir_before * drag
+		var drag := (DRAG_QUAD * speed * speed + DRAG_LIN * speed) * (DRIFT_DRAG + dp_drag)
+		force = -dir_before * drag
 	vel.x += force.x / MASS * delta
 	vel.z += force.z / MASS * delta
+	if drift:
+		_drift_rope(delta)
 	if _brace:
 		vel.x = 0.0                    # Sprung-Start: Fersen gegen den Steg gestemmt
 		vel.z = 0.0
@@ -1174,7 +1250,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 
 	# Lenken über die Kante (im Drift dreht sich damit nur das Brett, die Fahrtrichtung bleibt)
 	# flaches (driftendes) Brett lässt sich schneller herumdrehen, belastete Kante zieht weite Bögen
-	var turn := TURN_RATE * clampf(0.6 + speed / 7.0, 0.6, 1.4) * (1.0 + DRIFT_SPIN * _release - 0.3 * _edge) * (1.0 - dp_hold)
+	var turn := TURN_RATE * clampf(0.6 + speed / 7.0, 0.6, 1.4) * (1.0 + DRIFT_SPIN * _release * (1.0 - dp_hold) - 0.3 * _edge) * lerpf(1.0, DPRESS_TURN, dp_hold)   # im Press: langsam zum Justieren
 	var rail := slick_part if slick_part else (features.part_at(pos.x, pos.z) if (features and on_feature) else null)
 	var sliding := rail != null and rail.is_slide() and not slick and not rail.on_ramp(pos)
 	if slick:
@@ -1187,8 +1263,6 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	if not sliding:
 		_on_slider = false
 	yaw -= _steer * turn * delta
-	if dp_hold > 0.0 and rope_dir.length() > 0.1:
-		yaw = lerp_angle(yaw, _aligned_yaw(atan2(-rope_dir.x, -rope_dir.z)), DPRESS_ALIGN * dp_hold * delta)
 	# Wasserstart: solange das Brett nicht gleitet, dreht es sich in Zugrichtung
 	if speed < 2.5 and tension > 30.0 and not on_feature and not _brace and not _yanked:
 		var target := _aligned_yaw(atan2(-rope_dir.x, -rope_dir.z))
@@ -1784,8 +1858,7 @@ func _process(delta: float) -> void:
 	_press_vis = lerpf(_press_vis, press_target, 1.0 - exp(-delta * 10.0))
 	var bs_target := 1.0 if (mode == Mode.WATER and _slide_part != null and _is_boardslide(_slide_part)) else 0.0
 	_press_bs_vis = lerpf(_press_bs_vis, bs_target, 1.0 - exp(-delta * 10.0))
-	var dp_min := DPRESS_SPEED if absf(_dpress_vis) < 0.2 else DPRESS_SPEED * 0.6     # einmal drin, hält er länger
-	var dp_target := _pitch_in if (mode == Mode.WATER and drifting and speed > dp_min) else 0.0
+	var dp_target := _pitch_in if (mode == Mode.WATER and drifting) else 0.0     # geht immer, das Tempo bestimmt den Winkel
 	_dpress_vis = lerpf(_dpress_vis, dp_target, 1.0 - exp(-delta * DPRESS_RISE))
 	if test_dpress != INF and mode == Mode.WATER:
 		_dpress_vis = test_dpress
@@ -1883,7 +1956,27 @@ func _process(delta: float) -> void:
 ## fährt auf der rechten Kante – die Gischt spritzt nach rechts weg (und umgekehrt).
 ## Je schneller man seitlich schneidet, desto höher und weiter. Beim Driften (Kante gelöst)
 ## greift keine Kante – dann gibt es keine Gischt.
+## Drift-Press: Gischt am gedrückten Ende – je schneller und je querer gedriftet, desto mehr und höher.
+## Das Wasser wird in Fahrtrichtung vor dem Ende hergeschoben und spritzt nach oben weg.
+func _update_dpress_spray(speed: float) -> void:
+	var on := mode == Mode.WATER and absf(_dpress_vis) > 0.3 and speed > 2.0 and (drifting or test_dpress != INF)
+	_dspray.emitting = on
+	if not on:
+		return
+	var travel := Vector3(vel.x, 0.0, vel.z).normalized()
+	var at := press_tip
+	at.y = water.height_at(at.x, at.z) + 0.03
+	_dspray.global_transform = Transform3D(Basis.IDENTITY, at)
+	var w := clampf(absf(_dpress_vis), 0.0, 1.0) * (0.5 + 0.5 * sin(absf(dpress_angle))) * clampf(speed / 8.0, 0.3, 1.5)
+	_dspray.direction = (travel * 0.6 + Vector3.UP * 1.3).normalized()
+	_dspray.initial_velocity_min = 2.0 + 2.5 * w
+	_dspray.initial_velocity_max = 4.0 + 6.0 * w
+	_dspray.scale_amount_min = 0.5 + 0.6 * w
+	_dspray.scale_amount_max = 1.0 + 1.0 * w
+
+
 func _update_spray(speed: float) -> void:
+	_update_dpress_spray(speed)
 	var on_water := mode == Mode.WATER and speed > 3.0 and not _in_dock(pos.x, pos.z) and pos.y < 0.2
 	if not on_water or _release > 0.3:
 		_spray.emitting = false
@@ -1934,6 +2027,8 @@ func forget_features() -> void:
 func board_state_text() -> String:
 	if mode != Mode.WATER:
 		return ""
+	if absf(_dpress_vis) > 0.3 and drifting:
+		return "%s – Drift-Winkel %d°  (erlaubt %d° bis %d°)" % ["NOSEPRESS" if _dpress_vis > 0.0 else "TAILPRESS", roundi(rad_to_deg(dpress_angle)), -roundi(rad_to_deg(DPRESS_WRONG)), roundi(rad_to_deg(dpress_allowed))]
 	if _release > 0.3:
 		return "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)" % absf(slip)
 	if _edge > 0.3:

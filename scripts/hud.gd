@@ -4,13 +4,13 @@ extends CanvasLayer
 ## Warnbereich) und Punkte. Unten rechts klein die Technik-Angaben, unten links die Hilfe.
 
 const HELP := """← / →   lenken   (in der Luft und beim Raley: drehen; auf dem Slider: Boardslide ↔ 50-50 umspringen)
-↑ / ↓   in der Luft: Frontroll / Backroll     auf dem Slider: Nosepress / Tailpress     im Drift (ab 18 km/h): Drift-Press     Sprung-Start: auf dem Steg ↓ halten, bis das Seil losreißt (Brett längs: Nolli, quer: Raley Start)
+↑ / ↓   in der Luft: Frontroll / Backroll     auf dem Slider: Nosepress / Tailpress     im Drift: Drift-Press     Sprung-Start: auf dem Steg ↓ halten, bis das Seil losreißt (Brett längs: Nolli, quer: Raley Start)
 Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das Brett dreht frei, etwas schneller; quer vom Slider ins Wasser nur mit Drift
 Leertaste halten + loslassen   Absprung (langsam: Ollie, über 40 km/h, voll aufgeladen und ohne Feature voraus: Raley)
 Start mit Countdown 3 – 2 – 1 – GO (Runde 7:30)     R  zurück zum Steg (−2:00, dann Countdown), in den Spielmodi: neuer Versuch     + / -  Anlagentempo
 Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−1:00)     R = Steg (−2:00)
 C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause
-P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus     H  Hilfe ein/aus     F3  Hitboxen (Debug)
+P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus     H  Hilfe ein/aus     F3  Hitboxen (Debug)     F4  Parameter (Debug, nur lokal)
 Tab  Startseite (Terminal, Feature-Setup, Einstellungen)"""
 
 const HELP_MOBILE := """Start mit Countdown          Handy neigen   lenken (auf dem Slider: deutlich neigen = Boardslide ↔ 50-50)
@@ -58,6 +58,7 @@ var _score_pop := 0.0
 var _gain_time := 0.0
 var _gauge: TensionGauge
 var _top_bar: Control
+var _speed: SpeedGauge
 var _font: Font
 var _t := 0.0
 
@@ -239,6 +240,13 @@ func _build_top_bar() -> void:
 	_gauge.font = _font
 	gp.add_child(_gauge)
 
+	# Tempo: genauso wichtig wie der Seilzug (Raley, Drift-Press, Sprunghöhe hängen daran)
+	var vp := _panel(bar, 280)
+	_speed = SpeedGauge.new()
+	_speed.custom_minimum_size = Vector2(256, 74)
+	_speed.font = _font
+	vp.add_child(_speed)
+
 	var sp := _panel(bar, 170)
 	_small(sp, "PUNKTE")
 	_score_value = _big(sp, "0")
@@ -337,6 +345,11 @@ func set_stats(time_text: String, time_state: TimeState, score: int, tension_n: 
 		_score_shown = score               # neue Runde
 	_score_target = score
 	_gauge.set_value(tension_n, tension_ratio)
+
+
+## Fahrer-Tempo (km/h) für die Tempo-Anzeige.
+func set_speed(kmh: float) -> void:
+	_speed.set_value(kmh)
 
 
 ## Technik-Angaben (klein, unten rechts).
@@ -503,6 +516,37 @@ func _process(delta: float) -> void:
 		TimeState.OVER:
 			c = DANGER
 	_time_value.add_theme_color_override("font_color", c)
+
+
+## Tempo-Anzeiger: km/h groß, darunter ein Balken bis MAX_KMH mit Marken an den Schwellen, ab denen
+## etwas geht (Drift-Press, Raley); eine Marke leuchtet, sobald man schnell genug ist.
+class SpeedGauge extends Control:
+	const MAX_KMH := 50.0
+	var font: Font
+	var _kmh := 0.0
+
+	func set_value(kmh: float) -> void:
+		_kmh = kmh
+
+	func _process(_delta: float) -> void:
+		queue_redraw()
+
+	func _draw() -> void:
+		var w := size.x
+		var f := font if font else get_theme_default_font()
+		draw_string(f, Vector2(2, 18), "TEMPO", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.6))
+		draw_string(f, Vector2(0, 22), "%d km/h" % roundi(_kmh), HORIZONTAL_ALIGNMENT_RIGHT, w - 2, 26, Color.WHITE)
+		var top := 36.0
+		var h := 12.0
+		draw_rect(Rect2(0, top, w, h), Color(1, 1, 1, 0.12))
+		var fill := clampf(_kmh / MAX_KMH, 0.0, 1.0) * w
+		draw_rect(Rect2(0, top, fill, h), ACCENT)
+		for m: Array in [["PRESS MAX", Rider.DPRESS_SPEED * 3.6], ["RALEY", Rider.RALEY_SPEED * 3.6]]:
+			var x := clampf(float(m[1]) / MAX_KMH, 0.0, 1.0) * w
+			var on := _kmh >= float(m[1])
+			var c := Color(1.0, 0.85, 0.2) if on else Color(1, 1, 1, 0.45)
+			draw_rect(Rect2(x - 1.5, top - 3.0, 3.0, h + 6.0), c)
+			draw_string(f, Vector2(x - 40.0, top + h + 15.0), m[0], HORIZONTAL_ALIGNMENT_CENTER, 80.0, 12, c)
 
 
 ## Großer Seilzug-Anzeiger: Segmente von grün über gelb nach rot, Spitzenwert-Marke,

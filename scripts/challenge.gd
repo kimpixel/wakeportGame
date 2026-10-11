@@ -12,7 +12,7 @@ const FAIL_DELAY := 1.4         # s nach Sturz, bis das Ergebnis kommt
 const TIMEOUT := 75.0
 const DRIFT_SINK := 0.15        # Wende im Drift: ab diesem Sinkpegel gleitet man nicht mehr (zählt nicht)
 const SPIN_EACH := 5            # 360er im Drift: so viele je Richtung zählen
-const DPRESS_FULL := 0.6         # Drift-Press zählt ab diesem Anteil (Brett deutlich gekippt)
+static var DPRESS_FULL := 0.6         # Drift-Press zählt ab diesem Anteil (Brett deutlich gekippt)
 const OUTRO := 1.4              # s nach dem Ende weiterfahren (ausrollen), dann erst das Ergebnis
 
 var game: Node                  # main.gd (rider, pc, features, hud, cam, water, …)

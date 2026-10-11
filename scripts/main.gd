@@ -30,6 +30,7 @@ extends Node3D
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
 ##   --pause-at=SEK    Test: zu dieser Zeit pausieren (mit --shot: Bild der Pause)
+##   --debug-params    Debug-Overlay (Parameter-Regler, im Spiel F4) gleich offen
 ##   --hitbox          Fangzonen der Slider zeigen (im Spiel: F3)
 ##   --set=NAME=WERT   Test: Einstellung setzen (ohne zu speichern), z. B. --set=goofy=true
 ##   --mode=ID[:N]     Spielmodus (wende, kicker, slider, raley, sprungstart, drift, transfer) mit Aufgabe N (ab 1) direkt starten;
@@ -56,6 +57,7 @@ var cam: ChaseCamera
 var hud: Hud
 var mobile: MobileInput
 var pause_menu: PauseMenu
+var debug_params: DebugParams   # F4, nur lokal (null in der Web-Version)
 var touch_pad: TouchPad         # nur am Handy
 var _setups: Array = []          # aus setups/index.json
 var _setup_idx := 0
@@ -138,6 +140,7 @@ var _drop_at := -1.0           # Test: Fahrer zu dieser Zeit an _drop_pos in die
 var _drop_pos := Vector3.INF   # Test: wohin (INF = über den Startsteg)
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
 var _pause_at := -1.0           # Test: zu dieser Zeit pausieren (und Screenshot)
+var _debug_params_arg := false  # Test: Debug-Overlay gleich offen (--debug-params)
 var _hitbox_arg := false        # Test: Fangzonen der Slider zeigen
 var _set_args: Array[String] = []   # Test: --set=NAME=WERT
 var _hold: Array = []           # Test: [Aktion, von, bis] (--hold)
@@ -323,6 +326,13 @@ func _ready() -> void:
 	pause_menu.help_pressed.connect(hud.toggle_help)
 	pause_menu.home_pressed.connect(_open_start_screen)
 	add_child(pause_menu)
+	# Debug-Overlay (F4, nur lokal): Parameter live mit Schiebereglern justieren
+	if DebugParams.available():
+		debug_params = DebugParams.new()
+		debug_params.rider = rider
+		add_child(debug_params)
+		if _debug_params_arg:
+			debug_params.toggle()
 	# Spielmodi: Aufgaben-Fenster und Ablauf
 	task_panel = TaskPanel.new()
 	task_panel.mobile = mobile.active
@@ -372,6 +382,8 @@ func _ready() -> void:
 	# Das Spiel beginnt mit dem Startbildschirm (Testläufe gehen direkt ins Spiel)
 	if not _screen_arg and not _no_screen and not _test_log and _shot_path == "" and _view_arg.is_empty() and _closeup == Vector3.INF and _mode_arg == "":
 		_screen_arg = true
+	if _mode_arg == "":
+		_recall_game()                     # zuletzt gespieltes Spiel auf der Startseite vorauswählen
 	if _mode_arg != "":
 		var mi := _mode_arg.split(":")
 		game_mode = mi[0]
@@ -478,6 +490,7 @@ func _open_start_screen() -> void:
 
 ## "Spiel starten": Competition beginnt direkt mit Countdown, die Spielmodi mit ihrer Aufgabe.
 func _on_start_pressed() -> void:
+	_remember_game()
 	_close_start_screen()
 	if game_mode == Training.COMPETITION:
 		_countdown_start()
@@ -530,6 +543,7 @@ func _leave_training() -> void:
 	if not challenge.active:
 		return
 	_task_idx = challenge.task_idx
+	_remember_game()                         # „Nächste Challenge“ zählt auch
 	challenge.stop()
 	if _comp_terminal != "":
 		if _comp_terminal != terminal:
@@ -551,6 +565,37 @@ func _close_start_screen() -> void:
 	rider.autopilot = _autopilot_before
 	_reset()
 	cam.snap()
+
+
+# ---------------------------------------------------------------- Letztes Spiel
+
+## Zuletzt gespieltes Spiel (Modus + Challenge) merken – in user://settings.cfg [game]. Tests speichern nichts.
+func _remember_game() -> void:
+	if not OS.get_cmdline_user_args().is_empty():
+		return
+	var list := Training.tasks(game_mode)
+	var cfg := ConfigFile.new()
+	cfg.load(SETTINGS)
+	cfg.set_value("game", "mode", game_mode)
+	cfg.set_value("game", "task", list[clampi(_task_idx, 0, list.size() - 1)]["id"] if not list.is_empty() else "")
+	cfg.save(SETTINGS)
+
+
+## Beim Start: zuletzt gespieltes Spiel wieder auswählen (Challenge nach id, falls sich die Liste ändert).
+func _recall_game() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS) != OK:
+		return
+	var mode: String = cfg.get_value("game", "mode", Training.COMPETITION)
+	if Training.MODES[Training.mode_index(mode)]["id"] != mode:
+		return
+	game_mode = mode
+	_task_idx = 0
+	var id: String = cfg.get_value("game", "task", "")
+	var list := Training.tasks(mode)
+	for i in list.size():
+		if list[i]["id"] == id:
+			_task_idx = i
 
 
 # ---------------------------------------------------------------- Terminal
@@ -1006,6 +1051,7 @@ func _process(_delta: float) -> void:
 	hud.time_title = "VERSUCH" if challenge.active else ("MODUS" if _free_ride() else "ZEIT")
 	hud.set_stats(time_text, state,
 		_final_score if _finishing else rider.score, rider.tension_smooth, rider.tension_smooth / minf(rider.crash_tension, Rider.CRASH_TENSION))
+	hud.set_speed(rider.horizontal_speed() * 3.6)
 	hud.set_debug("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nWenden %d   ·   Kamera: %s%s" % [
 		roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
 		pc.laps, cam.mode_name(), "   ·   AUTOPILOT" if rider.autopilot else ""])
@@ -1254,6 +1300,8 @@ func _parse_args() -> void:
 			mode_auto = true
 		elif arg.begins_with("--go="):
 			_go_at = arg.substr(5).to_float()
+		elif arg == "--debug-params":
+			_debug_params_arg = true
 		elif arg == "--hitbox":
 			_hitbox_arg = true
 		elif arg.begins_with("--set="):
