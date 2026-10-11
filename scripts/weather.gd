@@ -188,7 +188,7 @@ func apply() -> void:
 	var golden := 1.0 - smoothstep(2.0, 22.0, el)         # tiefe Sonne: warmes Licht
 	if el < -6.0:
 		golden *= smoothstep(-14.0, -6.0, el)
-	var sky_energy := 0.8 if _compat else 1.0
+	var sky_energy := 1.0
 	_sky_mat.set_shader_parameter("sun_dir", to_sun)
 	_sky_mat.set_shader_parameter("day", dayf)
 	_sky_mat.set_shader_parameter("golden", golden)
@@ -209,15 +209,15 @@ func apply() -> void:
 		dir = (dir + Vector3.UP * (0.05 - dir.y)).normalized()     # Schatten nicht endlos lang
 	sun.basis = Basis.looking_at(-dir)
 	sun.light_color = color
-	sun.light_energy = energy * (0.65 if _compat else 1.0)
+	sun.light_energy = energy * (0.8 if _compat else 1.0)   # Web-Renderer (Compatibility): Wasser sonst grell
 	sun.shadow_enabled = energy > 0.08 and cloud < 0.85 and shadow_distance > 0.0
 	sun.directional_shadow_max_distance = maxf(shadow_distance, 1.0)
 
 	# Umgebungslicht: Himmel + neutrales Grau, nachts dunkel, bei Wolken weicher
 	env.ambient_light_color = Color(0.62, 0.6, 0.55).lerp(Color(0.12, 0.14, 0.22), 1.0 - dayf)
 	env.ambient_light_sky_contribution = 0.45
-	env.ambient_light_energy = lerpf(0.25, 1.0, dayf) * (1.0 + 0.3 * cloud) * (0.3 if _compat else 1.0)
-	env.tonemap_exposure = (0.8 if _compat else 1.0) * lerpf(1.6, 1.0, dayf)
+	env.ambient_light_energy = lerpf(0.25, 1.0, dayf) * (1.0 + 0.3 * cloud) * (0.7 if _compat else 1.0)
+	env.tonemap_exposure = (0.9 if _compat else 1.0) * lerpf(1.6, 1.0, dayf)
 	# Dunst und Regen: kürzere Sicht
 	var hor := Color(0.7, 0.78, 0.88).lerp(Color(0.05, 0.06, 0.1), 1.0 - dayf)
 	hor = hor.lerp(Color(0.55, 0.57, 0.6) * maxf(dayf, 0.1), cloud * 0.7)

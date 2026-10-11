@@ -2031,8 +2031,6 @@ func board_state_text() -> String:
 		return "%s – Drift-Winkel %d°  (erlaubt %d° bis %d°)" % ["NOSEPRESS" if _dpress_vis > 0.0 else "TAILPRESS", roundi(rad_to_deg(dpress_angle)), -roundi(rad_to_deg(DPRESS_WRONG)), roundi(rad_to_deg(dpress_allowed))]
 	if _release > 0.3:
 		return "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)" % absf(slip)
-	if _edge > 0.3:
-		return "KANTE belastet – maximaler Grip"
 	return ""
 
 
