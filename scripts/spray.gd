@@ -13,6 +13,29 @@ static var sprites := true          # false = 3D-Kugeln (bisher)
 static var _emitters: Array = []    # [CPUParticles3D, Kind, Kugel-Mesh, material_override]
 static var _tex := {}               # Kind -> ImageTexture
 static var _mats := {}
+static var _drops: Image
+
+
+## Tropfenspur: eine schmale, nach oben ausdünnende Spur aus vielen kleinen, scharfen Tröpfchen
+## (verschieden groß, oben zu Fäden gezogen) – kein weicher Fleck, sonst sieht es aus wie Schnee.
+static func _droplet_image(size: int) -> Image:
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	img.fill(Color(1, 1, 1, 0))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4242
+	for i in 46:
+		var t := rng.randf()
+		var cx := size * 0.5 + rng.randfn(0.0, size * 0.14 * (0.4 + t))
+		var cy := size * (0.08 + 0.84 * t)
+		var rad := lerpf(2.6, 0.8, t) * rng.randf_range(0.6, 1.3)
+		var stretch := 1.0 + 2.5 * rng.randf()          # in Flugrichtung gezogen
+		for y in range(maxi(0, int(cy - rad * stretch) - 1), mini(size, int(cy + rad * stretch) + 2)):
+			for x in range(maxi(0, int(cx - rad) - 1), mini(size, int(cx + rad) + 2)):
+				var d := Vector2((x - cx) / rad, (y - cy) / (rad * stretch)).length()
+				var a := (1.0 - smoothstep(0.55, 1.0, d)) * lerpf(1.0, 0.55, t)
+				if a > img.get_pixel(x, y).a:
+					img.set_pixel(x, y, Color(1, 1, 1, a))
+	return img
 
 
 ## Emitter anmelden: merkt sich die Kugel-Optik und stellt auf den aktuellen Stil.
@@ -64,19 +87,27 @@ static func _apply(p: CPUParticles3D, kind: Kind, sphere: Mesh, override: Materi
 		p.material_override = override
 		p.color_ramp = null
 		p.scale_amount_curve = null
+		p.particle_flag_align_y = false
 		p.visible = kind != Kind.MIST
 		return
 	p.visible = true
-	var q := QuadMesh.new()
 	var r := 0.05
 	if sphere is SphereMesh:
 		r = (sphere as SphereMesh).radius
-	q.size = Vector2.ONE * (r * 4.5 if kind == Kind.DROP else 0.9)
-	q.material = _material(kind)
-	p.mesh = q
 	p.material_override = null
-	p.angle_min = 0.0
-	p.angle_max = 360.0
+	if kind == Kind.DROP:
+		# Tropfenschleier: zwei gekreuzte, in Flugrichtung gestreckte Flächen (sieht man von allen Seiten)
+		p.mesh = _streak_mesh(r * 2.0, r * 6.0)
+		p.particle_flag_align_y = true
+		p.angle_min = 0.0
+		p.angle_max = 0.0
+	else:
+		var q := QuadMesh.new()
+		q.size = Vector2.ONE * 0.9
+		q.material = _material(kind)
+		p.mesh = q
+		p.angle_min = 0.0
+		p.angle_max = 360.0
 	# Verlauf: Tropfen fast weiß und deckend, dann durchsichtig und graublau; Nebel zart
 	var g := Gradient.new()
 	if kind == Kind.DROP:
@@ -96,12 +127,30 @@ static func _apply(p: CPUParticles3D, kind: Kind, sphere: Mesh, override: Materi
 	p.scale_amount_curve = c
 
 
+## Zwei gekreuzte Rechtecke entlang der lokalen Y-Achse (= Flugrichtung, particle_flag_align_y).
+static func _streak_mesh(w: float, h: float) -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for ax: Vector3 in [Vector3.RIGHT, Vector3.BACK]:
+		var a := ax * w * 0.5
+		var top := Vector3.UP * h * 0.5
+		var c := [-a - top, a - top, a + top, -a + top]
+		var uv := [Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0)]
+		for i: int in [0, 1, 2, 0, 2, 3]:
+			st.set_normal(Vector3.UP.cross(ax).normalized())
+			st.set_uv(uv[i])
+			st.add_vertex(c[i])
+	var m := st.commit()
+	m.surface_set_material(0, _material(Kind.DROP))
+	return m
+
+
 static func _material(kind: Kind) -> StandardMaterial3D:
 	if _mats.has(kind):
 		return _mats[kind]
 	var m := StandardMaterial3D.new()
 	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES if kind == Kind.MIST else BaseMaterial3D.BILLBOARD_DISABLED
 	m.billboard_keep_scale = true
 	m.vertex_color_use_as_albedo = true
 	m.albedo_texture = _texture(kind)
@@ -133,15 +182,15 @@ static func _texture(kind: Kind) -> ImageTexture:
 	nz.fractal_octaves = 3
 	nz.seed = 7 if kind == Kind.DROP else 19
 	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	if kind == Kind.DROP:
+		_drops = _droplet_image(size)
 	for y in size:
 		for x in size:
 			var d := Vector2(x - size * 0.5 + 0.5, y - size * 0.5 + 0.5).length() / (size * 0.5)
 			var n := nz.get_noise_2d(x, y) * 0.5 + 0.5
 			var a: float
 			if kind == Kind.DROP:
-				# weicher Kern, Rand vom Rauschen ausgefranst (kein Sternchen)
-				var edge := 0.45 + 0.35 * n
-				a = clampf((1.0 - smoothstep(edge * 0.35, edge, d)) * (0.75 + 0.25 * n), 0.0, 1.0)
+				a = _drops.get_pixel(x, y).a
 			else:
 				a = clampf((1.0 - smoothstep(0.2, 1.0, d)) * (0.35 + 0.65 * n), 0.0, 1.0)
 			img.set_pixel(x, y, Color(1.0, 1.0, 1.0, a))
