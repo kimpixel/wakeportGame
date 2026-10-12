@@ -170,6 +170,8 @@ func _ready() -> void:
 
 	water = Water.new()
 	add_child(water)
+	water.sun = weather.sun
+	water.env = weather.env
 	cable = CableSystem.new()
 	add_child(cable)
 	cable.turn_a_z = -28.0          # Ufer-Wende T2: 6 m weiter draußen (mehr Abstand zum Ufer)
@@ -712,6 +714,16 @@ func _apply_setting(key: String) -> void:
 			cam.set_mode(int(v))
 		"cam_dist":
 			cam.distance = float(v)
+		"w_color":
+			water.set_color(int(v))
+		"w_ssr":
+			# echte Spiegelbilder (Screen-Space Reflections): nur Desktop-Renderer, nur undurchsichtiges Wasser
+			weather.env.ssr_enabled = bool(v)
+			weather.env.ssr_max_steps = 48
+			weather.env.ssr_fade_in = 0.15
+			weather.env.ssr_fade_out = 2.0
+		"w_detail", "w_fresnel", "w_glitter", "w_crest", "w_foam", "w_sharp", "w_edge", "w_clear":
+			water.set_fx(key.substr(2), bool(v))
 
 
 ## Seil-Abreißen an/aus (Taste G, Handy-Menü): "Aus" bzw. zurück zur zuletzt gewählten Grenze.
