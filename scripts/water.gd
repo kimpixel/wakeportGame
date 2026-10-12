@@ -25,6 +25,7 @@ static var sharp := true
 var fx := {}                      # Schlüssel -> an/aus
 var sun: DirectionalLight3D       # für Glitzern und Licht durch die Kämme
 var env: Environment              # Himmelsfarbe für die Spiegelung
+var riders: Array[Node3D] = []    # dort keine Schaumkränze (Schwimmer wäre sonst ganz weiß)
 var _tex_a: NoiseTexture2D
 var _tex_b: NoiseTexture2D
 var _tex_foam: NoiseTexture2D
@@ -211,6 +212,12 @@ func _process(_delta: float) -> void:
 		m.set_shader_parameter("sim_time", sim_time)
 		m.set_shader_parameter("hole_center", hole)
 	_material.set_shader_parameter("wake_points", _points)
+	var at := PackedVector2Array([Vector2(1e6, 1e6), Vector2(1e6, 1e6)])
+	for i in mini(riders.size(), 2):
+		if is_instance_valid(riders[i]) and riders[i].visible:
+			at[i] = Vector2(riders[i].global_position.x, riders[i].global_position.z)
+	for m: ShaderMaterial in [_material, _coarse_material]:
+		m.set_shader_parameter("no_edge_at", at)
 	if sun:
 		var to_sun := sun.global_transform.basis.z.normalized()
 		for m: ShaderMaterial in [_material, _coarse_material]:

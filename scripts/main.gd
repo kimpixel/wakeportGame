@@ -208,6 +208,7 @@ func _ready() -> void:
 
 	npc = Rider.new()
 	npc.water = water
+	water.riders = [rider, npc]
 	npc.features = features
 	npc.cable = cable_t1
 	npc.is_npc = true
