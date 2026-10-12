@@ -1996,6 +1996,12 @@ func _update_spray(speed: float) -> void:
 	var lat := v - axis * v.dot(axis)
 	var cut := lat.length()
 	var side := -lat / cut if cut > 0.3 else travel.cross(Vector3.UP)
+	# Gischtseite = Seite, auf die die belastete Brettkante zeigt: weg vom Seilzug
+	var rope_h := Vector3(rope_dir.x, 0.0, rope_dir.z).normalized()
+	var board_r := Vector3(right().x, 0.0, right().z).normalized()
+	var pull_side := rope_h.dot(board_r)
+	if absf(pull_side) > 0.15 and tension_smooth > 50.0:
+		side = -signf(pull_side) * board_r
 	# Stärke nach Kantendruck: Seilzug quer zur Fahrtrichtung drückt das Brett auf die Kante
 	# (normal 50–180 N, kräftig rausgekantet weit über 1000 N). Je mehr Druck, desto größer und weiter
 	# die Gischt – am stärksten Punkt 2–3 m. Seitliches Schneiden allein gibt etwas Gischt.
@@ -2010,11 +2016,13 @@ func _update_spray(speed: float) -> void:
 	var bx := side
 	var bz := bx.cross(Vector3.UP).normalized()
 	_spray.global_transform = Transform3D(Basis(bx, Vector3.UP, bz), at)
-	var dir := side * (0.2 + 1.3 * w) + Vector3.UP * (0.7 + 0.3 * w) - travel * (0.6 - 0.4 * w)
-	_spray.direction = Basis(bx, Vector3.UP, bz).inverse() * dir.normalized()
-	# bei vollem Druck ca. 5,5 m/s unter gut 30° -> 2–3 m weit
-	_spray.initial_velocity_min = 0.8 + w * 2.0
-	_spray.initial_velocity_max = 1.4 + w * 3.4 + speed * 0.06
+	# Hoher Bogen zur Kantenseite (ca. 50° steil, bei vollem Druck ca. 5,5 m/s -> bis 3 m seitlich);
+	# das Wasser nimmt gut die Hälfte der Fahrt mit, sonst bliebe die Gischt hinten stehen
+	var out := 1.2 + 4.3 * w
+	var vel_w := side * out * 0.64 + Vector3.UP * out * 0.77 + travel * speed * 0.55
+	_spray.direction = Basis(bx, Vector3.UP, bz).inverse() * vel_w.normalized()
+	_spray.initial_velocity_min = vel_w.length() * 0.75
+	_spray.initial_velocity_max = vel_w.length()
 	_spray.scale_amount_min = 0.5 + 0.5 * w
 	_spray.scale_amount_max = 1.0 + 2.0 * w
 	_spray.emitting = true
