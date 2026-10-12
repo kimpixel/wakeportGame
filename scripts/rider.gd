@@ -298,6 +298,7 @@ var _rope_mesh: ImmediateMesh
 var _rope_mat: StandardMaterial3D
 var _spray: CPUParticles3D
 var _dspray: CPUParticles3D     # Drift-Press: große Gischt am Brett-Ende im Wasser
+var _mist: CPUParticles3D       # Sprühnebel hinter der Kante (nur Gischt-Stil Sprites, siehe Spray)
 
 
 # ---------------------------------------------------------------- Aufbau
@@ -380,6 +381,9 @@ func _ready() -> void:
 	_dspray.mesh = drop
 	_dspray.emitting = false
 	add_child(_dspray)
+	Spray.register(_spray)
+	Spray.register(_dspray)
+	_mist = Spray.make_mist(self)
 
 
 
@@ -1980,6 +1984,7 @@ func _update_spray(speed: float) -> void:
 	var on_water := mode == Mode.WATER and speed > 3.0 and not _in_dock(pos.x, pos.z) and pos.y < 0.2
 	if not on_water or _release > 0.3:
 		_spray.emitting = false
+		_mist.emitting = false
 		return
 	var v := Vector3(vel.x, 0.0, vel.z)
 	var travel := v.normalized()
@@ -2005,6 +2010,9 @@ func _update_spray(speed: float) -> void:
 	_spray.scale_amount_min = 0.5 + 0.3 * w
 	_spray.scale_amount_max = 1.0 + 1.0 * w
 	_spray.emitting = true
+	# Sprühnebel: bleibt hinter der Kante kurz in der Luft stehen, stärker beim harten Schneiden
+	_mist.global_position = at + side * (0.3 + 0.4 * w) + Vector3.UP * (0.15 + 0.25 * w)
+	_mist.emitting = Spray.sprites and (w > 0.15 or speed > 7.0)
 
 
 ## Über eine Boje oder einen Steg gerumpelt: kein Sturz, nur ein kleiner Wackler und etwas Tempo weg.

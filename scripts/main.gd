@@ -715,6 +715,8 @@ func _apply_setting(key: String) -> void:
 			cam.set_mode(int(v))
 		"cam_dist":
 			cam.distance = float(v)
+		"w_spray":
+			Spray.set_sprites(int(v) == 1)
 		"w_color":
 			water.set_color(int(v))
 		"w_ssr":
