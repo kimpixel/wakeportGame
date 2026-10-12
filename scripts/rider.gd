@@ -57,6 +57,8 @@ var _ground_kind := "water"      # zuletzt befahrene Fläche (wie _launch_kind)
 enum Mode { WATER, AIR, CRASHED }
 
 const MASS := 80.0
+const SPRAY_LOAD_MIN := 120.0   # N Kantendruck (Seilzug quer zur Fahrt), ab dem die Gischt wächst
+const SPRAY_LOAD_FULL := 1500.0 # N: volle Gischt, 2–3 m weit
 const GRAVITY := 9.81
 const ROPE_LENGTH := 16.0       # Zugseil Griff bis Carrier (Standard)
 static var ROPE_STIFFNESS := 2600.0
@@ -344,8 +346,8 @@ func _ready() -> void:
 
 	# Gischt an der Kante, auf der gefahren wird (Lage/Richtung jedes Frame in _update_spray)
 	_spray = CPUParticles3D.new()
-	_spray.amount = 120
-	_spray.lifetime = 0.7
+	_spray.amount = 160
+	_spray.lifetime = 0.9
 	_spray.local_coords = false
 	_spray.top_level = true
 	_spray.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
@@ -1994,7 +1996,12 @@ func _update_spray(speed: float) -> void:
 	var lat := v - axis * v.dot(axis)
 	var cut := lat.length()
 	var side := -lat / cut if cut > 0.3 else travel.cross(Vector3.UP)
-	var w := clampf((cut - 0.3) / 1.5, 0.0, 1.0)        # 0 = geradeaus, 1 = kräftig geschnitten
+	# Stärke nach Kantendruck: Seilzug quer zur Fahrtrichtung drückt das Brett auf die Kante
+	# (normal 50–180 N, kräftig rausgekantet weit über 1000 N). Je mehr Druck, desto größer und weiter
+	# die Gischt – am stärksten Punkt 2–3 m. Seitliches Schneiden allein gibt etwas Gischt.
+	var edge_load := tension_smooth * absf(Vector3(rope_dir.x, 0.0, rope_dir.z).dot(travel.cross(Vector3.UP)))
+	var w := maxf(clampf((cut - 0.3) / 1.5, 0.0, 1.0) * 0.6,
+		clampf((edge_load - SPRAY_LOAD_MIN) / (SPRAY_LOAD_FULL - SPRAY_LOAD_MIN), 0.0, 1.0))
 	# Lage: an der Kante auf der Gischtseite, etwas hinter der Brettmitte, knapp über dem Wasser
 	var board := _board_pivot.global_position
 	var at := board + side * 0.2 - travel * 0.25
@@ -2005,13 +2012,14 @@ func _update_spray(speed: float) -> void:
 	_spray.global_transform = Transform3D(Basis(bx, Vector3.UP, bz), at)
 	var dir := side * (0.2 + 1.3 * w) + Vector3.UP * (0.7 + 0.3 * w) - travel * (0.6 - 0.4 * w)
 	_spray.direction = Basis(bx, Vector3.UP, bz).inverse() * dir.normalized()
-	_spray.initial_velocity_min = 0.8 + w * 1.5 + cut * 0.3
-	_spray.initial_velocity_max = 1.6 + w * 2.5 + cut * 0.6 + speed * 0.08
-	_spray.scale_amount_min = 0.5 + 0.3 * w
-	_spray.scale_amount_max = 1.0 + 1.0 * w
+	# bei vollem Druck ca. 5,5 m/s unter gut 30° -> 2–3 m weit
+	_spray.initial_velocity_min = 0.8 + w * 2.0
+	_spray.initial_velocity_max = 1.4 + w * 3.4 + speed * 0.06
+	_spray.scale_amount_min = 0.5 + 0.5 * w
+	_spray.scale_amount_max = 1.0 + 2.0 * w
 	_spray.emitting = true
-	# Sprühnebel: bleibt hinter der Kante kurz in der Luft stehen, stärker beim harten Schneiden
-	_mist.global_position = at + side * (0.3 + 0.4 * w) + Vector3.UP * (0.15 + 0.25 * w)
+	# Sprühnebel: bleibt hinter der Kante kurz in der Luft stehen, weiter draußen bei viel Druck
+	_mist.global_position = at + side * (0.3 + 1.2 * w) + Vector3.UP * (0.15 + 0.45 * w)
 	_mist.emitting = Spray.sprites and (w > 0.15 or speed > 7.0)
 
 
