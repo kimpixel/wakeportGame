@@ -301,6 +301,7 @@ var _rope_mat: StandardMaterial3D
 var _spray: CPUParticles3D
 var _dspray: CPUParticles3D     # Drift-Press: große Gischt am Brett-Ende im Wasser
 var _mist: CPUParticles3D       # Sprühnebel hinter der Kante (nur Gischt-Stil Sprites, siehe Spray)
+var _spray_main: CPUParticles3D # Hauptgischt: von der Kante zur Seilseite, hoch und weit (je nach Kantendruck)
 
 
 # ---------------------------------------------------------------- Aufbau
@@ -384,6 +385,11 @@ func _ready() -> void:
 	_dspray.emitting = false
 	add_child(_dspray)
 	Spray.register(_spray)
+	_spray_main = _spray.duplicate() as CPUParticles3D
+	_spray_main.amount = 320
+	_spray_main.lifetime = 1.3
+	add_child(_spray_main)
+	Spray.register(_spray_main)
 	Spray.register(_dspray)
 	_mist = Spray.make_mist(self)
 
@@ -1986,6 +1992,7 @@ func _update_spray(speed: float) -> void:
 	var on_water := mode == Mode.WATER and speed > 3.0 and not _in_dock(pos.x, pos.z) and pos.y < 0.2
 	if not on_water or _release > 0.3:
 		_spray.emitting = false
+		_spray_main.emitting = false
 		_mist.emitting = false
 		return
 	var v := Vector3(vel.x, 0.0, vel.z)
@@ -2026,8 +2033,23 @@ func _update_spray(speed: float) -> void:
 	_spray.scale_amount_min = 0.5 + 0.5 * w
 	_spray.scale_amount_max = 1.0 + 2.0 * w
 	_spray.emitting = true
-	# Sprühnebel: bleibt hinter der Kante kurz in der Luft stehen, weiter draußen bei viel Druck
-	_mist.global_position = at + side * (0.3 + 1.2 * w) + Vector3.UP * (0.15 + 0.45 * w)
+	# Hauptgischt: von der gegenüberliegenden Kante zur Seilseite, viel höher, weiter und dichter
+	# (bei vollem Druck ca. 7 m/s unter 60° -> gut 4 m weit, fast 2 m hoch)
+	var main_at := board - side * 0.2 - travel * 0.2
+	main_at.y = water.height_at(main_at.x, main_at.z) + 0.03
+	var mx := -side
+	var mz := mx.cross(Vector3.UP).normalized()
+	_spray_main.global_transform = Transform3D(Basis(mx, Vector3.UP, mz), main_at)
+	var mout := 1.5 + 5.5 * w
+	var mvel := mx * mout * 0.5 + Vector3.UP * mout * 0.87 + travel * speed * 0.55
+	_spray_main.direction = Basis(mx, Vector3.UP, mz).inverse() * mvel.normalized()
+	_spray_main.initial_velocity_min = mvel.length() * 0.7
+	_spray_main.initial_velocity_max = mvel.length()
+	_spray_main.scale_amount_min = 0.6 + 0.8 * w
+	_spray_main.scale_amount_max = 1.2 + 2.8 * w
+	_spray_main.emitting = w > 0.05 or cut > 0.6
+	# Sprühnebel: bleibt bei der Hauptgischt kurz in der Luft stehen, weiter draußen bei viel Druck
+	_mist.global_position = main_at - side * (0.4 + 1.8 * w) + Vector3.UP * (0.3 + 0.9 * w)
 	_mist.emitting = Spray.sprites and (w > 0.15 or speed > 7.0)
 
 
