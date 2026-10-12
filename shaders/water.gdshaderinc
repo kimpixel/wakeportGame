@@ -186,8 +186,8 @@ void fragment() {
 	float alpha = 1.0;
 	if (fx_clear) {
 		// im Flachen durchsichtig und heller, schnell trüber mit der Tiefe (Waldsee)
-		alpha = mix(0.25, 1.0, smoothstep(0.0, 2.2, thick));
-		col = mix(shallow_color * 1.35, col, smoothstep(0.0, 1.6, thick));
+		alpha = mix(0.6, 1.0, smoothstep(0.0, 1.0, thick));   // trüber Waldsee: nur am Rand etwas durchsichtig
+		col = mix(shallow_color * 1.15, col, smoothstep(0.0, 1.0, thick));
 	}
 	ALPHA = max(alpha, foam);
 #endif
