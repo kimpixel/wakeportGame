@@ -302,6 +302,7 @@ var _spray: CPUParticles3D
 var _dspray: CPUParticles3D     # Drift-Press: große Gischt am Brett-Ende im Wasser
 var _mist: CPUParticles3D       # Sprühnebel hinter der Kante (nur Gischt-Stil Sprites, siehe Spray)
 var _spray_main: CPUParticles3D # Hauptgischt: von der Kante zur Seilseite, hoch und weit (je nach Kantendruck)
+var _sheet: SpraySheet          # Gischt-Vorhang der Hauptgischt (Stil Sprites)
 
 
 # ---------------------------------------------------------------- Aufbau
@@ -386,9 +387,11 @@ func _ready() -> void:
 	add_child(_dspray)
 	Spray.register(_spray)
 	_spray_main = _spray.duplicate() as CPUParticles3D
-	_spray_main.amount = 320
-	_spray_main.lifetime = 1.3
+	_spray_main.amount = 80        # nur noch Tropfen am Rand des Vorhangs
+	_spray_main.lifetime = 1.0
 	add_child(_spray_main)
+	_sheet = SpraySheet.new()
+	add_child(_sheet)
 	Spray.register(_spray_main)
 	Spray.register(_dspray)
 	_mist = Spray.make_mist(self)
@@ -1994,6 +1997,8 @@ func _update_spray(speed: float) -> void:
 		_spray.emitting = false
 		_spray_main.emitting = false
 		_mist.emitting = false
+		_sheet.water = water
+		_sheet.feed(Vector3.ZERO, Vector3.ZERO, 0.0, false, get_process_delta_time())
 		return
 	var v := Vector3(vel.x, 0.0, vel.z)
 	var travel := v.normalized()
@@ -2049,6 +2054,9 @@ func _update_spray(speed: float) -> void:
 	_spray_main.scale_amount_min = 0.6 + 0.8 * w
 	_spray_main.scale_amount_max = 1.2 + 2.8 * w
 	_spray_main.emitting = w > 0.05 or cut > 0.6
+	# Vorhang: das Wasser bleibt, wo es die Kante verlassen hat, und fliegt im Bogen nach hinten weg
+	_sheet.water = water
+	_sheet.feed(main_at, mx, w, Spray.sprites, get_process_delta_time())
 	# Sprühnebel: bleibt bei der Hauptgischt kurz in der Luft stehen, weiter draußen bei viel Druck
 	_mist.global_position = main_at - side * (0.4 + 1.8 * w) + Vector3.UP * (0.3 + 0.9 * w)
 	_mist.emitting = Spray.sprites and (w > 0.15 or speed > 7.0)
