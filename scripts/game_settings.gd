@@ -56,7 +56,6 @@ const DEFAULTS := {
 	"w_crest": true,        # Licht durch die Wellenkämme
 	"w_foam": true,         # Schaum mit Struktur
 	"w_sharp": true,        # spitze Wellen (auch Physik)
-	"w_edge": true,         # Schaumkränze an Features/Ufer (Szenentiefe)
 	"w_clear": true,        # Durchsicht im Flachen (Szenentiefe)
 	"w_ssr": false,         # echte Spiegelbilder (nur Desktop, teuer)
 }

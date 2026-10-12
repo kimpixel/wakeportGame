@@ -208,7 +208,6 @@ func _ready() -> void:
 
 	npc = Rider.new()
 	npc.water = water
-	water.riders = [rider, npc]
 	npc.features = features
 	npc.cable = cable_t1
 	npc.is_npc = true
@@ -725,7 +724,7 @@ func _apply_setting(key: String) -> void:
 			weather.env.ssr_max_steps = 48
 			weather.env.ssr_fade_in = 0.15
 			weather.env.ssr_fade_out = 2.0
-		"w_detail", "w_fresnel", "w_glitter", "w_crest", "w_foam", "w_sharp", "w_edge", "w_clear":
+		"w_detail", "w_fresnel", "w_glitter", "w_crest", "w_foam", "w_sharp", "w_clear":
 			water.set_fx(key.substr(2), bool(v))
 
 

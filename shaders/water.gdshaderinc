@@ -1,5 +1,5 @@
 // Gemeinsamer Wasser-Shader. Eingebunden von water.gdshader (undurchsichtig) und
-// water_depth.gdshader (mit Szenentiefe: Schaumkränze an Features/Ufer, Durchsicht im Flachen).
+// water_depth.gdshader (mit Szenentiefe: Durchsicht im Flachen).
 // Die Höhenfunktion muss mit scripts/water.gd übereinstimmen (Physik = Grafik).
 // Jeder Effekt hat einen Schalter (fx_*), gesetzt aus den Einstellungen (Reiter "Wasser").
 
@@ -21,7 +21,6 @@ uniform bool fx_glitter = true; // Sonnenglitzern
 uniform bool fx_crest = true;   // Licht scheint durch die Wellenkämme
 uniform bool fx_foam = true;    // Schaum mit Struktur (fleckig, reißt auf)
 uniform bool fx_sharp = true;   // spitze Wellenkämme (gleiche Formel in water.gd)
-uniform bool fx_edge = true;    // Schaumkränze an Features, Stegen, Bojen, Ufer (nur water_depth)
 uniform bool fx_clear = true;   // Durchsicht im Flachen (nur water_depth)
 
 uniform sampler2D detail_a : hint_normal, filter_linear_mipmap, repeat_enable;
@@ -31,7 +30,6 @@ uniform vec3 sun_dir = vec3(0.3, 0.8, 0.3);      // zur Sonne (Welt)
 uniform vec3 sun_color : source_color = vec3(1.0, 0.97, 0.92);
 uniform float sun_energy = 1.0;
 uniform vec3 sky_color : source_color = vec3(0.55, 0.7, 0.88);   // Himmel am Horizont (Spiegelung)
-uniform vec2 no_edge_at[2];     // Fahrer (x, z): dort keine Schaumkränze
 
 const float WAKE_SPEED = 2.6;
 const float WAKE_WIDTH = 0.9;
@@ -186,18 +184,6 @@ void fragment() {
 	vpos.xyz /= vpos.w;
 	float thick = max(-vpos.z - (-VERTEX.z), 0.0);
 	float alpha = 1.0;
-	if (fx_edge) {
-		// Schaumkranz, wo das Wasser etwas berührt (Features, Steg, Bojen, Ufer); wabert leicht
-		float nz = texture(foam_noise, p * 0.8 + vec2(t * 0.06, t * 0.05)).r;
-		float ring = 1.0 - smoothstep(0.0, 0.35 + 0.25 * nz, thick);
-		float band = smoothstep(0.55, 0.9, sin(thick * 9.0 - t * 2.2) * 0.5 + 0.5) * (1.0 - smoothstep(0.3, 0.9, thick));
-		// nicht an den Fahrern: ein Schwimmer liegt knapp unter der Oberfläche und wäre sonst ganz weiß
-		float near_rider = 1.0;
-		for (int i = 0; i < 2; i++) {
-			near_rider = min(near_rider, smoothstep(1.2, 2.0, distance(p, no_edge_at[i])));
-		}
-		foam = max(foam, clamp(ring * 0.85 + band * 0.35 * nz, 0.0, 0.9) * near_rider);
-	}
 	if (fx_clear) {
 		// im Flachen durchsichtig und heller, schnell trüber mit der Tiefe (Waldsee)
 		alpha = mix(0.25, 1.0, smoothstep(0.0, 2.2, thick));

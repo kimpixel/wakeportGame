@@ -715,10 +715,9 @@ func _page_water(p: VBoxContainer) -> void:
 	_opt_row(p, "SCHAUM MIT STRUKTUR   (fleckig, reißt auf)", onoff, "w_foam", [true, false])
 	_opt_row(p, "SPITZE WELLEN   (auch für die Physik)", onoff, "w_sharp", [true, false])
 	p.add_child(_small("MIT WASSERTIEFE   (etwas teurer; Wasser wird dafür transparent gezeichnet)"))
-	_opt_row(p, "SCHAUMKRÄNZE AN FEATURES, STEG, BOJEN, UFER", onoff, "w_edge", [true, false])
 	_opt_row(p, "DURCHSICHT IM FLACHEN", onoff, "w_clear", [true, false])
 	if RenderingServer.get_current_rendering_method() != "gl_compatibility":
-		_opt_row(p, "ECHTE SPIEGELBILDER   (nur Desktop, teuer; nur wenn Schaumkränze und Durchsicht aus sind)",
+		_opt_row(p, "ECHTE SPIEGELBILDER   (nur Desktop, teuer; nur wenn die Durchsicht aus ist)",
 			onoff, "w_ssr", [true, false])
 
 
