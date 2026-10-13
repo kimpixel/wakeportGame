@@ -303,6 +303,7 @@ var _dspray: CPUParticles3D     # Drift-Press: große Gischt am Brett-Ende im Wa
 var _mist: CPUParticles3D       # Sprühnebel hinter der Kante (nur Gischt-Stil Sprites, siehe Spray)
 var _spray_main: CPUParticles3D # Hauptgischt: von der Kante zur Seilseite, hoch und weit (je nach Kantendruck)
 var _sheet: SpraySheet          # Gischt-Vorhang der Hauptgischt (Stil Sprites)
+var _land_spray: CPUParticles3D # Spritzer-Kranz beim Landen im Wasser
 
 
 # ---------------------------------------------------------------- Aufbau
@@ -383,6 +384,26 @@ func _ready() -> void:
 	_dspray.scale_amount_min = 0.8
 	_dspray.scale_amount_max = 2.2
 	_dspray.mesh = drop
+	# Landung im Wasser: Spritzer-Kranz rundum (Stärke je nach Fallgeschwindigkeit, siehe _land_splash)
+	_land_spray = CPUParticles3D.new()
+	_land_spray.one_shot = true
+	_land_spray.emitting = false
+	_land_spray.explosiveness = 0.92
+	_land_spray.amount = 110
+	_land_spray.lifetime = 0.9
+	_land_spray.local_coords = false
+	_land_spray.top_level = true
+	_land_spray.emission_shape = CPUParticles3D.EMISSION_SHAPE_RING
+	_land_spray.emission_ring_axis = Vector3.UP
+	_land_spray.emission_ring_radius = 0.6
+	_land_spray.emission_ring_inner_radius = 0.3
+	_land_spray.emission_ring_height = 0.05
+	_land_spray.direction = Vector3.UP
+	_land_spray.spread = 55.0
+	_land_spray.gravity = Vector3(0.0, -9.8, 0.0)
+	_land_spray.mesh = drop
+	add_child(_land_spray)
+	Spray.register(_land_spray)
 	_dspray.emitting = false
 	add_child(_dspray)
 	Spray.register(_spray)
@@ -1676,6 +1697,8 @@ func _land(surf: float) -> void:
 	if absf(wrapf(_flip, -PI, PI)) > FLIP_LAND_TOL:
 		crash("Überschlag nicht geschafft!")
 		return
+	if air_time > 0.25 and not on_feature:
+		_land_splash(-vel.y, Vector3(vel.x, 0.0, vel.z))
 	if air_time > 0.25:
 		_absorb = LAND_TIME                  # Landung in den Knien abfedern, je härter, desto tiefer
 		_absorb_amt = clampf(-vel.y / 6.0, 0.45, 0.9)
@@ -2199,6 +2222,22 @@ func _air_phase() -> float:
 	var h := maxf(pos.y - maxf(_board_surface(), 0.0), 0.0)
 	var rest := (vel.y + sqrt(vel.y * vel.y + 2.0 * GRAVITY * h)) / GRAVITY
 	return clampf(air_time / maxf(air_time + rest, 0.01), 0.0, 1.0)
+
+
+## Landung im Wasser: Spritzer-Kranz und kreisrunde Welle, je heftiger, je schneller man herunterkommt
+## (Ollie ca. 4–5 m/s, großer Kicker bis 9 m/s).
+func _land_splash(fall: float, vh: Vector3) -> void:
+	var k := clampf((fall - 2.0) / 7.0, 0.0, 1.0)
+	var at := Vector3(pos.x, water.height_at(pos.x, pos.z) + 0.02, pos.z)
+	_land_spray.global_position = at
+	_land_spray.initial_velocity_min = 1.2 + 2.5 * k
+	_land_spray.initial_velocity_max = 2.5 + 5.0 * k
+	_land_spray.scale_amount_min = 0.7 + 0.6 * k
+	_land_spray.scale_amount_max = 1.3 + 1.7 * k
+	_land_spray.emission_ring_radius = 0.45 + 0.4 * k
+	_land_spray.direction = (Vector3.UP * 2.0 + vh * 0.08).normalized()
+	_land_spray.restart()
+	water.impact(at, 0.8 + 2.4 * k)
 
 
 ## Wovon man abspringt (für den Trick-Namen): aus dem Wasser = Ollie, vom Kicker (auch Cheese Wedge,

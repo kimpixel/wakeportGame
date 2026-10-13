@@ -153,6 +153,12 @@ func step(delta: float) -> void:
 
 
 ## Wird vom Fahrer jeden Physikschritt aufgerufen, solange das Brett im Wasser ist.
+## Aufprall (Landung): eine einzelne, starke Kreiswelle an dieser Stelle.
+func impact(pos: Vector3, strength: float) -> void:
+	_points[_next] = Vector4(pos.x, pos.z, sim_time, strength)
+	_next = (_next + 1) % WAKE_COUNT
+
+
 func emit_wake(pos: Vector3, strength: float, delta: float, emitter := 0) -> void:
 	var t: float = _emit_timers.get(emitter, 0.0) - delta
 	_emit_timers[emitter] = t
