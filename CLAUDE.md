@@ -54,7 +54,9 @@ Ledge, „cheesewedge“ = Cheese Wedge, „Transitionrail“ = Transition Rail.
   Commit-Nachricht auf Deutsch, endet mit `Co-Authored-By: Claude …`.
 - **Prüfung macht der Nutzer selbst** (visuell und funktional): er startet das Spiel über den Button
   „▶ Spiel starten“ im Band über dem Prompt (Claude-Mod `wakeport-start`, startet im Worktree der Session,
-  sonst im Haupt-Checkout; importiert vorher, falls `.godot` fehlt). Deshalb:
+  sonst im Haupt-Checkout; importiert vorher, falls `.godot` fehlt; liegt außerhalb des Repos in
+  `C:/Users/kim/.claude/mods/wakeport-start`, geladen in jeder Session über `CLAUDE_CODE_PLUGIN_DIRS` in
+  `~/.claude/settings.json`, Band erscheint nur, wenn der Git-Remote `kimpixel/wakeportGame` ist). Deshalb:
   - **Keine Screenshots für den Nutzer** erstellen oder schicken.
   - **Headless arbeiten, wo es geht** (Smoke-Tests, Log-Ausgaben, `--import`).
   - Das Spiel mit Fenster **nur starten, wenn es für die eigene Selbstkontrolle nötig ist**
