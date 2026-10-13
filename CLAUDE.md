@@ -112,6 +112,7 @@ Fallstricke:
 | `scripts/ui/feature_preview.gd` | drehbare 3D-Vorschau eines Features/Hacks (eigene Welt) |
 | `scripts/ui/touch_pad.gd`, `scripts/mobile_input.gd` | Handy: virtuelle Tasten, Neigung, Touch |
 | `scripts/ui/debug_params.gd` | Debug-Overlay **F4** (nur lokal, nicht Web): Parameter live per Schieberegler (Reiter je Bereich, Kommentar aus dem Quelltext, „Geänderte kopieren“ in die Zwischenablage, nichts gespeichert). Regelbare Werte sind `static var` statt `const` (z. B. `Rider.DPRESS_DRAG`); neue in `GROUPS` eintragen. Test `--debug-params` |
+| `scripts/ui/branch_label.gd` | Git-Branch klein unten rechts in der Ecke (nur lokal am Desktop, liest `.git/HEAD`, auch im Worktree), damit man sieht, aus welchem Checkout das Spiel läuft |
 | `scripts/hud.gd` | HUD (Zeit, Seilzug-Anzeige, **Tempo** mit Marken PRESS/RALEY aus `Rider.DPRESS_SPEED`/`RALEY_SPEED`, Punkte), Hilfe, Stil (`ACCENT` grün, `PANEL`) |
 | `scripts/weather.gd`, `scripts/sun_calc.gd`, `shaders/sky.gdshader` | Wetter, Sonnenstand nach echter Lage |
 | `scripts/sfx.gd`, `assets/sounds/` | Sounds; `positiv/` (Jubel), `negativ/` (Ruf beim Sturz), `feature_hit/`, `landing/` aus Videoaufnahmen |
