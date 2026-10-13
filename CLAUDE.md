@@ -52,14 +52,18 @@ Ledge, „cheesewedge“ = Cheese Wedge, „Transitionrail“ = Transition Rail.
 - Sprache mit dem Nutzer: **Deutsch**. Code-Kommentare und Doku ebenfalls Deutsch.
 - Nach jeder fertigen Änderung: kurzer Smoke-Test, **commit und push** (Nutzer testet im Browser).
   Commit-Nachricht auf Deutsch, endet mit `Co-Authored-By: Claude …`.
+- **Prüfung macht der Nutzer selbst** (visuell und funktional): er startet das Spiel über den Button
+  „▶ Spiel starten“ im Band über dem Prompt (Claude-Mod `wakeport-start`, startet im Worktree der Session,
+  sonst im Haupt-Checkout; importiert vorher, falls `.godot` fehlt). Deshalb:
+  - **Keine Screenshots für den Nutzer** erstellen oder schicken.
+  - **Headless arbeiten, wo es geht** (Smoke-Tests, Log-Ausgaben, `--import`).
+  - Das Spiel mit Fenster **nur starten, wenn es für die eigene Selbstkontrolle nötig ist**
+    (z. B. Optik/Animation, die headless nicht prüfbar ist) – nicht für den Nutzer.
 - Sagt der Nutzer „zeige das Ergebnis und warte auf Freigabe“ (oder ist eine Pose/Optik strittig):
-  Screenshots schicken, **nicht committen**, bis er „passt so“ sagt.
+  **nicht committen**, bis er nach eigenem Test „passt so“ sagt.
 - „passt so“ = Freigabe, dann commit.
-- **Im Worktree** (nicht auf main – dort startet der Nutzer selbst über seine Verknüpfung): vor jedem Push
-  das Spiel **aus dem Worktree mit Fenster starten** (Preview), damit der Nutzer selbst testen kann, und
-  erst nach seiner Freigabe pushen. Godot liegt im Haupt-Checkout:
-  `/c/projecte/wakeportGame/Godot_v4.7.2-stable_win64.exe --path . &` (im Worktree-Ordner ausführen).
-- Bei Optik/Animation immer Screenshots machen und selbst ansehen, bevor man Erfolg meldet.
+- **Im Worktree** (nicht auf main): vor jedem Push auf die Freigabe des Nutzers warten (er testet über den
+  Button im Band), erst dann pushen.
 - README.md und die Hilfe im HUD (`scripts/hud.gd`, `HELP`/`HELP_MOBILE`) bei Steuerungs- und
   Regeländerungen mitpflegen.
 
@@ -70,7 +74,7 @@ Godot liegt im Repo-Root: `./Godot_v4.7.2-stable_win64_console.exe`. Kein ffmpeg
 ```bash
 # Headless-Smoke-Test (Autopilot, Log mit TRICK:/CRASH:/t=… Zeilen)
 ./Godot_v4.7.2-stable_win64_console.exe --headless --path . --fixed-fps 120 -- --autotest --quit=30
-# Screenshot (mit Fenster), z. B. Nahaufnahme am Fahrer
+# Screenshot (mit Fenster, nur zur eigenen Selbstkontrolle), z. B. Nahaufnahme am Fahrer
 ./Godot_v4.7.2-stable_win64_console.exe --path . --fixed-fps 120 -- --autotest --jump-at=12 --closeup=0,1.2,4.5,0,1.0,0 --shot=PFAD.png --shot-time=12.4
 # Handy nachstellen
 ./Godot_v4.7.2-stable_win64_console.exe --path . --resolution 540x1170 -- --mobile --tilt=0
