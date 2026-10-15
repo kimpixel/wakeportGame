@@ -57,8 +57,8 @@ var _ground_kind := "water"      # zuletzt befahrene Fläche (wie _launch_kind)
 enum Mode { WATER, AIR, CRASHED }
 
 const MASS := 80.0
-const SPRAY_LOAD_MIN := 120.0   # N Kantendruck (Seilzug quer zur Fahrt), ab dem die Gischt wächst
-const SPRAY_LOAD_FULL := 1500.0 # N: volle Gischt, 2–3 m weit
+static var SPRAY_LOAD_MIN := 120.0   # N Kantendruck (Seilzug quer zur Fahrt), ab dem die Gischt wächst
+static var SPRAY_LOAD_FULL := 1500.0 # N: volle Gischt, 2–3 m weit
 const GRAVITY := 9.81
 const ROPE_LENGTH := 16.0       # Zugseil Griff bis Carrier (Standard)
 static var ROPE_STIFFNESS := 2600.0
@@ -2063,7 +2063,7 @@ func _update_spray(speed: float) -> void:
 	_spray.emitting = true
 	# Hauptgischt: von der gegenüberliegenden Kante zur Seilseite, viel höher, weiter und dichter
 	# (bei vollem Druck ca. 7 m/s unter 60° -> gut 4 m weit, fast 2 m hoch)
-	var main_at := board - side * 0.2 - travel * 0.2
+	var main_at := board - side * 0.2   # Kantenmitte; die Wand setzt über die ganze Kante an
 	main_at.y = water.height_at(main_at.x, main_at.z) + 0.03
 	var mx := -side
 	var mz := mx.cross(Vector3.UP).normalized()
@@ -2079,7 +2079,7 @@ func _update_spray(speed: float) -> void:
 	_spray_main.emitting = w > 0.05 or cut > 0.6
 	# Vorhang: das Wasser bleibt, wo es die Kante verlassen hat, und fliegt im Bogen nach hinten weg
 	_sheet.water = water
-	_sheet.feed(main_at, mx, w, true, get_process_delta_time())
+	_sheet.feed(main_at, mx, w, true, get_process_delta_time(), Vector3(forward().x, 0.0, forward().z).normalized())
 	# Sprühnebel: bleibt bei der Hauptgischt kurz in der Luft stehen, weiter draußen bei viel Druck
 	_mist.global_position = main_at - side * (0.4 + 1.8 * w) + Vector3.UP * (0.3 + 0.9 * w)
 	_mist.emitting = w > 0.15 or speed > 7.0

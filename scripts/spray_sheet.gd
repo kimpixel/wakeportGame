@@ -9,7 +9,13 @@ extends MeshInstance3D
 
 const LIFE := 1.25              # s, so lange fliegt das Wasser (Länge des Vorhangs)
 const EMIT_DT := 0.025          # s zwischen zwei Scheiben
-const ROWS := 5                 # Zeilen von der flachsten zur steilsten Flugbahn
+const ROWS := 9                 # Zeilen von der flachsten zur steilsten Flugbahn
+## Form (live regelbar im Debug-Overlay F4, Reiter "Wasserwand")
+static var WALL_BASE := 1.1        # m: so lang ist der Ansatz an der Kante (Teil des Bretts im Wasser)
+static var WALL_SPEED_MIN := 2.5   # m/s Abwurf bei wenig Kantendruck
+static var WALL_SPEED_MAX := 7.5   # m/s bei vollem Druck (ca. 2,5 m hoch, 2,5 m weit)
+static var WALL_ANG_LOW := 0.22    # rad: flachste Bahn (weit zur Seite)
+static var WALL_ANG_HIGH := 1.4    # rad: steilste Bahn (hoch, kippt über wie eine Tube)
 const GRAVITY := 9.8
 
 var water: Water
@@ -27,18 +33,16 @@ func _ready() -> void:
 	extra_cull_margin = 20.0
 
 
-## Jedes Bild: Kante (Welt), Seite, zu der das Wasser fliegt, Stärke 0..1, aktiv?
-func feed(at: Vector3, side: Vector3, strength: float, active: bool, delta: float) -> void:
+## Jedes Bild: Kantenmitte (Welt), Seite, zu der das Wasser fliegt, Brettachse (entlang der Kante),
+## Stärke 0..1, aktiv?
+func feed(at: Vector3, side: Vector3, strength: float, active: bool, delta: float, axis := Vector3.ZERO) -> void:
 	_t += delta
 	if active:
 		_emit_acc += delta
 		while _emit_acc >= EMIT_DT:
 			_emit_acc -= EMIT_DT
-			# mittel ca. 0,7 m hoch, groß bis 1,5 m; seitlich nur leicht nach außen geneigt
-			var h := 0.2 + 1.6 * strength
-			var up := sqrt(2.0 * GRAVITY * h)
-			var out := 0.8 + 5.2 * strength   # senkrecht zur Kante, je mehr Druck, desto weiter zur Seite
-			_slices.append([at, side, up, out, _t, strength])
+			var speed := lerpf(WALL_SPEED_MIN, WALL_SPEED_MAX, strength)
+			_slices.append([at, side, axis, speed, _t, strength])
 	else:
 		_emit_acc = 0.0
 	while not _slices.is_empty() and _t - float(_slices[0][4]) > LIFE:
@@ -52,10 +56,12 @@ func clear() -> void:
 
 
 func _point(s: Array, f: float, age: float) -> Vector3:
-	var p0: Vector3 = s[0]
+	# Ansatz über die ganze Kante verteilt (unten breit), Abwurf als Fächer von flach-seitlich bis steil:
+	# gleich schnell in alle Winkel -> die Wand bildet einen runden Bogen, der überkippt (wie eine Tube)
 	var side: Vector3 = s[1]
-	# auch die flachste Bahn steigt etwas (sonst liegt ein Teppich auf dem Wasser)
-	var v := side * float(s[3]) * lerpf(0.5, 1.0, f) + Vector3.UP * float(s[2]) * lerpf(0.3, 1.0, f)
+	var p0: Vector3 = s[0] + (s[2] as Vector3) * (f - 0.5) * WALL_BASE
+	var ang := lerpf(WALL_ANG_LOW, WALL_ANG_HIGH, f)
+	var v := (side * cos(ang) + Vector3.UP * sin(ang)) * float(s[3])
 	var p := p0 + v * age + Vector3.DOWN * 0.5 * GRAVITY * age * age
 	var wy := water.height_at(p.x, p.z) if water else 0.0
 	p.y = maxf(p.y, wy + 0.02)
