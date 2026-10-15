@@ -12,6 +12,7 @@ Nachgebaut ist der **Wakeport am Raunheimer Waldsee** (Hessen). **Auf der Starts
 - Ein Stahlseil ist als Schlaufe um zwei Rollen (Ø 30 cm) oben an den A-förmigen Gittermasten gespannt.
 - Ein **Carrier** sitzt fest auf einem der beiden Stränge. Der Motor kehrt an jedem Ende die Richtung um, so wird der Fahrer hin und her gezogen.
 - Gelände, Ufer, Wald und Luftbild stammen aus den offenen Geodaten Hessens. Den Strandbereich mit den Hütten habe ich nach Fotos nachgebaut.
+- Dichter Mischwald aus Laubbäumen und Kiefern, am Ufer ein geschlossener Waldmantel bis zum Wasser (Kronen mit Blattkarten, in der Ferne vereinfacht). Das Gras am Ufer stammt aus [SimpleGrassTextured](https://github.com/IcterusGames/SimpleGrassTextured) von IcterusGames (MIT, Textur CC0), siehe `assets/grass/`.
 
 ## Hindernisse
 
