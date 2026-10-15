@@ -2089,8 +2089,8 @@ func _update_spray(speed: float) -> void:
 	if edge_axis.dot(travel) < 0.0:
 		edge_axis = -edge_axis
 	_sheet.feed(main_at, mx, w, w > 0.02, get_process_delta_time(), edge_axis)
-	# Sprühnebel: bleibt bei der Hauptgischt kurz in der Luft stehen, weiter draußen bei viel Druck
-	_mist.global_position = main_at - side * (0.4 + 1.8 * w) + Vector3.UP * (0.3 + 0.9 * w)
+	# Sprühnebel: entsteht auf Brett-Höhe am Ansatz der Wasserwand und bleibt dort kurz liegen
+	_mist.global_position = main_at - side * 0.25 + Vector3.UP * 0.08
 	_mist.emitting = w > 0.15
 
 
