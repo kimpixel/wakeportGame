@@ -12,7 +12,7 @@ extends Node3D
 ##   --mobile          Handy-Steuerung erzwingen (mit --tilt=GRAD feste Neigung)
 ##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
 ##   --screen[=NAME]   Startbildschirm erzwingen (NAME: Feature/Hack auswählen, z. B. "hack";
-##                     @liste, @einstellungenN, @erfolge, @editor = Setup-Editor);
+##                     @liste, @einstellungenN, @erfolge, @auswahl[2] = Modus- bzw. Challenge-Liste offen, @editor = Setup-Editor);
 ##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
 ##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
 ##   --jump-at=SEK     Test: zu dieser Zeit voll aufgeladen abspringen

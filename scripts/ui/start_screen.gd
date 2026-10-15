@@ -25,6 +25,9 @@ const ROPE_MIN := 12.0           # m Seillänge (Griff bis Carrier)
 const ROPE_MAX := 22.0
 const SPEED_MIN := 16.0          # km/h Anlagen-Tempo
 const SPEED_MAX := 40.0
+## Namen in der Auswahl (Reihenfolge wie Helmet.DESIGNS bzw. GameSettings.VESTS; fehlt einer: Nummer)
+const HELMET_NAMES := ["Gelb / Grün", "Weiß / Schwarz", "Blau", "Orange", "Schwarz glänzend", "Pink / Türkis", "Oliv"]
+const VEST_NAMES := ["Orange", "Rot", "Blau", "Grün", "Gelb", "Lila", "Schwarz", "Weiß"]
 
 var features: FeatureSet
 var weather: Weather
@@ -41,25 +44,21 @@ var _ui: Control
 var _menu: PanelContainer
 var _title_box: Control
 var _result: Label
-var _term_buttons: Array[Button] = []
-var _setup_buttons: Array[Button] = []
-var _setup_grid: GridContainer
-var _setup_group := ButtonGroup.new()
+var _term_select: SelectBox
+var _setup_select: SelectBox
 var _setup_idx := 0
 var _editor: SetupEditor
 var _start_btn: Button
-var _mode_buttons: Array[Button] = []
+var _mode_select: SelectBox
+var _mode_ids: Array = []         # je Zeile der Modus-Auswahl die Modus-id ("" = Überschrift)
 var _split: BoxContainer          # Querformat: links Spielmodi, rechts Terminal/Setup bzw. Aufgaben
-var _mode_grid: GridContainer
 var _left: VBoxContainer          # linke Spalte (Querformat am Handy: auch Einstellungen + Start)
 var _menu_v: VBoxContainer
 var _bottom_row: HBoxContainer
 var _comp_box: VBoxContainer     # Competition: Terminal + Feature-Setup
 var _train_box: VBoxContainer    # Spielmodi: Aufgaben
-var _task_grid: GridContainer
-var _task_group := ButtonGroup.new()
+var _task_select: SelectBox
 var _task_info: Label
-var _medal_icons: Array[Texture2D] = []
 var _dim: ColorRect
 var _settings: PanelContainer
 var _browser: PanelContainer
@@ -149,67 +148,42 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	right.add_theme_constant_override("separation", 10)
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_split.add_child(right)
-	# Spielmodus: Competition allein, darunter die Community Challenges (Wenden, Kicker, Slider …)
+	# Spielmodus: Competition, darunter die Community Challenges (Wenden, Kicker, Slider …)
 	left.add_child(_small("SPIELMODUS"))
-	var mg := GridContainer.new()
-	mg.columns = 3
-	mg.add_theme_constant_override("h_separation", 8)
-	mg.add_theme_constant_override("v_separation", 8)
-	_mode_grid = mg
-	var mgroup := ButtonGroup.new()
+	_mode_select = _select(20)
 	for m: Dictionary in Training.MODES:
-		var b := _button(m["name"], 18)
-		b.toggle_mode = true
-		b.button_group = mgroup
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.tooltip_text = m["text"]
-		var id: String = m["id"]
-		b.pressed.connect(func() -> void: mode_chosen.emit(id))
-		if id == Training.COMPETITION:
-			left.add_child(b)
-			left.add_child(_small("COMMUNITY CHALLENGE"))
-			left.add_child(mg)
-		else:
-			mg.add_child(b)
-		_mode_buttons.append(b)
+		_mode_ids.append(m["id"])
+		_mode_select.add_item(m["name"])
+		if m["id"] == Training.COMPETITION:
+			_mode_ids.append("")
+			_mode_select.add_header("COMMUNITY CHALLENGE")
+	_mode_select.item_selected.connect(func(i: int) -> void: mode_chosen.emit(_mode_ids[i]))
+	left.add_child(_mode_select)
 	_comp_box = VBoxContainer.new()
-	_comp_box.add_theme_constant_override("separation", 10)
+	_comp_box.add_theme_constant_override("separation", 6)
 	right.add_child(_comp_box)
 	_train_box = VBoxContainer.new()
-	_train_box.add_theme_constant_override("separation", 10)
+	_train_box.add_theme_constant_override("separation", 6)
 	_train_box.visible = false
 	right.add_child(_train_box)
-	_train_box.add_child(_small("CHALLENGES"))
-	_task_grid = GridContainer.new()
-	_task_grid.columns = 2
-	_task_grid.add_theme_constant_override("h_separation", 8)
-	_task_grid.add_theme_constant_override("v_separation", 8)
-	_train_box.add_child(_task_grid)
+	_train_box.add_child(_small("CHALLENGE"))
+	_task_select = _select(18)
+	_task_select.item_selected.connect(func(i: int) -> void: task_chosen.emit(i))
+	_train_box.add_child(_task_select)
 	_task_info = _label("", 16, Color(1, 1, 1, 0.85))
 	_task_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_task_info.custom_minimum_size = Vector2(100, 0)
 	_train_box.add_child(_task_info)
-	for i in 4:
-		_medal_icons.append(_medal_icon(i))
 	_comp_box.add_child(_small("TERMINAL"))
-	var th := HBoxContainer.new()
-	th.add_theme_constant_override("separation", 8)
-	_comp_box.add_child(th)
-	var tg := ButtonGroup.new()
-	for i in terminals.size():
-		var b := _button(terminal_names[i], 20)
-		b.toggle_mode = true
-		b.button_group = tg
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.pressed.connect(func() -> void: terminal_chosen.emit(_terminals[i]))
-		th.add_child(b)
-		_term_buttons.append(b)
+	_term_select = _select(20)
+	for n: String in terminal_names:
+		_term_select.add_item(n)
+	_term_select.item_selected.connect(func(i: int) -> void: terminal_chosen.emit(_terminals[i]))
+	_comp_box.add_child(_term_select)
 	_comp_box.add_child(_small("FEATURE-SETUP"))
-	_setup_grid = GridContainer.new()
-	_setup_grid.columns = 2
-	_setup_grid.add_theme_constant_override("h_separation", 8)
-	_setup_grid.add_theme_constant_override("v_separation", 8)
-	_comp_box.add_child(_setup_grid)
+	_setup_select = _select(18)
+	_setup_select.item_selected.connect(func(i: int) -> void: setup_chosen.emit(i))
+	_comp_box.add_child(_setup_select)
 	set_setup_names(setup_names)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
@@ -253,75 +227,37 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_editor.closed.connect(func() -> void: get_viewport().disable_3d = false)
 
 
-## Medaille als kleines Bild für die Aufgaben-Tasten (0 = noch keine: leerer Ring).
-func _medal_icon(level: int) -> ImageTexture:
-	var n := 26
-	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
-	var c: Color = Training.MEDAL_COLORS[level]
-	for y in n:
-		for x in n:
-			var d := Vector2(x + 0.5 - n * 0.5, y + 0.5 - n * 0.5).length()
-			var a := clampf(n * 0.5 - d, 0.0, 1.0)
-			if level == 0:
-				a *= clampf(d - (n * 0.5 - 3.0), 0.0, 1.0)      # nur Ring
-				img.set_pixel(x, y, Color(1, 1, 1, a * 0.45))
-			else:
-				var inner := c.lightened(0.25) if d < n * 0.3 else c
-				img.set_pixel(x, y, Color(inner, a))
-	return ImageTexture.create_from_image(img)
-
-
-## Spielmodus und Aufgabe anzeigen (Tasten, Medaillen, kurzes Ziel).
+## Spielmodus und Challenge anzeigen (Auswahl mit Pokalen, kurzes Ziel).
 func refresh_mode(mode_id: String, task_idx: int) -> void:
-	var mi := Training.mode_index(mode_id)
-	_mode_buttons[mi].set_pressed_no_signal(true)
+	_mode_select.select(_mode_ids.find(mode_id))
 	var comp := mode_id == Training.COMPETITION
 	_comp_box.visible = comp
 	_train_box.visible = not comp
 	_start_btn.text = "SPIEL STARTEN" if comp else "CHALLENGE STARTEN"
-	for c in _task_grid.get_children():
-		c.queue_free()
 	if not comp:
 		var list := Training.tasks(mode_id)
+		_task_select.clear()
 		for i in list.size():
 			var t: Dictionary = list[i]
-			var b := _button("%d  %s" % [i + 1, t["name"]], 17)
-			b.toggle_mode = true
-			b.button_group = _task_group
-			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			b.clip_text = true
-			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
-			b.icon = _medal_icons[clampi(int(Training.best(mode_id, t["id"])[0]), 0, 3)]
-			b.tooltip_text = t["title"]
-			b.button_pressed = i == task_idx
-			b.pressed.connect(func() -> void: task_chosen.emit(i))
-			_task_grid.add_child(b)
+			_task_select.add_item("%d  %s" % [i + 1, t["name"]],
+				Trophy.texture(clampi(int(Training.best(mode_id, t["id"])[0]), 0, 3)))
+		_task_select.select(clampi(task_idx, 0, list.size() - 1))
 		var t: Dictionary = list[clampi(task_idx, 0, list.size() - 1)]
 		var best := Training.best(mode_id, t["id"])
 		var line: String = t["goal"]
 		if not is_nan(float(best[1])):
-			line += "
-Bestwert: " + Training.format_value(t, best[1])
+			line += "\nBestwert: " + Training.format_value(t, best[1])
 		_task_info.text = line
 	_layout()
 
 
-## Tasten der Feature-Setups (neu aufbauen, z. B. nach Speichern im Setup-Editor).
+## Auswahl der Feature-Setups (neu füllen, z. B. nach Speichern im Setup-Editor).
 func set_setup_names(setup_names: Array) -> void:
 	_setup_names = setup_names
-	for b in _setup_buttons:
-		b.queue_free()
-	_setup_buttons.clear()
-	for i in setup_names.size():
-		var b := _button((setup_names[i] as String).get_slice(" (", 0), 18)   # ohne "(Datum ?)"
-		b.toggle_mode = true
-		b.button_group = _setup_group
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.clip_text = true
-		b.tooltip_text = setup_names[i]
-		b.pressed.connect(func() -> void: setup_chosen.emit(i))
-		_setup_grid.add_child(b)
-		_setup_buttons.append(b)
+	_setup_select.clear()
+	for n: String in setup_names:
+		_setup_select.add_item(n.get_slice(" (", 0))     # ohne "(Datum ?)"
+	_setup_select.select(clampi(_setup_idx, 0, setup_names.size() - 1))
 	if is_inside_tree():
 		_layout()
 
@@ -426,6 +362,14 @@ func _button(text: String, size: int, primary := false) -> Button:
 	return b
 
 
+## Auswahlbox (Liste öffnet über der Oberfläche, am Handy mit großen Zeilen).
+func _select(size: int) -> SelectBox:
+	var sb := SelectBox.new()
+	sb.font_size = size
+	sb.host = _ui
+	return sb
+
+
 func _label(text: String, size: int, color := Color.WHITE) -> Label:
 	var l := Label.new()
 	l.text = text
@@ -467,9 +411,7 @@ func _layout() -> void:
 		w = minf(size.x * 0.66, 860.0)
 	_menu.custom_minimum_size = Vector2(w, 0)
 	_menu.size = Vector2(w, 0)
-	_setup_grid.columns = 2
 	_split.vertical = portrait
-	_mode_grid.columns = 3 if portrait or low else 2    # Handy quer: drei Spalten, sonst zu hoch
 	# Handy quer (flach): Einstellungen/Editor und Start in die linke Spalte, sonst zu hoch
 	var host: VBoxContainer = _left if low else _menu_v
 	for c: Control in [_bottom_row, _start_btn]:
@@ -599,11 +541,11 @@ func _page_game(p: VBoxContainer) -> void:
 	for m: Array in GameSettings.MODES:
 		secs.append(m[0])
 		modes.append(m[1])
-	_opt_row(p, "COMPETITION: RUNDENLÄNGE", modes, "mode", secs, 2)
+	_opt_row(p, "COMPETITION: RUNDENLÄNGE", modes, "mode", secs)
 	p.add_child(_small("HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"))
 	_opt_row(p, "Auf dem Slider einloggen", ["An", "Aus"], "assist_lock", [true, false])
 	_opt_row(p, "Überschlag dreht von selbst zu Ende", ["An", "Aus"], "assist_flip", [true, false])
-	_opt_row(p, "SEILZUG-GRENZE   (wann die Handle aus der Hand gerissen wird; im Spiel G = an/aus)",
+	_opt_row(p, "SEILZUG-GRENZE   (ab wann die Handle aus der Hand gerissen wird; im Spiel G)",
 		["Locker", "Normal", "Streng", "Aus"], "grip", [0, 1, 2, 3])
 
 
@@ -611,58 +553,43 @@ func _page_rider(p: VBoxContainer) -> void:
 	var boards: Array = []
 	for i in BoardLibrary.count():
 		boards.append(BoardLibrary.design(i)["name"])
-	_opt_row(p, "BRETT", boards, "board", [], 3)
-	_opt_row(p, "STANCE", ["Regular  (links vorne)", "Goofy  (rechts vorne)"], "goofy", [false, true])
+	_opt_row(p, "BRETT", boards, "board")
+	_opt_row(p, "STANCE   (Regular: links vorne)", ["Regular", "Goofy"], "goofy", [false, true])
 	var helmets: Array = []
 	for d: Dictionary in Helmet.DESIGNS:
 		helmets.append([d["left"], d["right"]])
-	_swatch_row(p, "HELM", helmets, "helmet")
+	_swatch_row(p, "HELM", helmets, "helmet", HELMET_NAMES)
 	var vests: Array = []
 	for c: Color in GameSettings.VESTS:
 		vests.append([c, c])
-	_swatch_row(p, "WESTE", vests, "vest")
+	_swatch_row(p, "WESTE", vests, "vest", VEST_NAMES)
 
 
 func _page_world(p: VBoxContainer) -> void:
 	if weather:
-		p.add_child(_small("WETTER   (jeder Start: sonniger Sommertag 10:30)"))
-		var grid := GridContainer.new()
-		grid.columns = 3
-		grid.add_theme_constant_override("h_separation", 8)
-		grid.add_theme_constant_override("v_separation", 8)
-		p.add_child(grid)
-		var wg := ButtonGroup.new()
-		var w_buttons: Array[Button] = []
-		var names := weather.preset_names()
-		for i in names.size():
-			var b := _button(names[i], 19)
-			b.toggle_mode = true
-			b.button_group = wg
-			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			b.pressed.connect(func() -> void: weather.set_preset(i))
-			grid.add_child(b)
-			w_buttons.append(b)
+		var ws := _select(18)
+		for n: String in weather.preset_names():
+			ws.add_item(n)
+		ws.item_selected.connect(func(i: int) -> void: weather.set_preset(i))
+		_row(p, "WETTER   (jeder Start: sonniger Sommertag 10:30)").add_child(ws)
 		var date_l := _small("DATUM")
-		p.add_child(date_l)
 		var day_s := _slider(1.0, 365.0, 1.0)
-		p.add_child(day_s)
+		_row(p, "", date_l).add_child(day_s)
 		day_s.value_changed.connect(func(val: float) -> void:
 			if int(val) != weather.day:
 				weather.set_day(int(val)))
 		var time_l := _small("UHRZEIT")
-		p.add_child(time_l)
 		var hour_s := _slider(0.0, 24.0, 0.25)
-		p.add_child(hour_s)
+		_row(p, "", time_l).add_child(hour_s)
 		hour_s.value_changed.connect(func(val: float) -> void:
 			if absf(val - weather.hour) > 0.01:
 				weather.set_hour(val))
-		var now := _button("Jetzt  (live)", 19)
+		var now := _button("Jetzt  (live)", 18)
 		now.tooltip_text = "Heute, aktuelle Uhrzeit und Wetter am See"
 		now.pressed.connect(weather.set_now)
 		p.add_child(now)
 		var update := func() -> void:
-			if weather.preset >= 0 and weather.preset < w_buttons.size():
-				w_buttons[weather.preset].set_pressed_no_signal(true)
+			ws.select(weather.preset)
 			day_s.set_value_no_signal(weather.day)
 			hour_s.set_value_no_signal(weather.hour)
 			date_l.text = "DATUM   " + weather.date_text()
@@ -695,7 +622,7 @@ func _page_tech(p: VBoxContainer) -> void:
 	_slider_row(p, "KAMERA-ABSTAND", "cam_dist", 4.0, 14.0, 0.5, func(x: float) -> String: return "%.1f m" % x)
 	if mobile:
 		_opt_row(p, "LENKUNG", ["Gyro (Handy neigen)", "Tasten (Steuerkreuz)"], "steer", [0, 1])
-		_opt_row(p, "NEIGUNG ZUM LENKEN", ["Wenig empfindlich", "Mittel", "Sehr empfindlich"], "tilt", [0, 1, 2], 3)
+		_opt_row(p, "NEIGUNG ZUM LENKEN", ["Wenig empfindlich", "Mittel", "Sehr empfindlich"], "tilt", [0, 1, 2])
 		_opt_row(p, "NEIGUNG UMKEHREN", ["Nein", "Ja"], "tilt_invert", [false, true])
 
 
@@ -745,32 +672,35 @@ func _page_music(p: VBoxContainer) -> void:
 	p.add_child(open)
 
 
-## Auswahl als Tasten (eine aktiv). values: gespeicherte Werte je Taste (leer = Index).
-func _opt_row(p: VBoxContainer, title: String, labels: Array, key: String, values: Array = [], cols := 0) -> void:
-	p.add_child(_small(title))
-	var grid := GridContainer.new()
-	grid.columns = cols if cols > 0 else labels.size()
-	grid.add_theme_constant_override("h_separation", 8)
-	grid.add_theme_constant_override("v_separation", 8)
-	p.add_child(grid)
-	var g := ButtonGroup.new()
-	var buttons: Array[Button] = []
+## Zeile einer Einstellung: links der Titel (bricht um), rechts das Bedienelement (wird angehängt).
+## label: eigenes Titel-Label (z. B. mit Wert, den man später ändert), sonst eines aus title.
+func _row(p: VBoxContainer, title: String, label: Label = null) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	p.add_child(row)
+	var l := label if label else _small(title)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	l.size_flags_stretch_ratio = 0.7
+	l.custom_minimum_size = Vector2(80, 0)
+	row.add_child(l)
+	return row
+
+
+## Auswahl als Auswahlbox. values: gespeicherte Werte je Zeile (leer = Index), icons: Bild je Zeile.
+func _opt_row(p: VBoxContainer, title: String, labels: Array, key: String, values: Array = [], icons: Array = []) -> void:
+	var sel := _select(18)
 	for i in labels.size():
-		var b := _button(labels[i], 18)
-		b.toggle_mode = true
-		b.button_group = g
-		b.clip_text = true
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var val: Variant = values[i] if i < values.size() else i
-		b.pressed.connect(func() -> void: settings.set_v(key, val))
-		grid.add_child(b)
-		buttons.append(b)
+		sel.add_item(labels[i], icons[i] if i < icons.size() else null)
+	sel.item_selected.connect(func(i: int) -> void:
+		settings.set_v(key, values[i] if i < values.size() else i))
+	_row(p, title).add_child(sel)
 	_syncers.append(func() -> void:
 		var cur: Variant = settings.get_v(key)
-		for i in buttons.size():
-			var val: Variant = values[i] if i < values.size() else i
-			if _same(cur, val):
-				buttons[i].set_pressed_no_signal(true))
+		for i in labels.size():
+			if _same(cur, values[i] if i < values.size() else i):
+				sel.select(i))
 
 
 ## Gleicher Einstellungswert? (Zahlen aus der Datei können als float zurückkommen)
@@ -780,49 +710,34 @@ static func _same(a: Variant, b: Variant) -> bool:
 	return typeof(a) == typeof(b) and a == b
 
 
-## Farbauswahl: runde Felder, innen ein zweites Farbfeld (z. B. Helm-Design).
-func _swatch_row(p: VBoxContainer, title: String, colors: Array, key: String) -> void:
-	p.add_child(_small(title))
-	var row := HFlowContainer.new()
-	row.add_theme_constant_override("h_separation", 8)
-	row.add_theme_constant_override("v_separation", 8)
-	p.add_child(row)
-	var g := ButtonGroup.new()
-	var buttons: Array[Button] = []
+## Farbauswahl als Auswahlbox: je Zeile ein rundes Farbfeld, innen ein zweites (z. B. Helm-Design).
+func _swatch_row(p: VBoxContainer, title: String, colors: Array, key: String, names: Array) -> void:
+	var labels: Array = []
+	var icons: Array = []
 	for i in colors.size():
-		var b := Button.new()
-		b.toggle_mode = true
-		b.button_group = g
-		b.focus_mode = Control.FOCUS_NONE
-		b.custom_minimum_size = Vector2(52, 52)
-		var pair: Array = colors[i]
-		for st: String in ["normal", "hover", "pressed", "hover_pressed"]:
-			var sb := StyleBoxFlat.new()
-			sb.bg_color = pair[0]
-			sb.set_corner_radius_all(26)
-			sb.border_color = SEL if st.contains("pressed") else Color(1, 1, 1, 0.35)
-			sb.set_border_width_all(5 if st.contains("pressed") else 2)
-			b.add_theme_stylebox_override(st, sb)
-		var dot := ColorRect.new()
-		dot.color = pair[1]
-		dot.position = Vector2(17, 17)
-		dot.size = Vector2(18, 18)
-		dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		b.add_child(dot)
-		b.pressed.connect(func() -> void: settings.set_v(key, i))
-		row.add_child(b)
-		buttons.append(b)
-	_syncers.append(func() -> void:
-		var cur := int(settings.get_v(key))
-		if cur >= 0 and cur < buttons.size():
-			buttons[cur].set_pressed_no_signal(true))
+		labels.append(names[i] if i < names.size() else "Nr. %d" % (i + 1))
+		icons.append(_swatch(colors[i][0], colors[i][1]))
+	_opt_row(p, title, labels, key, [], icons)
+
+
+func _swatch(outer: Color, inner: Color) -> ImageTexture:
+	var n := 30
+	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
+	for y in n:
+		for x in n:
+			var d := Vector2(x + 0.5 - n * 0.5, y + 0.5 - n * 0.5)
+			var a := clampf(n * 0.5 - d.length(), 0.0, 1.0)
+			var c := inner if absf(d.x) < 5.5 and absf(d.y) < 5.5 else outer
+			if d.length() > n * 0.5 - 2.0:
+				c = Color(1, 1, 1, 0.6)                 # heller Rand (auch dunkle Farben sichtbar)
+			img.set_pixel(x, y, Color(c, a))
+	return ImageTexture.create_from_image(img)
 
 
 func _slider_row(p: VBoxContainer, title: String, key: String, lo: float, hi: float, step: float, fmt: Callable) -> void:
 	var l := _small(title)
-	p.add_child(l)
 	var s := _slider(lo, hi, step)
-	p.add_child(s)
+	_row(p, "", l).add_child(s)
 	var show := func() -> void: l.text = "%s   %s" % [title, fmt.call(s.value)]
 	s.value_changed.connect(func(val: float) -> void:
 		show.call()
@@ -846,6 +761,8 @@ func _slider(lo: float, hi: float, step: float) -> HSlider:
 	sl.max_value = hi
 	sl.step = step
 	sl.custom_minimum_size = Vector2(0, 44)
+	sl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	sl.focus_mode = Control.FOCUS_NONE
 	return sl
 
@@ -1042,9 +959,8 @@ func refresh(terminal: String, setup_idx: int, _focus_idx := -1) -> void:
 	_setup_idx = setup_idx
 	var ti := _terminals.find(terminal)
 	if ti >= 0:
-		_term_buttons[ti].set_pressed_no_signal(true)
-	if setup_idx >= 0 and setup_idx < _setup_buttons.size():
-		_setup_buttons[setup_idx].set_pressed_no_signal(true)
+		_term_select.select(ti)
+	_setup_select.select(setup_idx)
 	# Kamera schwenkt auf die gewählte Anlage
 	var c: CableSystem = cable_of[terminal]
 	_focus_goal = c.global_transform * Vector3(0.0, 0.0, (c.mast_a_z + c.mast_b_z) * 0.5)
@@ -1074,6 +990,11 @@ func select_by_name(prefix: String) -> void:
 		return
 	if prefix == "@erfolge":
 		_open_achievements()
+		return
+	if prefix.begins_with("@auswahl"):             # Liste offen: Spielmodi, @auswahl2 Challenges
+		await get_tree().process_frame
+		await get_tree().process_frame
+		(_task_select if prefix == "@auswahl2" else _mode_select).pressed.emit()
 		return
 	if prefix.begins_with("@einstellungen"):
 		_show_popup(_settings)
