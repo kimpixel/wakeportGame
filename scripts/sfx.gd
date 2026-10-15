@@ -236,24 +236,20 @@ func _play(p: AudioStreamPlayer, stream: AudioStream, pitch: float) -> void:
 ## beim Lauterwerden neu starten. Im Browser (Web-Audio, Sample-Wiedergabe) stirbt eine einmal
 ## gestartete Schleife sonst bei einer Unterbrechung (Sperrbildschirm, Benachrichtigung,
 ## App-Wechsel) und kam nie wieder – am Handy war mit der Zeit das Wasserrauschen weg.
+## Eigener Zustand statt p.playing (meldet im Browser nicht zuverlässig – sonst Neustart in jedem
+## Bild, klang wie ein Motor), Abstand zwischen Ein- und Ausschalten gegen Flattern.
 func _keep_loop(p: AudioStreamPlayer, lin: float) -> void:
-	if lin < LOOP_SILENT:
-		if p.playing:
-			p.stop()
-	elif not p.playing:
+	var on: bool = p.get_meta("loop_on", false)
+	if on and lin < LOOP_OFF:
+		p.stop()
+		p.set_meta("loop_on", false)
+	elif not on and lin > LOOP_ON:
 		p.play(randf() * p.stream.get_length())
+		p.set_meta("loop_on", true)
 
 
-const LOOP_SILENT := 0.003   # linear: darunter gilt eine Schleife als still
-
-
-## Zurück im Spiel (Browser-Tab/App wieder vorne): Schleifen frisch starten, falls Web-Audio sie
-## während der Unterbrechung beendet hat, ohne dass Godot es merkt.
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_APPLICATION_FOCUS_IN or what == NOTIFICATION_APPLICATION_RESUMED:
-		for p: AudioStreamPlayer in [_water, _grind]:
-			if p and p.playing:
-				p.stop()     # _process startet sie im nächsten Bild neu, wenn sie zu hören sind
+const LOOP_OFF := 0.002   # linear: darunter wird eine Schleife gestoppt
+const LOOP_ON := 0.006    # darüber wieder gestartet
 
 
 func _unhandled_input(event: InputEvent) -> void:
