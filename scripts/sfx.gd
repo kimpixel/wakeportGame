@@ -106,10 +106,8 @@ func _ready() -> void:
 	_impact = _player(-2.0)
 	_water = _player(-80.0)
 	_water.stream = _make_water_loop()
-	_water.play()
 	_grind = _player(-80.0)
-	_grind.stream = _make_grind_loop()
-	_grind.play()
+	_grind.stream = _make_grind_loop()     # Schleifen startet _keep_loop, sobald sie zu hören sind
 	_bird = AudioStreamPlayer3D.new()
 	_bird.bus = BUS_FX
 	_bird.unit_size = 30.0
@@ -234,6 +232,30 @@ func _play(p: AudioStreamPlayer, stream: AudioStream, pitch: float) -> void:
 	p.play()
 
 
+## Dauerschleife (Wasser, Grind) nur laufen lassen, solange sie zu hören ist: bei Stille stoppen,
+## beim Lauterwerden neu starten. Im Browser (Web-Audio, Sample-Wiedergabe) stirbt eine einmal
+## gestartete Schleife sonst bei einer Unterbrechung (Sperrbildschirm, Benachrichtigung,
+## App-Wechsel) und kam nie wieder – am Handy war mit der Zeit das Wasserrauschen weg.
+func _keep_loop(p: AudioStreamPlayer, lin: float) -> void:
+	if lin < LOOP_SILENT:
+		if p.playing:
+			p.stop()
+	elif not p.playing:
+		p.play(randf() * p.stream.get_length())
+
+
+const LOOP_SILENT := 0.003   # linear: darunter gilt eine Schleife als still
+
+
+## Zurück im Spiel (Browser-Tab/App wieder vorne): Schleifen frisch starten, falls Web-Audio sie
+## während der Unterbrechung beendet hat, ohne dass Godot es merkt.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_IN or what == NOTIFICATION_APPLICATION_RESUMED:
+		for p: AudioStreamPlayer in [_water, _grind]:
+			if p and p.playing:
+				p.stop()     # _process startet sie im nächsten Bild neu, wenn sie zu hören sind
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("mute"):
 		_muted = not AudioServer.is_bus_mute(0)
@@ -303,6 +325,7 @@ func _process(delta: float) -> void:
 	var lin := lerpf(db_to_linear(_water.volume_db), target * 0.6, 1.0 - exp(-delta * 6.0))
 	_water.volume_db = linear_to_db(maxf(lin, 0.0001))
 	_water.pitch_scale = 0.8 + clampf(speed / 9.0, 0.0, 1.0) * 0.5
+	_keep_loop(_water, lin)
 
 	# Grinden auf Rail / Box
 	var sliding := rider.is_sliding()
@@ -313,6 +336,7 @@ func _process(delta: float) -> void:
 	var g := lerpf(db_to_linear(_grind.volume_db), 0.5 if sliding and speed > 1.0 else 0.0, 1.0 - exp(-delta * 15.0))
 	_grind.volume_db = linear_to_db(maxf(g, 0.0001))
 	_grind.pitch_scale = 0.75 + clampf(speed / 9.0, 0.0, 1.0) * 0.5
+	_keep_loop(_grind, g)
 
 	# Vögel im Wald rundherum
 	_bird_t -= delta
