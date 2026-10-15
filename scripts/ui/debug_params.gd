@@ -13,7 +13,7 @@ const GROUPS := [
 		["challenge", "DPRESS_FULL", 0.0, 1.0]]],
 	["Wasserwand", [["sheet", "WALL_BASE", 0.0, 3.0], ["sheet", "WALL_SPEED_MIN", 0.0, 10.0], ["sheet", "WALL_SPEED_MAX", 0.0, 14.0],
 		["sheet", "WALL_ANG_LOW", 0.0, 1.5], ["sheet", "WALL_ANG_HIGH", 0.3, 2.4], ["sheet", "WALL_ROPE_MIN", 0.0, 1500.0], ["sheet", "WALL_ROPE_FULL", 200.0, 4000.0],
-		["sheet", "WALL_TEMPO_FULL", 1.0, 20.0], ["sheet", "WALL_W_TEMPO", 0.0, 2.0], ["sheet", "WALL_W_ANGLE", 0.0, 2.0], ["sheet", "WALL_W_JUMP", 0.0, 2.0]]],
+		["sheet", "WALL_TEMPO_FULL", 1.0, 20.0], ["sheet", "WALL_W_ROPE", 0.0, 2.0], ["sheet", "WALL_W_TEMPO", 0.0, 2.0], ["sheet", "WALL_W_ANGLE", 0.0, 2.0], ["sheet", "WALL_W_JUMP", 0.0, 2.0]]],
 	["Drift", [["rider", "DRIFT_DRAG", 0.0, 2.0], ["rider", "DRIFT_SPIN", 0.0, 4.0], ["rider", "DRIFT_ROPE_GIVE", 0.5, 30.0], ["rider", "DRIFT_ROPE_SETTLE", 0.0, 10.0]]],
 	["Fahren", [
 		["rider", "DRAG_QUAD"], ["rider", "DRAG_LIN"], ["rider", "PLOW_DRAG"], ["rider", "PLANE_SPEED"],

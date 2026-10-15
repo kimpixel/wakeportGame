@@ -2037,11 +2037,12 @@ func _update_spray(speed: float) -> void:
 	var pull_side := rope_h.dot(board_r)
 	if absf(pull_side) > 0.15 and tension_smooth > 50.0:
 		side = -signf(pull_side) * board_r
-	# Stärke: Seilzug-Anteil × (Tempo + Winkel + Sprung-Ladung); ohne Seilzug keine Gischt
+	# Stärke: Summe der gewichteten Anteile Seilzug, Tempo, Winkel, Sprung-Ladung (auch bei durchhängendem Seil)
 	var f_rope := clampf((tension_smooth - SpraySheet.WALL_ROPE_MIN) / maxf(SpraySheet.WALL_ROPE_FULL - SpraySheet.WALL_ROPE_MIN, 1.0), 0.0, 1.0)
 	var f_speed := clampf(speed / maxf(SpraySheet.WALL_TEMPO_FULL, 0.1), 0.0, 1.0)
 	var f_angle := absf(rope_h.dot(travel.cross(Vector3.UP)))    # 0 = Seil in Fahrtrichtung, 1 = quer
-	var w := clampf(f_rope * (SpraySheet.WALL_W_TEMPO * f_speed + SpraySheet.WALL_W_ANGLE * f_angle + SpraySheet.WALL_W_JUMP * _load), 0.0, 1.0)
+	var w := clampf(SpraySheet.WALL_W_ROPE * f_rope + SpraySheet.WALL_W_TEMPO * f_speed
+		+ SpraySheet.WALL_W_ANGLE * f_angle + SpraySheet.WALL_W_JUMP * _load, 0.0, 1.0)
 	spray_strength = w
 	# Lage: an der Kante auf der Gischtseite, etwas hinter der Brettmitte, knapp über dem Wasser
 	var board := _board_pivot.global_position
