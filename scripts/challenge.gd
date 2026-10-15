@@ -138,6 +138,7 @@ func start_attempt() -> void:
 	if task.get("start", {}).has("dock"):
 		game.pc.start()                    # Start vom Steg: die Anlage fährt bei GO los
 	running = true
+	game.film.cam.begin()                  # Filmteam drückt ab jetzt ab (Sprung, Slider, Sturz)
 
 
 ## Countdown 3 – 2 – 1 – GO. freeze: Spiel steht bis GO (Spielmodi); sonst läuft die Szene weiter.
@@ -765,8 +766,10 @@ func _finish(ok: bool) -> void:
 		if game._test_log:
 			print("CHALLENGE %s/%s Versuch %d: %s" % [mode_id, task["id"], attempt, text])
 		game.hud.show_trick(text.replace(" – kein Wert", ""))
+		game.film.cam.stop_recording()
 		start_attempt()
 		return
+	var shots: Array[Texture2D] = game.film.cam.finish()
 	# erst noch ein Stück ausfahren lassen, dann anhalten und das Ergebnis zeigen
 	game.hud.show_trick(("%s!  " % Training.MEDALS[medal].to_upper() if medal > 0 else "") + text)
 	var n := attempt
@@ -775,7 +778,7 @@ func _finish(ok: bool) -> void:
 		return
 	get_tree().paused = true
 	panel.show_result(_mode_name(), task_idx, list.size(), task, _best(), task_idx + 1 < list.size(),
-		medal, text, new_best)
+		medal, text, new_best, shots)
 	_update_hud()
 
 

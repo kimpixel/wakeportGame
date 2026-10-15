@@ -18,6 +18,7 @@ var _result: Label
 var _result_medal: Medal
 var _result_row: HBoxContainer
 var _text: Label
+var _photos: HBoxContainer       # Fotos des Filmteams vom Versuch (Ergebnis)
 var _medals: Array[Medal] = []
 var _medal_labels: Array[Label] = []
 var _go: Button
@@ -89,6 +90,10 @@ func _ready() -> void:
 	_result.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_result.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_result_row.add_child(_result)
+	_photos = HBoxContainer.new()
+	_photos.add_theme_constant_override("separation", 8)
+	_photos.alignment = BoxContainer.ALIGNMENT_CENTER
+	v.add_child(_photos)
 	_text = _label(19, Color(1, 1, 1, 0.9))
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(_text)
@@ -165,6 +170,7 @@ func _button(text: String, primary: bool) -> Button:
 func show_intro(mode_name: String, idx: int, count: int, task: Dictionary, best: Array, has_next: bool) -> void:
 	_fill(mode_name, idx, count, task, best, has_next)
 	_result_row.visible = false
+	_set_photos([])
 	var keys: String = task.get("keys_mobile", task["keys"]) if mobile else task["keys"]
 	var goal: String = task["goal"]
 	var combo: Array = task.get("combo", [])
@@ -177,9 +183,10 @@ func show_intro(mode_name: String, idx: int, count: int, task: Dictionary, best:
 
 ## Ergebnis eines Versuchs. medal 0 = keine; text z. B. "2,4 m" oder "Gestürzt".
 func show_result(mode_name: String, idx: int, count: int, task: Dictionary, best: Array, has_next: bool,
-		medal: int, text: String, new_best: bool) -> void:
+		medal: int, text: String, new_best: bool, photos: Array[Texture2D] = []) -> void:
 	_fill(mode_name, idx, count, task, best, has_next)
 	_result_row.visible = true
+	_set_photos(photos)
 	_result_medal.set_level(medal)
 	_result.text = ("%s!   %s" % [Training.MEDALS[medal].to_upper(), text]) if medal > 0 else text
 	_result.add_theme_color_override("font_color", Training.MEDAL_COLORS[medal] if medal > 0 else Color(1, 1, 1, 0.9))
@@ -189,6 +196,32 @@ func show_result(mode_name: String, idx: int, count: int, task: Dictionary, best
 	_text.text = b
 	_go.text = "NOCHMAL" + ("" if mobile else "  (Leertaste)")
 	_open()
+
+
+## Fotos als Abzüge (weißer Rand) nebeneinander; eins allein etwas größer.
+func _set_photos(photos: Array[Texture2D]) -> void:
+	for c in _photos.get_children():
+		c.queue_free()
+	_photos.visible = not photos.is_empty()
+	if photos.is_empty():
+		return
+	var vs := get_viewport().get_visible_rect().size
+	var inner := (500.0 if vs.x < vs.y else 720.0) - 52.0
+	var w := minf(300.0, (inner - 8.0 * (photos.size() - 1)) / photos.size()) - 8.0
+	for tex in photos:
+		var frame := PanelContainer.new()
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0.97, 0.97, 0.95)
+		sb.set_corner_radius_all(4)
+		sb.set_content_margin_all(4)
+		frame.add_theme_stylebox_override("panel", sb)
+		var r := TextureRect.new()
+		r.texture = tex
+		r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		r.custom_minimum_size = Vector2(w, w * 9.0 / 16.0)
+		frame.add_child(r)
+		_photos.add_child(frame)
 
 
 func _fill(mode_name: String, idx: int, count: int, task: Dictionary, best: Array, has_next: bool) -> void:
