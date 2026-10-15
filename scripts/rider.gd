@@ -57,14 +57,6 @@ var _ground_kind := "water"      # zuletzt befahrene Fläche (wie _launch_kind)
 enum Mode { WATER, AIR, CRASHED }
 
 const MASS := 80.0
-## Stärke der Gischt (Wasserwand und Tropfen) = Seilzug-Anteil × (Tempo + Winkel + Sprung-Ladung), 0..1.
-## Ohne Seilzug keine Gischt. Gewichte live regelbar im Debug-Overlay F4 (Reiter Wasserwand).
-static var SPRAY_LOAD_MIN := 51.0    # N Seilzug, ab dem die Gischt wächst
-static var SPRAY_LOAD_FULL := 823.2  # N Seilzug: voller Seilzug-Anteil
-static var SPRAY_SPEED_FULL := 11.0  # m/s Tempo für vollen Tempo-Anteil (ca. 40 km/h)
-static var SPRAY_W_SPEED := 0.5      # Gewicht Tempo
-static var SPRAY_W_ANGLE := 0.6      # Gewicht Winkel (Seil quer zur Fahrtrichtung = Kante voll belastet)
-static var SPRAY_W_LOAD := 0.4       # Gewicht Sprung-Ladung (in die Knie = mehr Druck auf die Kante)
 var spray_strength := 0.0            # zuletzt berechnete Stärke (Anzeige im Debug-Overlay)
 const GRAVITY := 9.81
 const ROPE_LENGTH := 16.0       # Zugseil Griff bis Carrier (Standard)
@@ -2046,10 +2038,10 @@ func _update_spray(speed: float) -> void:
 	if absf(pull_side) > 0.15 and tension_smooth > 50.0:
 		side = -signf(pull_side) * board_r
 	# Stärke: Seilzug-Anteil × (Tempo + Winkel + Sprung-Ladung); ohne Seilzug keine Gischt
-	var f_rope := clampf((tension_smooth - SPRAY_LOAD_MIN) / maxf(SPRAY_LOAD_FULL - SPRAY_LOAD_MIN, 1.0), 0.0, 1.0)
-	var f_speed := clampf(speed / maxf(SPRAY_SPEED_FULL, 0.1), 0.0, 1.0)
+	var f_rope := clampf((tension_smooth - SpraySheet.WALL_ROPE_MIN) / maxf(SpraySheet.WALL_ROPE_FULL - SpraySheet.WALL_ROPE_MIN, 1.0), 0.0, 1.0)
+	var f_speed := clampf(speed / maxf(SpraySheet.WALL_TEMPO_FULL, 0.1), 0.0, 1.0)
 	var f_angle := absf(rope_h.dot(travel.cross(Vector3.UP)))    # 0 = Seil in Fahrtrichtung, 1 = quer
-	var w := clampf(f_rope * (SPRAY_W_SPEED * f_speed + SPRAY_W_ANGLE * f_angle + SPRAY_W_LOAD * _load), 0.0, 1.0)
+	var w := clampf(f_rope * (SpraySheet.WALL_W_TEMPO * f_speed + SpraySheet.WALL_W_ANGLE * f_angle + SpraySheet.WALL_W_JUMP * _load), 0.0, 1.0)
 	spray_strength = w
 	# Lage: an der Kante auf der Gischtseite, etwas hinter der Brettmitte, knapp über dem Wasser
 	var board := _board_pivot.global_position

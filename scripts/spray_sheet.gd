@@ -16,6 +16,14 @@ static var WALL_SPEED_MIN := 0.0   # m/s Abwurf bei wenig Kantendruck
 static var WALL_SPEED_MAX := 12.068   # m/s bei voller Stärke
 static var WALL_ANG_LOW := 0.22    # rad: flachste Bahn (weit zur Seite)
 static var WALL_ANG_HIGH := 0.716  # rad: steilste Bahn (hoch, kippt über wie eine Tube)
+## Stärke der Wasserwand (berechnet in Rider._update_spray, steuert auch die Tropfen), 0..1:
+## Seilzug-Anteil × (Tempo + Winkel + Sprung-Ladung). Ohne Seilzug keine Wasserwand.
+static var WALL_ROPE_MIN := 51.0    # N Seilzug, ab dem die Wasserwand wächst
+static var WALL_ROPE_FULL := 823.2  # N Seilzug: voller Seilzug-Anteil
+static var WALL_TEMPO_FULL := 11.0  # m/s Fahrtempo für vollen Tempo-Anteil (ca. 40 km/h)
+static var WALL_W_TEMPO := 0.5      # Gewicht Tempo
+static var WALL_W_ANGLE := 0.6      # Gewicht Winkel (Seil quer zur Fahrtrichtung = Kante voll belastet)
+static var WALL_W_JUMP := 0.4       # Gewicht Sprung-Ladung (in die Knie = mehr Druck auf die Kante)
 const GRAVITY := 9.8
 
 var water: Water
