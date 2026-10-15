@@ -345,6 +345,11 @@ func _ready() -> void:
 		add_child(debug_params)
 		if _debug_params_arg:
 			debug_params.toggle()
+	# Git-Branch unten rechts (nur lokal): aus welchem Checkout/Worktree läuft das Spiel
+	var branch_label: GDScript = preload("res://scripts/ui/branch_label.gd")
+	if branch_label.available():
+		add_child(branch_label.new())
+		hud._debug.offset_bottom -= branch_label.HEIGHT
 	# Spielmodi: Aufgaben-Fenster und Ablauf
 	task_panel = TaskPanel.new()
 	task_panel.mobile = mobile.active
