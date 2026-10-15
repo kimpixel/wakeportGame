@@ -713,6 +713,10 @@ func _apply_setting(key: String) -> void:
 			mobile.max_tilt = GameSettings.TILT_DEG[clampi(int(v), 0, 2)]
 		"tilt_invert":
 			mobile.invert = bool(v)
+		"steer":
+			mobile.use_tilt = int(v) == 0
+			if touch_pad:
+				touch_pad.set_steer_buttons(int(v) == 1)
 		"cam_mode":
 			cam.set_mode(int(v))
 		"cam_dist":
@@ -1093,6 +1097,8 @@ func _process(_delta: float) -> void:
 		roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
 		pc.laps, cam.mode_name(), "   ·   AUTOPILOT" if rider.autopilot else ""])
 	hud.set_board(rider.board_state_text())
+	if touch_pad:
+		touch_pad.set_swim(rider.mode == Rider.Mode.CRASHED)     # im Wasser: SCHWIMMEN / SKIP
 	# Terminal/Setup wählt man am Handy nur auf der Startseite
 	hud.show_setup_menu(pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED and not mobile.active)
 	if challenge.active or _counting:
@@ -1113,8 +1119,8 @@ func _process(_delta: float) -> void:
 			var free := _free_ride() or not _session
 			var swim := "ca. %d s" % roundi(rider.swim_time())
 			if mobile.active:
-				hud.show_recovery(title, [["Bildschirm halten", "Zur Handle schwimmen", swim, false],
-					["DRIFT", "Sofort weiterfahren", "keine Strafzeit" if free else "−1:00", not free],
+				hud.show_recovery(title, [["SCHWIMMEN halten", "Zur Handle schwimmen", swim, false],
+					["SKIP", "Sofort weiterfahren", "keine Strafzeit" if free else "−1:00", not free],
 					["☰", "Zurück zum Steg", "keine Strafzeit" if free else "−2:00", not free]])
 			else:
 				hud.show_recovery(title, [["LEERTASTE halten", "Zur Handle schwimmen", swim, false],
@@ -1129,7 +1135,7 @@ func _process(_delta: float) -> void:
 			# Competition: steht man auf dem Steg (z. B. nach Bergung), startet der Countdown von selbst
 			if not _round_over and not start_screen.visible and hud.visible and not get_tree().paused:
 				_countdown_start()
-		elif mobile.active and not mobile.tilt_available:
+		elif mobile.active and mobile.use_tilt and not mobile.tilt_available:
 			hud.set_center("Neigungssensor nicht verfügbar –\nBewegungssensoren im Browser erlauben")
 		else:
 			hud.set_center("")

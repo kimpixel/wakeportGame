@@ -13,10 +13,10 @@ C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause
 P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus     H  Hilfe ein/aus     F3  Hitboxen (Debug)     F4  Parameter (Debug, nur lokal)
 Tab  Startseite (Terminal, Feature-Setup, Einstellungen)"""
 
-const HELP_MOBILE := """Start mit Countdown          Handy neigen   lenken (auf dem Slider: deutlich neigen = Boardslide ↔ 50-50)
+const HELP_MOBILE := """Start mit Countdown          Handy neigen (bzw. ← / → mit Lenkung: Tasten)   lenken (auf dem Slider: deutlich neigen = Boardslide ↔ 50-50)
 SPRUNG (links) halten + loslassen   Absprung (schnell: Raley)
-▲ / ▼   in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)
-DRIFT (links, über SPRUNG)   Kante lösen        Nach Sturz: Bildschirm halten = schwimmen, DRIFT = sofort weiter (−1:00)
+Pfeil ↑ / ↓   in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)
+DRIFT (links, über SPRUNG)   Kante lösen        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)
 ☰   Menü: Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Seil-Abreißen an/aus"""
 
 const ACCENT := Color(0.55, 0.82, 0.22)          # Wakeport-Grün
