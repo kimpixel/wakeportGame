@@ -156,7 +156,7 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
   x = −15 (Seeseite) 12 m vor dem Fahrer mit, bremst vor dem Spurende (15 m vor den Wendepunkten) und wartet, wendet immer
   über die Seeseite; Fahrer an der Pinne (`Person` "boat_driver"), Kamerafrau stehend ("filmer"). Motorgeräusch `Sfx.make_outboard_loop`
   (synthetisch, Zündstöße), Tonhöhe/Lautstärke nach Bootstempo. Oder **FPV-Drohne** vorne-seitlich
-  über dem Fahrer, Pilot mit FPV-Brille und Funke an der vorderen Ecke des T2-Startstegs ("pilot"). Jeder Versuch setzt beides neu (`snap`).
+  über dem Fahrer, Pilot mit FPV-Brille und Funke an der vorderen Ecke des T2-Startstegs ("pilot"). Jeder Versuch setzt beides neu (`snap`). **Livebild + Fotos** (`scripts/ui/film_cam.gd`, eigener SubViewport in derselben Welt, rendert nur mit Filmteam): Vorschau links oben (Camcorder der Kamerafrau mit Auto-Zoom bzw. Action-Kamera der Drohne, kippt mit). Fotos im Versuch: Absprung, höchster Punkt, Landung (nach > 0,45 s Flug), Slider (0,35 s drauf), kein Sturzfoto; gewerteter Versuch: letzte 3 im Ergebnisfenster (`TaskPanel.show_result`, ohne Foto eins beim Ende). Headless keine Fotos; Log `FOTO n`.
 - **Driften** (`kind` drift_spin / drift_turn / drift_after, `Rider.drifting`): 360er im Drift zwischen den roten Bojen (Brett-Yaw im Drift
   aufsummiert, je volle Umdrehung eine, links/rechts getrennt, höchstens `SPIN_EACH` 5 je Richtung; Drift lösen setzt zurück), Wende im Drift (Anteil vom Bremsen des Carriers bis das Seil wieder zieht,
   nur gleitend: Sinkpegel < `DRIFT_SINK` 0,15; ohne Schwung Silber, mit Rauskanten Gold), Drift nach Feature (T2 Juli & August, längster Drift,
