@@ -103,7 +103,7 @@ func _spawn() -> void:
 		snd.attenuation_filter_cutoff_hz = 2500.0
 		snd.attenuation_filter_db = -18.0
 		node.add_child(snd)
-		snd.play(randf() * 2.5)
+		snd.play(Sfx.loop_start(2.5))
 	_planes.append({"node": node, "s": T_FROM, "speed": randf_range(68.0, 78.0), "phase": randf() * 10.0,
 		"strobes": info["strobes"], "beacons": info["beacons"]})
 

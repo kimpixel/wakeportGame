@@ -99,6 +99,10 @@ Fallstricke:
 - „ERROR: BUG: Unreferenced static string“ beim Beenden ist Engine-Rauschen.
 - **Audio-Busse nur in `default_bus_layout.tres`** anlegen – zur Laufzeit angelegte Busse sind in der
   Web-Version stumm (Ton am Handy war komplett weg). Web-Probleme zeigen Headless-Tests nicht.
+- **Schleifen-Sounds im Web**: Godot schleift dort nicht selbst, sondern startet den Puffer bei jedem Ende per
+  JS neu – ab dem Startpunkt von `play(from)`, mit kurzer Lücke. Darum Schleifen mit `Sfx.loop_start()` starten
+  (im Web 0, sonst wiederholt sich nur ein Bruchstück), Puffer lang machen, und `playing` nicht trauen
+  (eigener Zustand, siehe `Sfx._keep_loop`).
 
 ## Architektur (wichtigste Dateien)
 
