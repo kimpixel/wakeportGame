@@ -143,7 +143,8 @@ void fragment() {
 	foam = clamp(foam, 0.0, 0.85);
 
 	// Grundfarbe: von oben tief/türkis
-	vec3 col = mix(shallow_color, deep_color, facing);
+	// Grundfarbe: von oben tiefer, flach geschaut nicht heller als die Mitte (Foto: bis hinten farbig)
+	vec3 col = mix(mix(shallow_color, deep_color, 0.5), deep_color, facing);
 	float spec = 0.5;
 	float rough = 0.04;
 	vec3 emit = vec3(0.0);
@@ -153,7 +154,7 @@ void fragment() {
 		float fres = 0.02 + 0.98 * pow(1.0 - facing, 5.0);
 		// Spiegelbild: Himmel, etwas tiefer/blauer als der Dunst am Horizont (sonst milchig)
 		vec3 refl = sky_color * vec3(0.5, 0.62, 0.78);
-		col = mix(mix(shallow_color, deep_color, 0.55), refl, clamp(fres * 1.3, 0.0, 0.55));
+		col = mix(mix(shallow_color, deep_color, 0.55), refl, clamp(fres * 1.0, 0.0, 0.3));
 		spec = 0.5;            // Glanz am Horizont nicht erhöhen: Himmelsspiegelung macht sonst alles milchig
 		rough = 0.03;
 	}
@@ -192,6 +193,11 @@ void fragment() {
 	ALPHA = max(alpha, foam);
 #endif
 
+	// Flach geschaut spiegelt die (nie ganz glatte) Oberfläche weniger Himmel: Godot skaliert die
+	// Spiegelung am Horizont mit SPECULAR (f0), deshalb dort klein -> Wasser wird nach hinten nicht weiß
+	float graze = smoothstep(0.55, 0.98, 1.0 - facing);
+	spec *= mix(1.0, 0.18, graze);
+	rough = mix(rough, 0.18, graze);
 	ALBEDO = mix(col, foam_color, foam);
 	ROUGHNESS = mix(rough, 0.7, foam);
 	SPECULAR = mix(spec, 0.3, foam);
