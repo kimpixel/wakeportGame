@@ -43,6 +43,7 @@ const DEFAULTS := {
 	"music": true,          # eigene Musik abspielen (Titel wählt der Spieler, siehe Music)
 	"vol_music": 0.6,       # Lautstärke Musik
 	"quality": 2,           # Grafik 0 niedrig, 1 mittel, 2 hoch
+	"steer": 0,             # Handy: Lenkung 0 Neigung (Gyro), 1 Tasten (Steuerkreuz rechts)
 	"tilt": 1,              # Handy: Neigungs-Empfindlichkeit 0 niedrig, 1 mittel, 2 hoch
 	"tilt_invert": false,   # Handy: Neigung umkehren
 	"cam_mode": 0,          # ChaseCamera.CamMode

@@ -696,6 +696,7 @@ func _page_tech(p: VBoxContainer) -> void:
 	_opt_row(p, "KAMERA", ["Verfolger", "Orbit", "Ufer"], "cam_mode", [0, 1, 2])
 	_slider_row(p, "KAMERA-ABSTAND", "cam_dist", 4.0, 14.0, 0.5, func(x: float) -> String: return "%.1f m" % x)
 	if mobile:
+		_opt_row(p, "LENKUNG", ["Gyro (Handy neigen)", "Tasten (Steuerkreuz)"], "steer", [0, 1])
 		_opt_row(p, "NEIGUNG ZUM LENKEN", ["Wenig empfindlich", "Mittel", "Sehr empfindlich"], "tilt", [0, 1, 2], 3)
 		_opt_row(p, "NEIGUNG UMKEHREN", ["Nein", "Ja"], "tilt_invert", [false, true])
 

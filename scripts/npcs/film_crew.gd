@@ -40,6 +40,7 @@ var game: Node                 # main.gd
 signal sup_chased(person: Node3D)   # Patrouille: Boot ist beim Paddler angekommen
 
 var mode := ""                 # "", "boat", "drone", "patrol"
+var cam: FilmCam               # Livebild links und Fotos (siehe FilmCam)
 
 var boat: Node3D
 var _driver: Person
@@ -119,6 +120,9 @@ func build() -> void:
 	else:
 		_pilot.watch = drone
 		_pilot.watch_offset = Vector3.ZERO
+	cam = FilmCam.new()
+	cam.crew = self
+	add_child(cam)
 	set_physics_process(false)
 
 
@@ -163,6 +167,7 @@ func start(choice: int) -> void:
 		_pilot.visible = mode == "drone"
 	set_physics_process(mode != "")
 	snap()
+	cam.set_source(mode)
 
 
 func stop() -> void:
@@ -177,6 +182,7 @@ func stop() -> void:
 	if _pilot:
 		_pilot.visible = false
 	set_physics_process(false)
+	cam.set_source("")
 
 
 ## Neuer Versuch: Boot bzw. Drohne sofort passend zum (neu platzierten) Fahrer setzen.
@@ -207,6 +213,20 @@ func _physics_process(delta: float) -> void:
 		_fly_drone(delta)
 	elif mode == "patrol":
 		_patrol(delta)
+
+
+## Wo die Filmkamera sitzt (Welt): Camcorder der Kamerafrau bzw. Action-Kamera der Drohne.
+func camera_origin() -> Vector3:
+	if mode == "drone":
+		return drone.global_transform * Vector3(0.0, 0.1, -0.13)
+	if _filmer:
+		return _filmer.global_transform * Vector3(0.0, 1.47, 0.45)
+	return boat.global_transform * Vector3(0.0, 1.6, 0.1)
+
+
+## Drohne: Schräglage quer zum Bild (rad), damit das FPV-Bild mitkippt.
+func drone_roll() -> float:
+	return -asin(clampf(drone.global_basis.x.y, -1.0, 1.0))
 
 
 # ---------------------------------------------------------------- Patrouille
