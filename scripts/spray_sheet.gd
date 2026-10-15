@@ -37,7 +37,7 @@ func feed(at: Vector3, side: Vector3, strength: float, active: bool, delta: floa
 			# mittel ca. 0,7 m hoch, groß bis 1,5 m; seitlich nur leicht nach außen geneigt
 			var h := 0.2 + 1.6 * strength
 			var up := sqrt(2.0 * GRAVITY * h)
-			var out := 0.6 + 1.6 * strength
+			var out := 0.8 + 5.2 * strength   # senkrecht zur Kante, je mehr Druck, desto weiter zur Seite
 			_slices.append([at, side, up, out, _t, strength])
 	else:
 		_emit_acc = 0.0

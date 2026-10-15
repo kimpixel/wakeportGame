@@ -2054,7 +2054,7 @@ func _update_spray(speed: float) -> void:
 	# Hoher Bogen zur Kantenseite (ca. 50° steil, bei vollem Druck ca. 5,5 m/s -> bis 3 m seitlich);
 	# das Wasser nimmt gut die Hälfte der Fahrt mit, sonst bliebe die Gischt hinten stehen
 	var out := 1.2 + 4.3 * w
-	var vel_w := side * out * 0.64 + Vector3.UP * out * 0.77 + travel * speed * 0.8
+	var vel_w := side * out * 0.64 + Vector3.UP * out * 0.77 + travel * (speed * 0.15 - 1.5 - out * 0.4)   # Tropfen fliegen nach hinten weg
 	_spray.direction = Basis(bx, Vector3.UP, bz).inverse() * vel_w.normalized()
 	_spray.initial_velocity_min = vel_w.length() * 0.75
 	_spray.initial_velocity_max = vel_w.length()
@@ -2070,7 +2070,7 @@ func _update_spray(speed: float) -> void:
 	_spray_main.global_transform = Transform3D(Basis(mx, Vector3.UP, mz), main_at)
 	var mout := 1.5 + 5.5 * w
 	# je mehr Druck, desto flacher und stärker zur Seite; das Wasser nimmt fast die ganze Fahrt mit
-	var mvel := mx * mout * (0.55 + 0.35 * w) + Vector3.UP * mout * (0.85 - 0.2 * w) + travel * speed * (0.75 + 0.15 * w)
+	var mvel := mx * mout * (0.55 + 0.35 * w) + Vector3.UP * mout * (0.85 - 0.2 * w) + travel * (speed * 0.15 - 1.5 - mout * 0.3)   # Tropfen am Rand der Wasserwand: nach hinten
 	_spray_main.direction = Basis(mx, Vector3.UP, mz).inverse() * mvel.normalized()
 	_spray_main.initial_velocity_min = mvel.length() * 0.7
 	_spray_main.initial_velocity_max = mvel.length()
