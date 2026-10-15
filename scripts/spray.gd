@@ -1,176 +1,73 @@
 class_name Spray
 extends RefCounted
 ## "Tropfen": Optik aller Spritz-Partikel (Kante, Landung, Drift-Press, Hecht, Boot). Jeder Tropfen ist ein
-## Tropfenschleier (gekreuzte, in Flugrichtung gestreckte Flächen mit Tröpfchen-Textur), weich ausgeblendet an
-## der Wasseroberfläche (Proximity Fade), mit Verlauf über die Lebenszeit. Dazu eine Nebel-Ebene: große,
-## langsame Sprites, die kurz stehen bleiben. Der zusammenhängende Gischt-Vorhang ist SpraySheet.
-## Die Texturen erzeugt das Spiel selbst (Rauschen × runder Verlauf), es braucht keine Dateien.
+## weiches Wolken-Sprite (zeigt zur Kamera, durch Rauschen ausgefranst, zufällig gedreht), weich ausgeblendet
+## an der Wasseroberfläche (Proximity Fade), mit Verlauf über die Lebenszeit (wächst, wird durchsichtig und
+## graublau). Die Textur erzeugt das Spiel selbst. Der zusammenhängende Gischt-Vorhang ist SpraySheet.
 
-enum Kind { DROP, MIST }
-
-static var _tex := {}               # Kind -> ImageTexture
-static var _mats := {}
-static var _drops: Image
-
-
-## Tropfenspur: eine schmale, nach oben ausdünnende Spur aus vielen kleinen, scharfen Tröpfchen
-## (verschieden groß, oben zu Fäden gezogen) – kein weicher Fleck, sonst sieht es aus wie Schnee.
-static func _droplet_image(size: int) -> Image:
-	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
-	img.fill(Color(1, 1, 1, 0))
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 4242
-	for i in 46:
-		var t := rng.randf()
-		var cx := size * 0.5 + rng.randfn(0.0, size * 0.14 * (0.4 + t))
-		var cy := size * (0.08 + 0.84 * t)
-		var rad := lerpf(2.6, 0.8, t) * rng.randf_range(0.6, 1.3)
-		var stretch := 1.0 + 2.5 * rng.randf()          # in Flugrichtung gezogen
-		for y in range(maxi(0, int(cy - rad * stretch) - 1), mini(size, int(cy + rad * stretch) + 2)):
-			for x in range(maxi(0, int(cx - rad) - 1), mini(size, int(cx + rad) + 2)):
-				var d := Vector2((x - cx) / rad, (y - cy) / (rad * stretch)).length()
-				var a := (1.0 - smoothstep(0.55, 1.0, d)) * lerpf(1.0, 0.55, t)
-				if a > img.get_pixel(x, y).a:
-					img.set_pixel(x, y, Color(1, 1, 1, a))
-	return img
+static var _mat: StandardMaterial3D
 
 
 ## Emitter auf die Tropfen-Optik umstellen. Die Größe kommt vom Kugel-Mesh, das der Emitter mitbringt.
-static func register(p: CPUParticles3D, kind := Kind.DROP) -> void:
-	_apply(p, kind, p.mesh)
-
-
-## Nebel-Emitter: große weiche Wolken, die langsam aufsteigen und vergehen.
-static func make_mist(parent: Node, amount := 24) -> CPUParticles3D:
-	var m := CPUParticles3D.new()
-	m.amount = amount
-	m.lifetime = 1.6
-	m.local_coords = false
-	m.top_level = true
-	m.emitting = false
-	m.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-	m.emission_sphere_radius = 0.25
-	m.direction = Vector3.UP
-	m.spread = 80.0
-	m.initial_velocity_min = 0.1
-	m.initial_velocity_max = 0.35
-	m.gravity = Vector3(0.0, 0.03, 0.0)        # steigt kaum: bleibt auf Brett-Höhe
-	m.damping_min = 0.6
-	m.damping_max = 1.2
-	m.scale_amount_min = 0.8
-	m.scale_amount_max = 1.6
-	m.angle_min = 0.0
-	m.angle_max = 360.0
-	parent.add_child(m)
-	register(m, Kind.MIST)
-	return m
-
-
-static func _apply(p: CPUParticles3D, kind: Kind, sphere: Mesh) -> void:
+static func register(p: CPUParticles3D) -> void:
 	var r := 0.05
-	if sphere is SphereMesh:
-		r = (sphere as SphereMesh).radius
+	if p.mesh is SphereMesh:
+		r = (p.mesh as SphereMesh).radius
+	var q := QuadMesh.new()
+	q.size = Vector2.ONE * r * 6.0
+	q.material = _material()
+	p.mesh = q
 	p.material_override = null
-	if kind == Kind.DROP:
-		# Tropfenschleier: zwei gekreuzte, in Flugrichtung gestreckte Flächen (sieht man von allen Seiten)
-		p.mesh = _streak_mesh(r * 2.0, r * 6.0)
-		p.particle_flag_align_y = true
-		p.angle_min = 0.0
-		p.angle_max = 0.0
-	else:
-		var q := QuadMesh.new()
-		q.size = Vector2.ONE * 0.9
-		q.material = _material(kind)
-		p.mesh = q
-		p.angle_min = 0.0
-		p.angle_max = 360.0
-	# Verlauf: Tropfen fast weiß und deckend, dann durchsichtig und graublau; Nebel zart
+	p.angle_min = 0.0
+	p.angle_max = 360.0
 	var g := Gradient.new()
-	if kind == Kind.DROP:
-		g.set_color(0, Color(1.0, 1.0, 1.0, 0.95))
-		g.set_color(1, Color(0.75, 0.82, 0.88, 0.0))
-		g.add_point(0.55, Color(0.92, 0.95, 0.98, 0.7))
-	else:
-		g.set_color(0, Color(0.95, 0.97, 1.0, 0.0))
-		g.set_color(1, Color(0.8, 0.86, 0.92, 0.0))
-		g.add_point(0.15, Color(0.95, 0.97, 1.0, 0.32))
-		g.add_point(0.6, Color(0.88, 0.92, 0.96, 0.18))
+	g.set_color(0, Color(1.0, 1.0, 1.0, 0.9))
+	g.set_color(1, Color(0.78, 0.84, 0.9, 0.0))
+	g.add_point(0.5, Color(0.93, 0.96, 0.98, 0.6))
 	p.color_ramp = g
 	var c := Curve.new()
-	c.add_point(Vector2(0.0, 0.55 if kind == Kind.DROP else 0.4))
-	c.add_point(Vector2(1.0, 1.0 if kind == Kind.DROP else 1.8))
-	c.max_value = 2.0
+	c.add_point(Vector2(0.0, 0.5))
+	c.add_point(Vector2(1.0, 1.0))
 	p.scale_amount_curve = c
 
 
-## Zwei gekreuzte Rechtecke entlang der lokalen Y-Achse (= Flugrichtung, particle_flag_align_y).
-static func _streak_mesh(w: float, h: float) -> ArrayMesh:
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for ax: Vector3 in [Vector3.RIGHT, Vector3.BACK]:
-		var a := ax * w * 0.5
-		var top := Vector3.UP * h * 0.5
-		var c := [-a - top, a - top, a + top, -a + top]
-		var uv := [Vector2(0, 1), Vector2(1, 1), Vector2(1, 0), Vector2(0, 0)]
-		for i: int in [0, 1, 2, 0, 2, 3]:
-			st.set_normal(Vector3.UP.cross(ax).normalized())
-			st.set_uv(uv[i])
-			st.add_vertex(c[i])
-	var m := st.commit()
-	m.surface_set_material(0, _material(Kind.DROP))
-	return m
-
-
-static func _material(kind: Kind) -> StandardMaterial3D:
-	if _mats.has(kind):
-		return _mats[kind]
-	var m := StandardMaterial3D.new()
-	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES if kind == Kind.MIST else BaseMaterial3D.BILLBOARD_DISABLED
-	m.billboard_keep_scale = true
-	m.vertex_color_use_as_albedo = true
-	m.albedo_texture = _texture(kind)
-	m.cull_mode = BaseMaterial3D.CULL_DISABLED
-	m.render_priority = 10                    # nach dem (transparenten) Wasser zeichnen, sonst deckt es die Gischt zu
-	m.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
-	m.roughness = 0.6
-	m.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
-	m.disable_receive_shadows = false
+static func _material() -> StandardMaterial3D:
+	if _mat:
+		return _mat
+	_mat = StandardMaterial3D.new()
+	_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_mat.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	_mat.billboard_keep_scale = true
+	_mat.vertex_color_use_as_albedo = true
+	_mat.albedo_texture = _texture()
+	_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_mat.render_priority = 10                  # nach dem (transparenten) Wasser zeichnen, sonst deckt es die Tropfen zu
+	_mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	_mat.roughness = 0.6
+	_mat.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
 	# weiches Ausblenden, wo das Sprite die Wasseroberfläche oder ein Feature schneidet
-	m.proximity_fade_enabled = true
-	m.proximity_fade_distance = 0.25 if kind == Kind.DROP else 0.6
-	m.emission_enabled = true
-	m.emission = Color(0.25, 0.28, 0.3)       # etwas Eigenhelligkeit: Gischt leuchtet im Licht leicht
-	m.emission_energy_multiplier = 0.4
-	_mats[kind] = m
-	return m
+	_mat.proximity_fade_enabled = true
+	_mat.proximity_fade_distance = 0.3
+	_mat.emission_enabled = true
+	_mat.emission = Color(0.25, 0.28, 0.3)     # etwas Eigenhelligkeit: Gischt leuchtet im Licht leicht
+	_mat.emission_energy_multiplier = 0.4
+	return _mat
 
 
-## Textur: runder weicher Fleck, durch Rauschen ausgefranst. Tropfen: kleiner Kern mit Spritzern drum
-## herum, Nebel: große wolkige Fläche.
-static func _texture(kind: Kind) -> ImageTexture:
-	if _tex.has(kind):
-		return _tex[kind]
+## Textur: runder weicher Fleck, durch Rauschen wolkig ausgefranst.
+static func _texture() -> ImageTexture:
 	var size := 64
 	var nz := FastNoiseLite.new()
 	nz.noise_type = FastNoiseLite.TYPE_SIMPLEX
-	nz.frequency = 0.09 if kind == Kind.DROP else 0.05
+	nz.frequency = 0.05
 	nz.fractal_octaves = 3
-	nz.seed = 7 if kind == Kind.DROP else 19
+	nz.seed = 19
 	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
-	if kind == Kind.DROP:
-		_drops = _droplet_image(size)
 	for y in size:
 		for x in size:
 			var d := Vector2(x - size * 0.5 + 0.5, y - size * 0.5 + 0.5).length() / (size * 0.5)
 			var n := nz.get_noise_2d(x, y) * 0.5 + 0.5
-			var a: float
-			if kind == Kind.DROP:
-				a = _drops.get_pixel(x, y).a
-			else:
-				a = clampf((1.0 - smoothstep(0.2, 1.0, d)) * (0.35 + 0.65 * n), 0.0, 1.0)
+			var a := clampf((1.0 - smoothstep(0.2, 1.0, d)) * (0.35 + 0.65 * n), 0.0, 1.0)
 			img.set_pixel(x, y, Color(1.0, 1.0, 1.0, a))
 	img.generate_mipmaps()
-	var t := ImageTexture.create_from_image(img)
-	_tex[kind] = t
-	return t
+	return ImageTexture.create_from_image(img)
