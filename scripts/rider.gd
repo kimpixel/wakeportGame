@@ -2084,7 +2084,11 @@ func _update_spray(speed: float) -> void:
 	_spray_main.emitting = w > 0.05
 	# Vorhang: das Wasser bleibt, wo es die Kante verlassen hat, und fliegt im Bogen nach hinten weg
 	_sheet.water = water
-	_sheet.feed(main_at, mx, w, w > 0.02, get_process_delta_time(), Vector3(forward().x, 0.0, forward().z).normalized())
+	# Brettachse immer in Fahrtrichtung (auch switch), sonst kreuzen sich flache und steile Bahnen
+	var edge_axis := Vector3(forward().x, 0.0, forward().z).normalized()
+	if edge_axis.dot(travel) < 0.0:
+		edge_axis = -edge_axis
+	_sheet.feed(main_at, mx, w, w > 0.02, get_process_delta_time(), edge_axis)
 	# Sprühnebel: bleibt bei der Hauptgischt kurz in der Luft stehen, weiter draußen bei viel Druck
 	_mist.global_position = main_at - side * (0.4 + 1.8 * w) + Vector3.UP * (0.3 + 0.9 * w)
 	_mist.emitting = w > 0.15
