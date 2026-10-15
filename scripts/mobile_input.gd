@@ -12,6 +12,12 @@ signal touch_up
 const MAX_TILT := 25.0        # Grad Neigung für vollen Lenkausschlag (Standard)
 var max_tilt := MAX_TILT      # einstellbar (Neigungs-Empfindlichkeit)
 var invert := false           # Neigung umkehren
+var use_tilt := true:         # false: Lenkung über das Steuerkreuz (TouchPad), Neigung ignorieren
+	set(on):
+		use_tilt = on
+		if not on and _pressed != "":
+			Input.action_release(_pressed)
+			_pressed = ""
 const DEADZONE := 3.0         # Grad um die Mitte ohne Wirkung
 
 var active := false
@@ -163,6 +169,8 @@ func _over_ui(pos: Vector2) -> bool:
 
 
 func _process(_delta: float) -> void:
+	if not use_tilt:
+		return
 	var roll := 0.0
 	if not is_nan(debug_roll):
 		roll = debug_roll
