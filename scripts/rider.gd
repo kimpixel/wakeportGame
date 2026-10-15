@@ -2031,11 +2031,15 @@ func _update_spray(speed: float) -> void:
 	var lat := v - axis * v.dot(axis)
 	var cut := lat.length()
 	var side := -lat / cut if cut > 0.3 else travel.cross(Vector3.UP)
-	# Gischtseite = Seite, auf die die belastete Brettkante zeigt: weg vom Seilzug
+	# Gischtseite = Seite, auf die die belastete Brettkante zeigt (Wasserwand zur anderen Seite).
+	# Aus der Neigung des Fahrers: wechselt sofort mit der Kante, auch bei durchhängendem Seil; unter Zug
+	# lehnt man gegen das Seil, das ergibt dieselbe Seite wie die Seilrichtung.
 	var rope_h := Vector3(rope_dir.x, 0.0, rope_dir.z).normalized()
 	var board_r := Vector3(right().x, 0.0, right().z).normalized()
 	var pull_side := rope_h.dot(board_r)
-	if absf(pull_side) > 0.15 and tension_smooth > 50.0:
+	if absf(_lean_roll) > 0.04:
+		side = -signf(_lean_roll) * board_r
+	elif absf(pull_side) > 0.15 and tension_smooth > 50.0:
 		side = -signf(pull_side) * board_r
 	# Stärke: Summe der gewichteten Anteile Seilzug, Tempo, Winkel, Sprung-Ladung (auch bei durchhängendem Seil)
 	var f_rope := clampf((tension_smooth - SpraySheet.WALL_ROPE_MIN) / maxf(SpraySheet.WALL_ROPE_FULL - SpraySheet.WALL_ROPE_MIN, 1.0), 0.0, 1.0)
