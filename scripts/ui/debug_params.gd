@@ -12,7 +12,8 @@ const GROUPS := [
 		["rider", "DPRESS_RISE", 0.2, 10.0], ["rider", "DPRESS_ANG", 0.0, 1.6], ["rider", "DPRESS_END"],
 		["challenge", "DPRESS_FULL", 0.0, 1.0]]],
 	["Wasserwand", [["sheet", "WALL_BASE", 0.0, 3.0], ["sheet", "WALL_SPEED_MIN", 0.0, 10.0], ["sheet", "WALL_SPEED_MAX", 0.0, 14.0],
-		["sheet", "WALL_ANG_LOW", 0.0, 1.5], ["sheet", "WALL_ANG_HIGH", 0.3, 2.4], ["rider", "SPRAY_LOAD_MIN", 0.0, 1500.0], ["rider", "SPRAY_LOAD_FULL", 200.0, 4000.0]]],
+		["sheet", "WALL_ANG_LOW", 0.0, 1.5], ["sheet", "WALL_ANG_HIGH", 0.3, 2.4], ["rider", "SPRAY_LOAD_MIN", 0.0, 1500.0], ["rider", "SPRAY_LOAD_FULL", 200.0, 4000.0],
+		["rider", "SPRAY_SPEED_FULL", 1.0, 20.0], ["rider", "SPRAY_W_SPEED", 0.0, 2.0], ["rider", "SPRAY_W_ANGLE", 0.0, 2.0], ["rider", "SPRAY_W_LOAD", 0.0, 2.0]]],
 	["Drift", [["rider", "DRIFT_DRAG", 0.0, 2.0], ["rider", "DRIFT_SPIN", 0.0, 4.0], ["rider", "DRIFT_ROPE_GIVE", 0.5, 30.0], ["rider", "DRIFT_ROPE_SETTLE", 0.0, 10.0]]],
 	["Fahren", [
 		["rider", "DRAG_QUAD"], ["rider", "DRAG_LIN"], ["rider", "PLOW_DRAG"], ["rider", "PLANE_SPEED"],
@@ -273,6 +274,6 @@ func _process(_delta: float) -> void:
 		return
 	if _live.text.ends_with("kopiert") and Engine.get_process_frames() % 180 != 0:
 		return
-	_live.text = "%.1f km/h   Seilzug %d N   %s   D-Press %+.2f   Sink %.2f" % [
+	_live.text = "%.1f km/h   Seilzug %d N   %s   D-Press %+.2f   Sink %.2f   Gischt %.2f" % [
 		rider.horizontal_speed() * 3.6, roundi(rider.tension_smooth),
-		"DRIFT" if rider.drifting else "–", rider.drift_press(), rider.sink_level]
+		"DRIFT" if rider.drifting else "–", rider.drift_press(), rider.sink_level, rider.spray_strength]

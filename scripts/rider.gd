@@ -57,8 +57,15 @@ var _ground_kind := "water"      # zuletzt befahrene Fläche (wie _launch_kind)
 enum Mode { WATER, AIR, CRASHED }
 
 const MASS := 80.0
-static var SPRAY_LOAD_MIN := 120.0   # N Kantendruck (Seilzug quer zur Fahrt), ab dem die Gischt wächst
-static var SPRAY_LOAD_FULL := 1500.0 # N: volle Gischt, 2–3 m weit
+## Stärke der Gischt (Wasserwand und Tropfen) = Seilzug-Anteil × (Tempo + Winkel + Sprung-Ladung), 0..1.
+## Ohne Seilzug keine Gischt. Gewichte live regelbar im Debug-Overlay F4 (Reiter Wasserwand).
+static var SPRAY_LOAD_MIN := 51.0    # N Seilzug, ab dem die Gischt wächst
+static var SPRAY_LOAD_FULL := 823.2  # N Seilzug: voller Seilzug-Anteil
+static var SPRAY_SPEED_FULL := 11.0  # m/s Tempo für vollen Tempo-Anteil (ca. 40 km/h)
+static var SPRAY_W_SPEED := 0.5      # Gewicht Tempo
+static var SPRAY_W_ANGLE := 0.6      # Gewicht Winkel (Seil quer zur Fahrtrichtung = Kante voll belastet)
+static var SPRAY_W_LOAD := 0.4       # Gewicht Sprung-Ladung (in die Knie = mehr Druck auf die Kante)
+var spray_strength := 0.0            # zuletzt berechnete Stärke (Anzeige im Debug-Overlay)
 const GRAVITY := 9.81
 const ROPE_LENGTH := 16.0       # Zugseil Griff bis Carrier (Standard)
 static var ROPE_STIFFNESS := 2600.0
@@ -2020,6 +2027,7 @@ func _update_spray(speed: float) -> void:
 		_spray.emitting = false
 		_spray_main.emitting = false
 		_mist.emitting = false
+		spray_strength = 0.0
 		_sheet.water = water
 		_sheet.feed(Vector3.ZERO, Vector3.ZERO, 0.0, false, get_process_delta_time())
 		return
@@ -2037,12 +2045,12 @@ func _update_spray(speed: float) -> void:
 	var pull_side := rope_h.dot(board_r)
 	if absf(pull_side) > 0.15 and tension_smooth > 50.0:
 		side = -signf(pull_side) * board_r
-	# Stärke nach Kantendruck: Seilzug quer zur Fahrtrichtung drückt das Brett auf die Kante
-	# (normal 50–180 N, kräftig rausgekantet weit über 1000 N). Je mehr Druck, desto größer und weiter
-	# die Gischt – am stärksten Punkt 2–3 m. Seitliches Schneiden allein gibt etwas Gischt.
-	var edge_load := tension_smooth * absf(Vector3(rope_dir.x, 0.0, rope_dir.z).dot(travel.cross(Vector3.UP)))
-	var w := maxf(clampf((cut - 0.3) / 1.5, 0.0, 1.0) * 0.6,
-		clampf((edge_load - SPRAY_LOAD_MIN) / (SPRAY_LOAD_FULL - SPRAY_LOAD_MIN), 0.0, 1.0))
+	# Stärke: Seilzug-Anteil × (Tempo + Winkel + Sprung-Ladung); ohne Seilzug keine Gischt
+	var f_rope := clampf((tension_smooth - SPRAY_LOAD_MIN) / maxf(SPRAY_LOAD_FULL - SPRAY_LOAD_MIN, 1.0), 0.0, 1.0)
+	var f_speed := clampf(speed / maxf(SPRAY_SPEED_FULL, 0.1), 0.0, 1.0)
+	var f_angle := absf(rope_h.dot(travel.cross(Vector3.UP)))    # 0 = Seil in Fahrtrichtung, 1 = quer
+	var w := clampf(f_rope * (SPRAY_W_SPEED * f_speed + SPRAY_W_ANGLE * f_angle + SPRAY_W_LOAD * _load), 0.0, 1.0)
+	spray_strength = w
 	# Lage: an der Kante auf der Gischtseite, etwas hinter der Brettmitte, knapp über dem Wasser
 	var board := _board_pivot.global_position
 	var at := board + side * 0.2 - travel * 0.25
@@ -2060,7 +2068,7 @@ func _update_spray(speed: float) -> void:
 	_spray.initial_velocity_max = vel_w.length()
 	_spray.scale_amount_min = 0.5 + 0.5 * w
 	_spray.scale_amount_max = 1.0 + 2.0 * w
-	_spray.emitting = true
+	_spray.emitting = w > 0.02
 	# Hauptgischt: von der gegenüberliegenden Kante zur Seilseite, viel höher, weiter und dichter
 	# (bei vollem Druck ca. 7 m/s unter 60° -> gut 4 m weit, fast 2 m hoch)
 	var main_at := board - side * 0.2   # Kantenmitte; die Wand setzt über die ganze Kante an
@@ -2076,13 +2084,13 @@ func _update_spray(speed: float) -> void:
 	_spray_main.initial_velocity_max = mvel.length()
 	_spray_main.scale_amount_min = 0.6 + 0.8 * w
 	_spray_main.scale_amount_max = 1.2 + 2.8 * w
-	_spray_main.emitting = w > 0.05 or cut > 0.6
+	_spray_main.emitting = w > 0.05
 	# Vorhang: das Wasser bleibt, wo es die Kante verlassen hat, und fliegt im Bogen nach hinten weg
 	_sheet.water = water
-	_sheet.feed(main_at, mx, w, true, get_process_delta_time(), Vector3(forward().x, 0.0, forward().z).normalized())
+	_sheet.feed(main_at, mx, w, w > 0.02, get_process_delta_time(), Vector3(forward().x, 0.0, forward().z).normalized())
 	# Sprühnebel: bleibt bei der Hauptgischt kurz in der Luft stehen, weiter draußen bei viel Druck
 	_mist.global_position = main_at - side * (0.4 + 1.8 * w) + Vector3.UP * (0.3 + 0.9 * w)
-	_mist.emitting = w > 0.15 or speed > 7.0
+	_mist.emitting = w > 0.15
 
 
 ## Über eine Boje oder einen Steg gerumpelt: kein Sturz, nur ein kleiner Wackler und etwas Tempo weg.

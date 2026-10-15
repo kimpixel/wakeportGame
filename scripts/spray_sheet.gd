@@ -12,14 +12,16 @@ const EMIT_DT := 0.025          # s zwischen zwei Scheiben
 const ROWS := 9                 # Zeilen von der flachsten zur steilsten Flugbahn
 ## Form (live regelbar im Debug-Overlay F4, Reiter "Wasserwand")
 static var WALL_BASE := 1.1        # m: so lang ist der Ansatz an der Kante (Teil des Bretts im Wasser)
-static var WALL_SPEED_MIN := 2.5   # m/s Abwurf bei wenig Kantendruck
-static var WALL_SPEED_MAX := 7.5   # m/s bei vollem Druck (ca. 2,5 m hoch, 2,5 m weit)
+static var WALL_SPEED_MIN := 0.0   # m/s Abwurf bei wenig Kantendruck
+static var WALL_SPEED_MAX := 12.068   # m/s bei voller Stärke
 static var WALL_ANG_LOW := 0.22    # rad: flachste Bahn (weit zur Seite)
-static var WALL_ANG_HIGH := 1.4    # rad: steilste Bahn (hoch, kippt über wie eine Tube)
+static var WALL_ANG_HIGH := 0.716  # rad: steilste Bahn (hoch, kippt über wie eine Tube)
 const GRAVITY := 9.8
 
 var water: Water
-var _slices: Array = []         # [Startpunkt, Seite, Steigen, seitlich, Zeit, Stärke]
+var _slices: Array = []         # [Startpunkt, Seite, Brettachse, Abwurf, Zeit, Stärke, Abschnitt]
+var _seg := 0                   # Abschnitt: neu nach Pause oder Kantenwechsel (Wand wird nicht darüber verbunden)
+var _was_active := false
 var _t := 0.0
 var _emit_acc := 0.0
 var _mesh := ImmediateMesh.new()
@@ -38,13 +40,18 @@ func _ready() -> void:
 func feed(at: Vector3, side: Vector3, strength: float, active: bool, delta: float, axis := Vector3.ZERO) -> void:
 	_t += delta
 	if active:
+		# Kantenwechsel (Seite dreht sich um) oder Neubeginn: neuer Abschnitt, sonst würde die Wand quer
+		# über das Brett zur alten Seite gespannt (sah kurz aus wie in die falsche Richtung)
+		if not _was_active or (not _slices.is_empty() and (_slices[-1][1] as Vector3).dot(side) < 0.5):
+			_seg += 1
 		_emit_acc += delta
 		while _emit_acc >= EMIT_DT:
 			_emit_acc -= EMIT_DT
 			var speed := lerpf(WALL_SPEED_MIN, WALL_SPEED_MAX, strength)
-			_slices.append([at, side, axis, speed, _t, strength])
+			_slices.append([at, side, axis, speed, _t, strength, _seg])
 	else:
 		_emit_acc = 0.0
+	_was_active = active
 	while not _slices.is_empty() and _t - float(_slices[0][4]) > LIFE:
 		_slices.pop_front()
 	_build()
@@ -73,10 +80,15 @@ func _build() -> void:
 	var n := _slices.size()
 	if n < 2:
 		return
-	_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES, _material())
+	var began := false
 	for i in n - 1:
 		var a: Array = _slices[i]
 		var b: Array = _slices[i + 1]
+		if int(a[6]) != int(b[6]):
+			continue                     # nicht über einen Kantenwechsel/eine Pause verbinden
+		if not began:
+			_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES, _material())
+			began = true
 		var age_a := _t - float(a[4])
 		var age_b := _t - float(b[4])
 		for r in ROWS - 1:
@@ -92,7 +104,8 @@ func _build() -> void:
 				_mesh.surface_set_color(Color(1.0, 1.0, 1.0, quad[k][2]))
 				_mesh.surface_set_uv(quad[k][1])
 				_mesh.surface_add_vertex(quad[k][0])
-	_mesh.surface_end()
+	if began:
+		_mesh.surface_end()
 
 
 ## Deckkraft: an der Kante dicht, zum Ende des Bogens und zur höchsten Bahn hin ausgedünnt.
