@@ -140,7 +140,7 @@ func _layout() -> void:
 	jump.size = Vector2(s, s) * 1.25
 	if _steer_buttons:
 		# Steuerkreuz unten rechts: oben / unten / links / rechts um eine freie Mitte
-		var g := s * 1.0
+		var g := s * 0.76     # Abstand Mitte -> Taste (Kreise berühren sich diagonal fast)
 		var cx := vp.x - m - s * 0.5 - g
 		var cy := vp.y - m - s * 0.5 - g
 		up.position = Vector2(cx, cy - g) - Vector2(s, s) * 0.5
@@ -212,10 +212,17 @@ func button_at(pos: Vector2) -> PadButton:
 	if not visible:
 		return null
 	var list: Array[PadButton] = _menu_buttons() if _menu.visible else _main_buttons()
+	# runde Tasten als Kreis prüfen (das Steuerkreuz liegt eng), bei Überlappung die nächste
+	var best: PadButton = null
+	var best_d := INF
 	for b in list:
-		if b.get_global_rect().grow(8.0 * _scale).has_point(pos):
-			return b
-	return null
+		var r := b.get_global_rect()
+		var d := pos.distance_to(r.get_center())
+		var hit := d <= r.size.x * 0.5 + 8.0 * _scale if b.round else r.grow(8.0 * _scale).has_point(pos)
+		if hit and d < best_d:
+			best = b
+			best_d = d
+	return best
 
 
 ## Ein Menü-Befehl (Taste losgelassen).
