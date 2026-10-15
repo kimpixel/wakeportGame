@@ -300,9 +300,9 @@ var _rope_mesh: ImmediateMesh
 var _rope_mat: StandardMaterial3D
 var _spray: CPUParticles3D
 var _dspray: CPUParticles3D     # Drift-Press: große Gischt am Brett-Ende im Wasser
-var _mist: CPUParticles3D       # Sprühnebel hinter der Kante (nur Gischt-Stil Sprites, siehe Spray)
+var _mist: CPUParticles3D       # Sprühnebel hinter der Kante (siehe Spray)
 var _spray_main: CPUParticles3D # Hauptgischt: von der Kante zur Seilseite, hoch und weit (je nach Kantendruck)
-var _sheet: SpraySheet          # Gischt-Vorhang der Hauptgischt (Stil Sprites)
+var _sheet: SpraySheet          # Gischt-Vorhang der Hauptgischt (Wasserwand, siehe SpraySheet)
 var _land_spray: CPUParticles3D # Spritzer-Kranz beim Landen im Wasser
 
 
@@ -2079,10 +2079,10 @@ func _update_spray(speed: float) -> void:
 	_spray_main.emitting = w > 0.05 or cut > 0.6
 	# Vorhang: das Wasser bleibt, wo es die Kante verlassen hat, und fliegt im Bogen nach hinten weg
 	_sheet.water = water
-	_sheet.feed(main_at, mx, w, Spray.sprites, get_process_delta_time())
+	_sheet.feed(main_at, mx, w, true, get_process_delta_time())
 	# Sprühnebel: bleibt bei der Hauptgischt kurz in der Luft stehen, weiter draußen bei viel Druck
 	_mist.global_position = main_at - side * (0.4 + 1.8 * w) + Vector3.UP * (0.3 + 0.9 * w)
-	_mist.emitting = Spray.sprites and (w > 0.15 or speed > 7.0)
+	_mist.emitting = w > 0.15 or speed > 7.0
 
 
 ## Über eine Boje oder einen Steg gerumpelt: kein Sturz, nur ein kleiner Wackler und etwas Tempo weg.

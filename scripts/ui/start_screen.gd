@@ -706,7 +706,6 @@ func _page_water(p: VBoxContainer) -> void:
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_child(info)
 	var onoff := ["An", "Aus"]
-	_opt_row(p, "GISCHT", ["3D-Kugeln  (bisher)", "Sprites  (weich, mit Nebel)"], "w_spray", [0, 1])
 	_opt_row(p, "WASSERFARBE", ["Türkis  (bisher)", "Seeblau"], "w_color", [0, 1])
 	_opt_row(p, "OBERFLÄCHENSTRUKTUR   (gleitende Kräuselung statt Sinus)", onoff, "w_detail", [true, false])
 	_opt_row(p, "SPIEGELUNG JE NACH BLICKWINKEL   (flach: Himmel, von oben: ins Wasser)", onoff, "w_fresnel", [true, false])

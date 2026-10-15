@@ -1,16 +1,13 @@
 class_name Spray
 extends RefCounted
-## Gischt-Optik für alle Spritz-Partikel (Kante, Drift-Press, Hecht, Boot). Zwei Stile, umschaltbar
-## (Einstellungen -> Wasser -> Gischt): die bisherigen 3D-Kugeln oder weiche Sprites wie in modernen
-## Spielen – flache Bilder, die zur Kamera zeigen, mit ausfransendem Rand, weichem Ausblenden an der
-## Wasseroberfläche (Proximity Fade) und Verlauf über die Lebenszeit (wachsen, durchsichtig werden,
-## vom Weiß ins Graublau). Dazu eine Nebel-Ebene: große, langsame Sprites, die kurz stehen bleiben.
+## "Tropfen": Optik aller Spritz-Partikel (Kante, Landung, Drift-Press, Hecht, Boot). Jeder Tropfen ist ein
+## Tropfenschleier (gekreuzte, in Flugrichtung gestreckte Flächen mit Tröpfchen-Textur), weich ausgeblendet an
+## der Wasseroberfläche (Proximity Fade), mit Verlauf über die Lebenszeit. Dazu eine Nebel-Ebene: große,
+## langsame Sprites, die kurz stehen bleiben. Der zusammenhängende Gischt-Vorhang ist SpraySheet.
 ## Die Texturen erzeugt das Spiel selbst (Rauschen × runder Verlauf), es braucht keine Dateien.
 
 enum Kind { DROP, MIST }
 
-static var sprites := true          # false = 3D-Kugeln (bisher)
-static var _emitters: Array = []    # [CPUParticles3D, Kind, Kugel-Mesh, material_override]
 static var _tex := {}               # Kind -> ImageTexture
 static var _mats := {}
 static var _drops: Image
@@ -38,24 +35,12 @@ static func _droplet_image(size: int) -> Image:
 	return img
 
 
-## Emitter anmelden: merkt sich die Kugel-Optik und stellt auf den aktuellen Stil.
+## Emitter auf die Tropfen-Optik umstellen. Die Größe kommt vom Kugel-Mesh, das der Emitter mitbringt.
 static func register(p: CPUParticles3D, kind := Kind.DROP) -> void:
-	_emitters.append([p, kind, p.mesh, p.material_override])
-	_apply(p, kind, p.mesh, p.material_override)
+	_apply(p, kind, p.mesh)
 
 
-## Stil umschalten (wirkt sofort auf alle Emitter).
-static func set_sprites(on: bool) -> void:
-	sprites = on
-	var keep: Array = []
-	for e: Array in _emitters:
-		if is_instance_valid(e[0]):
-			_apply(e[0], e[1], e[2], e[3])
-			keep.append(e)
-	_emitters = keep
-
-
-## Nebel-Emitter (nur im Sprite-Stil sichtbar): große weiche Wolken, die langsam aufsteigen und vergehen.
+## Nebel-Emitter: große weiche Wolken, die langsam aufsteigen und vergehen.
 static func make_mist(parent: Node, amount := 24) -> CPUParticles3D:
 	var m := CPUParticles3D.new()
 	m.amount = amount
@@ -81,16 +66,7 @@ static func make_mist(parent: Node, amount := 24) -> CPUParticles3D:
 	return m
 
 
-static func _apply(p: CPUParticles3D, kind: Kind, sphere: Mesh, override: Material) -> void:
-	if not sprites:
-		p.mesh = sphere
-		p.material_override = override
-		p.color_ramp = null
-		p.scale_amount_curve = null
-		p.particle_flag_align_y = false
-		p.visible = kind != Kind.MIST
-		return
-	p.visible = true
+static func _apply(p: CPUParticles3D, kind: Kind, sphere: Mesh) -> void:
 	var r := 0.05
 	if sphere is SphereMesh:
 		r = (sphere as SphereMesh).radius

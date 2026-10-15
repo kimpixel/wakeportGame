@@ -1,6 +1,6 @@
 class_name SpraySheet
 extends MeshInstance3D
-## Gischt-Vorhang beim Schneiden (nach Fotos vom Wakeport): kein Partikelhaufen, sondern eine
+## "Wasserwand": Gischt-Vorhang beim Schneiden (nach Fotos vom Wakeport): kein Partikelhaufen, sondern eine
 ## zusammenhängende, dünne Wasserwand. Die Kante gibt laufend Wasser ab ("Scheiben"); jede Scheibe
 ## bleibt, wo sie die Kante verlassen hat, und fliegt ballistisch: flach von der Kante weg, im Bogen
 ## hoch, weit hinter dem Fahrer zurück ins Wasser. Jedes Bild wird aus allen Scheiben ein Band

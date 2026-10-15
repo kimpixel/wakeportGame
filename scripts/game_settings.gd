@@ -48,7 +48,6 @@ const DEFAULTS := {
 	"cam_mode": 0,          # ChaseCamera.CamMode
 	"cam_dist": 7.5,        # m Kamera-Abstand
 	# Wasser-Effekte (Reiter "Wasser", zum Ausprobieren je an/aus; siehe Water.FX_KEYS)
-	"w_spray": 1,           # Gischt: 0 3D-Kugeln (bisher), 1 Sprites
 	"w_color": 1,           # Wasserfarbe: 0 Türkis (bisher), 1 Seeblau
 	"w_detail": true,       # Oberflächenstruktur
 	"w_fresnel": true,      # Spiegelung je nach Blickwinkel
