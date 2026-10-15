@@ -47,6 +47,15 @@ jobs:
           mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
           mv templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
 
+      # Versionsnummer unten rechts im Spiel (scripts/ui/branch_label.gd liest res://version.txt)
+      - name: Versionsnummer
+        run: |
+          sha=$(echo "${{ github.event.pull_request.head.sha || github.sha }}" | cut -c1-7)
+          pr="${{ github.event.pull_request.number }}"
+          echo "BUILD_ID=${GITHUB_RUN_NUMBER}-${sha}" >> "$GITHUB_ENV"
+          echo "v${GITHUB_RUN_NUMBER} · ${sha}${pr:+ · PR $pr}" > version.txt
+          cat version.txt
+
       - name: Projekt importieren
         run: timeout 300 "$RUNNER_TEMP/godot" --headless --import --path . || true
 
@@ -55,8 +64,25 @@ jobs:
           mkdir -p build/web
           "$RUNNER_TEMP/godot" --headless --path . --export-release "Web" build/web/index.html
           touch build/web/.nojekyll
-          ls -la build/web
           test -f build/web/index.wasm
+
+      # Cache am Handy umgehen: Spieldaten (index.pck) je Build unter neuem Namen, index.js mit ?v=,
+      # build.txt für den Versions-Check in index.html (head_include in export_presets.cfg: lädt die
+      # Seite einmal neu, wenn der Browser noch eine alte index.html aus dem Cache zeigt)
+      - name: Cache-Busting
+        run: |
+          cd build/web
+          mv index.pck "index-${BUILD_ID}.pck"
+          sed -i \
+            -e "s/\"index\.pck\"/\"index-${BUILD_ID}.pck\"/g" \
+            -e "s/GODOT_CONFIG = {/GODOT_CONFIG = {\"mainPack\":\"index-${BUILD_ID}.pck\",/" \
+            -e "s/src=\"index\.js\"/src=\"index.js?v=${BUILD_ID}\"/" \
+            -e "s/__BUILD_ID__/${BUILD_ID}/g" \
+            index.html
+          echo "${BUILD_ID}" > build.txt
+          grep -q "mainPack\":\"index-${BUILD_ID}.pck" index.html
+          grep -q "index.js?v=${BUILD_ID}" index.html
+          ls -la
 
       - uses: actions/upload-artifact@v4
         with:
