@@ -209,7 +209,12 @@ var _board_xf := Transform3D()   # Brettlage aus der Pose (Figur)
 var _swim_from: Array = []       # Haltung beim Übergang ins Schwimmen
 var _swim_board_from := Transform3D()
 var _swim_blend := 1.0
+var _swim_feet_from: Array = []
 var _swim_phase := 0.0
+var _grab_from: Array = []       # letzte Schwimmhaltung beim Greifen der Handle (weich ins Liegen)
+var _grab_board_from := Transform3D()
+var _grab_feet_from: Array = []
+var _grab_blend := 1.0
 var air_time := 0.0
 
 var _steer := 0.0
@@ -456,6 +461,8 @@ func reset() -> void:
 	_edge_vis = 0.0
 	_release_vis = 0.0
 	_swim_blend = 1.0
+	_grab_blend = 1.0
+	_grab_from = []
 	_swim_path.clear()
 	_swim_heading = Vector2.ZERO
 	_prev_on_feature = false
@@ -890,6 +897,12 @@ func _swim(delta: float) -> void:
 	if _crash_t < SETTLE_TIME or not Lake.in_lake(pos.x, pos.z, 0.0):
 		return
 	if _ragdoll and _ragdoll.active:
+		if _rig:
+			# Übergang beginnt in der Lage, die die Ragdoll zeigt (nicht in der Haltung vor dem Sturz)
+			_swim_from = _ragdoll.pose_snapshot()
+			_swim_board_from = _board_pivot.global_transform
+			_swim_feet_from = []
+			_swim_blend = 0.0
 		_ragdoll.stop()                    # aus der Rückenlage in die Schwimmlage
 	if not autopilot and Input.is_action_just_pressed("release"):
 		# Strg (Handy: DRIFT): sofort weiter – direkt unter das Seil (dort steht kein Feature), Handle ist sofort da
@@ -960,6 +973,12 @@ func _swim_carrot(from: Vector2, goal: Vector2) -> Vector2:
 func _grab() -> void:
 	if _ragdoll:
 		_ragdoll.stop()
+	if _rig and mode == Mode.CRASHED:
+		# Schwimmhaltung merken: daraus weich in den Deep-Water-Start (sonst springt die Figur)
+		_grab_from = _rig.snapshot()
+		_grab_board_from = _board_xf
+		_grab_feet_from = _feet_rel(_board_xf)
+		_grab_blend = 0.0
 	mode = Mode.WATER
 	attached = true
 	swimming = false
@@ -1905,12 +1924,15 @@ func _process(delta: float) -> void:
 	_crouch = lerpf(_crouch, target_crouch, k)
 
 	_swim_blend = minf(_swim_blend + delta / 0.8, 1.0)
+	_grab_blend = minf(_grab_blend + delta / 0.7, 1.0)
 	_swim_phase += delta * TAU / 1.3 * (1.0 if swimming else 0.3)
-	if _rig:
-		_pose_human()
+	# Körper-Pivot vor der Pose setzen: die Pose rechnet in Weltkoordinaten über die Skelettlage
+	# (sonst springt die Figur beim Wechsel Schwimmen -> Seil ein Bild lang um 36 cm)
 	_body_pivot.rotation = Vector3(_lean_pitch, 0.0, _lean_roll)
 	_body_pivot.scale = Vector3(1.0, 1.0 - 0.5 * minf(_crouch, 1.0) * (1.0 - _raley_ang / RALEY_MAX), 1.0)   # beim Raley nicht stauchen
 	_body_pivot.position.y = -0.3 if mode == Mode.CRASHED else 0.06
+	if _rig:
+		_pose_human()
 	if _ragdoll and _ragdoll.active:
 		_board_on_feet()
 	elif _rig:
@@ -2194,30 +2216,78 @@ func _pose_human() -> void:
 		if _swim_from.is_empty():
 			_swim_from = _rig.snapshot()
 			_swim_board_from = _board_pivot.global_transform
+			_swim_feet_from = []
 			_swim_blend = 0.0
+		if _swim_feet_from.is_empty():
+			# Fußhaltung der Ausgangslage (auch aus der Ragdoll, siehe _swim) im Brettraum
+			_rig.begin()
+			_rig.blend_from(_swim_from, 1.0)
+			_swim_feet_from = _feet_rel(_swim_board_from)
 		_rig.begin()
 		_pose_swim()
-		var t := smoothstep(0.0, 1.0, _swim_blend)
-		_rig.blend_from(_swim_from, 1.0 - t)
-		_board_xf = _swim_board_from.interpolate_with(_board_xf, t)
+		if _swim_blend < 1.0:
+			var t := smoothstep(0.0, 1.0, _swim_blend)
+			var feet := _feet_rel(_board_xf)
+			_rig.blend_from(_swim_from, 1.0 - t)
+			_board_xf = _swim_board_from.interpolate_with(_board_xf, t)
+			_feet_into_board(_board_xf, _swim_feet_from, feet, t)
 		return
 	_swim_from = []
 	if _getup < 1.0:
 		# Deep-Water-Start: liegt im Wasser, bis das Seil spannt, dann langsam aufstehen
 		_rig.begin()
 		_pose_deep_water()
-		var lie := _rig.snapshot()
-		var lie_board := _board_xf
-		_rig.begin()
-		_pose_stand()
-		var t := smoothstep(0.0, 1.0, _getup)
-		_rig.blend_from(lie, 1.0 - t)
-		_board_xf = lie_board.interpolate_with(_board_xf, t)
+		if _getup > 0.0:
+			var lie := _rig.snapshot()
+			var lie_board := _board_xf
+			var lie_feet := _feet_rel(lie_board)
+			_rig.begin()
+			_pose_stand()
+			var t := smoothstep(0.0, 1.0, _getup)
+			var feet := _feet_rel(_board_xf)
+			_rig.blend_from(lie, 1.0 - t)
+			_board_xf = lie_board.interpolate_with(_board_xf, t)
+			_feet_into_board(_board_xf, lie_feet, feet, t)
+		if _grab_blend < 1.0 and not _grab_from.is_empty():
+			# eben noch geschwommen: aus der Bauchlage weich ins Liegen
+			var g := smoothstep(0.0, 1.0, _grab_blend)
+			var feet := _feet_rel(_board_xf)
+			_rig.blend_from(_grab_from, 1.0 - g)
+			_board_xf = _grab_board_from.interpolate_with(_board_xf, g)
+			_feet_into_board(_board_xf, _grab_feet_from, feet, g)
 		return
 	_rig.begin()
 	_pose_stand()
 	if absf(_dpress_vis) > 0.01:
 		_pose_drift_press()
+
+
+## Ausrichtung beider Füße im Brettraum (zum Überblenden zweier Haltungen).
+func _feet_rel(board: Transform3D) -> Array:
+	var to_board := board.basis.orthonormalized().inverse() * _rig.skeleton.global_transform.basis.orthonormalized()
+	var out: Array = []
+	for side: String in ["l", "r"]:
+		out.append((to_board * _rig.global_pose("foot_" + side).basis.orthonormalized()).get_rotation_quaternion())
+	return out
+
+
+## Nach dem Überblenden zweier Haltungen (Knochen einzeln gemischt) stehen die Füße irgendwo
+## zwischen den beiden Brettlagen: zurück in die Bindungen des überblendeten Bretts.
+## Die Knie knicken weiter dorthin, wo die Mischung sie hingelegt hat.
+func _feet_into_board(board: Transform3D, rel_a: Array, rel_b: Array, t: float) -> void:
+	if rel_a.size() < 2 or rel_b.size() < 2:
+		return
+	var skel := _rig.skeleton.global_transform
+	var skel_inv := skel.affine_inverse()
+	var to_skel := skel.basis.orthonormalized().inverse() * board.basis.orthonormalized()
+	for i in 2:
+		var side := "l" if i == 0 else "r"
+		var hip := _rig.global_pose("thigh_" + side).origin
+		var knee := _rig.global_pose("calf_" + side).origin
+		var foot := skel_inv * (board * Wakeboard.ankle_local(i == 0))
+		_rig.leg(side, foot, knee + (knee - (hip + foot) * 0.5))
+		var q: Quaternion = (rel_a[i] as Quaternion).slerp(rel_b[i], t)
+		_rig.set_end_basis("foot_" + side, to_skel * Basis(q))
 
 
 ## Fortschritt im Sprung 0..1: bisherige Flugzeit / (bisherige + geschätzte Restzeit bis zur Landung).
