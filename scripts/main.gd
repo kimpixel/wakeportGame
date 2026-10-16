@@ -17,7 +17,7 @@ extends Node3D
 ##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
 ##   --jump-at=SEK     Test: zu dieser Zeit voll aufgeladen abspringen
 ##   --hold=AKT@T0-T1,…  Test: Eingabe-Aktion (z. B. release, steer_right) von T0 bis T1 s halten
-##   --pitch=±1        Test: in der Luft ↑ (+1, Frontroll) bzw. ↓ (-1, Backroll) halten
+##   --pitch=±1        Test: in der Luft ↑ (+1, Frontroll; Invert: S-Bend) bzw. ↓ (-1, Backroll) halten
 ##   --game-time=SEK   Test: Spielzeit (normal 450 s); im Autotest läuft dann eine Runde mit Zeit
 ##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, regen, dunst)
 ##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30

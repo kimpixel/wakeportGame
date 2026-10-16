@@ -4,7 +4,7 @@ extends CanvasLayer
 ##  * unten links SPRUNG (halten = aufladen, loslassen = abspringen; Tippen auf den Bildschirm springt nicht)
 ##    und darüber DRIFT (Kante lösen; nach einem Sturz: sofort weiter) – links, damit rechts
 ##    gleichzeitig ▲ / ▼ geht (Drift-Press)
-##  * rechts Pfeil hoch / runter (in der Luft Frontroll/Backroll, auf dem Slider Nose-/Tailpress, im Drift Drift-Press);
+##  * rechts Pfeil hoch / runter (in der Luft Frontroll/Backroll bzw. beim Invert S-Bend/Backroll, auf dem Slider Nose-/Tailpress, im Drift Drift-Press);
 ##    mit Einstellung „Lenkung: Tasten“ dazu links / rechts = Steuerkreuz (statt Handy neigen)
 ##  * im Wasser nach einem Sturz heißen die Tasten SCHWIMMEN (SPRUNG) und SKIP (DRIFT)
 ##  * rechts unter der HUD-Leiste ☰ (nicht in der Leiste)   Menü: Weiter, Einstellungen, Hilfe, Zurück zum Steg, Startseite, Ton
