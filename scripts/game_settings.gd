@@ -59,11 +59,11 @@ const DEFAULTS := {
 	"music_src": 2,         # Music.Source: 0 Spiel-Musik, 1 eigene Titel, 2 beides
 	"vol_music": 0.6,       # Lautstärke Musik
 	"quality": 2,           # Grafik 0 niedrig, 1 mittel, 2 hoch
-	"steer": 0,             # Handy: Lenkung 0 Neigung (Gyro), 1 Tasten (Steuerkreuz rechts)
+	"steer": 1,             # Handy: Lenkung 0 Neigung (Gyro), 1 Tasten (Steuerkreuz rechts)
 	"tilt": 1,              # Handy: Neigungs-Empfindlichkeit 0 niedrig, 1 mittel, 2 hoch
 	"tilt_invert": false,   # Handy: Neigung umkehren
 	"cam_mode": 0,          # ChaseCamera.CamMode
-	"cam_dist": 7.5,        # m Kamera-Abstand
+	"cam_dist": 5.0,        # m Kamera-Abstand
 	# Wasser-Effekte (Reiter "Wasser", zum Ausprobieren je an/aus; siehe Water.FX_KEYS)
 	"w_color": 1,           # Wasserfarbe: 0 Türkis (bisher), 1 Seeblau
 	"w_detail": true,       # Oberflächenstruktur
@@ -77,18 +77,45 @@ const DEFAULTS := {
 	"preset_ver": 0,        # Stand der Wasser-Voreinstellungen (PRESET_VER)
 }
 
+## Standardwert ändern: Wert in DEFAULTS ändern und hier eine neue Version mit dem ALTEN Wert anhängen.
+## Gespeichert werden nur Abweichungen vom Standard. Ältere Dateien enthalten aber noch alle Werte:
+## steht dort für den Schlüssel noch der alte Standard, gilt danach der neue (bewusst anders
+## eingestellte Werte bleiben). Version der Datei in [optionen] "ver".
+const DEFAULT_CHANGES := {
+	1: {"steer": 0, "cam_dist": 7.5},
+}
+
 var values := DEFAULTS.duplicate()
+var _mobile := false
+
+
+## Standardwert eines Schlüssels (Handy: Grafik Mittel).
+func default_of(key: String) -> Variant:
+	if key == "quality" and _mobile:
+		return 1
+	return DEFAULTS[key]
+
+
+## Aktuelle Version der Standardwerte (höchste in DEFAULT_CHANGES).
+static func defaults_ver() -> int:
+	var v := 0
+	for n: int in DEFAULT_CHANGES:
+		v = maxi(v, n)
+	return v
 
 
 ## Gespeicherte Werte laden. mobile: Handy startet mit mittlerer Grafik.
 func load_file(mobile: bool) -> void:
-	if mobile:
-		values["quality"] = 1
+	_mobile = mobile
+	values["quality"] = default_of("quality")
 	var cfg := ConfigFile.new()
-	if cfg.load(FILE) == OK:
+	if cfg.load(FILE) == OK and cfg.has_section(SECTION):
+		var ver := int(cfg.get_value(SECTION, "ver", 0))
 		for k: String in DEFAULTS:
 			if cfg.has_section_key(SECTION, k):
-				values[k] = type_convert(cfg.get_value(SECTION, k), typeof(DEFAULTS[k]))
+				var v: Variant = type_convert(cfg.get_value(SECTION, k), typeof(DEFAULTS[k]))
+				if not _old_default(k, v, ver):
+					values[k] = v
 		# frühere Version: Seillänge/Tempo standen im Abschnitt "anlage"
 		if not cfg.has_section_key(SECTION, "rope") and cfg.has_section_key("anlage", "rope"):
 			values["rope"] = float(cfg.get_value("anlage", "rope"))
@@ -97,13 +124,35 @@ func load_file(mobile: bool) -> void:
 	if int(values["preset_ver"]) < PRESET_VER:
 		values.merge(WATER_PRESETS[clampi(int(values["quality"]), 0, 2)], true)
 		values["preset_ver"] = PRESET_VER
+	# ältere Datei: einmal neu schreiben (nur Abweichungen, aktuelle Version)
+	if cfg.has_section(SECTION) and int(cfg.get_value(SECTION, "ver", 0)) < defaults_ver():
+		save_file()
 
 
+## true, wenn v der Standard von key war, als die Datei (Version ver) geschrieben wurde,
+## und der Standard sich seitdem geändert hat.
+## Maßgeblich ist die erste Änderung nach ver: ihr alter Wert war der Standard bei ver.
+func _old_default(key: String, v: Variant, ver: int) -> bool:
+	var first := -1
+	for n: int in DEFAULT_CHANGES:
+		if n > ver and DEFAULT_CHANGES[n].has(key) and (first < 0 or n < first):
+			first = n
+	return first >= 0 and type_convert(DEFAULT_CHANGES[first][key], typeof(DEFAULTS[key])) == v
+
+
+## Speichert nur Werte, die vom Standard abweichen (sonst greift ein später geänderter Standard nicht).
 func save_file() -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(FILE)
+	if cfg.has_section("anlage"):      # frühere Version, sonst käme die alte Seillänge zurück
+		cfg.erase_section("anlage")
 	for k: String in values:
-		cfg.set_value(SECTION, k, values[k])
+		if values[k] == default_of(k):
+			if cfg.has_section_key(SECTION, k):
+				cfg.erase_section_key(SECTION, k)
+		else:
+			cfg.set_value(SECTION, k, values[k])
+	cfg.set_value(SECTION, "ver", defaults_ver())
 	cfg.save(FILE)
 
 

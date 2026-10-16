@@ -235,7 +235,7 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
   Flughälfte wieder flach.
 - R, + / −, C, P, H, M, Tab (Startseite) wie in der README. **Keine Tasten T/F** mehr (Terminal/Setup nur auf der Startseite).
 
-Steuerung Handy: Neigen = lenken, Tippen = Start, **Springen nur mit der SPRUNG-Taste (links)**,
+Steuerung Handy: lenken mit ← / → (Standard `steer` 1 Tasten; Gyro = Neigen wählbar), Tippen = Start, **Springen nur mit der SPRUNG-Taste (links)**,
 DRIFT links über SPRUNG (damit rechts gleichzeitig ▲ ▼ für den Drift-Press geht); nach Sturz Bildschirm halten = schwimmen, DRIFT = sofort weiter;
 ☰-Menü (Weiter, Einstellungen, Hilfe, Zurück zum Steg, Startseite, Ton); ☰ sitzt **rechts unter der HUD-Leiste, nie darin** (`TouchPad._place_menu_button`). Terminal/Setup nur auf der Startseite.
 **Handy hochkant** (es wird meist hochkant gespielt): HUD-Leiste **zweispaltig** (links Zeit über Punkte, rechts Seilzug über Tempo, `Hud._arrange_bar`), über die ganze Breite skaliert; Aufgabenzeile, Brettzustand, Livebild des Filmteams und ☰ rücken unter die echte Unterkante (`Hud.bar_bottom`/`info_bottom`). Sturz-Panel hochkant zweispaltig (Taste | Aktion + Kosten darunter), Titel zweizeilig, volle Breite.
@@ -324,7 +324,10 @@ angewendet in `main.gd` `_apply_setting`): Spielmodus Runde 7:30 / 10:00 / 15:00
 (Einloggen, Überschlag ausdrehen; je aus +15 %), Seilzug-Grenze (Locker/Normal/Streng/Aus; Taste G
 und ☰-Menü schalten Abreißen an/aus), Brett, Stance Regular/Goofy, Helm,
 Weste, Seillänge, Anlagen-Tempo, Flugzeuge, NPC, Grafik, Lautstärken (Busse Effekte/Jubel/Flugzeuge),
-Kamera, Handy-Neigung. Gespeichert in user://settings.cfg [optionen]; Wetter/Uhrzeit **nicht**.
+Kamera, Handy-Neigung. Gespeichert in user://settings.cfg [optionen]; Wetter/Uhrzeit **nicht**. **Nur Abweichungen vom Standard werden
+gespeichert** (`save_file`). **Standardwert ändern**: Wert in `DEFAULTS` ändern und in `GameSettings.DEFAULT_CHANGES` eine
+neue Version mit dem **alten** Wert anhängen (z. B. `2: {"cam_dist": 5.0}`) – ältere Dateien enthalten noch alle Werte; steht
+dort noch der alte Standard, gilt der neue, bewusst anders eingestellte Werte bleiben (Version in [optionen] `ver`).
 Test: `--set=NAME=WERT` (ohne Speichern), `--screen=@einstellungenN` (Reiter N).
 
 **Nutzungsstatistik** (`scripts/analytics.gd`, GoatCounter-Seite `kimpixel`, Auswertung https://kimpixel.goatcounter.com): nur Web-Hauptversion (nicht lokal, PR-Vorschau, Tests), count.js wird per JavaScriptBridge geladen; Ereignisse als Pfade `Analytics.count("start/…")` (Start, `runde/ende/…`, `challenge/MODUS/ID/MEDAILLE`, `erfolg/ID`, `editor`, `geraet/…`, `spielzeit/Nmin`). Keine personenbezogenen Daten.

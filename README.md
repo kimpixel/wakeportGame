@@ -53,8 +53,8 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | Geste | Funktion |
 |---|---|
 | – | Start: Countdown 3 – 2 – 1 – GO, die Anlage fährt von selbst los |
-| Handy nach links/rechts neigen | lenken (volle Neigung bei etwa 25°, hoch- und querformatig) |
-| ← / → (unten rechts) | lenken statt neigen, mit Einstellung *Lenkung: Tasten* (Steuerkreuz mit Pfeil hoch/runter) |
+| ← / → (unten rechts) | lenken (Standard *Lenkung: Tasten*, Steuerkreuz mit Pfeil hoch/runter) |
+| Handy nach links/rechts neigen | lenken statt Tasten, mit Einstellung *Lenkung: Gyro* (volle Neigung bei etwa 25°, hoch- und querformatig) |
 | SPRUNG (unten links) halten + loslassen | Absprung (schnell: Raley). Tippen auf den Bildschirm springt nicht |
 | SCHWIMMEN (statt SPRUNG) oder Bildschirm halten | nach Sturz: zur Handle schwimmen |
 | Pfeil hoch / runter (unten rechts) | in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress |
@@ -109,7 +109,7 @@ Die Haltung wird im Spiel live aus der Physik berechnet, mit einer eigenen IK in
 - **Spiel:** Rundenlänge der Competition *Runde 7:30*, *Runde 10:00*, *Runde 15:00* oder *Freies Fahren* (keine Uhr – oben steht „FREI“, kein Zeitende, keine Strafzeit). Hilfen *Auf dem Slider einloggen* und *Überschlag dreht von selbst zu Ende* – jede ausgeschaltete Hilfe gibt +15 % auf alle Tricks. *Seilzug-Grenze* Locker / Normal / Streng / Aus (Handle wird nie aus der Hand gerissen; im Spiel G).
 - **Fahrer:** Brett aus der Brett-Bibliothek, Stance *Regular* (links vorne) oder *Goofy* (rechts vorne), Helm und Westenfarbe.
 - **Welt:** Wetter, Datum, Uhrzeit, Jetzt; **Seillänge** (12–22 m, Standard 16) und **Anlagen-Tempo** (16–40 km/h, Standard 30) deiner Anlage (+ / − im Spiel ändert das Tempo ebenfalls); Flugzeuge *Aus / Normal / Rush Hour*; Fahrer auf der anderen Anlage an/aus; **Challenge: Filmteam** *Zufall / Boot / Drohne / Aus*.
-- **Technik:** Grafik *Niedrig / Mittel / Hoch* (Auflösung, Schatten, Baumdichte, Gischt und alle Wasser-Effekte; am Handy Standard *Mittel*; *Custom*, sobald ein Wasser-Effekt von der Stufe abweicht), Lautstärke für Effekte, Jubel und Flugzeuge, Kamera und Kamera-Abstand, am Handy Lenkung (Gyro = Handy neigen oder Tasten = Steuerkreuz rechts), Neigungs-Empfindlichkeit und Neigung umkehren.
+- **Technik:** Grafik *Niedrig / Mittel / Hoch* (Auflösung, Schatten, Baumdichte, Gischt und alle Wasser-Effekte; am Handy Standard *Mittel*; *Custom*, sobald ein Wasser-Effekt von der Stufe abweicht), Lautstärke für Effekte, Jubel und Flugzeuge, Kamera und Kamera-Abstand (Standard 5 m), am Handy Lenkung (Tasten = Steuerkreuz rechts, Standard, oder Gyro = Handy neigen), Neigungs-Empfindlichkeit und Neigung umkehren.
 - **Wasser:** oben dieselbe Grafikstufe (stellt alle Effekte passend ein), Wasserfarbe *Türkis* oder *Seeblau* (Standard) und jeder Wasser-Effekt einzeln an/aus (dann Grafik *Custom*): Oberflächenstruktur, Spiegelung je nach Blickwinkel, Sonnenglitzern, Licht durch die Wellenkämme, Schaum mit Struktur, spitze Wellen, Durchsicht im Flachen, echte Spiegelbilder (nur Desktop, teuer).
 - **Musik:** Im Hintergrund läuft **Spiel-Musik**: lizenzfreie Rock-Titel von Pixabay (Quellen in [assets/music/QUELLEN.md](assets/music/QUELLEN.md)), im Browser wird jeder Titel erst geladen, wenn er dran ist. Mit *Titel hinzufügen* wählst du zusätzlich eigene MP3-, OGG- oder WAV-Dateien; sie bleiben auf dem Gerät bzw. im Browser gespeichert. *Quelle*: Spiel-Musik, eigene Titel oder beides (gemischt). Läuft auch in der Pause, bei Jubel und Countdown kurz leiser. Dazu Musik an/aus, Lautstärke, *Nächster Titel* (auch im Pausenmenü) und *Eigene entfernen*. Alternativ öffnet *Skate-Punk bei Spotify* Playlists zum Nebenher-Hören.
 

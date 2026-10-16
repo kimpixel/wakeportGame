@@ -13,7 +13,7 @@ C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause (dort 
 P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus     H  Hilfe ein/aus     F3  Hitboxen (Debug)     F4  Parameter (Debug, nur lokal)
 Tab  Startseite (Terminal, Feature-Setup, Einstellungen)"""
 
-const HELP_MOBILE := """Start mit Countdown          Handy neigen (bzw. ← / → mit Lenkung: Tasten)   lenken (auf dem Slider: deutlich neigen = Boardslide ↔ 50-50)
+const HELP_MOBILE := """Start mit Countdown          ← / → (bzw. Handy neigen mit Lenkung: Gyro)   lenken (auf dem Slider: Tipp bzw. deutlich neigen = Boardslide ↔ 50-50)
 SPRUNG (links) halten + loslassen   Absprung (schnell: Raley)
 Pfeil ↑ / ↓   in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)
 DRIFT (links, über SPRUNG)   Kante lösen        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)
