@@ -24,7 +24,7 @@ const PRESS_LIFT := 0.3          # m über dem Brett-Ende
 var rider: Rider
 var water: Water
 var cam_mode := CamMode.CHASE
-var distance := 7.5
+var distance := 5.0
 
 var _yaw := 0.0
 var _off_yaw := 0.0
