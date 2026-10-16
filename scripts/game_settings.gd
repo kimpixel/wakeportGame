@@ -40,7 +40,8 @@ const DEFAULTS := {
 	"vol_fx": 1.0,          # Lautstärke Effekte (0..1)
 	"vol_cheer": 1.0,       # Lautstärke Jubel
 	"vol_planes": 1.0,      # Lautstärke Flugzeuge
-	"music": true,          # eigene Musik abspielen (Titel wählt der Spieler, siehe Music)
+	"music": true,          # Hintergrundmusik an/aus (siehe Music)
+	"music_src": 2,         # Music.Source: 0 Spiel-Musik, 1 eigene Titel, 2 beides
 	"vol_music": 0.6,       # Lautstärke Musik
 	"quality": 2,           # Grafik 0 niedrig, 1 mittel, 2 hoch
 	"steer": 0,             # Handy: Lenkung 0 Neigung (Gyro), 1 Tasten (Steuerkreuz rechts)

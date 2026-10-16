@@ -705,6 +705,8 @@ func _apply_setting(key: String) -> void:
 			Sfx.set_volume(Sfx.BUS_PLANES, float(v))
 		"vol_music":
 			Sfx.set_volume(Sfx.BUS_MUSIC, float(v))
+		"music_src":
+			music.set_source(int(v))
 		"music":
 			music.set_enabled(bool(v))
 		"quality":

@@ -66,6 +66,20 @@ jobs:
           touch build/web/.nojekyll
           test -f build/web/index.wasm
 
+      # Spiel-Musik (assets/music/, .gdignore: nicht im Spielpaket) als einzelne Dateien daneben legen,
+      # das Spiel lädt sie nach (scripts/music.gd); index.json = Liste der Dateinamen
+      - name: Spiel-Musik
+        run: |
+          mkdir -p build/web/music
+          shopt -s nullglob nocaseglob
+          files=()
+          for f in assets/music/*.mp3 assets/music/*.ogg assets/music/*.wav; do
+            cp "$f" build/web/music/
+            files+=("$(basename "$f")")
+          done
+          node -e "console.log(JSON.stringify(process.argv.slice(1)))" -- "${files[@]}" > build/web/music/index.json
+          cat build/web/music/index.json
+
       # Cache am Handy umgehen: Spieldaten (index.pck) je Build unter neuem Namen, index.js mit ?v=,
       # build.txt für den Versions-Check in index.html (head_include in export_presets.cfg: lädt die
       # Seite einmal neu, wenn der Browser noch eine alte index.html aus dem Cache zeigt)

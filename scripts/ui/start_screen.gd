@@ -626,13 +626,14 @@ func _page_tech(p: VBoxContainer) -> void:
 		_opt_row(p, "NEIGUNG UMKEHREN", ["Nein", "Ja"], "tilt_invert", [false, true])
 
 
-## Eigene Musik: das Spiel bringt keine mit (Lizenzen), der Spieler wählt seine Titel selbst.
+## Musik: Spiel-Musik (lizenzfrei, Pixabay) und/oder eigene Titel des Spielers.
 func _page_music(p: VBoxContainer) -> void:
-	var info := _label("Das Spiel bringt keine Musik mit. Wähle deine eigenen Titel (MP3, OGG, WAV) – sie bleiben "
-		+ "auf diesem Gerät bzw. in diesem Browser gespeichert und laufen gemischt im Hintergrund.", 16, Color(1, 1, 1, 0.8))
+	var info := _label("Spiel-Musik: lizenzfreie Titel von Pixabay. Dazu kannst du eigene Titel wählen (MP3, OGG, WAV) – sie bleiben "
+		+ "auf diesem Gerät bzw. in diesem Browser gespeichert. Alles läuft gemischt im Hintergrund.", 16, Color(1, 1, 1, 0.8))
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_child(info)
 	_opt_row(p, "MUSIK", ["An", "Aus"], "music", [true, false])
+	_opt_row(p, "QUELLE", ["Spiel-Musik", "Eigene Titel", "Beides"], "music_src", [0, 1, 2])
 	var pct := func(x: float) -> String: return "%d %%" % roundi(x * 100.0)
 	_slider_row(p, "LAUTSTÄRKE MUSIK", "vol_music", 0.0, 1.0, 0.05, pct)
 	var status := _label("", 18)
@@ -647,7 +648,7 @@ func _page_music(p: VBoxContainer) -> void:
 	add.pressed.connect(music.pick_files)
 	var nxt := _button("Nächster Titel", 18)
 	nxt.pressed.connect(music.next)
-	var clr := _button("Alle entfernen", 18)
+	var clr := _button("Eigene entfernen", 18)
 	clr.pressed.connect(music.clear_all)
 	for b: Button in [add, nxt, clr]:
 		b.clip_text = true
@@ -655,11 +656,12 @@ func _page_music(p: VBoxContainer) -> void:
 		grid.add_child(b)
 	var update := func() -> void:
 		var n := music.tracks.size()
-		if n == 0:
-			status.text = "Noch keine Titel."
-		else:
-			status.text = "%d Titel" % n + ("   ♪ " + music.current if music.current != "" else "")
-		nxt.disabled = n == 0 or not music.enabled
+		status.text = "%d Spiel-Musik, %d eigene" % [music.game_tracks.size(), n]
+		if music.current != "":
+			status.text += "   ♪ " + music.current
+		elif music.loading != "":
+			status.text += "   lädt: " + music.loading
+		nxt.disabled = music.playlist().is_empty() or not music.enabled
 		clr.disabled = n == 0
 	music.changed.connect(update)
 	update.call()
