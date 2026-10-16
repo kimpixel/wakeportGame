@@ -387,7 +387,11 @@ func _physics_process(delta: float) -> void:
 				_max_y = maxf(_max_y, r.pos.y)
 			else:
 				_was_air = false
-			if c.laps > _laps0 and absf(s_now - _s_turn) > float(task["end_after"]) and _done_t < 0.0:
+			# Versuch endet nach der einen Wende: ein Stück danach, spätestens wenn die Anlage zur
+			# nächsten Wende bremst (sonst lief der Versuch ohne Sprung und ohne Sturz endlos weiter)
+			var over := c.laps > _laps0 and (absf(s_now - _s_turn) > float(task["end_after"]) \
+				or c.laps > _laps0 + 1 or c.state == CableSystem.State.BRAKE)
+			if over and _done_t < 0.0 and r.mode != Rider.Mode.AIR:
 				_fail("Kein Raley – mehr Tempo: weit raus, dann hart zur Mitte kanten")
 				return
 	if _done_t >= 0.0:
@@ -444,7 +448,17 @@ func _on_landed(info: Dictionary) -> void:
 			_hit = true
 			_done_t = SETTLE
 		"raley":
-			if not info["raley"]:
+			if task.has("trick"):
+				# Invert Training: genau dieser Trick – mehr (Drehung, Extra) ist auch daneben
+				var name: String = info.get("name", "")
+				if name != task["trick"]:
+					var rank := int(info["half_turns"]) + int(info["rolls"]) + (1 if str(info.get("invert", "")) != "" else 0)
+					if info["raley"] and rank > int(task["rank"]):
+						_fail("Junge mach mal langsam! (%s)" % name)
+					else:
+						_fail("Das war %s – gefordert: %s" % [name, task["trick"]])
+					return
+			elif not info["raley"]:
 				return
 			match task["metric"]:
 				"height":

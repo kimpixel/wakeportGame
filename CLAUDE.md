@@ -31,6 +31,7 @@ Der Nutzer benutzt feste Begriffe (oft mit Erklärung in Klammern) und Kurzforme
 | **Gelbe Bojenlinie** | lange gelbe Zylinder (ca. 2 m) aneinandergekettet |
 | **Rauskanten** | vor der Wende nach außen kanten und um den Carrier pendeln |
 | **Absinken / Einsinken / Absaufen** | bei schlaffem Seil und wenig Tempo ins Wasser sinken (wie Wasserstart, keine Punkte) |
+| **Invert** (Mehrzahl **Inverts**) | Oberbegriff für alle Tricks aus dem Raley-Absprung (aufgeladener Sprung mit Seilzug und Tempo): Raley, S-Bend, Invert-Backroll, Blind Judge, Krypt, 313 … |
 | **Kicker S / M / L** | Small / Medium / Large Kicker; **Spine** = zwei Kicker Rücken an Rücken |
 | **Small-Pipe** | Pipe-Hälfte mit beiden Auffahrten |
 | **Down Ledge (Rooftop)** | lange Ledge: kleine Safety vorne, steil hoch, lang abfallend, Safety hinten bis ins Wasser |
@@ -75,9 +76,9 @@ Godot liegt im Repo-Root: `./Godot_v4.7.2-stable_win64_console.exe`. Kein ffmpeg
 
 ```bash
 # Headless-Smoke-Test (Autopilot, Log mit TRICK:/CRASH:/t=… Zeilen)
-./Godot_v4.7.2-stable_win64_console.exe --headless --path . --fixed-fps 120 -- --autotest --quit=30
+./Godot_v4.7.2-stable_win64_console.exe --headless --path . --fixed-fps 120 -- --autotest --set=music=false --quit=30
 # Screenshot (mit Fenster, nur zur eigenen Selbstkontrolle), z. B. Nahaufnahme am Fahrer
-./Godot_v4.7.2-stable_win64_console.exe --path . --fixed-fps 120 -- --autotest --jump-at=12 --closeup=0,1.2,4.5,0,1.0,0 --shot=PFAD.png --shot-time=12.4
+./Godot_v4.7.2-stable_win64_console.exe --path . --fixed-fps 120 -- --autotest --jump-at=12 --closeup=0,1.2,4.5,0,1.0,0 --shot=PFAD.png --shot-time=12.4 --set=music=false
 # Handy nachstellen
 ./Godot_v4.7.2-stable_win64_console.exe --path . --resolution 540x1170 -- --mobile --tilt=0
 ```
@@ -87,6 +88,9 @@ Wichtige Test-Argumente (vollständig im Kopf von `scripts/main.gd`): `--autotes
 `--terminal=T1|T2`, `--setup=ID`, `--screen[=NAME|@liste|@einstellungen]`, `--no-screen`,
 `--mobile --tilt=GRAD`, `--jump-at=S`, `--pitch=±1`, `--hold=AKTION@T0-T1`, `--crash-at=S`, `--letgo-at=S`,
 `--game-time=S`, `--weather=ID --hour=H --day=T`, `--plane=S`, `--passive`.
+
+**Musik bei eigenen Tests aus**: immer `--set=music=false` anhängen (speichert nichts), außer der Ton/die Musik
+selbst soll geprüft werden.
 
 Fallstricke:
 - **Neue `class_name`** → erst `--headless --import` laufen lassen, sonst „Could not find type“.
@@ -140,10 +144,10 @@ Wendepunkt. Ufer-Wende T2 bei 28 m vom Startmast (`cable.turn_a_z` in main.gd).
 
 Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/ui/task_panel.gd` Fenster):
 - **Competition** = die Runde auf Zeit (alles unter „Spiel“). Daneben die **Community Challenge** (im Spiel kurz „Challenge“,
-  nie „Training“/„Aufgabe“ schreiben; im Code heißen sie weiter Training/Task): **Wenden, Kicker, Slider, Raley**, je
+  nie „Training“/„Aufgabe“ schreiben; im Code heißen sie weiter Training/Task): **Wenden, Kicker, Slider, Invert Training**, je
   mehrere Aufgaben (leicht → schwer), jede misst einen Wert → **Bronze/Silber/Gold** (Schwellen in `Training.MODES`,
   vom Nutzer fein justiert). Bestwerte in user://settings.cfg [medaillen]; **Tests speichern nichts**.
-- Modi: Wenden, Kicker, Slider, Raley, **Sprung-Start** (Nolli, Raley Start vom Steg), **Driften**, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
+- Modi: Wenden, Kicker, Slider, **Invert Training** (id `raley`; je Aufgabe genau ein Trick: `trick` = Name wie im Spiel, `rank` = Zusätze; anderer Trick = fehlgeschlagen, mehr = „Junge mach mal langsam!“; Versuch endet spätestens, wenn die Anlage zur nächsten Wende bremst), **Sprung-Start** (Nolli, Raley Start vom Steg), **Driften**, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
   `target` = Ziel, je per Anzeigename; zählt nur: auf dem Start-Feature fahren, abspringen, aus der Luft aufs Ziel; Klein/Groß/Special messen die Sprunghöhe im Flug Start-Feature → Ziel (`_xfer_h`), Special Press die Press-Sekunden). Nach gewertetem Versuch **1,4 s ausrollen** (`Challenge.OUTRO`), dann Fenster.
   Startseite im Querformat zweispaltig (links Modi, rechts Terminal/Setup bzw. Aufgaben; Handy quer: Start links).
 - Aufgabe setzt Fahrer + Carrier **in voller Fahrt** kurz vor die Stelle (`Rider.place`, `CableSystem.place_running`),
@@ -247,7 +251,18 @@ Tricks/Optik:
   **kein Feature voraus** (damit man schräg auf Features springen kann). Pose nach Fotoserie:
   Körper schwingt um den Griff, am höchsten Punkt kopfüber unter dem Brett, Hohlkreuz, Knie
   angewinkelt, **Griff vor dem Gesicht** mit angewinkelten Armen (nicht hinter dem Kopf).
-- **Frontroll eingerollt** (Knie zur Brust), **Backroll gestreckt**.
+- **Frontroll eingerollt** (Knie zur Brust), **Backroll gestreckt** – beides nur bei normalen Sprüngen (Ollie, Kicker …).
+- **Inverts** (`Rider._invert`): aus dem Raley-Absprung gibt es keinen Frontroll/Backroll. ↑/↓ nur ganz am Anfang
+  (`INVERT_PICK`, gehaltene Taste vom Steg zählt erst nach Loslassen) wählen den Trick, sonst Raley:
+  **↑ = S-Bend** (Anfang/Ende wie Raley, kurz vor dem höchsten Punkt gestreckt eine Drehung um die eigene Längsachse,
+  `SBEND_FROM/TO`), **↓ = Backroll** als Invert (ganz anders als vom Kicker: kein Schwung um den Griff, seitlich nach
+  außen kopfüber um die eigene Achse, `IBACK_*`, noch grob – wird später verfeinert). Je +300 (`INVERT_POINTS`) zum Raley.
+  **Regel: erst wenn ein Invert fast fertig ist, kann ein weiterer Trick folgen** – Drehen (←/→) erst ab
+  `INVERT_SPIN_RALEY` (Körper halb zur Landung zurück) bzw. `INVERT_SPIN_BACK`. **←/→ nach der Streckung** (`RALEY_STRETCH`;
+  S-Bend: nach der Längsdrehung) **bricht den Raley-Schwung ab** (`_raley_cut`, schnell zurück mit `RALEY_CUT_RATE`), gedreht wird
+  erst aufrecht (`RALEY_SPIN_ANG`) – damit die Drehung in aufrechter Haltung passiert. Immer normales Drehtempo – eine 313 danach soll sauschwer sein (nur mit sehr viel Höhe).
+  Namen: Raley 180 links = **Blind Judge**, rechts = **Krypt**; Raley 360 links = **313**, rechts = **BS 313**;
+  S-Bend/Backroll mit Drehung „S-Bend 180“ usw.
 - **Press-Pose aus Blender** (Nutzer posiert selbst): `blender/*.blend` (Godot ignoriert den Ordner) -> `tools/export_pose.py` (Nutzer: `.	oolsexport_poses.ps1` in PowerShell, exportiert alle)
   (Blender 5.2 im Hintergrund, IK ausgewertet) -> `assets/poses/nosepress.json`. Übernommen: Becken (Lage im Brettraum),
   Rücken, Kopf, Arme; Füße per IK in den Bindungen, Hände Faust, Handle in der vorderen Hand. 50-50-Tailpress: eigene Pose `tailpress.json` (aus `blender/tailpress.blend`), Boardslide-Tailpress/Goofy gespiegelt,
