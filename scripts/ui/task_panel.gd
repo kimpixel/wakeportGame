@@ -257,6 +257,8 @@ func _layout() -> void:
 	var w := 500.0 if vs.x < vs.y else 720.0
 	_mgrid.columns = 1 if vs.x < vs.y else 3
 	var k := clampf(minf(vs.y / 720.0, vs.x / 760.0), 0.5, 3.0) * (1.25 if mobile else 1.0)
+	if not mobile:
+		k = minf(k, Hud.desktop_ui_max())
 	k = minf(k, (vs.x - 24.0) / w)
 	_panel.custom_minimum_size = Vector2(w, 0)
 	_panel.size = Vector2(w, 0)

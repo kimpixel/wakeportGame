@@ -470,6 +470,15 @@ func toggle_help() -> void:
 	_help_hint.visible = not _help.visible and not _mobile_help
 
 
+## Obergrenze für die Skalierung von Menüs und Fenstern am Desktop: sie wachsen nicht mit großen
+## Auflösungen mit (man sieht mehr vom Hintergrund), nur mit der Bildschirmskalierung (HiDPI).
+static func desktop_ui_max() -> float:
+	var s := DisplayServer.screen_get_scale()
+	if OS.get_name() == "Windows":
+		s = maxf(s, DisplayServer.screen_get_dpi() / 96.0)
+	return maxf(1.0, s)
+
+
 func set_board(text: String) -> void:
 	_board.text = text
 
@@ -485,6 +494,8 @@ func _process(delta: float) -> void:
 	if _recovery.visible:
 		var vs := get_viewport().get_visible_rect().size
 		var want := clampf(vs.y / 720.0, 1.0, 3.0) * (1.35 if _mobile_help else 1.0)
+		if not _mobile_help:
+			want = minf(want, desktop_ui_max())
 		var fit := (vs.x * (0.72 if _mobile_help else 1.0) - 24.0) / maxf(_recovery.size.x, 1.0)   # Handy: Platz für die Tasten
 		var rk := minf(want, fit)
 		_recovery.pivot_offset = Vector2(_recovery.size.x * 0.5, _recovery.size.y * (0.5 if _mobile_help else 1.0))

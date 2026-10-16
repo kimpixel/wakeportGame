@@ -397,6 +397,8 @@ func _layout() -> void:
 	var short := BASE_SHORT * (0.7 if mobile else 1.0)
 	var long := BASE_LONG * (0.7 if mobile else 1.0)
 	_k = clampf(minf(minf(vp.x, vp.y) / short, maxf(vp.x, vp.y) / long), 0.4, 4.0)
+	if not mobile:
+		_k = minf(_k, Hud.desktop_ui_max())       # Desktop: große Auflösung = mehr Hintergrund, nicht größeres Menü
 	var size := vp / _k
 	_ui.scale = Vector2(_k, _k)
 	_ui.size = size
