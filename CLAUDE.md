@@ -117,6 +117,8 @@ Fallstricke:
 | `scripts/ui/branch_label.gd` | Git-Branch klein unten rechts in der Ecke (nur lokal am Desktop, liest `.git/HEAD`, auch im Worktree), damit man sieht, aus welchem Checkout das Spiel läuft |
 | `scripts/hud.gd` | HUD (Zeit, Seilzug-Anzeige, **Tempo** mit Marken PRESS/RALEY aus `Rider.DPRESS_SPEED`/`RALEY_SPEED`, Punkte), Hilfe, Stil (`ACCENT` grün, `PANEL`) |
 | `scripts/terrain.gd`, `shaders/foliage.gdshader`, `bark.gdshader`, `grass.gdshader` | Gelände aus DGM/Luftbild; Wald: Kronen aus dunkler Hülle + Blattkarten (Textur zur Laufzeit gemalt), je Art 3 Varianten, MultiMesh-Kacheln `TREE_CHUNK` 160 m, ab `FAR_RANGE` nur grobe Hülle (Sichtweiten), Schatten wirft nur die grobe Hülle (eigenes MultiMesh); dichter Mischwald aus Laubbäumen und Kiefern, **Fichten nur vereinzelt (2 %)**; **Waldmantel**: bis 14 m vom Wasser Kronen fast bis zum Boden plus Büsche (`_near_water`), damit vom See eine geschlossene grüne Wand steht; Gras am Ufer beider Anlagen (aus SimpleGrassTextured, `assets/grass/`), nicht am Strand der Startmasten. Compatibility-Renderer liefert Instanzfarben schon linear (`to_linear` in den Shadern) |
+| `scripts/water.gd`, `shaders/water.gdshaderinc` | Wasser: Höhenfunktion = Physik = Grafik (Grundwellen `_wave`, spitz bei `fx_sharp`; Heckwelle; `impact()` Aufprallwelle beim Landen). Effekte `fx_*` einzeln schaltbar (Reiter **Wasser**, Einstellungen `w_*`); nur `w_clear` (Durchsicht) braucht den transparenten Tiefen-Shader `water_depth.gdshader`. Farbe `w_color` Türkis/Seeblau (Standard Seeblau, „ein See ist blau“). Flach geschaut wird die Spiegelung stark gedämpft (sonst wurde der See in der Ferne weiß). **Keine Schaumkränze** (passten nicht) |
+| `scripts/spray_sheet.gd`, `scripts/spray.gd` | Gischt, zwei Begriffe: **Wasserwand** (`SpraySheet`, Vorhang aus ballistischen Flugbahnen, Ansatz über die ganze Kante, Fächer von flach bis steil; zur Seilseite; Stärke 0..1 = Summe gewichteter Anteile Seilzug/Tempo/Winkel/Sprung-Ladung, Parameter `WALL_*` im F4-Panel; Seite aus der Neigung des Fahrers, Achse immer in Fahrtrichtung, auch switch) und **Tropfen** (`Spray`, weiche Wolken-Sprites, klein anfangen, groß und durchsichtig am Ende, fliegen nach hinten; kleine Gischt auf der anderen Kante, Landung mit Spritzer-Kranz, Drift-Press, Hecht, Boot). Keine Kugeln, kein Sprühnebel |
 | `scripts/weather.gd`, `scripts/sun_calc.gd`, `shaders/sky.gdshader` | Wetter, Sonnenstand nach echter Lage |
 | `scripts/sfx.gd`, `assets/sounds/` | Sounds; `positiv/` (Jubel), `negativ/` (Ruf beim Sturz), `feature_hit/`, `landing/` aus Videoaufnahmen |
 | `scripts/npcs/` | Umgebung (Steuermänner, wartende Fahrer, SUPs), Flugzeuge im Anflug |
@@ -312,7 +314,7 @@ Features/Setups:
   dem Katalog. Beim Nachstellen von Hacks: vorne/hinten und Seiten genau mit dem Foto abgleichen.
 - T1-Steg ist 5 cm höher als T2 (`Lake.DOCK_T1_Y`).
 
-Einstellungen (`scripts/game_settings.gd`, Reiter Spiel/Fahrer/Welt/Technik in `start_screen.gd`,
+Einstellungen (`scripts/game_settings.gd`, Reiter Spiel/Fahrer/Welt/Technik/Wasser/Musik in `start_screen.gd`,
 angewendet in `main.gd` `_apply_setting`): Spielmodus Runde 7:30 / 10:00 / 15:00 / Freies Fahren (keine Uhr, HUD zeigt „MODUS FREI“), Hilfen
 (Einloggen, Überschlag ausdrehen; je aus +15 %), Seilzug-Grenze (Locker/Normal/Streng/Aus; Taste G
 und ☰-Menü schalten Abreißen an/aus), Brett, Stance Regular/Goofy, Helm,

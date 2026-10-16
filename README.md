@@ -105,11 +105,12 @@ Die Haltung wird im Spiel live aus der Physik berechnet, mit einer eigenen IK in
 
 **Wetter, Jahreszeit und Uhrzeit** stellst du auf der Startseite unter Einstellungen ein (Wetter, Datum, Uhrzeit). Die Sonne steht dabei wie in echt am Raunheimer Waldsee (50,01° N, 8,48° E, deutsche Zeit mit Sommerzeit): Mittagssonne im Süden, im Sommer lange Abende, im Winter tief stehende Sonne, nachts Mondlicht und Sterne. Wetter: Sonnig, Heiter, Bewölkt, Bedeckt, Regen, Dunst. **Jetzt** übernimmt das heutige Datum und die Uhrzeit (läuft dann mit) und holt das aktuelle Wetter am See von open-meteo.com. Jeder Spielstart beginnt an einem sonnigen Sommertag um 10:30, damit es nie dunkel ist. Die Wahl gilt nur bis zum Neustart.
 
-**Einstellungen** (Startseite, fünf Reiter; alles außer Wetter und Uhrzeit wird gespeichert):
+**Einstellungen** (Startseite, sechs Reiter; alles außer Wetter und Uhrzeit wird gespeichert):
 - **Spiel:** Rundenlänge der Competition *Runde 7:30*, *Runde 10:00*, *Runde 15:00* oder *Freies Fahren* (keine Uhr – oben steht „FREI“, kein Zeitende, keine Strafzeit). Hilfen *Auf dem Slider einloggen* und *Überschlag dreht von selbst zu Ende* – jede ausgeschaltete Hilfe gibt +15 % auf alle Tricks. *Seilzug-Grenze* Locker / Normal / Streng / Aus (Handle wird nie aus der Hand gerissen; im Spiel G).
 - **Fahrer:** Brett aus der Brett-Bibliothek, Stance *Regular* (links vorne) oder *Goofy* (rechts vorne), Helm und Westenfarbe.
 - **Welt:** Wetter, Datum, Uhrzeit, Jetzt; **Seillänge** (12–22 m, Standard 16) und **Anlagen-Tempo** (16–40 km/h, Standard 30) deiner Anlage (+ / − im Spiel ändert das Tempo ebenfalls); Flugzeuge *Aus / Normal / Rush Hour*; Fahrer auf der anderen Anlage an/aus; **Challenge: Filmteam** *Zufall / Boot / Drohne / Aus*.
 - **Technik:** Grafik *Niedrig / Mittel / Hoch* (Auflösung, Schatten, Baumdichte; am Handy Standard *Mittel*), Lautstärke für Effekte, Jubel und Flugzeuge, Kamera und Kamera-Abstand, am Handy Lenkung (Gyro = Handy neigen oder Tasten = Steuerkreuz rechts), Neigungs-Empfindlichkeit und Neigung umkehren.
+- **Wasser:** Wasserfarbe *Türkis* oder *Seeblau* (Standard) und jeder Wasser-Effekt einzeln an/aus zum Vergleichen: Oberflächenstruktur, Spiegelung je nach Blickwinkel, Sonnenglitzern, Licht durch die Wellenkämme, Schaum mit Struktur, spitze Wellen, Durchsicht im Flachen, echte Spiegelbilder (nur Desktop, teuer).
 - **Musik:** Das Spiel bringt keine Musik mit (Lizenzen). Mit *Titel hinzufügen* wählst du eigene MP3-, OGG- oder WAV-Dateien; sie bleiben auf dem Gerät bzw. im Browser gespeichert und laufen gemischt im Hintergrund (auch in der Pause), bei Jubel und Countdown kurz leiser. Dazu Musik an/aus, Lautstärke, *Nächster Titel* (auch im Pausenmenü) und *Alle entfernen*. Alternativ öffnet *Skate-Punk bei Spotify* Playlists zum Nebenher-Hören.
 
 **Spielmodi** (Startseite, ganz oben):
@@ -171,7 +172,8 @@ node fetch_geodata.mjs
 |---|---|
 | `scripts/rider.gd` | Fahrerphysik und Steuerung. Die Werte zum Feintuning stehen oben in der Datei |
 | `scripts/cable_system.gd` | Masten, Rollen, Seilschlaufe und Abläufe des Carriers (Wende, Anfahren) |
-| `scripts/water.gd`, `shaders/water.gdshader` | Wasser: Grundwellen und Heckwelle. Physik und Grafik nutzen dieselbe Höhenfunktion |
+| `scripts/water.gd`, `shaders/water.gdshaderinc` (+ `water.gdshader`, `water_depth.gdshader`) | Wasser: Grundwellen, Heckwelle und Aufprallwelle beim Landen. Physik und Grafik nutzen dieselbe Höhenfunktion. Effekte einzeln schaltbar (Reiter Wasser) |
+| `scripts/spray_sheet.gd`, `scripts/spray.gd` | Gischt: **Wasserwand** (zusammenhängender Vorhang beim Schneiden, Stärke aus Seilzug, Tempo, Winkel und Sprung-Ladung) und **Tropfen** (weiche Wolken-Sprites: Kante, Landung, Drift-Press, Hecht, Boot) |
 | `scripts/chase_camera.gd` | 3rd-Person-Kamera |
 | `scripts/lake.gd` | Maße der Anlage T2 (Masten, Startsteg, Kicker) |
 | `scripts/geo.gd` | Lädt die Geodaten und rechnet zwischen echten Koordinaten und Spielkoordinaten um |
