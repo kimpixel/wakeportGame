@@ -11,4 +11,4 @@ ALLOWED_ORIGINS = "https://kimpixel.github.io"
 binding = "DB"
 database_name = "wakethehack"
 # nach "npx wrangler d1 create wakethehack" die ausgegebene database_id hier eintragen
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "017bfa67-92ac-43b3-832d-6517d63cfda0"

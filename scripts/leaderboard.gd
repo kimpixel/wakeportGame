@@ -16,7 +16,7 @@ extends Node
 ## --lb-url=URL [--lb-name=NAME] (lokaler Worker, nichts gespeichert).
 ## Gespeichert in user://settings.cfg [rangliste]: id (geheime Geräte-Nummer), name.
 
-const URL := ""                  # Adresse des Workers (nach dem Deploy eintragen, siehe server/README.md)
+const URL := "https://wakethehack-rangliste.kimpixel.workers.dev"   # Adresse des Workers (siehe server/README.md)
 const HOST := "kimpixel.github.io"
 const RULES := 1                 # erhöhen = alle Ranglisten beginnen neu
 const SECTION := "rangliste"
