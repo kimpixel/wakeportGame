@@ -764,9 +764,12 @@ func _set_npc(on: bool) -> void:
 		nc.reset()
 
 
-## Grafikqualität: Auflösung der 3D-Szene, Schatten, Baumdichte, Kantenglättung.
+## Grafikqualität: Auflösung der 3D-Szene, Schatten, Baumdichte, Kantenglättung, Gischt.
+## Die Wasser-Effekte setzt GameSettings.set_quality mit (eigene Schlüssel w_*).
 func _apply_quality(q: int) -> void:
 	q = clampi(q, 0, 2)
+	Spray.set_quality(q)
+	SpraySheet.set_quality(q)
 	var vp := get_viewport()
 	vp.scaling_3d_scale = [0.6, 0.8, 1.0][q]
 	vp.msaa_3d = [Viewport.MSAA_DISABLED, Viewport.MSAA_DISABLED, _msaa_default][q]

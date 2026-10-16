@@ -8,8 +8,10 @@ extends MeshInstance3D
 ## oben und zum Ende ausgefranst. Höhe und Weite kommen vom Kantendruck (strength 0..1).
 
 const LIFE := 1.25              # s, so lange fliegt das Wasser (Länge des Vorhangs)
-const EMIT_DT := 0.025          # s zwischen zwei Scheiben
-const ROWS := 9                 # Zeilen von der flachsten zur steilsten Flugbahn
+## je Grafikstufe (Niedrig, Mittel, Hoch): s zwischen zwei Scheiben, Zeilen von der flachsten zur steilsten Flugbahn
+const EMIT_Q := [0.05, 0.035, 0.025]
+const ROWS_Q := [5, 7, 9]
+static var quality := 2         # Grafikstufe, gesetzt in main.gd _apply_quality
 ## Form (live regelbar im Debug-Overlay F4, Reiter "Wasserwand")
 static var WALL_BASE := 1.1        # m: so lang ist der Ansatz an der Kante (Teil des Bretts im Wasser)
 static var WALL_SPEED_MIN := 0.0   # m/s Abwurf bei wenig Kantendruck
@@ -34,7 +36,7 @@ var _seg := 0                   # Abschnitt: neu nach Pause oder Kantenwechsel (
 var _was_active := false
 var _t := 0.0
 var _emit_acc := 0.0
-var _mesh := ImmediateMesh.new()
+var _mesh := ArrayMesh.new()
 static var _mat: StandardMaterial3D
 
 
@@ -55,8 +57,9 @@ func feed(at: Vector3, side: Vector3, strength: float, active: bool, delta: floa
 		if not _was_active or (not _slices.is_empty() and (_slices[-1][1] as Vector3).dot(side) < 0.5):
 			_seg += 1
 		_emit_acc += delta
-		while _emit_acc >= EMIT_DT:
-			_emit_acc -= EMIT_DT
+		var dt: float = EMIT_Q[quality]
+		while _emit_acc >= dt:
+			_emit_acc -= dt
 			var speed := lerpf(WALL_SPEED_MIN, WALL_SPEED_MAX, strength)
 			_slices.append([at, side, axis, speed, _t, strength, _seg])
 	else:
@@ -80,7 +83,9 @@ func _point(s: Array, f: float, age: float) -> Vector3:
 	var ang := lerpf(WALL_ANG_LOW, WALL_ANG_HIGH, f)
 	var v := (side * cos(ang) + Vector3.UP * sin(ang)) * float(s[3])
 	var p := p0 + v * age + Vector3.DOWN * 0.5 * GRAVITY * age * age
-	var wy := water.height_at(p.x, p.z) if water else 0.0
+	# nur die Grundwellen (billig): die volle Höhe mit allen Heckwellen-Ringen je Punkt und Bild
+	# machte das Spiel am Handy sehr langsam
+	var wy := Water.ambient(p.x, p.z, water.sim_time) if water else 0.0
 	p.y = maxf(p.y, wy + 0.02)
 	return p
 
@@ -90,32 +95,54 @@ func _build() -> void:
 	var n := _slices.size()
 	if n < 2:
 		return
-	var began := false
+	# jeden Punkt (Scheibe × Zeile) nur einmal rechnen, benachbarte Vierecke teilen ihn
+	var rows: int = ROWS_Q[quality]
+	var pts := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var cols := PackedColorArray()
+	pts.resize(n * rows)
+	uvs.resize(n * rows)
+	cols.resize(n * rows)
+	for i in n:
+		var s: Array = _slices[i]
+		var age := _t - float(s[4])
+		for r in rows:
+			var f := float(r) / (rows - 1)
+			var k := i * rows + r
+			pts[k] = _point(s, f, age)
+			uvs[k] = Vector2(float(s[4]) * 1.3, f)
+			cols[k] = Color(1.0, 1.0, 1.0, _alpha(s, age, f))
+	var idx := PackedInt32Array()
 	for i in n - 1:
-		var a: Array = _slices[i]
-		var b: Array = _slices[i + 1]
-		if int(a[6]) != int(b[6]):
+		if int(_slices[i][6]) != int(_slices[i + 1][6]):
 			continue                     # nicht über einen Kantenwechsel/eine Pause verbinden
-		if not began:
-			_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES, _material())
-			began = true
-		var age_a := _t - float(a[4])
-		var age_b := _t - float(b[4])
-		for r in ROWS - 1:
-			var f0 := float(r) / (ROWS - 1)
-			var f1 := float(r + 1) / (ROWS - 1)
-			var quad := [
-				[_point(a, f0, age_a), Vector2(float(a[4]) * 1.3, f0), _alpha(a, age_a, f0)],
-				[_point(b, f0, age_b), Vector2(float(b[4]) * 1.3, f0), _alpha(b, age_b, f0)],
-				[_point(b, f1, age_b), Vector2(float(b[4]) * 1.3, f1), _alpha(b, age_b, f1)],
-				[_point(a, f1, age_a), Vector2(float(a[4]) * 1.3, f1), _alpha(a, age_a, f1)],
-			]
-			for k: int in [0, 1, 2, 0, 2, 3]:
-				_mesh.surface_set_color(Color(1.0, 1.0, 1.0, quad[k][2]))
-				_mesh.surface_set_uv(quad[k][1])
-				_mesh.surface_add_vertex(quad[k][0])
-	if began:
-		_mesh.surface_end()
+		for r in rows - 1:
+			var a := i * rows + r
+			var b := a + rows
+			idx.append(a)
+			idx.append(b)
+			idx.append(b + 1)
+			idx.append(a)
+			idx.append(b + 1)
+			idx.append(a + 1)
+	if idx.is_empty():
+		return
+	var arr := []
+	arr.resize(Mesh.ARRAY_MAX)
+	arr[Mesh.ARRAY_VERTEX] = pts
+	arr[Mesh.ARRAY_TEX_UV] = uvs
+	arr[Mesh.ARRAY_COLOR] = cols
+	arr[Mesh.ARRAY_INDEX] = idx
+	_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+	_mesh.surface_set_material(0, _material())
+
+
+## Grafikstufe 0..2. Weiches Ausblenden am Wasser (Proximity Fade) braucht die Szenentiefe – im Browser
+## eine zusätzliche Tiefenkopie je Bild, darum nur auf Hoch.
+static func set_quality(q: int) -> void:
+	quality = clampi(q, 0, 2)
+	if _mat:
+		_mat.proximity_fade_enabled = quality >= 2
 
 
 ## Deckkraft: an der Kante dicht, zum Ende des Bogens und zur höchsten Bahn hin ausgedünnt.
@@ -138,9 +165,9 @@ static func _material() -> StandardMaterial3D:
 	_mat.albedo_color = Color(1.0, 1.0, 1.0)
 	_mat.albedo_texture = _texture()
 	_mat.texture_repeat = true
-	_mat.proximity_fade_enabled = true
 	_mat.proximity_fade_distance = 0.3
 	_mat.render_priority = 10
+	set_quality(quality)
 	return _mat
 
 

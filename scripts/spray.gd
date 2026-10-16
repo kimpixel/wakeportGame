@@ -6,10 +6,38 @@ extends RefCounted
 ## graublau). Die Textur erzeugt das Spiel selbst. Der zusammenhängende Gischt-Vorhang ist SpraySheet.
 
 static var _mat: StandardMaterial3D
+## Grafikstufe (Niedrig, Mittel, Hoch): Anteil der Tropfen, gesetzt in main.gd _apply_quality
+static var quality := 2
+const AMOUNT_Q := [0.35, 0.6, 1.0]
+static var _emitters: Array[WeakRef] = []
+
+
+## Grafikstufe 0..2: weniger Tropfen, einfachere Beleuchtung; weiches Ausblenden am Wasser (Proximity Fade)
+## braucht die Szenentiefe – im Browser eine zusätzliche Tiefenkopie je Bild, darum nur auf Hoch.
+static func set_quality(q: int) -> void:
+	quality = clampi(q, 0, 2)
+	if _mat:
+		_mat_quality()
+	var alive: Array[WeakRef] = []
+	for w: WeakRef in _emitters:
+		var p := w.get_ref() as CPUParticles3D
+		if p:
+			_set_amount(p)
+			alive.append(w)
+	_emitters = alive
+
+
+static func _set_amount(p: CPUParticles3D) -> void:
+	var n := maxi(int(round(int(p.get_meta("spray_amount")) * AMOUNT_Q[quality])), 4)
+	if p.amount != n:
+		p.amount = n
 
 
 ## Emitter auf die Tropfen-Optik umstellen. Die Größe kommt vom Kugel-Mesh, das der Emitter mitbringt.
 static func register(p: CPUParticles3D) -> void:
+	p.set_meta("spray_amount", p.amount)     # volle Menge (Hoch); einmal je Emitter aufrufen
+	_emitters.append(weakref(p))
+	_set_amount(p)
 	var r := 0.05
 	if p.mesh is SphereMesh:
 		r = (p.mesh as SphereMesh).radius
@@ -43,16 +71,20 @@ static func _material() -> StandardMaterial3D:
 	_mat.albedo_texture = _texture()
 	_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_mat.render_priority = 10                  # nach dem (transparenten) Wasser zeichnen, sonst deckt es die Tropfen zu
-	_mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
 	_mat.roughness = 0.6
 	_mat.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
-	# weiches Ausblenden, wo das Sprite die Wasseroberfläche oder ein Feature schneidet
-	_mat.proximity_fade_enabled = true
+	# weiches Ausblenden, wo das Sprite die Wasseroberfläche oder ein Feature schneidet (nur Hoch, set_quality)
 	_mat.proximity_fade_distance = 0.3
 	_mat.emission_enabled = true
 	_mat.emission = Color(0.25, 0.28, 0.3)     # etwas Eigenhelligkeit: Gischt leuchtet im Licht leicht
 	_mat.emission_energy_multiplier = 0.4
+	_mat_quality()
 	return _mat
+
+
+static func _mat_quality() -> void:
+	_mat.proximity_fade_enabled = quality >= 2
+	_mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL if quality >= 2 else BaseMaterial3D.SHADING_MODE_PER_VERTEX
 
 
 ## Textur: runder weicher Fleck, durch Rauschen wolkig ausgefranst.

@@ -637,7 +637,7 @@ func _page_world(p: VBoxContainer) -> void:
 
 
 func _page_tech(p: VBoxContainer) -> void:
-	_opt_row(p, "GRAFIK   (niedrig = flüssiger, schont den Akku)", ["Niedrig", "Mittel", "Hoch"], "quality", [0, 1, 2])
+	_quality_row(p)
 	var pct := func(x: float) -> String: return "%d %%" % roundi(x * 100.0)
 	_slider_row(p, "LAUTSTÄRKE EFFEKTE", "vol_fx", 0.0, 1.0, 0.05, pct)
 	_slider_row(p, "LAUTSTÄRKE JUBEL", "vol_cheer", 0.0, 1.0, 0.05, pct)
@@ -652,9 +652,11 @@ func _page_tech(p: VBoxContainer) -> void:
 
 ## Wasser-Effekte einzeln an/aus (zum Ausprobieren). Wirkt sofort, auch im Hintergrund der Startseite.
 func _page_water(p: VBoxContainer) -> void:
-	var info := _label("Jeden Effekt einzeln an- und ausschalten und vergleichen. Wirkt sofort.", 16, Color(1, 1, 1, 0.8))
+	var info := _label("Die Grafikstufe stellt alle Wasser-Effekte passend ein. Einzelne Effekte lassen sich hier "
+		+ "an- und ausschalten (wirkt sofort) – weicht etwas von der Stufe ab, steht die Grafik auf „Custom“.", 16, Color(1, 1, 1, 0.8))
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_child(info)
+	_quality_row(p)
 	var onoff := ["An", "Aus"]
 	_opt_row(p, "WASSERFARBE", ["Türkis  (bisher)", "Seeblau"], "w_color", [0, 1])
 	_opt_row(p, "OBERFLÄCHENSTRUKTUR   (gleitende Kräuselung statt Sinus)", onoff, "w_detail", [true, false])
@@ -745,13 +747,29 @@ func _opt_row(p: VBoxContainer, title: String, labels: Array, key: String, value
 	for i in labels.size():
 		sel.add_item(labels[i], icons[i] if i < icons.size() else null)
 	sel.item_selected.connect(func(i: int) -> void:
-		settings.set_v(key, values[i] if i < values.size() else i))
+		settings.set_v(key, values[i] if i < values.size() else i)
+		if key.begins_with("w_"):
+			sync_settings())             # Grafikstufe zeigt evtl. jetzt "Custom"
 	_row(p, title).add_child(sel)
 	_syncers.append(func() -> void:
 		var cur: Variant = settings.get_v(key)
 		for i in labels.size():
 			if _same(cur, values[i] if i < values.size() else i):
 				sel.select(i))
+
+
+## Grafikstufe (Reiter Technik und Wasser): Niedrig/Mittel/Hoch setzen auch die Wasser-Effekte;
+## "Custom" erscheint von selbst, wenn ein Wasser-Effekt von der Stufe abweicht (wählen ändert nichts).
+func _quality_row(p: VBoxContainer) -> void:
+	var sel := _select(18)
+	for n: String in GameSettings.QUALITY_NAMES:
+		sel.add_item(n)
+	sel.item_selected.connect(func(i: int) -> void:
+		if i != GameSettings.QUALITY_CUSTOM:
+			settings.set_quality(i)
+		sync_settings())
+	_row(p, "GRAFIK   (niedrig = flüssiger, schont den Akku; stellt auch das Wasser ein)").add_child(sel)
+	_syncers.append(func() -> void: sel.select(settings.quality_shown()))
 
 
 ## Gleicher Einstellungswert? (Zahlen aus der Datei können als float zurückkommen)

@@ -22,6 +22,21 @@ const GRIP_TENSION := [7200.0, 5400.0, 4300.0, INF]   # INF = Seil reißt nie ab
 const TILT_DEG := [35.0, 25.0, 16.0]
 ## Profi-Bonus auf alle Tricks je ausgeschalteter Hilfe
 const ASSIST_BONUS := 0.15
+## Grafikstufen Niedrig, Mittel, Hoch; "Custom" = Wasser-Effekte weichen von der Stufe ab (nur Anzeige,
+## gespeichert bleibt die Stufe für Auflösung, Schatten, Bäume, Gischt)
+const QUALITY_NAMES := ["Niedrig", "Mittel", "Hoch", "Custom"]
+const QUALITY_CUSTOM := 3
+## Wasser-Effekte je Grafikstufe (Wasserfarbe gehört nicht dazu)
+const WATER_PRESETS := [
+	{"w_detail": false, "w_fresnel": true, "w_glitter": false, "w_crest": false, "w_foam": false,
+		"w_sharp": false, "w_clear": false, "w_ssr": false},
+	{"w_detail": true, "w_fresnel": true, "w_glitter": false, "w_crest": true, "w_foam": false,
+		"w_sharp": true, "w_clear": false, "w_ssr": false},
+	{"w_detail": true, "w_fresnel": true, "w_glitter": true, "w_crest": true, "w_foam": true,
+		"w_sharp": true, "w_clear": true, "w_ssr": false},
+]
+## Erhöhen, wenn die Wasser-Effekte einmalig neu aus der Grafikstufe gesetzt werden sollen
+const PRESET_VER := 1
 
 const DEFAULTS := {
 	"mode": 450,            # Sekunden, 0 = Freies Fahren
@@ -59,6 +74,7 @@ const DEFAULTS := {
 	"w_sharp": true,        # spitze Wellen (auch Physik)
 	"w_clear": true,        # Durchsicht im Flachen (Szenentiefe)
 	"w_ssr": false,         # echte Spiegelbilder (nur Desktop, teuer)
+	"preset_ver": 0,        # Stand der Wasser-Voreinstellungen (PRESET_VER)
 }
 
 var values := DEFAULTS.duplicate()
@@ -69,15 +85,18 @@ func load_file(mobile: bool) -> void:
 	if mobile:
 		values["quality"] = 1
 	var cfg := ConfigFile.new()
-	if cfg.load(FILE) != OK:
-		return
-	for k: String in DEFAULTS:
-		if cfg.has_section_key(SECTION, k):
-			values[k] = type_convert(cfg.get_value(SECTION, k), typeof(DEFAULTS[k]))
-	# frühere Version: Seillänge/Tempo standen im Abschnitt "anlage"
-	if not cfg.has_section_key(SECTION, "rope") and cfg.has_section_key("anlage", "rope"):
-		values["rope"] = float(cfg.get_value("anlage", "rope"))
-		values["speed"] = float(cfg.get_value("anlage", "speed", 30.0))
+	if cfg.load(FILE) == OK:
+		for k: String in DEFAULTS:
+			if cfg.has_section_key(SECTION, k):
+				values[k] = type_convert(cfg.get_value(SECTION, k), typeof(DEFAULTS[k]))
+		# frühere Version: Seillänge/Tempo standen im Abschnitt "anlage"
+		if not cfg.has_section_key(SECTION, "rope") and cfg.has_section_key("anlage", "rope"):
+			values["rope"] = float(cfg.get_value("anlage", "rope"))
+			values["speed"] = float(cfg.get_value("anlage", "speed", 30.0))
+	# Wasser-Effekte passend zur Grafikstufe (neu, und einmalig nach dem Update, das sie gekoppelt hat)
+	if int(values["preset_ver"]) < PRESET_VER:
+		values.merge(WATER_PRESETS[clampi(int(values["quality"]), 0, 2)], true)
+		values["preset_ver"] = PRESET_VER
 
 
 func save_file() -> void:
@@ -99,6 +118,33 @@ func set_v(key: String, v: Variant) -> void:
 	values[key] = v
 	save_file()
 	changed.emit(key)
+
+
+## Grafikstufe wählen: setzt auch alle Wasser-Effekte auf die Voreinstellung der Stufe.
+func set_quality(q: int) -> void:
+	q = clampi(q, 0, 2)
+	var news: Dictionary = WATER_PRESETS[q].duplicate()
+	news["quality"] = q
+	var diff: Array[String] = []
+	for k: String in news:
+		if values.get(k) != news[k]:
+			values[k] = news[k]
+			diff.append(k)
+	if diff.is_empty():
+		return
+	save_file()
+	for k in diff:
+		changed.emit(k)
+
+
+## Angezeigte Grafikstufe: die gespeicherte, oder QUALITY_CUSTOM, wenn ein Wasser-Effekt abweicht.
+func quality_shown() -> int:
+	var q := clampi(int(values["quality"]), 0, 2)
+	var p: Dictionary = WATER_PRESETS[q]
+	for k: String in p:
+		if bool(values[k]) != bool(p[k]):
+			return QUALITY_CUSTOM
+	return q
 
 
 ## Alle Werte einmal melden (beim Start, damit main.gd alles anwendet).
