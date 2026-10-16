@@ -26,6 +26,7 @@ const ROPE_MIN := 12.0           # m Seillänge (Griff bis Carrier)
 const ROPE_MAX := 22.0
 const SPEED_MIN := 16.0          # km/h Anlagen-Tempo
 const SPEED_MAX := 40.0
+const KOFI_URL := "https://ko-fi.com/kimpixel"   # Unterstützen (auch in .github/FUNDING.yml und README)
 ## Namen in der Auswahl (Reihenfolge wie Helmet.DESIGNS bzw. GameSettings.VESTS; fehlt einer: Nummer)
 const HELMET_NAMES := ["Gelb / Grün", "Weiß / Schwarz", "Blau", "Orange", "Schwarz glänzend", "Pink / Türkis", "Oliv"]
 const VEST_NAMES := ["Orange", "Rot", "Blau", "Grün", "Gelb", "Lila", "Schwarz", "Weiß"]
@@ -50,6 +51,7 @@ var _setup_select: SelectBox
 var _setup_idx := 0
 var _editor: SetupEditor
 var _start_btn: Button
+var _kofi_btn: Button             # dezenter Link „Kaffee spendieren“ (Ko-fi) unter dem Start
 var _mode_select: SelectBox
 var _mode_ids: Array = []         # je Zeile der Modus-Auswahl die Modus-id ("" = Überschrift)
 var _split: BoxContainer          # Querformat: links Spielmodi, rechts Terminal/Setup bzw. Aufgaben
@@ -207,6 +209,18 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_start_btn.custom_minimum_size.y = 72
 	_start_btn.pressed.connect(func() -> void: start_pressed.emit())
 	mv.add_child(_start_btn)
+	_kofi_btn = Button.new()
+	_kofi_btn.text = "Kostenlos & Open Source – spendier mir einen Kaffee"
+	_kofi_btn.flat = true
+	_kofi_btn.focus_mode = Control.FOCUS_NONE
+	_kofi_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_kofi_btn.add_theme_font_size_override("font_size", 15)
+	_kofi_btn.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
+	_kofi_btn.add_theme_color_override("font_hover_color", Hud.ACCENT)
+	_kofi_btn.pressed.connect(func() -> void:
+		Analytics.count("kofi")
+		OS.shell_open(KOFI_URL))
+	mv.add_child(_kofi_btn)
 
 	# Popups über abgedunkeltem Hintergrund
 	_dim = ColorRect.new()
@@ -418,7 +432,7 @@ func _layout() -> void:
 	_split.vertical = portrait
 	# Handy quer (flach): Einstellungen/Editor und Start in die linke Spalte, sonst zu hoch
 	var host: VBoxContainer = _left if low else _menu_v
-	for c: Control in [_bottom_row, _start_btn]:
+	for c: Control in [_bottom_row, _start_btn, _kofi_btn]:
 		if c.get_parent() != host:
 			c.reparent(host)
 	_start_btn.custom_minimum_size.y = 56 if low else 72

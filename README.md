@@ -2,7 +2,7 @@
 
 **Wake the Hack** ist ein kleines 3D-Wakeboard-Spiel in **Godot 4.7**: Wakeboarden an einer **2-Mast-Seilbahn** auf einem See, wie man sie in Europa oft findet. Es geht also nicht ums Fahren hinter einem Boot.
 
-![Godot 4.7](https://img.shields.io/badge/Godot-4.7-478cbf)
+![Godot 4.7](https://img.shields.io/badge/Godot-4.7-478cbf) [![Ko-fi](https://img.shields.io/badge/Ko--fi-Kaffee_spendieren-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/kimpixel)
 
 ## Die Anlage
 
@@ -187,6 +187,10 @@ Testlauf ohne Fenster:
 ```
 godot --headless --path . --fixed-fps 120 -- --autotest --quit=120
 ```
+
+## Unterstützen
+
+Das Spiel ist kostenlos und Open Source, ich entwickle es in meiner Freizeit (und zahle die KI-Werkzeuge dafür selbst). Wenn es dir gefällt, freue ich mich über einen Kaffee: **[ko-fi.com/kimpixel](https://ko-fi.com/kimpixel)**. Auf der Startseite im Spiel steht derselbe Link.
 
 ## Lizenz
 
