@@ -49,6 +49,16 @@ const DEFAULTS := {
 	"tilt_invert": false,   # Handy: Neigung umkehren
 	"cam_mode": 0,          # ChaseCamera.CamMode
 	"cam_dist": 7.5,        # m Kamera-Abstand
+	# Wasser-Effekte (Reiter "Wasser", zum Ausprobieren je an/aus; siehe Water.FX_KEYS)
+	"w_color": 1,           # Wasserfarbe: 0 Türkis (bisher), 1 Seeblau
+	"w_detail": true,       # Oberflächenstruktur
+	"w_fresnel": true,      # Spiegelung je nach Blickwinkel
+	"w_glitter": true,      # Sonnenglitzern
+	"w_crest": true,        # Licht durch die Wellenkämme
+	"w_foam": true,         # Schaum mit Struktur
+	"w_sharp": true,        # spitze Wellen (auch Physik)
+	"w_clear": true,        # Durchsicht im Flachen (Szenentiefe)
+	"w_ssr": false,         # echte Spiegelbilder (nur Desktop, teuer)
 }
 
 var values := DEFAULTS.duplicate()

@@ -499,7 +499,7 @@ func _build_settings() -> void:
 	scroll.add_child(holder)
 	var tg := ButtonGroup.new()
 	var pages: Array[VBoxContainer] = []
-	for title: String in ["Spiel", "Fahrer", "Welt", "Technik", "Musik"]:
+	for title: String in ["Spiel", "Fahrer", "Welt", "Technik", "Wasser", "Musik"]:
 		var page := VBoxContainer.new()
 		page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		page.add_theme_constant_override("separation", 10)
@@ -527,8 +527,10 @@ func _build_settings() -> void:
 	_page_world(pages[2])
 	if settings:
 		_page_tech(pages[3])
+	if settings:
+		_page_water(pages[4])
 	if settings and music:
-		_page_music(pages[4])
+		_page_music(pages[5])
 	var ok := _button("FERTIG", 24, true)
 	ok.pressed.connect(_close_popups)
 	v.add_child(ok)
@@ -624,6 +626,26 @@ func _page_tech(p: VBoxContainer) -> void:
 		_opt_row(p, "LENKUNG", ["Gyro (Handy neigen)", "Tasten (Steuerkreuz)"], "steer", [0, 1])
 		_opt_row(p, "NEIGUNG ZUM LENKEN", ["Wenig empfindlich", "Mittel", "Sehr empfindlich"], "tilt", [0, 1, 2])
 		_opt_row(p, "NEIGUNG UMKEHREN", ["Nein", "Ja"], "tilt_invert", [false, true])
+
+
+## Wasser-Effekte einzeln an/aus (zum Ausprobieren). Wirkt sofort, auch im Hintergrund der Startseite.
+func _page_water(p: VBoxContainer) -> void:
+	var info := _label("Jeden Effekt einzeln an- und ausschalten und vergleichen. Wirkt sofort.", 16, Color(1, 1, 1, 0.8))
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	p.add_child(info)
+	var onoff := ["An", "Aus"]
+	_opt_row(p, "WASSERFARBE", ["Türkis  (bisher)", "Seeblau"], "w_color", [0, 1])
+	_opt_row(p, "OBERFLÄCHENSTRUKTUR   (gleitende Kräuselung statt Sinus)", onoff, "w_detail", [true, false])
+	_opt_row(p, "SPIEGELUNG JE NACH BLICKWINKEL   (flach: Himmel, von oben: ins Wasser)", onoff, "w_fresnel", [true, false])
+	_opt_row(p, "SONNENGLITZERN", onoff, "w_glitter", [true, false])
+	_opt_row(p, "LICHT DURCH DIE WELLENKÄMME", onoff, "w_crest", [true, false])
+	_opt_row(p, "SCHAUM MIT STRUKTUR   (fleckig, reißt auf)", onoff, "w_foam", [true, false])
+	_opt_row(p, "SPITZE WELLEN   (auch für die Physik)", onoff, "w_sharp", [true, false])
+	p.add_child(_small("MIT WASSERTIEFE   (etwas teurer; Wasser wird dafür transparent gezeichnet)"))
+	_opt_row(p, "DURCHSICHT IM FLACHEN", onoff, "w_clear", [true, false])
+	if RenderingServer.get_current_rendering_method() != "gl_compatibility":
+		_opt_row(p, "ECHTE SPIEGELBILDER   (nur Desktop, teuer; nur wenn die Durchsicht aus ist)",
+			onoff, "w_ssr", [true, false])
 
 
 ## Musik: Spiel-Musik (lizenzfrei, Pixabay) und/oder eigene Titel des Spielers.

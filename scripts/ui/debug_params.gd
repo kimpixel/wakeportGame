@@ -11,6 +11,9 @@ const GROUPS := [
 		["rider", "DPRESS_SPEED", 0.0, 12.0], ["rider", "DPRESS_SIDE", -1.0, 1.0], ["rider", "DPRESS_WRONG", 0.0, 0.8], ["rider", "DPRESS_DRAG", 0.0, 4.0], ["rider", "DPRESS_FALL_ANG", 0.2, 1.57], ["rider", "DPRESS_TURN", 0.05, 2.0],
 		["rider", "DPRESS_RISE", 0.2, 10.0], ["rider", "DPRESS_ANG", 0.0, 1.6], ["rider", "DPRESS_END"],
 		["challenge", "DPRESS_FULL", 0.0, 1.0]]],
+	["Wasserwand", [["sheet", "WALL_BASE", 0.0, 3.0], ["sheet", "WALL_SPEED_MIN", 0.0, 10.0], ["sheet", "WALL_SPEED_MAX", 0.0, 14.0],
+		["sheet", "WALL_ANG_LOW", 0.0, 1.5], ["sheet", "WALL_ANG_HIGH", 0.3, 2.4], ["sheet", "WALL_ROPE_MIN", 0.0, 1500.0], ["sheet", "WALL_ROPE_FULL", 200.0, 4000.0],
+		["sheet", "WALL_TEMPO_FULL", 1.0, 20.0], ["sheet", "WALL_W_ROPE", 0.0, 2.0], ["sheet", "WALL_W_TEMPO", 0.0, 2.0], ["sheet", "WALL_W_ANGLE", 0.0, 2.0], ["sheet", "WALL_W_JUMP", 0.0, 2.0]]],
 	["Drift", [["rider", "DRIFT_DRAG", 0.0, 2.0], ["rider", "DRIFT_SPIN", 0.0, 4.0], ["rider", "DRIFT_ROPE_GIVE", 0.5, 30.0], ["rider", "DRIFT_ROPE_SETTLE", 0.0, 10.0]]],
 	["Fahren", [
 		["rider", "DRAG_QUAD"], ["rider", "DRAG_LIN"], ["rider", "PLOW_DRAG"], ["rider", "PLANE_SPEED"],
@@ -37,7 +40,7 @@ const GROUPS := [
 		["rider", "SWITCH_BONUS"], ["rider", "AIR_PER_S"], ["rider", "RALEY_POINTS"], ["rider", "FLIP_POINTS"],
 		["rider", "COMBO_WINDOW"]]],
 ]
-const SCRIPTS := {"rider": "res://scripts/rider.gd", "challenge": "res://scripts/challenge.gd"}
+const SCRIPTS := {"rider": "res://scripts/rider.gd", "challenge": "res://scripts/challenge.gd", "sheet": "res://scripts/spray_sheet.gd"}
 
 var rider: Rider                 # Live-Werte oben im Fenster
 var _dim: Control
@@ -55,78 +58,90 @@ func _init() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
+## Kompaktes Panel oben rechts am Rand, feste Pixelgröße (wächst nicht mit dem Fenster): Bereich per
+## Auswahlfeld, je Parameter eine Zeile (Name, Regler, Wert, ↺); die Erklärung steht im Tooltip.
+const W := 360                    # px Breite
+const FONT := 12
+
+var _panel: PanelContainer
+var _pages: Array[Control] = []
+
+
 func _ready() -> void:
 	_dim = Control.new()
 	_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_dim.visible = false
 	add_child(_dim)
-	var panel := PanelContainer.new()
+	_panel = PanelContainer.new()
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.05, 0.07, 0.09, 0.9)
-	sb.set_corner_radius_all(12)
-	sb.border_width_bottom = 3
+	sb.bg_color = Color(0.05, 0.07, 0.09, 0.88)
+	sb.set_corner_radius_all(6)
+	sb.border_width_bottom = 2
 	sb.border_color = Hud.ACCENT
-	sb.set_content_margin_all(16)
-	panel.add_theme_stylebox_override("panel", sb)
-	panel.anchor_left = 0.5
-	panel.anchor_right = 1.0
-	panel.anchor_top = 0.0
-	panel.anchor_bottom = 1.0
-	panel.offset_left = -40.0
-	panel.offset_right = -16.0
-	panel.offset_top = 16.0
-	panel.offset_bottom = -16.0
-	panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	_dim.add_child(panel)
+	sb.set_content_margin_all(6)
+	_panel.add_theme_stylebox_override("panel", sb)
+	_panel.anchor_left = 1.0
+	_panel.anchor_right = 1.0
+	_panel.offset_left = -W - 4
+	_panel.offset_right = -4
+	_panel.offset_top = 4
+	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_dim.add_child(_panel)
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 8)
-	panel.add_child(box)
+	box.add_theme_constant_override("separation", 3)
+	_panel.add_child(box)
 
 	var head := HBoxContainer.new()
-	var title := Label.new()
-	title.text = "DEBUG  ·  Parameter (F4)"
-	title.add_theme_font_size_override("font_size", 22)
-	title.add_theme_color_override("font_color", Hud.ACCENT)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	head.add_child(title)
-	head.add_child(_button("Geänderte kopieren", _copy))
-	head.add_child(_button("Alle zurücksetzen", _reset_all))
-	head.add_child(_button("Schließen", func() -> void: toggle()))
+	head.add_theme_constant_override("separation", 3)
+	var pick := OptionButton.new()
+	pick.focus_mode = Control.FOCUS_NONE
+	pick.add_theme_font_size_override("font_size", FONT)
+	pick.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pick.tooltip_text = "Debug-Parameter (F4)"
+	head.add_child(pick)
+	var copy := _button("Kopieren", _copy)
+	copy.tooltip_text = "Geänderte Werte als Code-Zeilen in die Zwischenablage"
+	head.add_child(copy)
+	var reset := _button("Reset", _reset_all)
+	reset.tooltip_text = "Alle zurücksetzen"
+	head.add_child(reset)
+	head.add_child(_button("×", func() -> void: toggle()))
 	box.add_child(head)
 	_live = Label.new()
-	_live.add_theme_font_size_override("font_size", 15)
+	_live.add_theme_font_size_override("font_size", FONT - 1)
 	_live.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
+	_live.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_live.custom_minimum_size.x = W - 12
 	box.add_child(_live)
 
 	var notes := _read_comments()
-	var tabs := TabContainer.new()
-	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	tabs.focus_mode = Control.FOCUS_NONE
-	box.add_child(tabs)
 	for g: Array in GROUPS:
-		var scroll := ScrollContainer.new()
-		scroll.name = g[0]
-		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-		tabs.add_child(scroll)
+		pick.add_item(g[0])
 		var list := VBoxContainer.new()
-		list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		list.add_theme_constant_override("separation", 10)
-		scroll.add_child(list)
+		list.add_theme_constant_override("separation", 1)
+		list.visible = _pages.is_empty()
+		box.add_child(list)
+		_pages.append(list)
 		for e: Array in g[1]:
 			_add_row(list, e, notes)
+	pick.item_selected.connect(func(i: int) -> void:
+		for k in _pages.size():
+			_pages[k].visible = k == i
+		_panel.reset_size())
 
 
 func _button(text: String, cb: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.focus_mode = Control.FOCUS_NONE
+	b.add_theme_font_size_override("font_size", FONT)
 	if cb.is_valid():
 		b.pressed.connect(cb)
 	return b
 
 
-## Eine Zeile: Name + Kommentar aus dem Quelltext, Regler, Wert, Standard-Taste.
+## Eine Zeile: Name (Tooltip = Kommentar aus dem Quelltext + Standard), Regler, Wert, ↺ (Standard).
 func _add_row(list: VBoxContainer, e: Array, notes: Dictionary) -> void:
 	var script: Script = load(SCRIPTS[e[0]])
 	var pname: String = e[1]
@@ -138,13 +153,15 @@ func _add_row(list: VBoxContainer, e: Array, notes: Dictionary) -> void:
 	var def := float(v)
 	var lo: float = e[2] if e.size() > 2 else (minf(0.0, def * 3.0))
 	var hi: float = e[3] if e.size() > 3 else (maxf(absf(def) * 3.0, 1.0))
-	var row := VBoxContainer.new()
-	row.add_theme_constant_override("separation", 0)
 	var line := HBoxContainer.new()
+	line.add_theme_constant_override("separation", 3)
 	var name_l := Label.new()
 	name_l.text = pname
-	name_l.custom_minimum_size.x = 200
-	name_l.add_theme_font_size_override("font_size", 16)
+	name_l.custom_minimum_size.x = 130
+	name_l.clip_text = true
+	name_l.add_theme_font_size_override("font_size", FONT)
+	name_l.mouse_filter = Control.MOUSE_FILTER_PASS
+	name_l.tooltip_text = "%s\n%s   (Standard %s)" % [pname, notes.get(pname, ""), _fmt(def, is_int)]
 	line.add_child(name_l)
 	var slider := HSlider.new()
 	slider.min_value = lo
@@ -154,23 +171,17 @@ func _add_row(list: VBoxContainer, e: Array, notes: Dictionary) -> void:
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	slider.focus_mode = Control.FOCUS_NONE
+	slider.tooltip_text = name_l.tooltip_text
 	line.add_child(slider)
 	var val := LineEdit.new()
-	val.custom_minimum_size.x = 90
+	val.custom_minimum_size.x = 58
 	val.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	val.add_theme_font_size_override("font_size", FONT)
 	line.add_child(val)
-	var reset := _button("Std.", Callable())
+	var reset := _button("↺", Callable())
 	reset.tooltip_text = "Standard: %s" % _fmt(def, is_int)
 	line.add_child(reset)
-	row.add_child(line)
-	if notes.has(pname):
-		var note := Label.new()
-		note.text = "%s   (Standard %s)" % [notes[pname], _fmt(def, is_int)]
-		note.add_theme_font_size_override("font_size", 12)
-		note.add_theme_color_override("font_color", Color(1, 1, 1, 0.5))
-		note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		row.add_child(note)
-	list.add_child(row)
+	list.add_child(line)
 	var r := {"script": script, "file": e[0], "name": pname, "default": def, "int": is_int,
 		"slider": slider, "value": val, "label": name_l}
 	_rows.append(r)
@@ -240,6 +251,10 @@ func _read_comments() -> Dictionary:
 
 
 func _input(event: InputEvent) -> void:
+	var mb := event as InputEventMouseButton
+	if mb and _dim.visible and _panel.get_global_rect().has_point(mb.position) 			and mb.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		get_viewport().set_input_as_handled()      # über dem Panel zoomt das Mausrad nicht die Kamera
+		return
 	var k := event as InputEventKey
 	if k and k.pressed and not k.echo and k.keycode == KEY_F4:
 		toggle()
@@ -259,6 +274,6 @@ func _process(_delta: float) -> void:
 		return
 	if _live.text.ends_with("kopiert") and Engine.get_process_frames() % 180 != 0:
 		return
-	_live.text = "Tempo %.1f km/h   Seilzug %d N   %s   Drift-Press %+.2f   Sinkpegel %.2f" % [
+	_live.text = "%.1f km/h   Seilzug %d N   %s   D-Press %+.2f   Sink %.2f   Gischt %.2f" % [
 		rider.horizontal_speed() * 3.6, roundi(rider.tension_smooth),
-		"DRIFT" if rider.drifting else "kein Drift", rider.drift_press(), rider.sink_level]
+		"DRIFT" if rider.drifting else "–", rider.drift_press(), rider.sink_level, rider.spray_strength]
