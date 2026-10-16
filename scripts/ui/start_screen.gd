@@ -654,6 +654,8 @@ func _page_music(p: VBoxContainer) -> void:
 		b.clip_text = true
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		grid.add_child(b)
+	var credits := _small("")
+	credits.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var update := func() -> void:
 		var n := music.tracks.size()
 		status.text = "%d Spiel-Musik, %d eigene" % [music.game_tracks.size(), n]
@@ -663,9 +665,12 @@ func _page_music(p: VBoxContainer) -> void:
 			status.text += "   lädt: " + music.loading
 		nxt.disabled = music.playlist().is_empty() or not music.enabled
 		clr.disabled = n == 0
+		credits.text = "" if music.game_tracks.is_empty() else \
+			"Danke für die Spiel-Musik (Pixabay): " + ", ".join(music.game_artists())
 	music.changed.connect(update)
-	update.call()
 	p.add_child(_label("", 4))
+	p.add_child(credits)
+	update.call()
 	var alt := _small("ODER NEBENHER HÖREN, z. B. mit Spotify (dann hier Musik aus)")
 	alt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_child(alt)

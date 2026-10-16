@@ -102,6 +102,16 @@ static func title_of(path: String) -> String:
 	return path.get_file().get_basename()
 
 
+## Künstler der Spiel-Musik (Dateiname „Künstler - Titel“), für den Dank im Musik-Reiter.
+func game_artists() -> PackedStringArray:
+	var out := PackedStringArray()
+	for t in game_tracks:
+		var a := title_of(t).get_slice(" - ", 0)
+		if not a in out:
+			out.append(a)
+	return out
+
+
 ## Musik an/aus (Einstellung).
 func set_enabled(on: bool) -> void:
 	enabled = on
