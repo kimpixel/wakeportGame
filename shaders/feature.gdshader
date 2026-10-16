@@ -58,6 +58,19 @@ void fragment() {
 		float wsc = smoothstep(0.9, 0.98, noise(vec3((lp.x + lp.z) * 90.0, lp.y * 3.0, 3.0)));
 		col = mix(col, vec3(0.45, 0.45, 0.43), wsc * 0.4 * wear);
 	}
+	// Formschattierung unabhängig vom Licht: Auffahrten je nach Steilheit etwas dunkler als die flache
+	// Oberseite, Wände deutlich dunkler (Seitenwände mehr als Stirnseiten). Sonst ist im Web
+	// (Compatibility-Renderer: keine Umgebungsverdeckung, Schatten je nach Grafikstufe aus) alles Weiß auf Weiß
+	// und die Kanten der Auffahrten verschwinden. Am Desktop schwächer, dort trägt das Licht mehr.
+	vec3 n = normalize(ln);
+	float tone_k = 1.0;
+	if (CURRENT_RENDERER != RENDERER_COMPATIBILITY) {
+		tone_k = 0.45;
+	}
+	float slope = 1.0 - smoothstep(0.8, 0.995, n.y);           // 0 flach … 1 ab ca. 37°
+	float wall = 1.0 - smoothstep(0.2, 0.6, abs(n.y));         // senkrechte Flächen
+	float tone = 1.0 - slope * 0.22 - wall * mix(0.1, 0.2, abs(n.x));
+	col *= mix(1.0, tone, tone_k);
 	// Algen- und Schmutzrand an der Wasserlinie
 	float wl = smoothstep(0.22, -0.05, wp.y + (fbm(vec3(lp.x, 0.0, lp.z) * 2.0) - 0.5) * 0.12);
 	vec3 algae = mix(vec3(0.42, 0.45, 0.28), vec3(0.32, 0.3, 0.22), noise(lp * 4.0));
