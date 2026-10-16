@@ -16,6 +16,7 @@ signal start_pressed
 signal mode_chosen(id: String)
 signal task_chosen(idx: int)
 signal setups_changed(id: String, play: bool)   # Setup-Editor hat gespeichert bzw. gelöscht
+signal ingame_closed                            # Einstellungen im Spiel (Pause) geschlossen
 
 const BASE_SHORT := 740.0        # so viele Einheiten hat die kurze Bildschirmseite mindestens
 const BASE_LONG := 1200.0        # … und die lange
@@ -60,6 +61,7 @@ var _train_box: VBoxContainer    # Spielmodi: Aufgaben
 var _task_select: SelectBox
 var _task_info: Label
 var _dim: ColorRect
+var _ingame := false             # nur das Einstellungs-Fenster über dem pausierten Spiel (ohne Menü und Kamera)
 var _settings: PanelContainer
 var _browser: PanelContainer
 var _browser_grid: VBoxContainer
@@ -475,6 +477,26 @@ func _close_popups() -> void:
 	for q: PanelContainer in [_settings, _browser, _detail, _achieve]:
 		q.visible = false
 	_dim.visible = false
+	if _ingame:
+		_ingame = false
+		visible = false
+		_menu.visible = true
+		_title_box.visible = true
+		ingame_closed.emit()
+
+
+## Im Spiel (pausiert): nur die Einstellungen zeigen, ohne Startseiten-Menü und ohne eigene Kamera.
+func open_settings_ingame() -> void:
+	_ingame = true
+	_menu.visible = false
+	_title_box.visible = false
+	visible = true
+	_layout()
+	_show_popup(_settings)
+
+
+func settings_open_ingame() -> bool:
+	return _ingame
 
 
 func _popup_open() -> bool:
@@ -487,8 +509,9 @@ func _build_settings() -> void:
 	var f := _popup_frame("EINSTELLUNGEN")
 	_settings = f[0]
 	var v: VBoxContainer = f[1]
-	var tabs := HBoxContainer.new()
-	tabs.add_theme_constant_override("separation", 6)
+	var tabs := HFlowContainer.new()             # hochkant: Reiter brechen in eine zweite Zeile um
+	tabs.add_theme_constant_override("h_separation", 6)
+	tabs.add_theme_constant_override("v_separation", 6)
 	v.add_child(tabs)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -508,7 +531,6 @@ func _build_settings() -> void:
 		var b := _button(title, 14 if mobile else 19)
 		b.toggle_mode = true
 		b.button_group = tg
-		b.clip_text = true            # fünf Reiter: am Handy hochkant schmaler werden dürfen
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var idx := pages.size() - 1
 		b.pressed.connect(func() -> void:
@@ -1049,6 +1071,10 @@ func set_result(text: String) -> void:
 func _process(delta: float) -> void:
 	if not visible or _cam == null:
 		return
+	if _ingame:
+		if _dim.visible:
+			_fit_popup(_settings, _ui.size)
+		return
 	# Popups wachsen mit ihrem Inhalt (z. B. Text beim ersten Umbruch), schrumpfen aber nicht
 	# von selbst: Größe jedes Bild festhalten
 	if _dim.visible:
@@ -1073,6 +1099,11 @@ func _input(event: InputEvent) -> void:
 	if not visible or not (event is InputEventKey) or not event.pressed or event.is_echo() or editor_open():
 		return
 	var k := (event as InputEventKey).physical_keycode
+	if _ingame:                 # im Spiel: Leertaste/Tab starten nichts, Esc schließt
+		if k == KEY_ESCAPE:
+			_close_popups()
+			get_viewport().set_input_as_handled()
+		return
 	match k:
 		KEY_ESCAPE:
 			if not _popup_open():

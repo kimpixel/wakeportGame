@@ -9,7 +9,7 @@ Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das
 Leertaste halten + loslassen   Absprung (langsam: Ollie, über 40 km/h, voll aufgeladen und ohne Feature voraus: Raley)
 Start mit Countdown 3 – 2 – 1 – GO (Runde 7:30)     R  zurück zum Steg (−2:00, dann Countdown), in den Spielmodi: neuer Versuch     + / -  Anlagentempo
 Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−1:00)     R = Steg (−2:00)
-C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause
+C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause (dort auch Einstellungen)
 P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus     H  Hilfe ein/aus     F3  Hitboxen (Debug)     F4  Parameter (Debug, nur lokal)
 Tab  Startseite (Terminal, Feature-Setup, Einstellungen)"""
 
@@ -17,7 +17,7 @@ const HELP_MOBILE := """Start mit Countdown          Handy neigen (bzw. ← / �
 SPRUNG (links) halten + loslassen   Absprung (schnell: Raley)
 Pfeil ↑ / ↓   in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)
 DRIFT (links, über SPRUNG)   Kante lösen        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)
-☰   Menü: Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Seil-Abreißen an/aus"""
+☰   Menü (pausiert): Einstellungen, Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Seil-Abreißen an/aus"""
 
 const ACCENT := Color(0.55, 0.82, 0.22)          # Wakeport-Grün
 const PANEL := Color(0.05, 0.07, 0.09, 0.66)
@@ -58,6 +58,10 @@ var _score_pop := 0.0
 var _gain_time := 0.0
 var _gauge: TensionGauge
 var _top_bar: Control
+var _bar_panels: Array = []       # Zeit, Seilzug, Tempo, Punkte
+var _bar_cols: Array = []         # hochkant: zwei Spalten
+var _portrait := false
+var _bar_k := 1.0                 # Maßstab der Leiste
 var _speed: SpeedGauge
 var _font: Font
 var _t := 0.0
@@ -181,12 +185,17 @@ func show_recovery(title: String, rows: Array) -> void:
 		_rec_key = ""
 		return
 	_recovery.visible = true
-	_rec_title.text = title
-	var key := str(rows)
+	# hochkant (Handy): Titel zweizeilig, je Zeile links die Taste, rechts Aktion und darunter die Kosten –
+	# drei Spalten wären ca. 750 px breit und würden unleserlich klein gestaucht
+	var tall := _portrait
+	_rec_title.text = title.replace("  –  ", "\n") if tall else title
+	var key := str(rows) + str(tall)
 	if key == _rec_key:
 		return
 	_rec_key = key
+	_rec_grid.columns = 2 if tall else 3
 	for c in _rec_grid.get_children():
+		_rec_grid.remove_child(c)
 		c.queue_free()
 	for row: Array in rows:
 		var k := Label.new()
@@ -203,20 +212,30 @@ func show_recovery(title: String, rows: Array) -> void:
 		kb.content_margin_bottom = 2
 		k.add_theme_stylebox_override("normal", kb)
 		k.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		k.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		_rec_grid.add_child(k)
 		var a := Label.new()
 		a.text = row[1]
 		a.add_theme_font_override("font", _font)
 		a.add_theme_font_size_override("font_size", 24)
 		a.add_theme_color_override("font_color", Color.WHITE)
-		_rec_grid.add_child(a)
 		var c := Label.new()
 		c.text = row[2]
 		c.add_theme_font_override("font", _font)
-		c.add_theme_font_size_override("font_size", 24)
+		c.add_theme_font_size_override("font_size", 22 if tall else 24)
 		c.add_theme_color_override("font_color", WARN if row[3] else ACCENT)
-		c.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		_rec_grid.add_child(c)
+		if tall:
+			var ac := VBoxContainer.new()
+			ac.add_theme_constant_override("separation", -4)
+			ac.add_child(a)
+			ac.add_child(c)
+			_rec_grid.add_child(ac)
+		else:
+			c.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			_rec_grid.add_child(a)
+			_rec_grid.add_child(c)
+	_recovery.offset_left = 0.0           # Breite neu aus dem Inhalt (wächst um die Mitte)
+	_recovery.offset_right = 0.0
 
 
 ## Leiste oben: Zeit | Seilzug | Punkte
@@ -251,6 +270,14 @@ func _build_top_bar() -> void:
 	_small(sp, "PUNKTE")
 	_score_value = _big(sp, "0")
 	_score_value.pivot_offset = Vector2(75, 24)
+	_bar_panels = [tp.get_parent(), gp.get_parent(), vp.get_parent(), sp.get_parent()]
+	# hochkant (Handy): zwei Spalten – links Zeit über Punkte, rechts Seilzug über Tempo
+	for i in 2:
+		var col := VBoxContainer.new()
+		col.add_theme_constant_override("separation", 8)
+		col.visible = false
+		bar.add_child(col)
+		_bar_cols.append(col)
 
 	# Brettzustand (Drift/Kante) klein unter dem Seilzug, Punkte-Zuwachs unter den Punkten
 	_board = Label.new()
@@ -367,7 +394,6 @@ func show_count(text: String) -> void:
 ## Spielmodi: Aufgabe und aktueller Messwert unter der Leiste ("" = aus).
 func set_task(text: String) -> void:
 	_task.text = text
-	_board.offset_top = 134 if text != "" else 112
 
 
 func set_center(text: String) -> void:
@@ -474,18 +500,80 @@ func set_board(text: String) -> void:
 	_board.text = text
 
 
+## Leiste passend zum Bildschirm: quer eine Reihe (schmal: verkleinert), hochkant zwei Spalten über die
+## ganze Breite. Aufgabenzeile, Brettzustand und Punkte-Zuwachs rücken an die echte Unterkante.
+func _layout_bar() -> void:
+	var vs := get_viewport().get_visible_rect().size
+	var portrait := vs.x < vs.y
+	if portrait != _portrait:
+		_arrange_bar(portrait)
+	var w := maxf(_top_bar.size.x, 1.0)
+	_bar_k = clampf((vs.x - 16.0) / w, 0.3, 2.5) if portrait else minf(1.0, (vs.x - 16.0) / w)
+	_top_bar.pivot_offset = Vector2(w * 0.5, 0.0)
+	_top_bar.scale = Vector2(_bar_k, _bar_k)
+	var fk := maxf(_bar_k, 1.0) if portrait else 1.0      # Schrift unter der Leiste wächst am Handy mit
+	var bottom := bar_bottom()
+	var sp: Control = _bar_panels[3]
+	var r := sp.get_global_rect()
+	_score_gain.offset_left = r.get_center().x - vs.x * 0.5 - 90.0
+	_score_gain.offset_right = _score_gain.offset_left + 180.0
+	_score_gain.offset_top = r.end.y - 4.0 * fk
+	_score_gain.add_theme_font_size_override("font_size", int(22 * fk))
+	var gap := 26.0 * fk if portrait else 0.0              # hochkant: Platz für den Punkte-Zuwachs links
+	_task.offset_top = bottom + 2.0 * fk + gap
+	_task.add_theme_font_size_override("font_size", int(22 * fk))
+	_board.offset_top = bottom + gap + (34.0 * fk if _task.text != "" else 10.0 * fk)
+	_board.add_theme_font_size_override("font_size", int(16 * fk))
+
+
+func _arrange_bar(portrait: bool) -> void:
+	_portrait = portrait
+	var tp: Control = _bar_panels[0]
+	var gp: Control = _bar_panels[1]
+	var vp: Control = _bar_panels[2]
+	var sp: Control = _bar_panels[3]
+	if portrait:
+		tp.reparent(_bar_cols[0], false)
+		sp.reparent(_bar_cols[0], false)
+		gp.reparent(_bar_cols[1], false)
+		vp.reparent(_bar_cols[1], false)
+		_gauge.custom_minimum_size.x = 316.0
+		gp.custom_minimum_size.x = 340.0
+		vp.custom_minimum_size.x = 340.0
+	else:
+		for i in 4:
+			var p: Control = _bar_panels[i]
+			p.reparent(_top_bar, false)
+			_top_bar.move_child(p, i)
+		_gauge.custom_minimum_size.x = 416.0
+		gp.custom_minimum_size.x = 440.0
+		vp.custom_minimum_size.x = 280.0
+	for c: Control in _bar_cols:
+		c.visible = portrait
+	_top_bar.offset_left = 0.0           # neu um die Mitte wachsen lassen
+	_top_bar.offset_right = 0.0
+
+
+## Unterkante der HUD-Leiste (Bildschirm-Pixel).
+func bar_bottom() -> float:
+	return _top_bar.position.y + _top_bar.size.y * _bar_k
+
+
+## Unterkante von Leiste, Aufgabenzeile und Brettzustand (darunter ist Platz, z. B. fürs Livebild).
+## Die Zeile des Brettzustands ist immer eingerechnet, auch leer – sonst spränge das Livebild beim Driften.
+func info_bottom() -> float:
+	return _board.offset_top + _board.get_theme_font_size("font_size") * 1.4
+
+
 func _process(delta: float) -> void:
 	_t += delta
-	# schmale Bildschirme (Handy): Leiste passend verkleinern
-	var vw := get_viewport().get_visible_rect().size.x
-	var k := minf(1.0, (vw - 16.0) / maxf(_top_bar.size.x, 1.0))
-	_top_bar.pivot_offset = Vector2(_top_bar.size.x * 0.5, 0.0)
-	_top_bar.scale = Vector2(k, k)
+	_layout_bar()
 	# Sturz-Panel: groß genug zum Lesen (Handy: größer), aber nie breiter als der Bildschirm
 	if _recovery.visible:
 		var vs := get_viewport().get_visible_rect().size
 		var want := clampf(vs.y / 720.0, 1.0, 3.0) * (1.35 if _mobile_help else 1.0)
-		var fit := (vs.x * (0.72 if _mobile_help else 1.0) - 24.0) / maxf(_recovery.size.x, 1.0)   # Handy: Platz für die Tasten
+		# Handy quer: links und rechts sind die Tasten; hochkant liegen sie darunter -> volle Breite
+		var fit := (vs.x * (0.72 if _mobile_help and not _portrait else 1.0) - 24.0) / maxf(_recovery.size.x, 1.0)
 		var rk := minf(want, fit)
 		_recovery.pivot_offset = Vector2(_recovery.size.x * 0.5, _recovery.size.y * (0.5 if _mobile_help else 1.0))
 		_recovery.scale = Vector2(rk, rk)
@@ -546,7 +634,10 @@ class SpeedGauge extends Control:
 			var on := _kmh >= float(m[1])
 			var c := Color(1.0, 0.85, 0.2) if on else Color(1, 1, 1, 0.45)
 			draw_rect(Rect2(x - 1.5, top - 3.0, 3.0, h + 6.0), c)
-			draw_string(f, Vector2(x - 40.0, top + h + 15.0), m[0], HORIZONTAL_ALIGNMENT_CENTER, 80.0, 12, c)
+			# Marken liegen eng: PRESS MAX endet an seiner Marke, RALEY beginnt an seiner
+			var raley: bool = m[0] == "RALEY"
+			draw_string(f, Vector2(x + 4.0 if raley else x - 104.0, top + h + 15.0), m[0],
+				HORIZONTAL_ALIGNMENT_LEFT if raley else HORIZONTAL_ALIGNMENT_RIGHT, 100.0, 12, c)
 
 
 ## Großer Seilzug-Anzeiger: Segmente von grün über gelb nach rot, Spitzenwert-Marke,

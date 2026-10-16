@@ -30,6 +30,7 @@ extends Node3D
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
 ##   --pause-at=SEK    Test: zu dieser Zeit pausieren (mit --shot: Bild der Pause)
+##   --settings-at=SEK Test: zu dieser Zeit pausieren und die Einstellungen im Spiel öffnen (mit --shot: Bild davon)
 ##   --debug-params    Debug-Overlay (Parameter-Regler, im Spiel F4) gleich offen
 ##   --hitbox          Fangzonen der Slider zeigen (im Spiel: F3)
 ##   --set=NAME=WERT   Test: Einstellung setzen (ohne zu speichern), z. B. --set=goofy=true
@@ -142,6 +143,7 @@ var _drop_at := -1.0           # Test: Fahrer zu dieser Zeit an _drop_pos in die
 var _drop_pos := Vector3.INF   # Test: wohin (INF = über den Startsteg)
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
 var _pause_at := -1.0           # Test: zu dieser Zeit pausieren (und Screenshot)
+var _settings_at := -1.0        # Test: zu dieser Zeit die Einstellungen im Spiel öffnen
 var _debug_params_arg := false  # Test: Debug-Overlay gleich offen (--debug-params)
 var _hitbox_arg := false        # Test: Fangzonen der Slider zeigen
 var _set_args: Array[String] = []   # Test: --set=NAME=WERT
@@ -278,6 +280,7 @@ func _ready() -> void:
 		touch_pad = TouchPad.new()
 		touch_pad.process_mode = Node.PROCESS_MODE_ALWAYS     # Menü bedienbar, auch während der Pause
 		mobile.process_mode = Node.PROCESS_MODE_ALWAYS
+		touch_pad.hud = hud
 		add_child(touch_pad)
 		mobile.pad = touch_pad
 		touch_pad.menu_action.connect(_on_pad_menu)
@@ -338,6 +341,8 @@ func _ready() -> void:
 	pause_menu.music = music
 	pause_menu.can_pause = func() -> bool: return not start_screen.visible and hud.visible 		and not task_panel.is_open() and not hud._count.visible
 	pause_menu.help_pressed.connect(hud.toggle_help)
+	pause_menu.settings_pressed.connect(_open_settings_ingame.bind("pause"))
+	start_screen.ingame_closed.connect(_close_settings_ingame)
 	pause_menu.home_pressed.connect(_open_start_screen)
 	add_child(pause_menu)
 	# Debug-Overlay (F4, nur lokal): Parameter live mit Schiebereglern justieren
@@ -868,8 +873,36 @@ func _on_touch_down() -> void:
 
 
 ## Menü der virtuellen Tasten (Handy).
+## Einstellungen im laufenden Spiel (aus dem Pause-Fenster bzw. dem ☰-Menü): Spiel bleibt pausiert,
+## nur das Einstellungs-Fenster der Startseite erscheint. Danach zurück, woher man kam.
+var _settings_from := ""
+
+func _open_settings_ingame(from: String) -> void:
+	_settings_from = from
+	get_tree().paused = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	mobile.ui_mode = true        # Finger bedienen das Fenster
+	if touch_pad:
+		mobile.release_pad()
+		touch_pad.visible = false
+	pause_menu.hide_window()
+	start_screen.open_settings_ingame()
+
+
+func _close_settings_ingame() -> void:
+	mobile.ui_mode = false
+	if touch_pad:
+		touch_pad.visible = true
+	if _settings_from == "pad" and touch_pad:
+		touch_pad.trigger("menu")             # ☰-Menü wieder auf (pausiert weiter)
+	else:
+		pause_menu.show_again()
+
+
 func _on_pad_menu(id: String) -> void:
 	match id:
+		"settings":
+			_open_settings_ingame("pad")
 		"help":
 			hud.toggle_help()
 		"reset":
@@ -1162,6 +1195,13 @@ func _process(_delta: float) -> void:
 		pause_menu.set_paused(true)
 		if _shot_path != "":
 			_take_shot()
+	if _settings_at > 0.0 and _elapsed >= _settings_at:
+		_settings_at = -1.0
+		pause_menu.set_paused(true)
+		_open_settings_ingame("pause")
+		print("EINSTELLUNGEN im Spiel offen, pausiert: %s" % get_tree().paused)
+		if _shot_path != "":
+			_take_shot()
 	if _shot_path != "" and not _shot_taken and _elapsed >= _shot_time:
 		_take_shot()
 
@@ -1352,6 +1392,8 @@ func _parse_args() -> void:
 			_test_pitch = arg.substr(8).to_float()
 		elif arg.begins_with("--pause-at="):
 			_pause_at = arg.substr(11).to_float()
+		elif arg.begins_with("--settings-at="):
+			_settings_at = arg.substr(14).to_float()
 		elif arg.begins_with("--mode="):
 			_mode_arg = arg.substr(7)
 		elif arg == "--mode-auto":

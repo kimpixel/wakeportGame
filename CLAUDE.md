@@ -220,7 +220,7 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
 - Strg (zur Not Alt): **Driften** – keine Kante greift: Lenken ändert die Fahrtrichtung nicht, nur der
   Seilzug zieht einen (nicht festnageln, sonst reißt das Seil); das Seil ist im Drift **keine Feder, sondern fest wie beim Kettenkarussell** (`Rider._drift_rope`: fängt nur die Bewegung vom Carrier weg weich ab, `DRIFT_ROPE_GIVE`; der Schwung nach außen bleibt, kein Schnalzen nach vorne), ←/→ drehen nur das Brett, Wasserwiderstand × `DRIFT_DRAG` 0.7 (leicht schneller), Brett dreht im Drift schneller (`DRIFT_SPIN`). Nur Spieler,
   Autopilot/NPC driften wie früher. „Maximaler Grip“ gibt es nicht mehr.
-- **Esc = Pause** (`scripts/ui/pause_menu.gd`, SceneTree.paused; Fenster Weiter/Hilfe/Startseite). Am Handy
+- **Esc = Pause** (`scripts/ui/pause_menu.gd`, SceneTree.paused; Fenster Weiter/Einstellungen/Hilfe/Startseite). **Einstellungen im Spiel**: Pause-Fenster bzw. ☰-Menü öffnet nur das Einstellungs-Fenster der Startseite (`StartScreen.open_settings_ingame`, ohne Menü/Kamera, Spiel bleibt pausiert, danach zurück ins Pause-Fenster bzw. ☰; `main.gd _open_settings_ingame`; Test `--settings-at=S`). Am Handy
   pausiert das offene ☰-Menü (TouchPad/MobileInput laufen mit PROCESS_MODE_ALWAYS). Test `--pause-at=S`.
 - **Sprung-Start** (nur auf dem Startsteg, `Rider._step_dock_start`): ↓ halten (Handy ▼) = gegen das anfahrende Seil stemmen
   (Fahrer bleibt stehen, Seilzug steigt). Bei `DOCK_BRACE_MAX` 90 % der Seilzug-Grenze reißt das Seil los: die gedehnte Leine
@@ -237,7 +237,8 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
 
 Steuerung Handy: Neigen = lenken, Tippen = Start, **Springen nur mit der SPRUNG-Taste (links)**,
 DRIFT links über SPRUNG (damit rechts gleichzeitig ▲ ▼ für den Drift-Press geht); nach Sturz Bildschirm halten = schwimmen, DRIFT = sofort weiter;
-☰-Menü (Weiter, Hilfe, Zurück zum Steg, Startseite, Ton). Terminal/Setup nur auf der Startseite.
+☰-Menü (Weiter, Einstellungen, Hilfe, Zurück zum Steg, Startseite, Ton); ☰ sitzt **rechts unter der HUD-Leiste, nie darin** (`TouchPad._place_menu_button`). Terminal/Setup nur auf der Startseite.
+**Handy hochkant** (es wird meist hochkant gespielt): HUD-Leiste **zweispaltig** (links Zeit über Punkte, rechts Seilzug über Tempo, `Hud._arrange_bar`), über die ganze Breite skaliert; Aufgabenzeile, Brettzustand, Livebild des Filmteams und ☰ rücken unter die echte Unterkante (`Hud.bar_bottom`/`info_bottom`). Sturz-Panel hochkant zweispaltig (Taste | Aktion + Kosten darunter), Titel zweizeilig, volle Breite.
 **Mobil-Code strikt isolieren**: nur Aktionen loslassen, die er selbst gedrückt hat, nichts
 global; Web-Audio-Hacks nur auf Touch-Geräten (früher hakte sonst die Desktop-Tastatur).
 

@@ -1,9 +1,10 @@
 class_name PauseMenu
 extends CanvasLayer
 ## Pause (Esc): hält das Spiel an (SceneTree.paused) und zeigt ein Fenster im HUD-Stil mit
-## Weiter, Hilfe, Nächster Titel (eigene Musik) und Startseite. Läuft selbst auch während der Pause (PROCESS_MODE_ALWAYS).
+## Weiter, Einstellungen, Hilfe, Nächster Titel (eigene Musik) und Startseite. Läuft selbst auch während der Pause (PROCESS_MODE_ALWAYS).
 
 signal help_pressed
+signal settings_pressed           # Einstellungen öffnen (Spiel bleibt pausiert)
 signal home_pressed
 
 var music: Music                 # eigene Musik (Taste „Nächster Titel“ nur, wenn Titel da sind)
@@ -49,6 +50,7 @@ func _ready() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_box.add_child(title)
 	_button("Weiter  (Esc)", func() -> void: set_paused(false))
+	_button("Einstellungen", func() -> void: settings_pressed.emit())
 	_button("Hilfe ein/aus", func() -> void: help_pressed.emit())
 	_next_btn = _button("Nächster Titel", func() -> void:
 		music.next()
@@ -84,6 +86,18 @@ func set_paused(on: bool) -> void:
 	if on:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		_update_music()
+
+
+## Einstellungen offen: Fenster weg, Pause bleibt (danach show_again).
+func hide_window() -> void:
+	_dim.visible = false
+
+
+## Nach den Einstellungen: wieder das Pause-Fenster zeigen.
+func show_again() -> void:
+	get_tree().paused = true
+	_dim.visible = true
+	_update_music()
 
 
 func is_paused() -> bool:

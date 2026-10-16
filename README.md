@@ -43,7 +43,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | Tab | – | zurück zur Startseite (mit ihr beginnt das Spiel). Im Hintergrund die echte Szene, die Kamera schwenkt langsam von der Seeseite über die gewählte Anlage. Darüber das Menü: Spielmodus, Terminal und Feature-Setup bzw. die Aufgaben, **Einstellungen** (Wetter, Datum, Uhrzeit, Jetzt) und **Spiel starten**. Tasten: Leertaste Start, Esc schließt ein Fenster. Passt sich an Handy (hoch und quer) und Desktop an |
 | Maus / Mausrad | rechter Stick | Umsehen / Zoom |
 | P | – | Autopilot (fährt auch Features) |
-| Esc | Start | **Pause** (Fenster mit Weiter, Hilfe, Startseite); am Handy pausiert das ☰-Menü |
+| Esc | Start | **Pause** (Fenster mit Weiter, Einstellungen, Hilfe, Startseite); am Handy pausiert das ☰-Menü. Die Einstellungen öffnen sich direkt über dem pausierten Spiel |
 | M | – | Ton aus/an |
 | G | – | Seil-Abreißen an/aus (bei „Aus“ wird einem die Handle nie aus der Hand gerissen; auch unter Einstellungen → Spiel → Seilzug-Grenze) |
 | F3 | – | Debug: Fangzonen der Slider einblenden (gelb; wer im Sprung hineinkommt, gleitet aufs Rail) glattes Plastik (blau; nur rutschen, kein Slide, kein Lenken) und Safetys/Auffahrten und Kicker (orange; fährt man wie einen Kicker, kein Slide) |
@@ -59,7 +59,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | SCHWIMMEN (statt SPRUNG) oder Bildschirm halten | nach Sturz: zur Handle schwimmen |
 | Pfeil hoch / runter (unten rechts) | in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress |
 | DRIFT (links, über SPRUNG) | Kante lösen = Driften; nach Sturz heißt die Taste SKIP: sofort weiterfahren (−1:00) |
-| ☰ (oben links) | Menü: Hilfe, Zurück zum Steg (−2:00), Startseite, Ton, Seil-Abreißen an/aus |
+| ☰ (rechts unter der Anzeige) | Menü: Einstellungen, Hilfe, Zurück zum Steg (−2:00), Startseite, Ton, Seil-Abreißen an/aus (Spiel pausiert) |
 
 Auf dem iPhone fragt Safari beim ersten Tippen nach der Erlaubnis für Bewegungs- und Ausrichtungssensoren. Ohne sie lenkt man nur mit *Lenkung: Tasten* (Einstellungen → Technik).
 
