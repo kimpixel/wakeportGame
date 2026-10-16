@@ -12,7 +12,7 @@ extends Node3D
 ##   --mobile          Handy-Steuerung erzwingen (mit --tilt=GRAD feste Neigung)
 ##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
 ##   --screen[=NAME]   Startbildschirm erzwingen (NAME: Feature/Hack auswählen, z. B. "hack";
-##                     @liste, @einstellungenN, @erfolge, @auswahl[2] = Modus- bzw. Challenge-Liste offen, @editor = Setup-Editor);
+##                     @liste, @einstellungenN, @erfolge, @rangliste, @auswahl[2] = Modus- bzw. Challenge-Liste offen, @editor = Setup-Editor);
 ##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
 ##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
 ##   --jump-at=SEK     Test: zu dieser Zeit voll aufgeladen abspringen
@@ -26,6 +26,7 @@ extends Node3D
 ##   --sup-at=SEK      Test: ein SUP aus der Seemitte kommt herüber, das rote Boot vertreibt ihn
 ##   --drop-at=S[,x,y,z]  Test: Fahrer zu dieser Zeit in die Luft setzen (Standard: über den Startsteg, Erfolg "steg")
 ##   --erfolg=ID,…     Test: geheime Erfolge als erreicht zeigen (z. B. --screen=@erfolge --erfolg=fisch)
+##   --lb-url=URL      Test: Rangliste über diesen Worker (z. B. lokal http://127.0.0.1:8787), --lb-name=NAME
 ##   --dpress=W        Test: Drift-Press fest zeigen (-1 Tailpress … +1 Nosepress), auch ohne Drift
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
@@ -102,6 +103,7 @@ var film: FilmCrew                 # Filmteam der Challenges (rotes Boot oder FP
 var weather: Weather
 var airplanes: Airplanes
 var music: Music
+var leaderboard: Leaderboard     # Online-Rangliste (Challenges, Competition)
 var _plane_arg := NAN
 var _load_arg := NAN
 var _passive_arg := false       # Test: Fahrer ohne Autopilot, ohne Eingaben
@@ -334,6 +336,8 @@ func _ready() -> void:
 	add_child(music)
 	if not _music_args.is_empty():
 		music.add_paths(_music_args)
+	leaderboard = Leaderboard.new()
+	add_child(leaderboard)
 	_apply_terminal(_initial_terminal())
 	_build_start_screen()
 	# Pause (Esc): Spiel anhalten, Fenster mit Weiter / Hilfe / Startseite
@@ -433,6 +437,7 @@ func _build_start_screen() -> void:
 	start_screen.mobile = mobile.active
 	start_screen.settings = settings
 	start_screen.music = music
+	start_screen.leaderboard = leaderboard
 	var names: Array = []
 	for e: Dictionary in _setups:
 		names.append(e["name"])
@@ -1072,9 +1077,32 @@ func _end_session() -> void:
 	_last_result = "Letzte Runde: %d Punkte" % _final_score
 	hud.show_trick("Ende!  %d Punkte" % _final_score)
 	Analytics.count("runde/ende/" + Analytics.score_bucket(_final_score))
+	_submit_round(_final_score)
 	get_tree().create_timer(3.0).timeout.connect(func() -> void:
 		if not start_screen.visible:
 			_open_start_screen())
+
+
+## Rangliste: Punkte der Runde eintragen (nur mit Standard-Anlage, siehe Leaderboard.competition_blocked).
+## Platz erscheint unter dem Titel der Startseite.
+func _submit_round(score: int) -> void:
+	var sec := roundi(_game_time)
+	var st: Dictionary = _setups[_setup_idx]
+	if not leaderboard.enabled() or (_test_log and not leaderboard.has_name()):
+		return
+	var why := Leaderboard.competition_blocked(settings, sec, st)
+	if why != "" or not leaderboard.has_name():
+		_last_result += "   ·   " + (why if why != "" else "Rangliste: Namen eintragen")
+		return
+	var b := leaderboard.competition_board(sec, terminal, st, TERMINAL_NAMES[TERMINALS.find(terminal)])
+	var r := await leaderboard.submit(b, score)
+	if r.get("ok", false):
+		_last_result = "Letzte Runde: %d Punkte   ·   %s Platz %d von %d" % [score,
+			"Rangliste" if r.get("improved", false) else "Dein Bestwert:", int(r["rank"]), int(r["total"])]
+	elif str(r.get("error", "")) != "":
+		_last_result += "   ·   Rangliste: " + str(r["error"])
+	if start_screen.visible:
+		start_screen.set_result(_last_result)
 
 
 static func _clock(sec: float) -> String:

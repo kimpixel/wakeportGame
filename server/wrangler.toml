@@ -1,0 +1,14 @@
+# Cloudflare Worker der Rangliste (siehe server/README.md)
+name = "wakethehack-rangliste"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+# Browser-Seiten, die die Rangliste aufrufen dürfen (localhost ist immer erlaubt)
+ALLOWED_ORIGINS = "https://kimpixel.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "wakethehack"
+# nach "npx wrangler d1 create wakethehack" die ausgegebene database_id hier eintragen
+database_id = "00000000-0000-0000-0000-000000000000"

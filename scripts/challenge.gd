@@ -26,6 +26,7 @@ var attempt := 0
 
 var _t := 0.0
 var _value := 0.0               # Messwert des laufenden Versuchs
+var _rank_text := ""            # Rangliste: Platz des letzten gewerteten Versuchs (Ergebnisfenster)
 var _max_y := 0.0
 var _laps0 := 0
 var _around := false
@@ -757,6 +758,7 @@ func _finish(ok: bool) -> void:
 		text = Training.format_value(task, _value)
 		new_best = Training.record(mode_id, task, _value) if not game._test_log else false   # Tests speichern nichts
 		Analytics.count("challenge/%s/%s/%s" % [mode_id, task["id"], Training.MEDALS[medal] if medal > 0 else "ohne"])
+		_submit_rank()
 		if medal == 0:
 			text += "   –   noch keine Medaille"
 		if game._test_log:
@@ -779,7 +781,33 @@ func _finish(ok: bool) -> void:
 	get_tree().paused = true
 	panel.show_result(_mode_name(), task_idx, list.size(), task, _best(), task_idx + 1 < list.size(),
 		medal, text, new_best, shots)
+	panel.set_rank(_rank_text)
 	_update_hud()
+
+
+## Rangliste: Wert senden (läuft schon während des Ausrollens), Platz kommt ins Ergebnisfenster.
+func _submit_rank() -> void:
+	var lb: Leaderboard = game.leaderboard
+	_rank_text = ""
+	if not lb.enabled() or (game._test_log and not lb.has_name()):
+		return
+	if not lb.has_name():
+		_rank_text = "Rangliste: Namen auf der Startseite eintragen (Taste Rangliste)"
+		return
+	_rank_text = "Rangliste: wird gesendet …"
+	var n := attempt
+	var t := task
+	var r := await lb.submit(lb.challenge_board(mode_id, task), _value)
+	if attempt != n or task != t:
+		return
+	if r.get("ok", false):
+		_rank_text = ("Rangliste: Platz %d von %d" % [int(r["rank"]), int(r["total"])]) if r.get("improved", false) \
+			else ("Rangliste: Platz %d von %d mit deinem Bestwert %s" % [int(r["rank"]), int(r["total"]),
+				Training.format_value(task, float(r["value"]))])
+	else:
+		_rank_text = "Rangliste: " + str(r.get("error", "Fehler"))
+	if panel.is_open():
+		panel.set_rank(_rank_text)
 
 
 func _best() -> Array:

@@ -40,6 +40,7 @@ var music: Music                 # eigene Musik des Spielers (von main.gd gesetz
 var mobile := false              # Handy: keine Tastenhinweise
 
 var _terminals: Array = []
+var _terminal_names: Array = []
 var _terminal := "T2"
 var _setup_names: Array = []
 var _ui: Control
@@ -57,7 +58,7 @@ var _mode_ids: Array = []         # je Zeile der Modus-Auswahl die Modus-id ("" 
 var _split: BoxContainer          # Querformat: links Spielmodi, rechts Terminal/Setup bzw. Aufgaben
 var _left: VBoxContainer          # linke Spalte (Querformat am Handy: auch Einstellungen + Start)
 var _menu_v: VBoxContainer
-var _bottom_row: HBoxContainer
+var _bottom_row: GridContainer   # Einstellungen, Setup-Editor, Erfolge, Rangliste (schmal: 2 × 2)
 var _comp_box: VBoxContainer     # Competition: Terminal + Feature-Setup
 var _train_box: VBoxContainer    # Spielmodi: Aufgaben
 var _task_select: SelectBox
@@ -71,6 +72,18 @@ var _detail: PanelContainer
 var _achieve: PanelContainer      # geheime Erfolge (Liste mit Achievements.SLOTS Einträgen)
 var _achieve_list: VBoxContainer
 var _achieve_count: Label
+var leaderboard: Leaderboard      # Online-Rangliste (von main.gd gesetzt, vor build)
+var _rank_pop: PanelContainer     # Rangliste der gewählten Challenge bzw. Competition
+var _rank_title: Label
+var _rank_list: VBoxContainer
+var _rank_info: Label
+var _rank_name: LineEdit
+var _rank_msg: Label
+var _rank_forget: Button
+var _rank_req := 0                # laufende Abfrage (ältere Antworten verwerfen)
+var _rank_board := {}
+var _cur_mode := Training.COMPETITION
+var _cur_task := 0
 var _detail_title: Label
 var _detail_text: Label
 var _preview: FeaturePreview
@@ -101,6 +114,7 @@ func _init() -> void:
 ## terminals: z. B. ["T2", "T1"] mit Anzeigenamen; setup_names: Namen aus setups/index.json
 func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_terminals = terminals
+	_terminal_names = terminal_names
 	_setup_names = setup_names
 	var sf := SystemFont.new()
 	sf.font_names = PackedStringArray(["Segoe UI", "Roboto", "Helvetica Neue", "Arial"])
@@ -189,8 +203,10 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_setup_select.item_selected.connect(func(i: int) -> void: setup_chosen.emit(i))
 	_comp_box.add_child(_setup_select)
 	set_setup_names(setup_names)
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 8)
+	var row := GridContainer.new()
+	row.columns = 4
+	row.add_theme_constant_override("h_separation", 8)
+	row.add_theme_constant_override("v_separation", 8)
 	mv.add_child(row)
 	_bottom_row = row
 	var eb := _button("Einstellungen", 20)
@@ -205,6 +221,10 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	ab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ab.pressed.connect(_open_achievements)
 	row.add_child(ab)
+	var rb := _button("Rangliste", 20)
+	rb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rb.pressed.connect(_open_ranking)
+	row.add_child(rb)
 	_start_btn = _button("SPIEL STARTEN", 30, true)
 	_start_btn.custom_minimum_size.y = 72
 	_start_btn.pressed.connect(func() -> void: start_pressed.emit())
@@ -234,6 +254,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_build_browser()
 	_build_detail()
 	_build_achievements()
+	_build_ranking()
 	_editor = SetupEditor.new()
 	_editor.host = self
 	_editor.visible = false
@@ -245,6 +266,8 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 
 ## Spielmodus und Challenge anzeigen (Auswahl mit Pokalen, kurzes Ziel).
 func refresh_mode(mode_id: String, task_idx: int) -> void:
+	_cur_mode = mode_id
+	_cur_task = task_idx
 	_mode_select.select(_mode_ids.find(mode_id))
 	var comp := mode_id == Training.COMPETITION
 	_comp_box.visible = comp
@@ -436,6 +459,7 @@ func _layout() -> void:
 		if c.get_parent() != host:
 			c.reparent(host)
 	_start_btn.custom_minimum_size.y = 56 if low else 72
+	_bottom_row.columns = 2 if portrait or low else 4
 	await get_tree().process_frame
 	var h := _menu.get_combined_minimum_size().y
 	_menu.size = Vector2(w, h)
@@ -445,7 +469,7 @@ func _layout() -> void:
 		_menu.position = Vector2(m, maxf(size.y - m - h, 110.0))
 	_dim.position = Vector2.ZERO
 	_dim.size = size
-	for p: PanelContainer in [_settings, _browser, _detail, _achieve]:
+	for p: PanelContainer in [_settings, _browser, _detail, _achieve, _rank_pop]:
 		_fit_popup(p, size)
 	_editor.layout(size, _k)
 
@@ -481,7 +505,7 @@ func _popup_frame(title: String) -> Array:
 
 
 func _show_popup(p: PanelContainer) -> void:
-	for q: PanelContainer in [_settings, _browser, _detail, _achieve]:
+	for q: PanelContainer in [_settings, _browser, _detail, _achieve, _rank_pop]:
 		q.visible = q == p
 	_dim.visible = true
 
@@ -490,7 +514,7 @@ func _close_popups() -> void:
 	if _detail.visible and _detail.get_meta("from_browser", false):
 		_show_popup(_browser)
 		return
-	for q: PanelContainer in [_settings, _browser, _detail, _achieve]:
+	for q: PanelContainer in [_settings, _browser, _detail, _achieve, _rank_pop]:
 		q.visible = false
 	_dim.visible = false
 	if _ingame:
@@ -917,6 +941,184 @@ func _open_achievements() -> void:
 	_show_popup(_achieve)
 
 
+# ---------------------------------------------------------------- Rangliste
+
+## Rangliste der gewählten Challenge bzw. Competition (Terminal, Setup, Rundenlänge), darunter der eigene Name.
+func _build_ranking() -> void:
+	var f := _popup_frame("RANGLISTE")
+	_rank_pop = f[0]
+	var v: VBoxContainer = f[1]
+	_rank_title = _label("", 20, Color.WHITE)
+	_rank_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(_rank_title)
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	v.add_child(scroll)
+	_rank_list = VBoxContainer.new()
+	_rank_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rank_list.add_theme_constant_override("separation", 4)
+	scroll.add_child(_rank_list)
+	_rank_info = _small("")
+	_rank_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(_rank_info)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	v.add_child(row)
+	var nl := _small("DEIN NAME")
+	nl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(nl)
+	_rank_name = LineEdit.new()
+	_rank_name.placeholder_text = "Name für die Rangliste"
+	_rank_name.max_length = Leaderboard.NAME_MAX
+	_rank_name.custom_minimum_size = Vector2(160, 48)
+	_rank_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_rank_name.add_theme_font_size_override("font_size", 18)
+	_rank_name.text_submitted.connect(func(_t: String) -> void: _save_rank_name())
+	if mobile and OS.has_feature("web"):
+		# Handy im Browser: keine Bildschirmtastatur für LineEdit -> Eingabe über den Browser-Dialog
+		_rank_name.editable = false
+		_rank_name.gui_input.connect(func(e: InputEvent) -> void:
+			if (e is InputEventMouseButton and e.pressed) or (e is InputEventScreenTouch and e.pressed):
+				var r: Variant = JavaScriptBridge.eval("prompt('Dein Name für die Rangliste (2 bis 16 Zeichen)', %s)"
+					% JSON.stringify(_rank_name.text), true)
+				if r is String:
+					_rank_name.text = (r as String).substr(0, Leaderboard.NAME_MAX)
+					_save_rank_name())
+	row.add_child(_rank_name)
+	var sb := _button("Speichern", 18)
+	sb.pressed.connect(_save_rank_name)
+	row.add_child(sb)
+	_rank_msg = _label("", 14, Color(1, 1, 1, 0.55))
+	_rank_msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(_rank_msg)
+	_rank_forget = _button("Nicht mehr teilnehmen (alles löschen)", 16)
+	_rank_forget.pressed.connect(func() -> void:
+		_rank_msg.text = "Wird gelöscht …"
+		var r := await leaderboard.forget()
+		_rank_name.text = ""
+		_update_rank_name(str(r.get("error", "")) if not r.get("ok", false) else "Gelöscht: Name und alle Einträge.")
+		_fill_ranking())
+	v.add_child(_rank_forget)
+
+
+func _open_ranking() -> void:
+	_rank_name.text = leaderboard.player_name
+	_update_rank_name("")
+	_show_popup(_rank_pop)
+	_fill_ranking()
+
+
+## Welche Rangliste gerade gewählt ist; [board, Hinweis] (Hinweis: warum dort nichts eingetragen wird).
+func _ranking_board() -> Array:
+	if _cur_mode != Training.COMPETITION:
+		var list := Training.tasks(_cur_mode)
+		var t: Dictionary = list[clampi(_cur_task, 0, list.size() - 1)]
+		return [leaderboard.challenge_board(_cur_mode, t), ""]
+	var sec := int(settings.get_v("mode"))
+	var list := FeatureSet.list_setups()
+	var st: Dictionary = list[clampi(_setup_idx, 0, list.size() - 1)]
+	var why := Leaderboard.competition_blocked(settings, sec, st)
+	if sec <= 0:
+		sec = int(GameSettings.MODES[0][0])       # Freies Fahren: Liste der normalen Runde zeigen
+	var ti := _terminals.find(_terminal)
+	return [leaderboard.competition_board(sec, _terminal, st, _terminal_names[ti] if ti >= 0 else _terminal), why]
+
+
+func _fill_ranking() -> void:
+	var a := _ranking_board()
+	var b: Dictionary = a[0]
+	var why: String = a[1]
+	_rank_board = b
+	_rank_title.text = b["title"]
+	for c in _rank_list.get_children():
+		c.queue_free()
+	_rank_req += 1
+	var req := _rank_req
+	_rank_info.text = "Lädt …"
+	var r := await leaderboard.top(b, 20)
+	if req != _rank_req:
+		return
+	if not r.get("ok", false):
+		_rank_info.text = str(r.get("error", "Fehler"))
+		return
+	var entries: Array = r.get("entries", [])
+	var me: Variant = r.get("me")
+	var me_listed := false
+	for e: Dictionary in entries:
+		_rank_list.add_child(_ranking_row(e, b))
+		me_listed = me_listed or e.get("me", false)
+	if me is Dictionary and not me_listed:
+		_rank_list.add_child(_small("…"))
+		var m: Dictionary = (me as Dictionary).duplicate()
+		m["me"] = true
+		_rank_list.add_child(_ranking_row(m, b))
+	var info: Array[String] = []
+	var n := int(r.get("total", 0))
+	if n == 0:
+		info.append("Noch kein Eintrag – fahr den ersten!")
+	else:
+		info.append("%d Fahrer" % n)
+	if int(r.get("older", 0)) > 0:
+		info.append("Wertung geändert: ältere Ergebnisse stehen in einer früheren Rangliste")
+	if why != "":
+		info.append(why)
+	if leaderboard.dev:
+		info.append("Test-Version: eigene Test-Rangliste")
+	_rank_info.text = "   ·   ".join(info)
+
+
+func _ranking_row(e: Dictionary, b: Dictionary) -> Control:
+	var me: bool = e.get("me", false)
+	var p := PanelContainer.new()
+	var sb := _box(Color(0.16, 0.14, 0.06, 0.95) if me else Color(1, 1, 1, 0.05), 8, 6)
+	sb.border_color = SEL if me else Color(1, 1, 1, 0.1)
+	p.add_theme_stylebox_override("panel", sb)
+	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", 12)
+	p.add_child(h)
+	var rank := int(e.get("rank", 0))
+	var rl := _label("%d." % rank, 20, SEL if rank <= 3 else Color(1, 1, 1, 0.7))
+	rl.custom_minimum_size.x = 48
+	rl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	h.add_child(rl)
+	var nl := _label(str(e.get("name", "?")), 20, SEL if me else Color.WHITE)
+	nl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	nl.clip_text = true
+	h.add_child(nl)
+	h.add_child(_label(Leaderboard.format(b, float(e.get("value", 0.0))), 20, Color.WHITE))
+	var dl := _label(Leaderboard.format_date(float(e.get("date", 0.0))), 14, Color(1, 1, 1, 0.45))
+	dl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	h.add_child(dl)
+	return p
+
+
+func _save_rank_name() -> void:
+	var n := _rank_name.text.strip_edges()
+	_rank_name.release_focus()
+	if n == leaderboard.player_name:
+		return
+	if n == "":
+		_update_rank_name("Ohne Namen wird nichts eingetragen. Zum Löschen: Nicht mehr teilnehmen.")
+		_rank_name.text = leaderboard.player_name
+		return
+	_rank_msg.text = "Wird gespeichert …"
+	var r := await leaderboard.set_player_name(n)
+	if r.get("ok", false):
+		_update_rank_name("Gespeichert. Ab jetzt kommen deine Ergebnisse in die Rangliste.")
+		_fill_ranking()
+	else:
+		_update_rank_name(str(r.get("error", "Fehler")))
+
+
+## Hinweis unter dem Namen (Einwilligung) und „Nicht mehr teilnehmen“ nur mit Namen.
+func _update_rank_name(msg: String) -> void:
+	var t := "Mit Namen erscheinen deine Bestwerte öffentlich in der Rangliste. Gespeichert werden nur Name, " \
+		+ "Bestwerte und Datum (dazu eine zufällige Geräte-Nummer, nur als Prüfsumme)."
+	_rank_msg.text = (msg + "\n" if msg != "" else "") + t
+	_rank_forget.visible = leaderboard.has_name()
+
+
 func _achievement_row(nr: int, a: Dictionary, date: String) -> Control:
 	var open := date != ""
 	var p := PanelContainer.new()
@@ -1076,6 +1278,9 @@ func select_by_name(prefix: String) -> void:
 	if prefix == "@erfolge":
 		_open_achievements()
 		return
+	if prefix == "@rangliste":
+		_open_ranking()
+		return
 	if prefix.begins_with("@auswahl"):             # Liste offen: Spielmodi, @auswahl2 Challenges
 		await get_tree().process_frame
 		await get_tree().process_frame
@@ -1112,7 +1317,7 @@ func _process(delta: float) -> void:
 	# Popups wachsen mit ihrem Inhalt (z. B. Text beim ersten Umbruch), schrumpfen aber nicht
 	# von selbst: Größe jedes Bild festhalten
 	if _dim.visible:
-		for p: PanelContainer in [_settings, _browser, _detail, _achieve]:
+		for p: PanelContainer in [_settings, _browser, _detail, _achieve, _rank_pop]:
 			if p.visible:
 				_fit_popup(p, _ui.size)
 	_orbit += ORBIT_SPEED * delta
@@ -1133,6 +1338,11 @@ func _input(event: InputEvent) -> void:
 	if not visible or not (event is InputEventKey) or not event.pressed or event.is_echo() or editor_open():
 		return
 	var k := (event as InputEventKey).physical_keycode
+	var focus := get_viewport().gui_get_focus_owner()
+	if focus is LineEdit:          # Namen tippen: Leertaste/Tab starten nichts, Esc beendet das Tippen
+		if k != KEY_ESCAPE:
+			return
+		focus.release_focus()
 	if _ingame:                 # im Spiel: Leertaste/Tab starten nichts, Esc schließt
 		if k == KEY_ESCAPE:
 			_close_popups()

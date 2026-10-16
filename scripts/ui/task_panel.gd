@@ -18,6 +18,7 @@ var _result: Label
 var _result_medal: Medal
 var _result_row: HBoxContainer
 var _text: Label
+var _rank: Label                 # Rangliste: Platz (Ergebnis)
 var _photos: HBoxContainer       # Fotos des Filmteams vom Versuch (Ergebnis)
 var _medals: Array[Medal] = []
 var _medal_labels: Array[Label] = []
@@ -93,6 +94,10 @@ func _ready() -> void:
 	_text = _label(19, Color(1, 1, 1, 0.9))
 	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(_text)
+	_rank = _label(18, Hud.ACCENT)
+	_rank.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_rank.visible = false
+	v.add_child(_rank)
 	var mrow := GridContainer.new()
 	mrow.columns = 3
 	mrow.add_theme_constant_override("h_separation", 18)
@@ -166,6 +171,7 @@ func _button(text: String, primary: bool) -> Button:
 func show_intro(mode_name: String, idx: int, count: int, task: Dictionary, best: Array, has_next: bool) -> void:
 	_fill(mode_name, idx, count, task, best, has_next)
 	_result_row.visible = false
+	_rank.visible = false
 	_set_photos([])
 	var keys: String = task.get("keys_mobile", task["keys"]) if mobile else task["keys"]
 	var goal: String = task["goal"]
@@ -192,6 +198,14 @@ func show_result(mode_name: String, idx: int, count: int, task: Dictionary, best
 	_text.text = b
 	_go.text = "NOCHMAL" + ("" if mobile else "  (Leertaste)")
 	_open()
+
+
+## Zeile mit dem Platz in der Rangliste ("" = ausblenden); kommt nach, sobald der Server antwortet.
+func set_rank(text: String) -> void:
+	_rank.text = text
+	_rank.visible = text != ""
+	if is_open():
+		_layout()
 
 
 ## Fotos als Abzüge (weißer Rand) nebeneinander; eins allein etwas größer.
