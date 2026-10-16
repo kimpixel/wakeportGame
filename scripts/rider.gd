@@ -57,6 +57,7 @@ var _ground_kind := "water"      # zuletzt befahrene Fläche (wie _launch_kind)
 enum Mode { WATER, AIR, CRASHED }
 
 const MASS := 80.0
+var spray_strength := 0.0            # zuletzt berechnete Stärke (Anzeige im Debug-Overlay)
 const GRAVITY := 9.81
 const ROPE_LENGTH := 16.0       # Zugseil Griff bis Carrier (Standard)
 static var ROPE_STIFFNESS := 2600.0
@@ -298,6 +299,9 @@ var _rope_mesh: ImmediateMesh
 var _rope_mat: StandardMaterial3D
 var _spray: CPUParticles3D
 var _dspray: CPUParticles3D     # Drift-Press: große Gischt am Brett-Ende im Wasser
+var _spray_main: CPUParticles3D # Hauptgischt: von der Kante zur Seilseite, hoch und weit (je nach Kantendruck)
+var _sheet: SpraySheet          # Gischt-Vorhang der Hauptgischt (Wasserwand, siehe SpraySheet)
+var _land_spray: CPUParticles3D # Spritzer-Kranz beim Landen im Wasser
 
 
 # ---------------------------------------------------------------- Aufbau
@@ -343,8 +347,8 @@ func _ready() -> void:
 
 	# Gischt an der Kante, auf der gefahren wird (Lage/Richtung jedes Frame in _update_spray)
 	_spray = CPUParticles3D.new()
-	_spray.amount = 120
-	_spray.lifetime = 0.7
+	_spray.amount = 160
+	_spray.lifetime = 0.9
 	_spray.local_coords = false
 	_spray.top_level = true
 	_spray.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
@@ -378,8 +382,37 @@ func _ready() -> void:
 	_dspray.scale_amount_min = 0.8
 	_dspray.scale_amount_max = 2.2
 	_dspray.mesh = drop
+	# Landung im Wasser: Spritzer-Kranz rundum (Stärke je nach Fallgeschwindigkeit, siehe _land_splash)
+	_land_spray = CPUParticles3D.new()
+	_land_spray.one_shot = true
+	_land_spray.emitting = false
+	_land_spray.explosiveness = 0.92
+	_land_spray.amount = 110
+	_land_spray.lifetime = 0.9
+	_land_spray.local_coords = false
+	_land_spray.top_level = true
+	_land_spray.emission_shape = CPUParticles3D.EMISSION_SHAPE_RING
+	_land_spray.emission_ring_axis = Vector3.UP
+	_land_spray.emission_ring_radius = 0.6
+	_land_spray.emission_ring_inner_radius = 0.3
+	_land_spray.emission_ring_height = 0.05
+	_land_spray.direction = Vector3.UP
+	_land_spray.spread = 55.0
+	_land_spray.gravity = Vector3(0.0, -9.8, 0.0)
+	_land_spray.mesh = drop
+	add_child(_land_spray)
+	Spray.register(_land_spray)
 	_dspray.emitting = false
 	add_child(_dspray)
+	Spray.register(_spray)
+	_spray_main = _spray.duplicate() as CPUParticles3D
+	_spray_main.amount = 80        # nur noch Tropfen am Rand des Vorhangs
+	_spray_main.lifetime = 1.0
+	add_child(_spray_main)
+	_sheet = SpraySheet.new()
+	add_child(_sheet)
+	Spray.register(_spray_main)
+	Spray.register(_dspray)
 
 
 
@@ -1661,6 +1694,8 @@ func _land(surf: float) -> void:
 	if absf(wrapf(_flip, -PI, PI)) > FLIP_LAND_TOL:
 		crash("Überschlag nicht geschafft!")
 		return
+	if air_time > 0.25 and not on_feature:
+		_land_splash(-vel.y, Vector3(vel.x, 0.0, vel.z))
 	if air_time > 0.25:
 		_absorb = LAND_TIME                  # Landung in den Knien abfedern, je härter, desto tiefer
 		_absorb_amt = clampf(-vel.y / 6.0, 0.45, 0.9)
@@ -1980,6 +2015,10 @@ func _update_spray(speed: float) -> void:
 	var on_water := mode == Mode.WATER and speed > 3.0 and not _in_dock(pos.x, pos.z) and pos.y < 0.2
 	if not on_water or _release > 0.3:
 		_spray.emitting = false
+		_spray_main.emitting = false
+		spray_strength = 0.0
+		_sheet.water = water
+		_sheet.feed(Vector3.ZERO, Vector3.ZERO, 0.0, false, get_process_delta_time())
 		return
 	var v := Vector3(vel.x, 0.0, vel.z)
 	var travel := v.normalized()
@@ -1989,7 +2028,23 @@ func _update_spray(speed: float) -> void:
 	var lat := v - axis * v.dot(axis)
 	var cut := lat.length()
 	var side := -lat / cut if cut > 0.3 else travel.cross(Vector3.UP)
-	var w := clampf((cut - 0.3) / 1.5, 0.0, 1.0)        # 0 = geradeaus, 1 = kräftig geschnitten
+	# Gischtseite = Seite, auf die die belastete Brettkante zeigt (Wasserwand zur anderen Seite).
+	# Aus der Neigung des Fahrers: wechselt sofort mit der Kante, auch bei durchhängendem Seil; unter Zug
+	# lehnt man gegen das Seil, das ergibt dieselbe Seite wie die Seilrichtung.
+	var rope_h := Vector3(rope_dir.x, 0.0, rope_dir.z).normalized()
+	var board_r := Vector3(right().x, 0.0, right().z).normalized()
+	var pull_side := rope_h.dot(board_r)
+	if absf(_lean_roll) > 0.04:
+		side = -signf(_lean_roll) * board_r
+	elif absf(pull_side) > 0.15 and tension_smooth > 50.0:
+		side = -signf(pull_side) * board_r
+	# Stärke: Summe der gewichteten Anteile Seilzug, Tempo, Winkel, Sprung-Ladung (auch bei durchhängendem Seil)
+	var f_rope := clampf((tension_smooth - SpraySheet.WALL_ROPE_MIN) / maxf(SpraySheet.WALL_ROPE_FULL - SpraySheet.WALL_ROPE_MIN, 1.0), 0.0, 1.0)
+	var f_speed := clampf(speed / maxf(SpraySheet.WALL_TEMPO_FULL, 0.1), 0.0, 1.0)
+	var f_angle := absf(rope_h.dot(travel.cross(Vector3.UP)))    # 0 = Seil in Fahrtrichtung, 1 = quer
+	var w := clampf(SpraySheet.WALL_W_ROPE * f_rope + SpraySheet.WALL_W_TEMPO * f_speed
+		+ SpraySheet.WALL_W_ANGLE * f_angle + SpraySheet.WALL_W_JUMP * _load, 0.0, 1.0)
+	spray_strength = w
 	# Lage: an der Kante auf der Gischtseite, etwas hinter der Brettmitte, knapp über dem Wasser
 	var board := _board_pivot.global_position
 	var at := board + side * 0.2 - travel * 0.25
@@ -1998,13 +2053,39 @@ func _update_spray(speed: float) -> void:
 	var bx := side
 	var bz := bx.cross(Vector3.UP).normalized()
 	_spray.global_transform = Transform3D(Basis(bx, Vector3.UP, bz), at)
-	var dir := side * (0.2 + 1.3 * w) + Vector3.UP * (0.7 + 0.3 * w) - travel * (0.6 - 0.4 * w)
-	_spray.direction = Basis(bx, Vector3.UP, bz).inverse() * dir.normalized()
-	_spray.initial_velocity_min = 0.8 + w * 1.5 + cut * 0.3
-	_spray.initial_velocity_max = 1.6 + w * 2.5 + cut * 0.6 + speed * 0.08
-	_spray.scale_amount_min = 0.5 + 0.3 * w
-	_spray.scale_amount_max = 1.0 + 1.0 * w
-	_spray.emitting = true
+	# Hoher Bogen zur Kantenseite (ca. 50° steil, bei vollem Druck ca. 5,5 m/s -> bis 3 m seitlich);
+	# das Wasser nimmt gut die Hälfte der Fahrt mit, sonst bliebe die Gischt hinten stehen
+	var out := 1.2 + 4.3 * w
+	var vel_w := side * out * 0.64 + Vector3.UP * out * 0.77 + travel * (speed * 0.15 - 1.5 - out * 0.4)   # Tropfen fliegen nach hinten weg
+	_spray.direction = Basis(bx, Vector3.UP, bz).inverse() * vel_w.normalized()
+	_spray.initial_velocity_min = vel_w.length() * 0.75
+	_spray.initial_velocity_max = vel_w.length()
+	_spray.scale_amount_min = 0.5 + 0.5 * w
+	_spray.scale_amount_max = 1.0 + 2.0 * w
+	_spray.emitting = w > 0.02
+	# Hauptgischt: von der gegenüberliegenden Kante zur Seilseite, viel höher, weiter und dichter
+	# (bei vollem Druck ca. 7 m/s unter 60° -> gut 4 m weit, fast 2 m hoch)
+	var main_at := board - side * 0.2   # Kantenmitte; die Wand setzt über die ganze Kante an
+	main_at.y = water.height_at(main_at.x, main_at.z) + 0.03
+	var mx := -side
+	var mz := mx.cross(Vector3.UP).normalized()
+	_spray_main.global_transform = Transform3D(Basis(mx, Vector3.UP, mz), main_at)
+	var mout := 1.5 + 5.5 * w
+	# je mehr Druck, desto flacher und stärker zur Seite; das Wasser nimmt fast die ganze Fahrt mit
+	var mvel := mx * mout * (0.55 + 0.35 * w) + Vector3.UP * mout * (0.85 - 0.2 * w) + travel * (speed * 0.15 - 1.5 - mout * 0.3)   # Tropfen am Rand der Wasserwand: nach hinten
+	_spray_main.direction = Basis(mx, Vector3.UP, mz).inverse() * mvel.normalized()
+	_spray_main.initial_velocity_min = mvel.length() * 0.7
+	_spray_main.initial_velocity_max = mvel.length()
+	_spray_main.scale_amount_min = 0.6 + 0.8 * w
+	_spray_main.scale_amount_max = 1.2 + 2.8 * w
+	_spray_main.emitting = w > 0.05
+	# Vorhang: das Wasser bleibt, wo es die Kante verlassen hat, und fliegt im Bogen nach hinten weg
+	_sheet.water = water
+	# Brettachse immer in Fahrtrichtung (auch switch), sonst kreuzen sich flache und steile Bahnen
+	var edge_axis := Vector3(forward().x, 0.0, forward().z).normalized()
+	if edge_axis.dot(travel) < 0.0:
+		edge_axis = -edge_axis
+	_sheet.feed(main_at, mx, w, w > 0.02, get_process_delta_time(), edge_axis)
 
 
 ## Über eine Boje oder einen Steg gerumpelt: kein Sturz, nur ein kleiner Wackler und etwas Tempo weg.
@@ -2144,6 +2225,22 @@ func _air_phase() -> float:
 	var h := maxf(pos.y - maxf(_board_surface(), 0.0), 0.0)
 	var rest := (vel.y + sqrt(vel.y * vel.y + 2.0 * GRAVITY * h)) / GRAVITY
 	return clampf(air_time / maxf(air_time + rest, 0.01), 0.0, 1.0)
+
+
+## Landung im Wasser: Spritzer-Kranz und kreisrunde Welle, je heftiger, je schneller man herunterkommt
+## (Ollie ca. 4–5 m/s, großer Kicker bis 9 m/s).
+func _land_splash(fall: float, vh: Vector3) -> void:
+	var k := clampf((fall - 2.0) / 7.0, 0.0, 1.0)
+	var at := Vector3(pos.x, water.height_at(pos.x, pos.z) + 0.02, pos.z)
+	_land_spray.global_position = at
+	_land_spray.initial_velocity_min = 1.2 + 2.5 * k
+	_land_spray.initial_velocity_max = 2.5 + 5.0 * k
+	_land_spray.scale_amount_min = 0.7 + 0.6 * k
+	_land_spray.scale_amount_max = 1.3 + 1.7 * k
+	_land_spray.emission_ring_radius = 0.45 + 0.4 * k
+	_land_spray.direction = (Vector3.UP * 2.0 + vh * 0.08).normalized()
+	_land_spray.restart()
+	water.impact(at, 0.8 + 2.4 * k)
 
 
 ## Wovon man abspringt (für den Trick-Namen): aus dem Wasser = Ollie, vom Kicker (auch Cheese Wedge,

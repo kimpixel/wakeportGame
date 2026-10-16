@@ -16,6 +16,7 @@ signal start_pressed
 signal mode_chosen(id: String)
 signal task_chosen(idx: int)
 signal setups_changed(id: String, play: bool)   # Setup-Editor hat gespeichert bzw. gelöscht
+signal ingame_closed                            # Einstellungen im Spiel (Pause) geschlossen
 
 const BASE_SHORT := 740.0        # so viele Einheiten hat die kurze Bildschirmseite mindestens
 const BASE_LONG := 1200.0        # … und die lange
@@ -60,6 +61,7 @@ var _train_box: VBoxContainer    # Spielmodi: Aufgaben
 var _task_select: SelectBox
 var _task_info: Label
 var _dim: ColorRect
+var _ingame := false             # nur das Einstellungs-Fenster über dem pausierten Spiel (ohne Menü und Kamera)
 var _settings: PanelContainer
 var _browser: PanelContainer
 var _browser_grid: VBoxContainer
@@ -477,6 +479,26 @@ func _close_popups() -> void:
 	for q: PanelContainer in [_settings, _browser, _detail, _achieve]:
 		q.visible = false
 	_dim.visible = false
+	if _ingame:
+		_ingame = false
+		visible = false
+		_menu.visible = true
+		_title_box.visible = true
+		ingame_closed.emit()
+
+
+## Im Spiel (pausiert): nur die Einstellungen zeigen, ohne Startseiten-Menü und ohne eigene Kamera.
+func open_settings_ingame() -> void:
+	_ingame = true
+	_menu.visible = false
+	_title_box.visible = false
+	visible = true
+	_layout()
+	_show_popup(_settings)
+
+
+func settings_open_ingame() -> bool:
+	return _ingame
 
 
 func _popup_open() -> bool:
@@ -489,8 +511,9 @@ func _build_settings() -> void:
 	var f := _popup_frame("EINSTELLUNGEN")
 	_settings = f[0]
 	var v: VBoxContainer = f[1]
-	var tabs := HBoxContainer.new()
-	tabs.add_theme_constant_override("separation", 6)
+	var tabs := HFlowContainer.new()             # hochkant: Reiter brechen in eine zweite Zeile um
+	tabs.add_theme_constant_override("h_separation", 6)
+	tabs.add_theme_constant_override("v_separation", 6)
 	v.add_child(tabs)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -501,7 +524,7 @@ func _build_settings() -> void:
 	scroll.add_child(holder)
 	var tg := ButtonGroup.new()
 	var pages: Array[VBoxContainer] = []
-	for title: String in ["Spiel", "Fahrer", "Welt", "Technik", "Musik"]:
+	for title: String in ["Spiel", "Fahrer", "Welt", "Technik", "Wasser", "Musik"]:
 		var page := VBoxContainer.new()
 		page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		page.add_theme_constant_override("separation", 10)
@@ -510,7 +533,6 @@ func _build_settings() -> void:
 		var b := _button(title, 14 if mobile else 19)
 		b.toggle_mode = true
 		b.button_group = tg
-		b.clip_text = true            # fünf Reiter: am Handy hochkant schmaler werden dürfen
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var idx := pages.size() - 1
 		b.pressed.connect(func() -> void:
@@ -529,8 +551,10 @@ func _build_settings() -> void:
 	_page_world(pages[2])
 	if settings:
 		_page_tech(pages[3])
+	if settings:
+		_page_water(pages[4])
 	if settings and music:
-		_page_music(pages[4])
+		_page_music(pages[5])
 	var ok := _button("FERTIG", 24, true)
 	ok.pressed.connect(_close_popups)
 	v.add_child(ok)
@@ -615,7 +639,7 @@ func _page_world(p: VBoxContainer) -> void:
 
 
 func _page_tech(p: VBoxContainer) -> void:
-	_opt_row(p, "GRAFIK   (niedrig = flüssiger, schont den Akku)", ["Niedrig", "Mittel", "Hoch"], "quality", [0, 1, 2])
+	_quality_row(p)
 	var pct := func(x: float) -> String: return "%d %%" % roundi(x * 100.0)
 	_slider_row(p, "LAUTSTÄRKE EFFEKTE", "vol_fx", 0.0, 1.0, 0.05, pct)
 	_slider_row(p, "LAUTSTÄRKE JUBEL", "vol_cheer", 0.0, 1.0, 0.05, pct)
@@ -628,13 +652,36 @@ func _page_tech(p: VBoxContainer) -> void:
 		_opt_row(p, "NEIGUNG UMKEHREN", ["Nein", "Ja"], "tilt_invert", [false, true])
 
 
-## Eigene Musik: das Spiel bringt keine mit (Lizenzen), der Spieler wählt seine Titel selbst.
+## Wasser-Effekte einzeln an/aus (zum Ausprobieren). Wirkt sofort, auch im Hintergrund der Startseite.
+func _page_water(p: VBoxContainer) -> void:
+	var info := _label("Die Grafikstufe stellt alle Wasser-Effekte passend ein. Einzelne Effekte lassen sich hier "
+		+ "an- und ausschalten (wirkt sofort) – weicht etwas von der Stufe ab, steht die Grafik auf „Custom“.", 16, Color(1, 1, 1, 0.8))
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	p.add_child(info)
+	_quality_row(p)
+	var onoff := ["An", "Aus"]
+	_opt_row(p, "WASSERFARBE", ["Türkis  (bisher)", "Seeblau"], "w_color", [0, 1])
+	_opt_row(p, "OBERFLÄCHENSTRUKTUR   (gleitende Kräuselung statt Sinus)", onoff, "w_detail", [true, false])
+	_opt_row(p, "SPIEGELUNG JE NACH BLICKWINKEL   (flach: Himmel, von oben: ins Wasser)", onoff, "w_fresnel", [true, false])
+	_opt_row(p, "SONNENGLITZERN", onoff, "w_glitter", [true, false])
+	_opt_row(p, "LICHT DURCH DIE WELLENKÄMME", onoff, "w_crest", [true, false])
+	_opt_row(p, "SCHAUM MIT STRUKTUR   (fleckig, reißt auf)", onoff, "w_foam", [true, false])
+	_opt_row(p, "SPITZE WELLEN   (auch für die Physik)", onoff, "w_sharp", [true, false])
+	p.add_child(_small("MIT WASSERTIEFE   (etwas teurer; Wasser wird dafür transparent gezeichnet)"))
+	_opt_row(p, "DURCHSICHT IM FLACHEN", onoff, "w_clear", [true, false])
+	if RenderingServer.get_current_rendering_method() != "gl_compatibility":
+		_opt_row(p, "ECHTE SPIEGELBILDER   (nur Desktop, teuer; nur wenn die Durchsicht aus ist)",
+			onoff, "w_ssr", [true, false])
+
+
+## Musik: Spiel-Musik (lizenzfrei, Pixabay) und/oder eigene Titel des Spielers.
 func _page_music(p: VBoxContainer) -> void:
-	var info := _label("Das Spiel bringt keine Musik mit. Wähle deine eigenen Titel (MP3, OGG, WAV) – sie bleiben "
-		+ "auf diesem Gerät bzw. in diesem Browser gespeichert und laufen gemischt im Hintergrund.", 16, Color(1, 1, 1, 0.8))
+	var info := _label("Spiel-Musik: lizenzfreie Titel von Pixabay. Dazu kannst du eigene Titel wählen (MP3, OGG, WAV) – sie bleiben "
+		+ "auf diesem Gerät bzw. in diesem Browser gespeichert. Alles läuft gemischt im Hintergrund.", 16, Color(1, 1, 1, 0.8))
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_child(info)
 	_opt_row(p, "MUSIK", ["An", "Aus"], "music", [true, false])
+	_opt_row(p, "QUELLE", ["Spiel-Musik", "Eigene Titel", "Beides"], "music_src", [0, 1, 2])
 	var pct := func(x: float) -> String: return "%d %%" % roundi(x * 100.0)
 	_slider_row(p, "LAUTSTÄRKE MUSIK", "vol_music", 0.0, 1.0, 0.05, pct)
 	var status := _label("", 18)
@@ -649,23 +696,29 @@ func _page_music(p: VBoxContainer) -> void:
 	add.pressed.connect(music.pick_files)
 	var nxt := _button("Nächster Titel", 18)
 	nxt.pressed.connect(music.next)
-	var clr := _button("Alle entfernen", 18)
+	var clr := _button("Eigene entfernen", 18)
 	clr.pressed.connect(music.clear_all)
 	for b: Button in [add, nxt, clr]:
 		b.clip_text = true
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		grid.add_child(b)
+	var credits := _small("")
+	credits.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var update := func() -> void:
 		var n := music.tracks.size()
-		if n == 0:
-			status.text = "Noch keine Titel."
-		else:
-			status.text = "%d Titel" % n + ("   ♪ " + music.current if music.current != "" else "")
-		nxt.disabled = n == 0 or not music.enabled
+		status.text = "%d Spiel-Musik, %d eigene" % [music.game_tracks.size(), n]
+		if music.current != "":
+			status.text += "   ♪ " + music.current
+		elif music.loading != "":
+			status.text += "   lädt: " + music.loading
+		nxt.disabled = music.playlist().is_empty() or not music.enabled
 		clr.disabled = n == 0
+		credits.text = "" if music.game_tracks.is_empty() else \
+			"Danke für die Spiel-Musik (Pixabay): " + ", ".join(music.game_artists())
 	music.changed.connect(update)
-	update.call()
 	p.add_child(_label("", 4))
+	p.add_child(credits)
+	update.call()
 	var alt := _small("ODER NEBENHER HÖREN, z. B. mit Spotify (dann hier Musik aus)")
 	alt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_child(alt)
@@ -696,13 +749,29 @@ func _opt_row(p: VBoxContainer, title: String, labels: Array, key: String, value
 	for i in labels.size():
 		sel.add_item(labels[i], icons[i] if i < icons.size() else null)
 	sel.item_selected.connect(func(i: int) -> void:
-		settings.set_v(key, values[i] if i < values.size() else i))
+		settings.set_v(key, values[i] if i < values.size() else i)
+		if key.begins_with("w_"):
+			sync_settings())             # Grafikstufe zeigt evtl. jetzt "Custom"
 	_row(p, title).add_child(sel)
 	_syncers.append(func() -> void:
 		var cur: Variant = settings.get_v(key)
 		for i in labels.size():
 			if _same(cur, values[i] if i < values.size() else i):
 				sel.select(i))
+
+
+## Grafikstufe (Reiter Technik und Wasser): Niedrig/Mittel/Hoch setzen auch die Wasser-Effekte;
+## "Custom" erscheint von selbst, wenn ein Wasser-Effekt von der Stufe abweicht (wählen ändert nichts).
+func _quality_row(p: VBoxContainer) -> void:
+	var sel := _select(18)
+	for n: String in GameSettings.QUALITY_NAMES:
+		sel.add_item(n)
+	sel.item_selected.connect(func(i: int) -> void:
+		if i != GameSettings.QUALITY_CUSTOM:
+			settings.set_quality(i)
+		sync_settings())
+	_row(p, "GRAFIK   (niedrig = flüssiger, schont den Akku; stellt auch das Wasser ein)").add_child(sel)
+	_syncers.append(func() -> void: sel.select(settings.quality_shown()))
 
 
 ## Gleicher Einstellungswert? (Zahlen aus der Datei können als float zurückkommen)
@@ -1022,6 +1091,10 @@ func set_result(text: String) -> void:
 func _process(delta: float) -> void:
 	if not visible or _cam == null:
 		return
+	if _ingame:
+		if _dim.visible:
+			_fit_popup(_settings, _ui.size)
+		return
 	# Popups wachsen mit ihrem Inhalt (z. B. Text beim ersten Umbruch), schrumpfen aber nicht
 	# von selbst: Größe jedes Bild festhalten
 	if _dim.visible:
@@ -1046,6 +1119,11 @@ func _input(event: InputEvent) -> void:
 	if not visible or not (event is InputEventKey) or not event.pressed or event.is_echo() or editor_open():
 		return
 	var k := (event as InputEventKey).physical_keycode
+	if _ingame:                 # im Spiel: Leertaste/Tab starten nichts, Esc schließt
+		if k == KEY_ESCAPE:
+			_close_popups()
+			get_viewport().set_input_as_handled()
+		return
 	match k:
 		KEY_ESCAPE:
 			if not _popup_open():

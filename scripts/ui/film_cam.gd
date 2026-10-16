@@ -226,8 +226,10 @@ func _layout() -> void:
 	var vs := get_viewport().get_visible_rect().size
 	var k := clampf(vs.y / 720.0, 0.8, 2.5)
 	var top := TOP * k
-	if vs.x < vs.y:                              # hochkant: schmaler und unter die Aufgabenzeile
+	if vs.x < vs.y:                              # hochkant: schmaler
 		k = clampf(vs.x / 900.0, 0.6, 2.0)
-		top = 165.0 * vs.x / 540.0
+	# nie in die HUD-Leiste (hochkant zweispaltig und höher), Aufgabenzeile und Brettzustand
+	var hud: Hud = crew.game.hud
+	top = maxf(top, (hud.info_bottom() if vs.x < vs.y else hud.bar_bottom()) + 8.0 * k)
 	_live_box.scale = Vector2(k, k)
 	_live_box.position = Vector2(MARGIN, top)

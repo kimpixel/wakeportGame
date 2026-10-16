@@ -43,7 +43,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | Tab | – | zurück zur Startseite (mit ihr beginnt das Spiel). Im Hintergrund die echte Szene, die Kamera schwenkt langsam von der Seeseite über die gewählte Anlage. Darüber das Menü: Spielmodus, Terminal und Feature-Setup bzw. die Aufgaben, **Einstellungen** (Wetter, Datum, Uhrzeit, Jetzt) und **Spiel starten**. Tasten: Leertaste Start, Esc schließt ein Fenster. Passt sich an Handy (hoch und quer) und Desktop an |
 | Maus / Mausrad | rechter Stick | Umsehen / Zoom |
 | P | – | Autopilot (fährt auch Features) |
-| Esc | Start | **Pause** (Fenster mit Weiter, Hilfe, Startseite); am Handy pausiert das ☰-Menü |
+| Esc | Start | **Pause** (Fenster mit Weiter, Einstellungen, Hilfe, Startseite); am Handy pausiert das ☰-Menü. Die Einstellungen öffnen sich direkt über dem pausierten Spiel |
 | M | – | Ton aus/an |
 | G | – | Seil-Abreißen an/aus (bei „Aus“ wird einem die Handle nie aus der Hand gerissen; auch unter Einstellungen → Spiel → Seilzug-Grenze) |
 | F3 | – | Debug: Fangzonen der Slider einblenden (gelb; wer im Sprung hineinkommt, gleitet aufs Rail) glattes Plastik (blau; nur rutschen, kein Slide, kein Lenken) und Safetys/Auffahrten und Kicker (orange; fährt man wie einen Kicker, kein Slide) |
@@ -59,7 +59,7 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 | SCHWIMMEN (statt SPRUNG) oder Bildschirm halten | nach Sturz: zur Handle schwimmen |
 | Pfeil hoch / runter (unten rechts) | in der Luft Frontroll / Backroll, auf dem Slider Nose- / Tailpress |
 | DRIFT (links, über SPRUNG) | Kante lösen = Driften; nach Sturz heißt die Taste SKIP: sofort weiterfahren (−1:00) |
-| ☰ (oben links) | Menü: Hilfe, Zurück zum Steg (−2:00), Startseite, Ton, Seil-Abreißen an/aus |
+| ☰ (rechts unter der Anzeige) | Menü: Einstellungen, Hilfe, Zurück zum Steg (−2:00), Startseite, Ton, Seil-Abreißen an/aus (Spiel pausiert) |
 
 Auf dem iPhone fragt Safari beim ersten Tippen nach der Erlaubnis für Bewegungs- und Ausrichtungssensoren. Ohne sie lenkt man nur mit *Lenkung: Tasten* (Einstellungen → Technik).
 
@@ -105,12 +105,13 @@ Die Haltung wird im Spiel live aus der Physik berechnet, mit einer eigenen IK in
 
 **Wetter, Jahreszeit und Uhrzeit** stellst du auf der Startseite unter Einstellungen ein (Wetter, Datum, Uhrzeit). Die Sonne steht dabei wie in echt am Raunheimer Waldsee (50,01° N, 8,48° E, deutsche Zeit mit Sommerzeit): Mittagssonne im Süden, im Sommer lange Abende, im Winter tief stehende Sonne, nachts Mondlicht und Sterne. Wetter: Sonnig, Heiter, Bewölkt, Bedeckt, Regen, Dunst. **Jetzt** übernimmt das heutige Datum und die Uhrzeit (läuft dann mit) und holt das aktuelle Wetter am See von open-meteo.com. Jeder Spielstart beginnt an einem sonnigen Sommertag um 10:30, damit es nie dunkel ist. Die Wahl gilt nur bis zum Neustart.
 
-**Einstellungen** (Startseite, fünf Reiter; alles außer Wetter und Uhrzeit wird gespeichert):
+**Einstellungen** (Startseite, sechs Reiter; alles außer Wetter und Uhrzeit wird gespeichert):
 - **Spiel:** Rundenlänge der Competition *Runde 7:30*, *Runde 10:00*, *Runde 15:00* oder *Freies Fahren* (keine Uhr – oben steht „FREI“, kein Zeitende, keine Strafzeit). Hilfen *Auf dem Slider einloggen* und *Überschlag dreht von selbst zu Ende* – jede ausgeschaltete Hilfe gibt +15 % auf alle Tricks. *Seilzug-Grenze* Locker / Normal / Streng / Aus (Handle wird nie aus der Hand gerissen; im Spiel G).
 - **Fahrer:** Brett aus der Brett-Bibliothek, Stance *Regular* (links vorne) oder *Goofy* (rechts vorne), Helm und Westenfarbe.
 - **Welt:** Wetter, Datum, Uhrzeit, Jetzt; **Seillänge** (12–22 m, Standard 16) und **Anlagen-Tempo** (16–40 km/h, Standard 30) deiner Anlage (+ / − im Spiel ändert das Tempo ebenfalls); Flugzeuge *Aus / Normal / Rush Hour*; Fahrer auf der anderen Anlage an/aus; **Challenge: Filmteam** *Zufall / Boot / Drohne / Aus*.
-- **Technik:** Grafik *Niedrig / Mittel / Hoch* (Auflösung, Schatten, Baumdichte; am Handy Standard *Mittel*), Lautstärke für Effekte, Jubel und Flugzeuge, Kamera und Kamera-Abstand, am Handy Lenkung (Gyro = Handy neigen oder Tasten = Steuerkreuz rechts), Neigungs-Empfindlichkeit und Neigung umkehren.
-- **Musik:** Das Spiel bringt keine Musik mit (Lizenzen). Mit *Titel hinzufügen* wählst du eigene MP3-, OGG- oder WAV-Dateien; sie bleiben auf dem Gerät bzw. im Browser gespeichert und laufen gemischt im Hintergrund (auch in der Pause), bei Jubel und Countdown kurz leiser. Dazu Musik an/aus, Lautstärke, *Nächster Titel* (auch im Pausenmenü) und *Alle entfernen*. Alternativ öffnet *Skate-Punk bei Spotify* Playlists zum Nebenher-Hören.
+- **Technik:** Grafik *Niedrig / Mittel / Hoch* (Auflösung, Schatten, Baumdichte, Gischt und alle Wasser-Effekte; am Handy Standard *Mittel*; *Custom*, sobald ein Wasser-Effekt von der Stufe abweicht), Lautstärke für Effekte, Jubel und Flugzeuge, Kamera und Kamera-Abstand, am Handy Lenkung (Gyro = Handy neigen oder Tasten = Steuerkreuz rechts), Neigungs-Empfindlichkeit und Neigung umkehren.
+- **Wasser:** oben dieselbe Grafikstufe (stellt alle Effekte passend ein), Wasserfarbe *Türkis* oder *Seeblau* (Standard) und jeder Wasser-Effekt einzeln an/aus (dann Grafik *Custom*): Oberflächenstruktur, Spiegelung je nach Blickwinkel, Sonnenglitzern, Licht durch die Wellenkämme, Schaum mit Struktur, spitze Wellen, Durchsicht im Flachen, echte Spiegelbilder (nur Desktop, teuer).
+- **Musik:** Im Hintergrund läuft **Spiel-Musik**: lizenzfreie Rock-Titel von Pixabay (Quellen in [assets/music/QUELLEN.md](assets/music/QUELLEN.md)), im Browser wird jeder Titel erst geladen, wenn er dran ist. Mit *Titel hinzufügen* wählst du zusätzlich eigene MP3-, OGG- oder WAV-Dateien; sie bleiben auf dem Gerät bzw. im Browser gespeichert. *Quelle*: Spiel-Musik, eigene Titel oder beides (gemischt). Läuft auch in der Pause, bei Jubel und Countdown kurz leiser. Dazu Musik an/aus, Lautstärke, *Nächster Titel* (auch im Pausenmenü) und *Eigene entfernen*. Alternativ öffnet *Skate-Punk bei Spotify* Playlists zum Nebenher-Hören.
 
 **Spielmodi** (Startseite, ganz oben):
 - **Competition:** die Runde auf Zeit (Regeln unten). Terminal, Feature-Setup und Rundenlänge sind frei wählbar.
@@ -171,7 +172,8 @@ node fetch_geodata.mjs
 |---|---|
 | `scripts/rider.gd` | Fahrerphysik und Steuerung. Die Werte zum Feintuning stehen oben in der Datei |
 | `scripts/cable_system.gd` | Masten, Rollen, Seilschlaufe und Abläufe des Carriers (Wende, Anfahren) |
-| `scripts/water.gd`, `shaders/water.gdshader` | Wasser: Grundwellen und Heckwelle. Physik und Grafik nutzen dieselbe Höhenfunktion |
+| `scripts/water.gd`, `shaders/water.gdshaderinc` (+ `water.gdshader`, `water_depth.gdshader`) | Wasser: Grundwellen, Heckwelle und Aufprallwelle beim Landen. Physik und Grafik nutzen dieselbe Höhenfunktion. Effekte einzeln schaltbar (Reiter Wasser) |
+| `scripts/spray_sheet.gd`, `scripts/spray.gd` | Gischt: **Wasserwand** (zusammenhängender Vorhang beim Schneiden, Stärke aus Seilzug, Tempo, Winkel und Sprung-Ladung) und **Tropfen** (weiche Wolken-Sprites: Kante, Landung, Drift-Press, Hecht, Boot) |
 | `scripts/chase_camera.gd` | 3rd-Person-Kamera |
 | `scripts/lake.gd` | Maße der Anlage T2 (Masten, Startsteg, Kicker) |
 | `scripts/geo.gd` | Lädt die Geodaten und rechnet zwischen echten Koordinaten und Spielkoordinaten um |

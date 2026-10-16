@@ -365,6 +365,7 @@ func _build_pike() -> void:
 	_splash.mesh = drop
 	_splash.top_level = true
 	add_child(_splash)
+	Spray.register(_splash)
 
 
 ## Neuen Sprung planen: meist ein Stück vor dem Spieler (damit man ihn sieht), manchmal genau in der Spur.

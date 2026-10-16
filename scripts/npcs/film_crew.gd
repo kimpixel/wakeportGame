@@ -95,6 +95,7 @@ func build() -> void:
 	_spray.material_override = foam
 	_spray.position = Vector3(0, -0.05, STERN_Z + 0.35)
 	boat.add_child(_spray)
+	Spray.register(_spray)
 	if game.sfx:
 		_motor = AudioStreamPlayer3D.new()
 		_motor.stream = game.sfx.make_outboard_loop()
