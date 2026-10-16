@@ -29,7 +29,7 @@ const GROUPS := [
 		["rider", "KICK_MAX_VY"], ["rider", "RAMP_LAUNCH", 0.0, 2.0], ["rider", "AIR_KNEES"], ["rider", "LAND_TIME"]]],
 	["Luft", [
 		["rider", "SPIN_RATE"], ["rider", "AIR_ASSIST"], ["rider", "FLIP_RATE"], ["rider", "FLIP_LAND_TOL", 0.0, 1.6],
-		["rider", "RALEY_SPEED", 0.0, 20.0], ["rider", "RALEY_LOAD", 0.0, 1.0], ["rider", "RALEY_MAX", 0.0, 3.2], ["rider", "INVERT_SPIN_RALEY", 0.3, 0.95], ["rider", "RALEY_STRETCH", 0.1, 0.8], ["rider", "RALEY_CUT_RATE", 2.0, 30.0], ["rider", "RALEY_SPIN_ANG", 0.0, 2.8]]],
+		["rider", "RALEY_SPEED", 0.0, 20.0], ["rider", "RALEY_LOAD", 0.0, 1.0], ["rider", "RALEY_MAX", 0.0, 3.2], ["rider", "INVERT_SPIN_RALEY", 0.3, 0.95], ["rider", "RALEY_STRETCH", 0.1, 0.8], ["rider", "SBEND_CUT", 0.22, 0.72], ["rider", "RALEY_CUT_RATE", 2.0, 30.0], ["rider", "RALEY_SPIN_ANG", 0.0, 2.8]]],
 	["Slider", [
 		["rider", "SLIDE_FRICTION", 0.0, 1.0], ["rider", "PRESS_ANG", 0.0, 1.2], ["rider", "SNAP_RATE"],
 		["rider", "SLIDE_TURN"], ["rider", "LOCK_RATE"], ["rider", "LOCK_PULL"], ["rider", "CATCH_GLIDE"],

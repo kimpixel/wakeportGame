@@ -110,6 +110,7 @@ static var RALEY_POINTS := 150
 const INVERT_PICK := 0.2            # bis zu diesem Anteil der Flugzeit lässt sich S-Bend/Backroll wählen
 const SBEND_FROM := 0.22            # S-Bend: Drehung um die Achse Handle -> Brett von ... (Anteil der Flugzeit)
 const SBEND_TO := 0.72              # ... bis (so lange bleibt der Körper oben gestreckt)
+static var SBEND_CUT := 0.62          # S-Bend: ab hier (Drehung um die Handle ca. 90 % fertig) bricht ←/→ ab, der Rest läuft beim Zurückschwingen
 const IBACK_FROM := 0.05            # Invert-Backroll: Rolle von ... bis
 const IBACK_TO := 0.75
 const IBACK_TILT := 0.45            # Rollachse gekippt Richtung Körperachse (seitlich um die eigene Achse)
@@ -1618,11 +1619,12 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	if _raley and _invert == "" and phase < INVERT_PICK and absf(_pitch_in) > 0.1 and not _flip_lock:
 		_invert = "sbend" if _pitch_in > 0.0 else "backroll"
 	# ←/→ nach der Streckung (S-Bend: nach der Längsdrehung) bricht den Schwung ab, gedreht wird erst aufrecht
-	var stretched := phase >= (SBEND_TO if _invert == "sbend" else RALEY_STRETCH)
+	var stretched := phase >= (SBEND_CUT if _invert == "sbend" else RALEY_STRETCH)
 	if _raley and _invert != "backroll" and absf(_steer) > 0.1 and stretched:
 		_raley_cut = true
 	var spin_from := INVERT_SPIN_BACK if _invert == "backroll" else INVERT_SPIN_RALEY
-	var can_spin := not _raley or phase >= spin_from or (_raley_cut and _raley_ang < RALEY_SPIN_ANG)
+	var upright := _raley_ang < RALEY_SPIN_ANG and (_invert != "sbend" or _invert_ang > TAU - 0.3)   # S-Bend erst ganz herumgedreht
+	var can_spin := not _raley or phase >= spin_from or (_raley_cut and upright)
 	if absf(_steer) > 0.1 and can_spin:
 		yaw -= _steer * SPIN_RATE * delta
 	else:
@@ -1782,7 +1784,12 @@ func _land(surf: float) -> void:
 			pts += RALEY_POINTS
 			match _invert:
 				"sbend":
-					parts.append("S-Bend")
+					# S-Bend mit halber Drehung nach links landet blind: „S-Bend to Blind“
+					if half_turns == 1 and _spin_accum > 0.0:
+						parts.append("S-Bend to Blind")
+						spin_named = true
+					else:
+						parts.append("S-Bend")
 					pts += INVERT_POINTS
 				"backroll":
 					parts.append("Backroll")
@@ -1972,6 +1979,8 @@ func _process(delta: float) -> void:
 		_invert_ang = wrapf(_invert_ang, -PI, PI)   # ganze Drehung geschafft = wieder aufrecht
 	if _raley_cut:
 		raley_target = 0.0
+		if _invert == "sbend" and mode == Mode.AIR:
+			invert_target = TAU            # S-Bend abgebrochen: Drehung um die Handle zügig fertig
 	_raley_ang = lerpf(_raley_ang, raley_target, 1.0 - exp(-delta * (RALEY_CUT_RATE if _raley_cut else 10.0)))
 	_invert_ang = lerpf(_invert_ang, invert_target, 1.0 - exp(-delta * 14.0))
 	if _invert == "backroll" and mode == Mode.AIR:

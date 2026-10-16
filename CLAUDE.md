@@ -262,7 +262,8 @@ Tricks/Optik:
   S-Bend: nach der Längsdrehung) **bricht den Raley-Schwung ab** (`_raley_cut`, schnell zurück mit `RALEY_CUT_RATE`), gedreht wird
   erst aufrecht (`RALEY_SPIN_ANG`) – damit die Drehung in aufrechter Haltung passiert. Immer normales Drehtempo – eine 313 danach soll sauschwer sein (nur mit sehr viel Höhe).
   Namen: Raley 180 links = **Blind Judge**, rechts = **Krypt**; Raley 360 links = **313**, rechts = **BS 313**;
-  S-Bend/Backroll mit Drehung „S-Bend 180“ usw.
+  S-Bend + 180 links = **S-Bend to Blind** (Abbruch schon ab `SBEND_CUT`, wenn die Drehung um die Handle fast fertig ist;
+  nur mit viel Höhe, ca. 2 m); sonst mit Drehung „S-Bend 180“ usw. Invert-Backroll heißt im Menü „Backroll (todo)“.
 - **Press-Pose aus Blender** (Nutzer posiert selbst): `blender/*.blend` (Godot ignoriert den Ordner) -> `tools/export_pose.py` (Nutzer: `.	oolsexport_poses.ps1` in PowerShell, exportiert alle)
   (Blender 5.2 im Hintergrund, IK ausgewertet) -> `assets/poses/nosepress.json`. Übernommen: Becken (Lage im Brettraum),
   Rücken, Kopf, Arme; Füße per IK in den Bindungen, Hände Faust, Handle in der vorderen Hand. 50-50-Tailpress: eigene Pose `tailpress.json` (aus `blender/tailpress.blend`), Boardslide-Tailpress/Goofy gespiegelt,
