@@ -1475,11 +1475,11 @@ func _build_environment() -> void:
 	Geo.ensure_loaded()
 	weather = Weather.new()
 	add_child(weather)
-	# Jeder Start: Sommertag 10:30, sonnig (nie Nacht). Änderungen in den Einstellungen gelten
+	# Jeder Start: Do. 6. August (2026) 19:45, sonnig (Abendsonne, nie Nacht). Änderungen in den Einstellungen gelten
 	# nur für diese Sitzung; "Jetzt" holt bei Bedarf die echte Uhrzeit und das Wetter.
 	weather.preset = weather.find_preset("sonnig")
-	weather.day = 172
-	weather.hour = 10.5
+	weather.day = 218                 # 6. August
+	weather.hour = 19.75
 	weather.live = false
 	if _weather_arg != "":
 		weather.preset = weather.find_preset(_weather_arg)

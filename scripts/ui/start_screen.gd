@@ -597,7 +597,7 @@ func _page_world(p: VBoxContainer) -> void:
 		for n: String in weather.preset_names():
 			ws.add_item(n)
 		ws.item_selected.connect(func(i: int) -> void: weather.set_preset(i))
-		_row(p, "WETTER   (jeder Start: sonniger Sommertag 10:30)").add_child(ws)
+		_row(p, "WETTER   (jeder Start: Do. 6. August, 19:45, sonnig)").add_child(ws)
 		var date_l := _small("DATUM")
 		var day_s := _slider(1.0, 365.0, 1.0)
 		_row(p, "", date_l).add_child(day_s)
