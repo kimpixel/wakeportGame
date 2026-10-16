@@ -108,8 +108,8 @@ static var RALEY_POINTS := 150
 # eigene Längsachse am höchsten Punkt), ↓ = Backroll (seitlich nach außen kopfüber, anders als die
 # Backroll vom Kicker/Ollie). Wählbar nur ganz am Anfang; Drehen erst, wenn der Invert fast fertig ist.
 const INVERT_PICK := 0.2            # bis zu diesem Anteil der Flugzeit lässt sich S-Bend/Backroll wählen
-const SBEND_FROM := 0.28            # S-Bend: Drehung um die Längsachse von ... (Anteil der Flugzeit)
-const SBEND_TO := 0.58              # ... bis
+const SBEND_FROM := 0.22            # S-Bend: Drehung um die Achse Handle -> Brett von ... (Anteil der Flugzeit)
+const SBEND_TO := 0.72              # ... bis (so lange bleibt der Körper oben gestreckt)
 const IBACK_FROM := 0.05            # Invert-Backroll: Rolle von ... bis
 const IBACK_TO := 0.75
 const IBACK_TILT := 0.45            # Rollachse gekippt Richtung Körperachse (seitlich um die eigene Achse)
@@ -287,6 +287,7 @@ var _raley_ang := 0.0          # sichtbarer Schwungwinkel
 var _raley_chest := Vector3.RIGHT   # Brustrichtung der Figur (Welt)
 var _invert := ""              # Invert aus dem Raley: "" (Raley), "sbend", "backroll"
 var _raley_cut := false        # Raley-Schwung per ←/→ abgebrochen (schnell zurück, dann drehen)
+var _sbend_pivot := Vector3.INF   # S-Bend: Handle im Raley-Rahmen (_swing_frame), Drehpunkt der Längsdrehung
 var _invert_ang := 0.0         # sichtbarer Drehwinkel des Inverts (S-Bend: Längsachse, Backroll: Rolle)
 var _auto_t := 0.0
 var _prev_pos := START_POS
@@ -1573,6 +1574,7 @@ func _clear_air_pose() -> void:
 	_raley_ang = 0.0
 	_invert = ""
 	_raley_cut = false
+	_sbend_pivot = Vector3.INF
 	_invert_ang = 0.0
 	_flip = 0.0
 	_tuck = 0.0
@@ -1592,6 +1594,7 @@ func _enter_air() -> void:
 	_raley = false
 	_invert = ""
 	_raley_cut = false
+	_sbend_pivot = Vector3.INF
 	_popped = false
 	_catch_part = null
 	_flip = 0.0
@@ -1962,6 +1965,8 @@ func _process(delta: float) -> void:
 		else:
 			raley_target = RALEY_MAX * smoothstep(0.0, 0.35, s) * (1.0 - smoothstep(0.6, 0.9, s))
 			if _invert == "sbend":
+				# gestreckt oben halten, bis die Drehung durch ist, dann zur Landung
+				raley_target = RALEY_MAX * smoothstep(0.0, SBEND_FROM, s) * (1.0 - smoothstep(SBEND_TO, 0.95, s))
 				invert_target = TAU * smoothstep(SBEND_FROM, SBEND_TO, s)
 	else:
 		_invert_ang = wrapf(_invert_ang, -PI, PI)   # ganze Drehung geschafft = wieder aufrecht
@@ -2050,7 +2055,12 @@ func _process(delta: float) -> void:
 	_arm_r.visible = attached and _rig == null
 	if _rig and attached and mode != Mode.CRASHED:
 		# Die Hände bestimmen, wo der Griff ist: nie weiter weg, als die Arme reichen
+		if _invert == "sbend" and _sbend_pivot != Vector3.INF and _invert_ang > 0.001:
+			# S-Bend: die Handle ist der Drehpunkt – sie bleibt, der Körper dreht sich darum
+			handle_pos = handle_pos.lerp(_swing_frame() * _sbend_pivot, minf(_invert_w() * 3.0, 1.0))
 		handle_pos = _pose_arms(handle_pos, bar_axis)
+		if _invert == "sbend" and mode == Mode.AIR and _invert_ang < 0.01:
+			_sbend_pivot = _swing_frame().affine_inverse() * handle_pos   # Drehpunkt festhalten, bis die Drehung beginnt
 		if absf(_dpress_vis) > 0.01:
 			handle_pos = _pose_drift_press_arms(handle_pos, bar_axis)
 		# Press: Körper aus der Blender-Pose, die Handle in der vorderen Hand
@@ -2404,21 +2414,27 @@ func _launch_surface() -> String:
 ## Bezugsrahmen der Figur: normal der Fahrer selbst, beim Raley um den Griff geschwungen
 ## (Drehung um die Brettlängsachse, Füße weg vom Seil nach oben, Brust zum Wasser).
 func _pose_frame() -> Transform3D:
-	var xf := global_transform
-	if _raley_ang > 0.001:
-		var p := Vector3(0.2 * _facing(), 0.86 - 0.34 * minf(_crouch, 1.0), -0.2)      # Griff vor der vorderen Hüfte
-		var r := Basis(Vector3.BACK, _raley_side * _raley_ang)
-		xf *= Transform3D(r, p - r * p)
+	var xf := _swing_frame()
 	var inv := _invert_basis()
 	if inv != Basis.IDENTITY:
-		# Invert: S-Bend um die Körperachse (lokal Y), Backroll um die Körpermitte
-		var c := Vector3(0.0, 0.9, 0.0)
+		# Invert: S-Bend um die Achse Handle -> Brett (Drehpunkt an der Handle), Backroll um die Körpermitte
+		var c := _sbend_pivot if _invert == "sbend" and _sbend_pivot != Vector3.INF else Vector3(0.0, 0.9, 0.0)
 		xf *= Transform3D(inv, c - inv * c)
 	if absf(_flip) > 0.001:
 		# Überschlag um die Körpermitte; Frontroll = Brust voran (lokal +X)
 		var c := Vector3(0.0, 0.9, 0.0)
 		var f := Basis(Vector3.BACK, -_flip * _facing())
 		xf *= Transform3D(f, c - f * c)
+	return xf
+
+
+## Bezugsrahmen nur mit dem Raley-Schwung (ohne Invert-Drehung und Überschlag).
+func _swing_frame() -> Transform3D:
+	var xf := global_transform
+	if _raley_ang > 0.001:
+		var p := Vector3(0.2 * _facing(), 0.86 - 0.34 * minf(_crouch, 1.0), -0.2)      # Griff vor der vorderen Hüfte
+		var r := Basis(Vector3.BACK, _raley_side * _raley_ang)
+		xf *= Transform3D(r, p - r * p)
 	return xf
 
 
@@ -2431,7 +2447,13 @@ func _invert_basis() -> Basis:
 	if _invert == "backroll":
 		var axis := (Vector3.BACK + Vector3.UP * IBACK_TILT * _raley_side).normalized()
 		return Basis(axis, _raley_side * _invert_ang)
-	return Basis(Vector3.UP, -_raley_side * _invert_ang)
+	# S-Bend: gestreckt um die Achse von der Handle durch den Körper zum Brett
+	var axis := Vector3.UP
+	if _sbend_pivot != Vector3.INF:
+		var a := _sbend_pivot - Vector3(0.0, BOARD_Y, 0.0)
+		if a.length() > 0.3:
+			axis = a.normalized()
+	return Basis(axis, _raley_side * _invert_ang)
 
 
 ## Gewicht 0..1, wie weit die Figur gerade im Invert verdreht ist (0 am Anfang und am Ende).

@@ -254,8 +254,8 @@ Tricks/Optik:
 - **Frontroll eingerollt** (Knie zur Brust), **Backroll gestreckt** – beides nur bei normalen Sprüngen (Ollie, Kicker …).
 - **Inverts** (`Rider._invert`): aus dem Raley-Absprung gibt es keinen Frontroll/Backroll. ↑/↓ nur ganz am Anfang
   (`INVERT_PICK`, gehaltene Taste vom Steg zählt erst nach Loslassen) wählen den Trick, sonst Raley:
-  **↑ = S-Bend** (Anfang/Ende wie Raley, kurz vor dem höchsten Punkt gestreckt eine Drehung um die eigene Längsachse,
-  `SBEND_FROM/TO`), **↓ = Backroll** als Invert (ganz anders als vom Kicker: kein Schwung um den Griff, seitlich nach
+  **↑ = S-Bend** (Anfang/Ende wie Raley; gestreckt oben eine ganze Drehung um die Achse **Handle → Brett**: Drehpunkt ist
+  die Handle, die Hände bleiben dort, der ganze Körper dreht sich darum – `_sbend_pivot`; langsam, `SBEND_FROM/TO` ca. halbe Flugzeit), **↓ = Backroll** als Invert (ganz anders als vom Kicker: kein Schwung um den Griff, seitlich nach
   außen kopfüber um die eigene Achse, `IBACK_*`, noch grob – wird später verfeinert). Je +300 (`INVERT_POINTS`) zum Raley.
   **Regel: erst wenn ein Invert fast fertig ist, kann ein weiterer Trick folgen** – Drehen (←/→) erst ab
   `INVERT_SPIN_RALEY` (Körper halb zur Landung zurück) bzw. `INVERT_SPIN_BACK`. **←/→ nach der Streckung** (`RALEY_STRETCH`;
