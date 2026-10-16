@@ -244,8 +244,15 @@ func _keep_loop(p: AudioStreamPlayer, lin: float) -> void:
 		p.stop()
 		p.set_meta("loop_on", false)
 	elif not on and lin > LOOP_ON:
-		p.play(randf() * p.stream.get_length())
+		p.play(loop_start(p.stream.get_length()))
 		p.set_meta("loop_on", true)
+
+
+## Startpunkt einer Schleife: am Desktop zufällig (mehrere gleiche Schleifen klingen nicht gleich),
+## im Browser immer 0. Dort schleift Godot nicht selbst, sondern startet den Puffer bei jedem Ende
+## neu ab diesem Startpunkt – mit Versatz wiederholte sich nur ein Bruchstück (Wasser stotterte).
+static func loop_start(length: float) -> float:
+	return 0.0 if OS.has_feature("web") else randf() * length
 
 
 const LOOP_OFF := 0.002   # linear: darunter wird eine Schleife gestoppt
@@ -479,11 +486,12 @@ func _make_thud() -> AudioStreamWAV:
 
 
 func _make_water_loop() -> AudioStreamWAV:
-	var n := RATE * 2
+	# 6 s lang: im Browser entsteht bei jedem Schleifen-Neustart eine kleine Lücke (siehe loop_start)
+	var n := RATE * 6
 	var s := _lowpass(_noise(n, 21), 0.12)
 	for i in n:
-		var x := float(i) / n
-		s[i] *= 0.75 + 0.25 * sin(TAU * x * 3.0) * sin(TAU * x * 7.0)
+		var t := float(i) / RATE
+		s[i] *= 0.75 + 0.25 * sin(TAU * t * 1.5) * sin(TAU * t * 3.5)   # ganze Perioden in 6 s
 	# weiches Überblenden des Loop-Endes in den Anfang
 	var fade := RATE / 10
 	for i in fade:
@@ -539,7 +547,7 @@ func make_outboard_loop() -> AudioStreamWAV:
 
 
 func _make_grind_loop() -> AudioStreamWAV:
-	var n := RATE
+	var n := RATE * 3            # ganze Sekunden: alle Frequenzen schließen nahtlos
 	var s := _noise(n, 33)
 	var hp := 0.0
 	var prev := 0.0

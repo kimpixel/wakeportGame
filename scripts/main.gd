@@ -12,7 +12,7 @@ extends Node3D
 ##   --mobile          Handy-Steuerung erzwingen (mit --tilt=GRAD feste Neigung)
 ##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
 ##   --screen[=NAME]   Startbildschirm erzwingen (NAME: Feature/Hack auswählen, z. B. "hack";
-##                     @liste, @einstellungenN, @erfolge, @editor = Setup-Editor);
+##                     @liste, @einstellungenN, @erfolge, @auswahl[2] = Modus- bzw. Challenge-Liste offen, @editor = Setup-Editor);
 ##                     normal beginnt das Spiel damit, außer bei --autotest/--shot/--view/--closeup
 ##   --letgo-at=SEK    Test: Seil zu dieser Zeit verlieren (ohne Sturz)
 ##   --jump-at=SEK     Test: zu dieser Zeit voll aufgeladen abspringen
@@ -347,7 +347,7 @@ func _ready() -> void:
 		add_child(debug_params)
 		if _debug_params_arg:
 			debug_params.toggle()
-	# Git-Branch unten rechts (nur lokal): aus welchem Checkout/Worktree läuft das Spiel
+	# unten rechts: Build-Version (Web) bzw. Git-Branch (lokal) – welche Version/welcher Checkout läuft
 	var branch_label: GDScript = preload("res://scripts/ui/branch_label.gd")
 	if branch_label.available():
 		add_child(branch_label.new())
@@ -707,6 +707,8 @@ func _apply_setting(key: String) -> void:
 			Sfx.set_volume(Sfx.BUS_PLANES, float(v))
 		"vol_music":
 			Sfx.set_volume(Sfx.BUS_MUSIC, float(v))
+		"music_src":
+			music.set_source(int(v))
 		"music":
 			music.set_enabled(bool(v))
 		"quality":

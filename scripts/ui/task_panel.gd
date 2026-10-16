@@ -27,17 +27,13 @@ var _next: Button
 var _font: Font
 
 
-## Runde Medaille (gezeichnet – Sonderzeichen fehlen in der Web-Schrift).
+## Pokal (Bild aus Trophy – Sonderzeichen fehlen in der Web-Schrift).
 class Medal extends Control:
-	var level := 0                 # 0 keine, 1 Bronze, 2 Silber, 3 Gold
+	var level := 0                 # 0 keiner, 1 Bronze, 2 Silber, 3 Gold
 
 	func _draw() -> void:
-		var r := minf(size.x, size.y) * 0.5
-		var c: Color = Training.MEDAL_COLORS[level]
-		if level > 0:
-			draw_circle(size * 0.5, r, c)
-			draw_circle(size * 0.5, r * 0.62, c.lightened(0.25))
-		draw_arc(size * 0.5, r - 1.5, 0.0, TAU, 40, Color(c, 1.0) if level > 0 else Color(1, 1, 1, 0.35), 3.0, true)
+		var n := minf(size.x, size.y)
+		draw_texture_rect(Trophy.texture(level, 96), Rect2((size - Vector2(n, n)) * 0.5, Vector2(n, n)), false)
 
 	func set_level(l: int) -> void:
 		level = l

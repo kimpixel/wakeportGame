@@ -157,7 +157,7 @@ func start(choice: int) -> void:
 	boat.visible = mode == "boat"
 	if _motor:
 		if mode == "boat":
-			_motor.play(randf())
+			_motor.play(Sfx.loop_start(1.0))
 		else:
 			_motor.stop()
 	if game.beach.boat:
@@ -255,7 +255,7 @@ func chase(sup: Node3D) -> void:
 	boat.visible = true
 	moored.visible = false
 	if _motor:
-		_motor.play(randf())
+		_motor.play(Sfx.loop_start(1.0))
 	set_physics_process(true)
 	_place_boat(0.0)
 	print("BOOT legt ab")

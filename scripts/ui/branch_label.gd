@@ -1,14 +1,29 @@
 extends CanvasLayer
-## Git-Branch klein ganz unten rechts in der Ecke (nur lokal am Desktop): damit man sieht, aus welchem
-## Checkout/Worktree das Spiel gestartet wurde. Liest .git/HEAD direkt (auch im Worktree, dort ist
-## .git eine Datei mit "gitdir: …"). Ohne .git (Web, Export) bleibt die Ebene leer.
+## Klein ganz unten rechts in der Ecke, immer sichtbar:
+##  * Web: Build-Version aus res://version.txt (schreibt der Web-Build, z. B. "v412 · 502fa0a") – damit man
+##    am Handy sieht, ob die neue Version geladen ist oder noch eine alte aus dem Cache.
+##  * lokal am Desktop: Git-Branch, damit man sieht, aus welchem Checkout/Worktree das Spiel läuft.
+##    Liest .git/HEAD direkt (auch im Worktree, dort ist .git eine Datei mit "gitdir: …").
 
 const HEIGHT := 22.0      # px, so viel rückt die Technik-Anzeige des HUD nach oben
+const VERSION_FILE := "res://version.txt"
 
 
-## Nur Desktop und nur, wenn das Projekt in einem Git-Checkout liegt.
+## Web/Export: Build-Version vorhanden; lokal am Desktop: Git-Checkout.
 static func available() -> bool:
-	return not OS.has_feature("web") and not OS.has_feature("mobile") and branch() != ""
+	return text() != ""
+
+
+## Anzeigetext: Build-Version, sonst (nur Desktop) der Branch; "" wenn nichts davon.
+static func text() -> String:
+	if FileAccess.file_exists(VERSION_FILE):
+		var v := FileAccess.get_file_as_string(VERSION_FILE).strip_edges()
+		if v != "":
+			return v
+	if OS.has_feature("web") or OS.has_feature("mobile"):
+		return ""
+	var b := branch()
+	return "⎇ " + b if b != "" else ""
 
 
 ## Aktueller Branch, bei abgelöstem HEAD die ersten 8 Zeichen des Commits; "" ohne Git.
@@ -32,7 +47,7 @@ func _init() -> void:
 	layer = 40                                 # über Startseite, Pause, Debug
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var label := Label.new()
-	label.text = "⎇ " + branch()
+	label.text = text()
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.add_theme_font_size_override("font_size", 13)
 	label.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
