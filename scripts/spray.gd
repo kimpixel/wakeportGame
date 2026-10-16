@@ -14,20 +14,21 @@ static func register(p: CPUParticles3D) -> void:
 	if p.mesh is SphereMesh:
 		r = (p.mesh as SphereMesh).radius
 	var q := QuadMesh.new()
-	q.size = Vector2.ONE * r * 6.0
+	q.size = Vector2.ONE * r * 4.0
 	q.material = _material()
 	p.mesh = q
 	p.material_override = null
 	p.angle_min = 0.0
 	p.angle_max = 360.0
 	var g := Gradient.new()
-	g.set_color(0, Color(1.0, 1.0, 1.0, 0.9))
+	g.set_color(0, Color(1.0, 1.0, 1.0, 0.55))
 	g.set_color(1, Color(0.78, 0.84, 0.9, 0.0))
-	g.add_point(0.5, Color(0.93, 0.96, 0.98, 0.6))
+	g.add_point(0.5, Color(0.93, 0.96, 0.98, 0.3))
 	p.color_ramp = g
 	var c := Curve.new()
-	c.add_point(Vector2(0.0, 0.5))
-	c.add_point(Vector2(1.0, 1.0))
+	c.max_value = 3.0
+	c.add_point(Vector2(0.0, 0.3))     # klein anfangen
+	c.add_point(Vector2(1.0, 2.5))     # groß und durchsichtig am Ende
 	p.scale_amount_curve = c
 
 
