@@ -5,6 +5,7 @@ extends Node3D
 ## Bietet der Fahrerphysik eine Abfrage der Hindernis-Oberkante an jedem Punkt.
 
 const PARTS_FILE := "res://setups/parts.json"
+const TR_REF_WIDTH := 3.2        # Transition Rail: Breite, auf die sich die x-Positionen in den Setups beziehen
 const INDEX_FILE := "res://setups/index.json"
 const USER_DIR := "user://setups"                  # eigene Setups aus dem Setup-Editor
 const USER_INDEX := "user://setups/index.json"
@@ -13,6 +14,38 @@ const OVERRIDES := ["length", "width", "height", "height_end", "ramp_in", "ramp_
 var parts: Array[FeaturePart] = []
 var setup_name := ""
 var colliders := true          # Kollisionskörper für die Ragdoll (Katalog der Startseite: aus)
+var reflections := false       # Spiegelung der Umgebung auf den nassen Features (nur im Spiel, je Grafikstufe)
+var _probes: Array[ReflectionProbe] = []
+
+const REFLECT_LAYER := 1 << 10   # Sichtbarkeits-Ebene der Features: nur sie bekommen die Probe-Spiegelung (nicht der See)
+
+
+## Nasse Features spiegeln die Umgebung wie ein nasser Boden: je Feature eine Reflection Probe, die beim Laden
+## einmal Himmel, Wald, Ufer und Nachbar-Features aufnimmt (UPDATE_ONCE, kein Schatten). Wirkt nur auf die
+## Features (reflection_mask), sonst bekäme der See eckige Spiegel-Flecken. Aus = nur Himmelsspiegelung.
+func update_reflections() -> void:
+	for p in _probes:
+		p.queue_free()
+	_probes.clear()
+	for part in parts:
+		for c in part.get_children():
+			if c is MeshInstance3D:
+				(c as MeshInstance3D).layers = 1 | REFLECT_LAYER
+	if not reflections:
+		return
+	for part in parts:
+		var probe := ReflectionProbe.new()
+		probe.update_mode = ReflectionProbe.UPDATE_ONCE
+		probe.size = Vector3(part.width + 6.0, 8.0, part.length + 6.0)
+		probe.position = Vector3(0.0, 1.6, 0.0)          # etwa Augenhöhe über dem Feature
+		probe.origin_offset = Vector3.ZERO
+		probe.box_projection = false
+		probe.max_distance = 400.0
+		probe.enable_shadows = false
+		probe.reflection_mask = REFLECT_LAYER
+		probe.intensity = FeaturePart.REFLECT
+		part.add_child(probe)
+		_probes.append(probe)
 var _catalog: Dictionary = {}
 
 
@@ -112,6 +145,7 @@ func load_data(setup: Dictionary, terminals: Dictionary, s_offset := {}, label :
 			r["s"] = float(r.get("s", 0.0)) + off
 			r["_row"] = i
 			_place(r, terminals[terminal], label)
+	update_reflections()
 
 
 func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transform3D.IDENTITY) -> void:
@@ -174,6 +208,14 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 	part.inner_v = 1.0 if absf(side_pt.x) < absf(on_cable.x) else -1.0
 	if p.has("inner_v"):
 		part.inner_v = signf(float(p["inner_v"]))      # z. B. gespiegelte 1/2 Transition Rails
+	# Transition Rail: Setup-Positionen beziehen sich auf die alte Breite (TR_REF_WIDTH). Breiter wird es nur
+	# zur Seilseite (Transition) hin – Rail und Rückwand bleiben, wo die Nachbarn (Hacks) anschließen.
+	if part.type == "transition" and part.width != TR_REF_WIDTH:
+		world = world * Transform3D(Basis.IDENTITY, Vector3((part.width - TR_REF_WIDTH) * 0.5 * part.inner_v, 0.0, 0.0))
+		part.transform = world
+		on_cable = cable.transform.affine_inverse() * world.origin
+		part.s_center = cable.mast_a_z - on_cable.z
+		part.x_center = on_cable.x
 	add_child(part)
 	parts.append(part)
 	if show_hitboxes:

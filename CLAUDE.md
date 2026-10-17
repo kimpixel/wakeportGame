@@ -117,6 +117,7 @@ Fallstricke:
 | `scripts/training.gd`, `scripts/challenge.gd`, `scripts/ui/task_panel.gd` | Spielmodi: Aufgaben/Medaillen (Daten), Ablauf eines Versuchs (Platzieren, Countdown, Messen), Aufgaben-Fenster |
 | `scripts/cable_system.gd` | Carrier/Seilbahn einer Anlage (Zustände RUN, BRAKE, PAUSE, FETCH, HOLD, DONE) |
 | `scripts/features/` | `feature_set.gd` (Setups laden), `feature_part.gd` (Form = Physik = Grafik), `hacks.gd` (Hack-Erkennung/-Namen) |
+| `shaders/feature.gdshader`, `feature_rail.gdshader`, `feature_common.gdshaderinc` | Optik der Features: weißer Kunststoff, **nass glänzend** (Wasserfilm: Klarlack, nass dunkler, Fresnel wie der See; Kratzer und Dreck matt; regelbar im F4-Panel Reiter „Features“: `FeaturePart.WET_DARK`, `WET_FRESNEL`, `WET_ROUGH`, `WET_COAT`, `REFLECT`) und **spiegelt die Umgebung** über je eine Reflection Probe pro Feature (`FeatureSet.update_reflections`, UPDATE_ONCE, nur auf die Features über `REFLECT_LAYER`, ab Grafik Mittel, nur im Spiel), mit Kratzern (je Teil eigener Zufall `seed` aus Lage + Bauteil, `FeaturePart._seed`), schwarzes Rail matt mit Längskratzern (`FeaturePart._rail_mat`; graues Pro Rail bleibt Stahl), Verschmutzung vom Wasser aus (`water_dirt`: bis ca. 8 cm über Wasser braun/gelblich, darüber ca. 30 cm grau-fleckiger Verlauf). **Kanten scharf** (`_build_heightfield`): Gitterlinien liegen genau auf den Knickstellen (`_grid_lines`: Auffahrt-Enden, Profilpunkte, seitliche Auffahrt, Bump-Plateau), Maschen werden entlang der passenden Diagonale geteilt, Normalen nur bis `CREASE` 10° geglättet – sonst sahen Kanten rund und am Handy verschwommen aus |
 | `scripts/ui/start_screen.gd` | Startseite (responsiv, Popups Einstellungen / Features & Hacks / Detail) |
 | `scripts/ui/setup_editor.gd` | Setup-Editor (eigene Seite, Draufsicht/3D, Bauteile, Hacks, Auswahl, Speichern in `user://setups`, JSON); Test `--screen=@editor:t2:sel=2:3d…` |
 | `scripts/ui/feature_preview.gd` | drehbare 3D-Vorschau eines Features/Hacks (eigene Welt) |
@@ -328,13 +329,15 @@ Features/Setups:
   vorne, steil hoch, lang abfallend, hintere Safety bis ins Wasser). Kein Add-on-Rail.
 - A-Frame Rail (Pyramid Series): 0,6 m breit, oben ganz schwarzes Halbrund-Rail, gerade hoch / flache Mitte / gerade runter,
   vorne/hinten steile gerade Safety, die ins Halbrund schneidet (`top_rail`, `safety_slope`); Oberkante 1,5 m.
-  Pyramid: Auffahrten vorne/hinten sind Transitions (konkav, beginnen unter Wasser), seitlich 12 cm Kante (`side_lip`).
+  Pyramid: 5 Flächen (`FeaturePart._build_pyramid`) – Transitions vorne/hinten (`ramp_curve` 1,6) und seitlich auf der Seilseite (`side_curve` 1,1), alle beginnen unter Wasser; jede ist eine eigene, verlängerte Fläche, ineinandergeschoben (Minimum in `height_local`) – die Schnittlinie ist der scharfe, geschwungene Grat; Top mit klaren Kanten; hinten senkrechte Wand.
 - Pop auf Rampen/Kickern nie schwächer als ein Ollie (`Rider._pop`).
 - **Port Plaza** = ein Modul (kein eigener Plaza Kicker), Slider mit halbrunder Oberkante (0,9 → 1,55 m), vorne/hinten
   steile gerade Safety ins Halbrund (wie A-Frame Rail), hinten breiter Teil aus Safety 1,2 m + Kicker-Schräge 2,35 m auf 1,1 m; dahinter meist ein normaler Cheese Wedge (1,1 m, keine eigene Höhe) – Plaza + Wedge ist kein Hack.
   Interne Teile `_plaza_*` (mit `_` = nicht im Editor).
-- Uprail 7,5 m. Transition Rail: Rail 40 cm dick, im flachen Abschluss (ca. 36 cm) **versenkt**,
-  ragt 8 cm heraus (ca. 32 cm breit sichtbar), Teil der Oberfläche: die Auffahrten schneiden hinein; von allen Seiten befahrbar, löst keinen Sturz aus.
+- Uprail 7,5 m. Transition Rail: 4 m breit, Körper 1,235 m, flacher Abschluss 36 cm (`TR_FLAT`), darauf ein dickes schwarzes Rail (46 cm, `TR_RAIL_R`): steht
+  außen ca. 5 cm über, zur Transition nur 1,5 cm (`TR_TUCK`), nur das untere Viertel steckt im Körper (Oberkante 1,58 m). Seitlich von der Transition ohne Sprung aufs Rail: Fahrphysik hat dort eine weiche Auffahrt (`_tr_lip`, ab `TR_LIP` 0,3 m vor dem Transitions-Ende), sonst wäre die Stufe ein Sturz. Setup-Positionen beziehen sich auf die alte Breite 3,2 m (`FeatureSet.TR_REF_WIDTH`):
+  breiter wird es nur zur Seilseite, Rail und Rückwand bleiben, wo Nachbarn anschließen. Rampen vorne/hinten gerade, von allen Seiten befahrbar, löst keinen Sturz aus.
+  Grafik aus genau seinen Flächen (`FeaturePart._build_transition_body` / `_build_transition_rail`): Rampen als Ebenen bis exakt auf die Schnittkante (von vorne = Querschnitt), Transition läuft unter dem Überstand weiter, Rail-Rohr von der Rampenebene abgeschnitten (verschmilzt mit der Rampe, setzt sich zur Transition mit der Rundung ab); ohne Rampe hinten (1/2) Wand mit Querschnitt.
 - Positionen kommen aus den Plan-Fotos (`fotos/`); die Pläne sind nicht maßstäblich, Maße aus
   dem Katalog. Beim Nachstellen von Hacks: vorne/hinten und Seiten genau mit dem Foto abgleichen.
 - T1-Steg ist 5 cm höher als T2 (`Lake.DOCK_T1_Y`).

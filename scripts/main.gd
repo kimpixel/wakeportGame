@@ -209,6 +209,7 @@ func _ready() -> void:
 	buoys.add_cable(cable_t1)
 
 	features = FeatureSet.new()
+	features.reflections = int(settings.values["quality"]) >= 1
 	add_child(features)
 	_setups = FeatureSet.list_setups()
 	_setup_idx = _initial_setup()
@@ -793,6 +794,9 @@ func _apply_quality(q: int) -> void:
 	weather.apply()
 	if terrain:
 		terrain.set_tree_density([0.35, 0.7, 1.0][q])
+	if features and features.reflections != (q >= 1):
+		features.reflections = q >= 1       # nasse Features spiegeln die Umgebung (Reflection Probes) ab Mittel
+		features.update_reflections()
 
 
 func _apply_terminal(t: String) -> void:
