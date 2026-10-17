@@ -43,24 +43,35 @@ func begin() -> void:
 
 
 ## Momentaufnahme aller Knochen (lokale Pose), z. B. zum Überblenden zweier Haltungen.
+## Merkt sich die Lage des Skeletts in der Welt dazu.
 func snapshot() -> Array:
 	var ps := PackedVector3Array()
 	var rs: Array[Quaternion] = []
 	for i in skeleton.get_bone_count():
 		ps.append(skeleton.get_bone_pose_position(i))
 		rs.append(skeleton.get_bone_pose_rotation(i))
-	return [ps, rs]
+	return [ps, rs, skeleton.global_transform]
 
 
 ## Aktuelle Pose mit einer Momentaufnahme mischen (w = Anteil der Momentaufnahme).
+## Die Momentaufnahme bleibt in der Welt stehen: hat sich das Skelett seitdem bewegt oder gedreht
+## (Figur dreht zum Seil, Körper hebt aus dem Wasser), werden die Wurzelknochen umgerechnet.
 func blend_from(snap: Array, w: float) -> void:
 	if snap.is_empty() or w <= 0.0:
 		return
 	var ps: PackedVector3Array = snap[0]
 	var rs: Array = snap[1]
+	var fix := Transform3D.IDENTITY
+	if snap.size() > 2:
+		fix = skeleton.global_transform.affine_inverse() * (snap[2] as Transform3D)
 	for i in mini(skeleton.get_bone_count(), ps.size()):
-		skeleton.set_bone_pose_position(i, skeleton.get_bone_pose_position(i).lerp(ps[i], w))
-		skeleton.set_bone_pose_rotation(i, skeleton.get_bone_pose_rotation(i).slerp(rs[i], w))
+		var p: Vector3 = ps[i]
+		var r: Quaternion = rs[i]
+		if skeleton.get_bone_parent(i) < 0:
+			p = fix * p
+			r = fix.basis.orthonormalized().get_rotation_quaternion() * r
+		skeleton.set_bone_pose_position(i, skeleton.get_bone_pose_position(i).lerp(p, w))
+		skeleton.set_bone_pose_rotation(i, skeleton.get_bone_pose_rotation(i).slerp(r, w))
 
 
 ## Weltpunkt -> Skelettraum

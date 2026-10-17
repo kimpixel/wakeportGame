@@ -201,6 +201,47 @@ func stop() -> void:
 	_water.process_mode = Node.PROCESS_MODE_DISABLED
 
 
+## Momentaufnahme der Haltung, wie die Ragdoll sie gerade zeigt (Format wie HumanRig.snapshot):
+## simulierte Knochen aus den Kapseln, die übrigen mit ihrer Haltung zum Elternknochen.
+## Zum weichen Übergang aus dem Sturz ins Schwimmen (das Skelett selbst kennt die Ragdoll-Lage nicht).
+func pose_snapshot() -> Array:
+	var skel_inv := _skel.global_transform.affine_inverse()
+	var sim := {}
+	for pb in _bones:
+		var w := skel_inv * (pb.global_transform * pb.body_offset.affine_inverse())
+		sim[_skel.find_bone(pb.bone_name)] = Transform3D(w.basis.orthonormalized(), w.origin)
+	var n := _skel.get_bone_count()
+	var glob: Array[Transform3D] = []
+	glob.resize(n)
+	var done := PackedByteArray()
+	done.resize(n)
+	var ps := PackedVector3Array()
+	var rs: Array[Quaternion] = []
+	ps.resize(n)
+	rs.resize(n)
+	for i in n:
+		_snap_bone(i, sim, glob, done, ps, rs)
+	return [ps, rs, _skel.global_transform]
+
+
+func _snap_bone(i: int, sim: Dictionary, glob: Array[Transform3D], done: PackedByteArray,
+		ps: PackedVector3Array, rs: Array[Quaternion]) -> void:
+	if done[i]:
+		return
+	var parent := _skel.get_bone_parent(i)
+	var parent_g := Transform3D.IDENTITY
+	if parent >= 0:
+		_snap_bone(parent, sim, glob, done, ps, rs)
+		parent_g = glob[parent]
+	var local := Transform3D(Basis(_skel.get_bone_pose_rotation(i)), _skel.get_bone_pose_position(i))
+	if sim.has(i):
+		local = parent_g.affine_inverse() * (sim[i] as Transform3D)
+	glob[i] = parent_g * local
+	ps[i] = local.origin
+	rs[i] = local.basis.orthonormalized().get_rotation_quaternion()
+	done[i] = 1
+
+
 ## Wo der Körper gerade ist (für Kamera/Fahrerposition).
 func center() -> Vector3:
 	var pb := _bone("pelvis")
