@@ -192,6 +192,9 @@ Geheime Erfolge (`scripts/achievements.gd`, Liste auf der Startseite Taste „Er
   unerreichbar (Ufer-Wende 28 m), erst mit langem Seil (ab ca. 20 m). Test `--drop-at=2` (Fahrer über den Steg in die Luft).
 - **Insekten fressen** (`insekt`): Mückenschwärme (`INSECT_S`, 3 m vor dem Waldrand rechts neben T1, 8–20 m vom Seil, Kopfhöhe)
   durchfahren (`Ambient.insect_eaten`). Test `--terminal=T1 --drop-at=8,40.1,0.3,-25.6`.
+- **Boot crash** (`boot`): ins rote Boot fahren (= Sturz „Ins Boot gefahren!“) oder beim Sturz als Ragdoll hineinfallen
+  (`main.gd _check_boat`, `FilmCrew.in_boat`: Rumpf-Grundriss, fahrend +0,25 m; schwimmend zählt nicht). Gilt für das Filmteam-/Patrouillen-Boot
+  und das Boot am Liegeplatz. Innenboden hat einen Kollisionskörper (`LAYER_COLLIDE`), die Ragdoll bleibt im Boot liegen. Test `--drop-at=4,boot`.
 
 Spiel (Competition):
 - Runde **7:30** (Einstellung „Competition: Rundenlänge“), Start nach Countdown. Danach holt der Operator den Fahrer zum Start, dann Startseite mit Ergebnis.
