@@ -39,8 +39,11 @@ const GROUPS := [
 		["rider", "SLIDE_BASE"], ["rider", "SLIDE_PER_S"], ["rider", "BOARDSLIDE_BONUS"], ["rider", "PRESS_BONUS"],
 		["rider", "SWITCH_BONUS"], ["rider", "AIR_PER_S"], ["rider", "RALEY_POINTS"], ["rider", "INVERT_POINTS"], ["rider", "FLIP_POINTS"],
 		["rider", "COMBO_WINDOW"]]],
+	["Features", [["feature", "WET_DARK", 0.0, 1.0], ["feature", "WET_FRESNEL", 0.0, 1.0], ["feature", "WET_ROUGH", 0.0, 0.5],
+		["feature", "WET_COAT", 0.0, 1.0], ["feature", "REFLECT", 0.0, 2.0]]],
 ]
-const SCRIPTS := {"rider": "res://scripts/rider.gd", "challenge": "res://scripts/challenge.gd", "sheet": "res://scripts/spray_sheet.gd"}
+const SCRIPTS := {"rider": "res://scripts/rider.gd", "challenge": "res://scripts/challenge.gd", "sheet": "res://scripts/spray_sheet.gd",
+	"feature": "res://scripts/features/feature_part.gd"}
 
 var rider: Rider                 # Live-Werte oben im Fenster
 var _dim: Control
@@ -201,6 +204,8 @@ func _add_row(list: VBoxContainer, e: Array, notes: Dictionary) -> void:
 
 func _apply(r: Dictionary, x: float) -> void:
 	r["script"].set(r["name"], roundi(x) if r["int"] else x)
+	if r["script"].has_method("debug_changed"):
+		r["script"].call("debug_changed")      # z. B. Features: neue Werte in die Materialien übertragen
 	_show(r)
 
 
