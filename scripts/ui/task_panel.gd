@@ -1,8 +1,9 @@
 class_name TaskPanel
 extends CanvasLayer
 ## Fenster der Spielmodi im HUD-Stil: vor dem ersten Versuch die Aufgabe (Ziel, Steuerung, Tipp,
-## Schwellen für Bronze/Silber/Gold), nach jedem Versuch das Ergebnis. Tasten: Leertaste = Los bzw.
-## Nochmal, N = nächste Aufgabe, Esc = Startseite. Läuft auch während der Pause.
+## Schwellen für Bronze/Silber/Gold), nach jedem Versuch das Ergebnis. Tasten: Enter/PS = Los bzw.
+## Nochmal (Leertaste/Kreuz drückt den Knopf mit Fokus, anfangs Los), N = nächste Aufgabe,
+## Esc/Kreis = Startseite. Läuft auch während der Pause.
 
 signal go_pressed
 signal next_pressed
@@ -131,6 +132,7 @@ func _ready() -> void:
 	home.pressed.connect(func() -> void: home_pressed.emit())
 	brow.add_child(home)
 	get_viewport().size_changed.connect(_layout)
+	MenuNav.add_scope(_dim, 20, _go)
 
 
 func _label(size: int, color: Color) -> Label:
@@ -148,19 +150,19 @@ func _button(text: String, primary: bool) -> Button:
 	b.add_theme_font_size_override("font_size", 21)
 	b.custom_minimum_size = Vector2(0, 54)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	b.focus_mode = Control.FOCUS_NONE
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Hud.ACCENT if primary else Color(0.14, 0.17, 0.2)
 	sb.set_corner_radius_all(12)
 	sb.content_margin_left = 14
 	sb.content_margin_right = 14
-	for st: String in ["normal", "hover", "pressed", "focus"]:
+	for st: String in ["normal", "hover", "pressed"]:
 		var s2 := sb.duplicate() as StyleBoxFlat
 		if st == "hover":
 			s2.bg_color = s2.bg_color.lightened(0.12)
 		elif st == "pressed":
 			s2.bg_color = s2.bg_color.darkened(0.2)
 		b.add_theme_stylebox_override(st, s2)
+	b.add_theme_stylebox_override("focus", MenuNav.focus_box())
 	var fc := Color(0.04, 0.07, 0.03) if primary else Color.WHITE
 	for k: String in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
 		b.add_theme_color_override(k, fc)
@@ -245,6 +247,7 @@ func _fill(mode_name: String, idx: int, count: int, task: Dictionary, best: Arra
 
 
 func _open() -> void:
+	MenuNav.reset_focus(_dim)                # Fokus auf LOS / NOCHMAL
 	_dim.visible = true
 	if open_changed.is_valid():
 		open_changed.call(true)
@@ -287,17 +290,16 @@ func _layout() -> void:
 func _input(event: InputEvent) -> void:
 	if not is_open():
 		return
-	var k := event as InputEventKey
-	if k == null or not k.pressed or k.echo:
+	if not event.is_pressed() or event.is_echo():
 		return
-	match k.physical_keycode:
-		KEY_SPACE, KEY_ENTER, KEY_KP_ENTER:
-			go_pressed.emit()
-		KEY_N:
-			if _next.visible:
-				next_pressed.emit()
-		KEY_ESCAPE:
-			home_pressed.emit()
-		_:
-			return
+	var k := event as InputEventKey
+	if event.is_action_pressed("menu_start"):        # Enter / PS: Los bzw. Nochmal (Leertaste/Kreuz drückt den Knopf mit Fokus)
+		go_pressed.emit()
+	elif event.is_action_pressed("ui_cancel"):       # Esc / Kreis: Startseite
+		home_pressed.emit()
+	elif k and k.physical_keycode == KEY_N:
+		if _next.visible:
+			next_pressed.emit()
+	else:
+		return
 	get_viewport().set_input_as_handled()

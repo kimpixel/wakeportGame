@@ -30,6 +30,8 @@ var _yaw := 0.0
 var _off_yaw := 0.0
 var _off_pitch := 0.0
 var _idle := 10.0
+var _stick := false              # rechter Stick dreht gerade
+const STICK_BACK := 1.5          # = Wartezeit der Rückkehr: beim Loslassen des Sticks gleich zurück
 var _focus := Vector3.ZERO
 var _initialized := false
 var _slide_k := 0.0              # 0..1 weich: Fahrer auf dem Slider
@@ -94,10 +96,18 @@ func _process(delta: float) -> void:
 	_focus = (_focus + move).lerp(target, 1.0 - exp(-delta * 12.0))
 
 	var look := Input.get_vector("cam_left", "cam_right", "cam_up", "cam_down")
+	if Input.is_action_pressed("cam_zoom"):
+		# R3 gedrückt halten: rechter Stick ↕ zoomt (wie das Mausrad), dreht nicht
+		distance = clampf(distance + look.y * 8.0 * delta, 3.0, 30.0)
+		look = Vector2.ZERO
 	if look.length() > 0.1:
 		_off_yaw -= look.x * 2.5 * delta
 		_off_pitch -= look.y * 1.5 * delta
 		_idle = 0.0
+		_stick = true
+	elif _stick:
+		_stick = false
+		_idle = STICK_BACK               # Stick losgelassen: sofort zurück hinter den Fahrer (Maus wartet kurz)
 	_idle += delta
 
 	var speed := rider.horizontal_speed()
@@ -130,8 +140,8 @@ func _process(delta: float) -> void:
 				side_yaw = lerp_angle(side_yaw, atan2(-vh.x, -vh.z), PRESS_BEHIND)
 			desired = lerp_angle(desired, side_yaw, _press_k * PRESS_SIDE)
 		_yaw = lerp_angle(_yaw, desired, 1.0 - exp(-delta * 2.5))
-		if _idle > 1.5:
-			var back := 1.0 - exp(-delta * 1.5)
+		if _idle > STICK_BACK:
+			var back := 1.0 - exp(-delta * 3.0)
 			_off_yaw = lerpf(wrapf(_off_yaw, -PI, PI), 0.0, back)
 			_off_pitch = lerpf(_off_pitch, 0.0, back)
 

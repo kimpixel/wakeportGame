@@ -84,6 +84,7 @@ func is_open() -> bool:
 
 func close() -> void:
 	if _overlay:
+		MenuNav.remove_scope(_overlay)
 		_overlay.queue_free()
 		_overlay = null
 
@@ -125,6 +126,7 @@ func _open() -> void:
 	list.add_theme_constant_override("separation", 4)
 	_scroll.add_child(list)
 	var h := 0.0
+	var first: Button = null              # Fokus (Tastatur/Gamepad) auf die gewählte Zeile
 	for i in _items.size():
 		var it: Dictionary = _items[i]
 		if it["header"]:
@@ -145,8 +147,9 @@ func _open() -> void:
 		b.add_theme_font_size_override("font_size", font_size)
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.clip_text = true
-		b.focus_mode = Control.FOCUS_NONE
 		b.toggle_mode = true
+		if first == null or i == selected:
+			first = b
 		b.button_pressed = i == selected
 		b.custom_minimum_size = Vector2(0, ROW_H)
 		b.mouse_filter = Control.MOUSE_FILTER_PASS       # Wischen scrollt die Liste
@@ -182,6 +185,7 @@ func _open() -> void:
 	panel.size = Vector2(w, h)
 	panel.custom_minimum_size = Vector2(w, h)
 	_scroll.custom_minimum_size = Vector2(0, h - 12.0)
+	MenuNav.add_scope(_overlay, 50, first)
 	queue_redraw()
 	# gewählte Zeile sichtbar
 	await get_tree().process_frame
@@ -200,7 +204,7 @@ func _pick(i: int) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if _overlay and event is InputEventKey and event.pressed and (event as InputEventKey).physical_keycode == KEY_ESCAPE:
+	if _overlay and event.is_action_pressed("ui_cancel"):
 		close()
 		queue_redraw()
 		get_viewport().set_input_as_handled()

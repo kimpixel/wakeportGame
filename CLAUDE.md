@@ -120,6 +120,7 @@ Fallstricke:
 | `scripts/ui/start_screen.gd` | Startseite (responsiv, Popups Einstellungen / Features & Hacks / Detail) |
 | `scripts/ui/setup_editor.gd` | Setup-Editor (eigene Seite, Draufsicht/3D, Bauteile, Hacks, Auswahl, Speichern in `user://setups`, JSON); Test `--screen=@editor:t2:sel=2:3d…` |
 | `scripts/ui/feature_preview.gd` | drehbare 3D-Vorschau eines Features/Hacks (eigene Welt) |
+| `scripts/ui/menu_nav.gd` | Menüs mit Tastatur/Gamepad: Menüs melden ihren Bereich an (`MenuNav.add_scope(root, stufe, erster)`; Startseite 0, Popups 10, Editor 15 passiv, Challenge-Fenster 20, Pause 30, Auswahlliste 50), Fokus wandert mit Pfeilen/Steuerkreuz/linkem Stick (Richtung, mit Wiederholung) und Tab, weißer Rahmen `focus_box()`. Leertaste/✕ = Knopf drücken (`ui_accept`, ohne Enter), Enter/PS/Touchpad = `menu_start`, Esc/○ = `ui_cancel`, O/Options = `settings`, Esc/PS = `pause`. Im Spiel: ○ = Driften, Steuerkreuz = lenken/Rolle, L1/R1 = Tempo (in der Luft schnelle 180, `Rider._quick_spin`, `QUICK_SPIN_RATE`; Invert nur normales Drehtempo), R2 = Sprung analog (`_trig_load` = tiefster Druck), R3 + rechter Stick ↕ = Zoom; im Menü L1/R1 = Reiter. `scripts/pad_fx.gd`: Vibration (Landung `Rider.touched_down`, Sturz, Rumpeln, Sprung-Start, Slider, Seilzug ab 80 % der Grenze) und Lichtleiste in Seilzug-Farbe (`Input.set_joy_light`) |
 | `scripts/ui/touch_pad.gd`, `scripts/mobile_input.gd` | Handy: virtuelle Tasten, Neigung, Touch |
 | `scripts/ui/debug_params.gd` | Debug-Overlay **F4** (nur lokal am Desktop, nicht Web): kompaktes Panel oben rechts am Rand, feste Pixelgröße (360 px, wächst nicht mit dem Fenster), Bereich per Auswahlfeld, je Parameter eine Zeile mit Regler, Kommentar aus dem Quelltext im Tooltip, „Kopieren“ in die Zwischenablage, nichts gespeichert; Mausrad über dem Panel zoomt nicht die Kamera. Regelbare Werte sind `static var` statt `const` (z. B. `Rider.DPRESS_DRAG`); neue in `GROUPS` eintragen. Test `--debug-params` |
 | `scripts/ui/branch_label.gd` | klein unten rechts in der Ecke: im Web die **Build-Version** (`res://version.txt`, schreibt `web.yml`, z. B. „v412 · 502fa0a“ – zeigt am Handy, ob die neue Version geladen ist), lokal am Desktop der Git-Branch (liest `.git/HEAD`, auch im Worktree). Web-Cache: `web.yml` benennt `index.pck` je Build um, `index.js?v=`, und `head_include` lädt die Seite einmal neu, wenn `build.txt` eine neuere Build-Nummer meldet |
@@ -222,7 +223,7 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
 - ↑/↓ (W/S): in der Luft **Frontroll/Backroll**; auf dem Slider **Nose-/Tailpress** (kippt entlang
   der Brettlänge, also quer bei quergestelltem Brett).
   Wer beim Abheben ↑/↓ noch hält (Press vom Slider), bekommt keinen Überschlag, bis er loslässt.
-- Leertaste: halten + loslassen = Sprung; startet auch die Anlage (dann ohne Sprung). Kein Enter.
+- Leertaste: halten + loslassen = Sprung; startet auch die Anlage (dann ohne Sprung). Im Spiel kein Enter (Enter = Start nur in Menüs).
   **Nach Sturz: Leertaste halten = schwimmen, Strg = sofort weiter (−1:00), R = Steg (−2:00)** –
   angezeigt in einem Panel mit Zeitkosten (`Hud.show_recovery`).
 - Strg (zur Not Alt): **Driften** – keine Kante greift: Lenken ändert die Fahrtrichtung nicht, nur der
@@ -371,7 +372,7 @@ Handy im Browser: Name per `prompt()` (LineEdit hat dort keine Bildschirmtastatu
 
 Startseite merkt sich das **zuletzt gespielte Spiel** (Modus + Challenge-id in user://settings.cfg [game] `mode`/`task`, gespeichert bei Start und beim Verlassen der Challenge, Tests speichern nichts; `main.gd _remember_game`/`_recall_game`). Startseite: echte Szene im Hintergrund, Kamera schwenkt von der Seeseite; Menü im HUD-Stil
 (Spielmodus, Terminal, Feature-Setup, Challenge und alle Einstellungen als **Auswahlboxen** `scripts/ui/select_box.gd` – Liste mit großen Zeilen direkt an der Box, am Handy per Finger scrollbar, Test `--screen=@auswahl[2]`; Einstellungen je Zeile Titel links, Auswahl/Schieber rechts; Medaillen als **Pokale** `scripts/ui/trophy.gd`; Einstellungen, Spiel starten), keine Tasten-Legende, keine
-Shortcuts T/F (nur Leertaste = Start, Esc). Taste **Setup-Editor** öffnet den Editor (eigene Seite). Eigene Setups liegen in `user://setups/`
+Shortcuts T/F (Enter/PS = Start, Leertaste/✕ drückt den Knopf mit Fokus, Esc/○ zurück, O/Options Einstellungen; `MenuNav`). Taste **Setup-Editor** öffnet den Editor (eigene Seite). Eigene Setups liegen in `user://setups/`
 (`FeatureSet.save_user_setup`) und hängen hinten an `list_setups()`. Das Popup „Features & Hacks“ bleibt im Code, aber nicht im Menü.
 Responsiv: Desktop Menü links, Handy quer breit/flach, Handy hoch unten.
 
