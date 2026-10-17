@@ -1012,42 +1012,65 @@ func _build_ranking() -> void:
 func _open_ranking() -> void:
 	_rank_name.text = leaderboard.player_name
 	_update_rank_name("")
-	_fill_rank_select()
+	_rank_req += 1
+	var req := _rank_req
+	_rank_select.clear()
+	_rank_entries.clear()
+	for c in _rank_list.get_children():
+		c.queue_free()
+	_rank_info.text = "Lädt …"
 	_show_popup(_rank_pop)
+	var filled: Variant = await leaderboard.boards_with_entries()
+	if req != _rank_req:
+		return
+	_fill_rank_select(filled)
 	_fill_ranking()
 
 
-## Auswahl aller Disziplinen füllen: Competition 7:30, die Challenges je Modus, dann Competition 10:00 und 15:00
-## (eigene Setups haben keine Rangliste). Vorgewählt: das auf der Startseite gewählte Spiel.
-func _fill_rank_select() -> void:
+## Auswahl der Disziplinen füllen: Competition 7:30, die Challenges je Modus, dann Competition 10:00 und 15:00
+## (eigene Setups haben keine Rangliste). filled: {"board|ver": Anzahl} vom Server – nur Disziplinen mit
+## Einträgen erscheinen; null (Server nicht erreichbar/alt) = alle. Vorgewählt: das gewählte Spiel, sonst die erste.
+func _fill_rank_select(filled: Variant) -> void:
 	_rank_select.clear()
 	_rank_entries.clear()
 	var setups: Array = FeatureSet.list_setups().filter(func(e: Dictionary) -> bool: return not e.get("user", false))
 	var terms: Array = ["T2", "T1"]                 # Terminal 2 zuerst (dort fährt man meist)
-	var add_comp := func(sec: int) -> void:
-		_rank_select.add_header("COMPETITION · RUNDE %s" % _clock_text(sec))
-		_rank_entries.append({})
-		for t: String in terms:
-			for st: Dictionary in setups:
-				_rank_select.add_item("%s · %s · %s" % [_terminal_name(t), str(st.get("name", st["id"])).get_slice(" (", 0),
-					_clock_text(sec)])
-				_rank_entries.append({"sec": sec, "terminal": t, "setup": st})
 	var lengths: Array = []
 	for m: Array in GameSettings.MODES:
 		if int(m[0]) > 0:
 			lengths.append(int(m[0]))
-	add_comp.call(lengths[0])
+	# Gruppen: [Überschrift, [[Zeile, Eintrag], …]]
+	var comp_group := func(sec: int) -> Array:
+		var rows: Array = []
+		for t: String in terms:
+			for st: Dictionary in setups:
+				rows.append(["%s · %s · %s" % [_terminal_name(t), str(st.get("name", st["id"])).get_slice(" (", 0),
+					_clock_text(sec)], {"sec": sec, "terminal": t, "setup": st}])
+		return ["COMPETITION · RUNDE %s" % _clock_text(sec), rows]
+	var groups: Array = [comp_group.call(lengths[0])]
 	for m: Dictionary in Training.MODES:
 		var tasks: Array = m.get("tasks", [])
 		if tasks.is_empty():
 			continue
-		_rank_select.add_header(str(m["name"]).to_upper())
-		_rank_entries.append({})
+		var rows: Array = []
 		for i in tasks.size():
-			_rank_select.add_item(tasks[i]["title"])
-			_rank_entries.append({"mode": m["id"], "task": i})
+			rows.append([tasks[i]["title"], {"mode": m["id"], "task": i}])
+		groups.append([str(m["name"]).to_upper(), rows])
 	for sec: int in lengths.slice(1):
-		add_comp.call(sec)
+		groups.append(comp_group.call(sec))
+	for g: Array in groups:
+		var rows: Array = g[1]
+		if filled is Dictionary:
+			rows = rows.filter(func(r: Array) -> bool:
+				var b: Dictionary = _entry_board(r[1])[0]
+				return (filled as Dictionary).has("%s|%s" % [b["board"], b["ver"]]))
+		if rows.is_empty():
+			continue
+		_rank_select.add_header(g[0])
+		_rank_entries.append({})
+		for r: Array in rows:
+			_rank_select.add_item(r[0])
+			_rank_entries.append(r[1])
 	# Vorwahl
 	var want := -1
 	var setup_id: String = ""
@@ -1057,22 +1080,22 @@ func _fill_rank_select() -> void:
 	var sec_now := int(settings.get_v("mode"))
 	if sec_now <= 0:
 		sec_now = lengths[0]                        # Freies Fahren: Liste der normalen Runde
-	var first := -1                                 # eigenes Setup gewählt: erstes Setup dieser Anlage
 	for i in _rank_entries.size():
 		var e: Dictionary = _rank_entries[i]
 		if _cur_mode == Training.COMPETITION:
-			if e.get("sec", 0) == sec_now and e.get("terminal", "") == _terminal:
-				if first < 0:
-					first = i
-				if e["setup"].get("id", "") == setup_id:
-					want = i
-					break
+			if e.get("sec", 0) == sec_now and e.get("terminal", "") == _terminal \
+					and e["setup"].get("id", "") == setup_id:
+				want = i
+				break
 		elif e.get("mode", "") == _cur_mode and e.get("task", -1) == _cur_task:
 			want = i
 			break
 	if want < 0:
-		want = first
-	_rank_select.select(want if want >= 0 else 1)
+		want = 1 if _rank_entries.size() > 1 else -1    # erste Disziplin (Zeile 0 ist eine Überschrift)
+	if want >= 0:
+		_rank_select.select(want)
+	else:
+		_rank_select.text = "Noch keine Einträge"
 
 
 func _terminal_name(t: String) -> String:
@@ -1087,7 +1110,13 @@ static func _clock_text(sec: int) -> String:
 ## Die in der Auswahl gewählte Rangliste; [board, Hinweis] (Hinweis: warum dort mit den aktuellen
 ## Einstellungen nichts eingetragen wird).
 func _ranking_board() -> Array:
-	var e: Dictionary = _rank_entries[clampi(_rank_select.selected, 0, _rank_entries.size() - 1)]
+	if _rank_select.selected < 0 or _rank_select.selected >= _rank_entries.size():
+		return []
+	return _entry_board(_rank_entries[_rank_select.selected])
+
+
+## Rangliste zu einer Zeile der Auswahl: [board, Hinweis].
+func _entry_board(e: Dictionary) -> Array:
 	if e.has("mode"):
 		return [leaderboard.challenge_board(e["mode"], Training.tasks(e["mode"])[e["task"]]), ""]
 	return [leaderboard.competition_board(e["sec"], e["terminal"], e["setup"], _terminal_name(e["terminal"])),
@@ -1096,6 +1125,12 @@ func _ranking_board() -> Array:
 
 func _fill_ranking() -> void:
 	var a := _ranking_board()
+	if a.is_empty():
+		for c in _rank_list.get_children():
+			c.queue_free()
+		_rank_info.text = "Noch niemand in der Rangliste – fahr den ersten Eintrag!" \
+			+ ("   ·   Test-Version: eigene Test-Rangliste" if leaderboard.dev else "")
+		return
 	var b: Dictionary = a[0]
 	var why: String = a[1]
 	_rank_board = b
@@ -1347,7 +1382,7 @@ func select_by_name(prefix: String) -> void:
 		_open_achievements()
 		return
 	if prefix.begins_with("@rangliste"):          # @ranglisteN: Zeile N der Disziplin-Auswahl, @rangliste+ Liste offen
-		_open_ranking()
+		await _open_ranking()
 		var n := prefix.substr(10).trim_suffix("+")
 		if n.is_valid_int():
 			_rank_select.select(n.to_int())

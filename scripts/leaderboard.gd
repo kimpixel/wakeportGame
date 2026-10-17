@@ -222,6 +222,21 @@ func top(b: Dictionary, n := 10) -> Dictionary:
 	return await _post("/top", {"id": player_id, "board": b["board"], "ver": b["ver"], "lower": b["lower"], "n": n})
 
 
+## Ranglisten mit Einträgen: {"board|ver": Anzahl} (echte bzw. Test-Ranglisten je nach dev); null bei Fehler
+## oder älterem Server ohne /boards (dann alle zeigen).
+func boards_with_entries() -> Variant:
+	if not enabled():
+		return null
+	var r := await _post("/boards", {"dev": dev})
+	if not r.get("ok", false):
+		return null
+	var out := {}
+	for e: Variant in r.get("boards", []):
+		if e is Dictionary:
+			out["%s|%s" % [e.get("board", ""), e.get("ver", "")]] = int(e.get("n", 0))
+	return out
+
+
 ## Namen festlegen (prüft der Server: erlaubte Zeichen, nicht vergeben). {ok} oder {error}.
 func set_player_name(n: String) -> Dictionary:
 	n = n.strip_edges()

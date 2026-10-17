@@ -9,6 +9,7 @@
 //   /top     {board, ver, lower, n, id?}                   beste n Einträge + eigener Platz
 //   /name    {id, name}                                    Namen festlegen bzw. ändern
 //   /forget  {id}                                          Spieler und alle Einträge löschen
+//   /boards  {dev?}                                        alle Ranglisten mit Einträgen (board, ver, n)
 // Admin (Header "Authorization: Bearer <ADMIN_TOKEN>"):
 //   /admin/boards                       alle Ranglisten mit Version und Anzahl
 //   /admin/delete {board, ver?, name}   Eintrag eines Spielers löschen (ohne ver: alle Versionen)
@@ -48,11 +49,12 @@ export default {
         return json(await admin(path.slice(7), body, env), 200, cors);
       }
       const now = Date.now();
-      if (path !== "/top" && !(await rateOk(req, env, now)))
+      if (path !== "/top" && path !== "/boards" && !(await rateOk(req, env, now)))
         return json({ error: "zu viele Anfragen, bitte später" }, 429, cors);
       switch (path) {
         case "/score": return await score(body, env, now, cors);
         case "/top": return json(await top(body, env), 200, cors);
+        case "/boards": return json(await boards(body, env), 200, cors);
         case "/name": return await setName(body, env, now, cors);
         case "/forget": return await forget(body, env, cors);
       }
@@ -214,6 +216,15 @@ async function top(b, env) {
   const older = await env.DB.prepare("SELECT COUNT(*) AS n FROM scores WHERE board = ? AND ver <> ?")
     .bind(a.board, a.ver).first();
   return { ok: true, entries, total: await total(env, a), me, older: older.n };
+}
+
+// Ranglisten mit Einträgen (für die Auswahl im Spiel); dev = Test-Ranglisten statt echter
+async function boards(b, env) {
+  const r = await env.DB.prepare(
+    `SELECT s.board, s.ver, COUNT(*) AS n FROM scores s JOIN players p ON p.key = s.player
+     WHERE p.banned = 0 AND (s.ver LIKE 'dev-%') = ? GROUP BY s.board, s.ver`
+  ).bind(b.dev ? 1 : 0).all();
+  return { ok: true, boards: r.results };
 }
 
 async function setName(b, env, now, cors) {
