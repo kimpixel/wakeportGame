@@ -420,3 +420,22 @@ static func record(mode_id: String, task: Dictionary, value: float) -> bool:
 	cfg.set_value(SECTION, mode_id + "." + task["id"], [maxi(int(old[0]), medal_for(task, value)), value])
 	cfg.save(GameSettings.FILE)
 	return true
+
+
+## Beste gesprungene Weite (Invert, Sprung-Start) in m, 0 = noch keine.
+static func best_width(mode_id: String, task_id: String) -> float:
+	var cfg := ConfigFile.new()
+	if cfg.load(GameSettings.FILE) != OK:
+		return 0.0
+	return float(cfg.get_value(SECTION, mode_id + "." + task_id + ".weite", 0.0))
+
+
+## Weite eintragen, wenn sie weiter ist. Liefert true bei neuer bester Weite.
+static func record_width(mode_id: String, task_id: String, width: float) -> bool:
+	if width <= best_width(mode_id, task_id):
+		return false
+	var cfg := ConfigFile.new()
+	cfg.load(GameSettings.FILE)
+	cfg.set_value(SECTION, mode_id + "." + task_id + ".weite", width)
+	cfg.save(GameSettings.FILE)
+	return true
