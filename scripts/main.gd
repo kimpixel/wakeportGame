@@ -759,7 +759,7 @@ func _toggle_rope_rip() -> void:
 	var off := int(settings.get_v("grip")) == 3
 	settings.set_v("grip", _grip_on if off else 3)
 	start_screen.sync_settings()
-	hud.show_trick("Seil reißt ab: " + ("an" if off else "aus"))
+	hud.show_trick("Seil reißt ab: " + ("an" if off else "aus – keine Rangliste"))
 
 
 ## NPC auf der anderen Anlage an/aus.

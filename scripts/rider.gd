@@ -100,10 +100,10 @@ static var KICK_MAX_VY := 8.0        # m/s Obergrenze beim Absprung von der Kant
 static var RAMP_LAUNCH := 0.85       # Abwurf von der Rampenkante (Anteil der Steiggeschwindigkeit)
 # Raley: wer beim Absprung viel Seilzug hat (hart gegen den Zug angeschnitten), schwingt mit gestrecktem
 # Körper um den Griff nach hinten oben – Brett höher als der Kopf, Brust zum Wasser. Weniger Zug = Ollie.
-static var RALEY_TENSION := 2500.0   # N Mindest-Seilzug beim Absprung (Marke RALEY in der Seilzug-Anzeige)
-static var RALEY_LOAD := 0.95        # nur mit voll aufgeladenem Sprung (Leertaste lange halten)
+static var RALEY_TENSION := 3358.0   # N Mindest-Seilzug beim Absprung (Marke RALEY in der Seilzug-Anzeige)
+static var RALEY_LOAD := 0.8         # nur mit (fast) voll aufgeladenem Sprung (Leertaste lange halten)
 static var RALEY_ROPE := 0.6         # m/s Steiggeschwindigkeit je 1000 N Seilzug über RALEY_TENSION
-static var RALEY_PER_SPEED := 0.06   # m/s Steiggeschwindigkeit je m/s Fahrtempo (addiert)
+static var RALEY_PER_SPEED := 0.2    # m/s Steiggeschwindigkeit je m/s Fahrtempo (addiert)
 static var RALEY_MAX_VY := 8.5       # m/s Obergrenze beim Raley-Absprung
 static var RALEY_MAX := 2.8          # rad: so weit schwingen Beine und Brett um den Griff (≈160°, Brett über dem Kopf)
 const RALEY_TORSO := 0.55       # Anteil davon für Becken/Oberkörper – der Rest wird Hohlkreuz

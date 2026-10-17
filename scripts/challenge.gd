@@ -28,8 +28,7 @@ var _t := 0.0
 var _value := 0.0               # Messwert des laufenden Versuchs
 var _rank_text := ""            # Rangliste: Platz des letzten gewerteten Versuchs (Ergebnisfenster)
 var _max_y := 0.0
-var _jump_from := Vector3.INF   # Invert/Sprung-Start: Absprungpunkt des laufenden Sprungs (für die Weite)
-var _width := 0.0               # gesprungene Weite (waagrecht, Absprung -> Landung)
+var _jump_from := Vector3.INF   # Absprungpunkt des laufenden Sprungs (Messwert width)
 var _laps0 := 0
 var _around := false
 var _ground_part: FeaturePart
@@ -224,7 +223,6 @@ func _reset_measure() -> void:
 	_value = 0.0
 	_max_y = 0.0
 	_jump_from = Vector3.INF
-	_width = 0.0
 	_around = false
 	_ground_part = null
 	_launch = null
@@ -449,11 +447,12 @@ func _on_landed(info: Dictionary) -> void:
 			match task["metric"]:
 				"height":
 					_value = _max_y
+				"width":
+					_value = _jump_dist()
 				"spin":
 					_value = int(info["half_turns"]) * 180.0
 				"points":
 					_value = float(info["points"])
-			_width = _jump_dist()
 			_hit = true
 			_done_t = SETTLE
 		"raley":
@@ -472,11 +471,12 @@ func _on_landed(info: Dictionary) -> void:
 			match task["metric"]:
 				"height":
 					_value = _max_y
+				"width":
+					_value = _jump_dist()
 				"spin":
 					_value = int(info["half_turns"]) * 180.0
 				"points":
 					_value = float(info["points"])
-			_width = _jump_dist()
 			_hit = true
 			_done_t = SETTLE
 
@@ -487,11 +487,6 @@ func _jump_dist() -> float:
 		return 0.0
 	var p: Vector3 = game.rider.pos
 	return Vector2(p.x - _jump_from.x, p.z - _jump_from.z).length()
-
-
-## Invert und Sprung-Start zeigen neben dem Messwert die Weite (mit eigenem Bestwert).
-func _shows_width() -> bool:
-	return task["kind"] in ["raley", "dock"]
 
 
 ## Transfer: über das Start-Feature gekommen? Wer dazwischen ins Wasser kommt, muss neu ansetzen.
@@ -790,6 +785,7 @@ func _finish(ok: bool) -> void:
 		ok = false
 		text = _fail_text
 	if ok and _hit:
+		_value = Training.shown(task, _value)   # gewertet wird, was angezeigt wird (z. B. cm-genau)
 		medal = Training.medal_for(task, _value)
 		text = Training.format_value(task, _value)
 		new_best = Training.record(mode_id, task, _value) if not game._test_log else false   # Tests speichern nichts
@@ -797,10 +793,6 @@ func _finish(ok: bool) -> void:
 		_submit_rank()
 		if medal == 0:
 			text += "   –   noch keine Medaille"
-		if _shows_width() and _width > 0.0:
-			text += "   ·   Weite " + _fmt_m(_width)
-			if not game._test_log and Training.record_width(mode_id, task["id"], _width):
-				text += " (neue beste Weite)"
 		if game._test_log:
 			print("CHALLENGE %s/%s Versuch %d: %s Medaille %d" % [mode_id, task["id"], attempt, text, medal])
 	else:
@@ -833,6 +825,9 @@ func _submit_rank() -> void:
 		return
 	if not lb.has_name():
 		_rank_text = "Rangliste: Namen auf der Startseite eintragen (Taste Rangliste)"
+		return
+	if int(game.settings.get_v("grip")) == 3:
+		_rank_text = "Rangliste nicht mit Seilzug-Grenze „Aus“"
 		return
 	_rank_text = "Rangliste: wird gesendet …"
 	var n := attempt
@@ -871,8 +866,8 @@ func _update_hud() -> void:
 			"kick", "raley", "dock":
 				if task["metric"] == "height" and (game.rider.mode == Rider.Mode.AIR or _hit):
 					live = "Höhe " + Training.format_value(task, _max_y)
-				if _shows_width() and (game.rider.mode == Rider.Mode.AIR or _hit):
-					live += ("   " if live != "" else "") + "Weite " + _fmt_m(_width if _hit else _jump_dist())
+				elif task["metric"] == "width" and (game.rider.mode == Rider.Mode.AIR or _hit):
+					live = "Weite " + Training.format_value(task, _value if _hit else _jump_dist())
 			"chain":
 				live = Training.format_value(task, _count)
 			"slide":
@@ -900,12 +895,5 @@ func _update_hud() -> void:
 	var b := _best()
 	if not is_nan(float(b[1])):
 		line += "     Bestwert " + Training.format_value(task, b[1])
-	if _shows_width():
-		var bw := Training.best_width(mode_id, task["id"])
-		if bw > 0.0:
-			line += "     Beste Weite " + _fmt_m(bw)
 	game.hud.set_task(line)
 
-
-static func _fmt_m(v: float) -> String:
-	return ("%.1f m" % v).replace(".", ",")

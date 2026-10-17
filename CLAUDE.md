@@ -148,7 +148,7 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
   nie „Training“/„Aufgabe“ schreiben; im Code heißen sie weiter Training/Task): **Wenden, Kicker, Slider, Invert Training**, je
   mehrere Aufgaben (leicht → schwer), jede misst einen Wert → **Bronze/Silber/Gold** (Schwellen in `Training.MODES`,
   vom Nutzer fein justiert). Bestwerte in user://settings.cfg [medaillen]; **Tests speichern nichts**.
-- Modi: Wenden, Kicker, Slider, **Invert Training** (id `raley`; je Aufgabe genau ein Trick: `trick` = Name wie im Spiel, `rank` = Zusätze; anderer Trick = fehlgeschlagen, mehr = „Junge mach mal langsam!“; Versuch endet spätestens, wenn die Anlage zur nächsten Wende bremst), **Sprung-Start** (Nolli, Raley Start vom Steg), **Driften**, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
+- Modi: Wenden, Kicker, Slider, **Invert Training** (id `raley`; je Aufgabe genau ein Trick: `trick` = Name wie im Spiel, `rank` = Zusätze; anderer Trick = fehlgeschlagen, mehr = „Junge mach mal langsam!“; Versuch endet spätestens, wenn die Anlage zur nächsten Wende bremst; Raley zweimal: Höhe (Gold 5 m) und Weite, Messwert `width` = waagrecht Absprung → Landung (Gold 26 m); `"lb": 1` = Ranglisten und eigene Bestwerte neu, Schlüssel `MODUS.ID@lbN`), **Sprung-Start** (Nolli, Raley Start vom Steg), **Driften**, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
   `target` = Ziel, je per Anzeigename; zählt nur: auf dem Start-Feature fahren, abspringen, aus der Luft aufs Ziel; Klein/Groß/Special messen die Sprunghöhe im Flug Start-Feature → Ziel (`_xfer_h`), Special Press die Press-Sekunden). Nach gewertetem Versuch **1,4 s ausrollen** (`Challenge.OUTRO`), dann Fenster.
   Startseite im Querformat zweispaltig (links Modi, rechts Terminal/Setup bzw. Aufgaben; Handy quer: Start links).
 - Aufgabe setzt Fahrer + Carrier **in voller Fahrt** kurz vor die Stelle (`Rider.place`, `CableSystem.place_running`),
@@ -248,7 +248,7 @@ DRIFT links über SPRUNG (damit rechts gleichzeitig ▲ ▼ für den Drift-Press
 global; Web-Audio-Hacks nur auf Touch-Geräten (früher hakte sonst die Desktop-Tastatur).
 
 Tricks/Optik:
-- **Ollie** = normaler Sprung aus dem Wasser; Name nach Absprung (`Rider._launch_surface`): Ollie / **Kicker Air** / **Safety Air**. Haltung: in der Luft am höchsten Punkt am tiefsten in den Knien (`AIR_KNEES`), vor der Landung gestreckt, Landung abfedern (`LAND_TIME`). **Raley** nur mit viel Seilzug: ≥ `RALEY_TENSION` 2500 N beim Absprung (Marke RALEY in der Seilzug-Anzeige, F4), Sprung voll aufgeladen; Höhe = voller Sprung + `RALEY_ROPE` je 1000 N über der Schwelle + `RALEY_PER_SPEED` × Tempo (bis `RALEY_MAX_VY`); Ollie wächst kaum mit dem Tempo (`POP_ROPE` klein),
+- **Ollie** = normaler Sprung aus dem Wasser; Name nach Absprung (`Rider._launch_surface`): Ollie / **Kicker Air** / **Safety Air**. Haltung: in der Luft am höchsten Punkt am tiefsten in den Knien (`AIR_KNEES`), vor der Landung gestreckt, Landung abfedern (`LAND_TIME`). **Raley** nur mit viel Seilzug: ≥ `RALEY_TENSION` 3358 N beim Absprung (Marke RALEY in der Seilzug-Anzeige, F4), Sprung aufgeladen ≥ `RALEY_LOAD` 0,8; Höhe = voller Sprung + `RALEY_ROPE` je 1000 N über der Schwelle + `RALEY_PER_SPEED` × Tempo (bis `RALEY_MAX_VY`); Ollie wächst kaum mit dem Tempo (`POP_ROPE` klein),
   **kein Feature voraus** (damit man schräg auf Features springen kann). Pose nach Fotoserie:
   Körper schwingt um den Griff, am höchsten Punkt kopfüber unter dem Brett, Hohlkreuz, Knie
   angewinkelt, **Griff vor dem Gesicht** mit angewinkelten Armen (nicht hinter dem Kopf).
@@ -350,7 +350,7 @@ Test: `--set=NAME=WERT` (ohne Speichern), `--screen=@einstellungenN` (Reiter N).
 **Nutzungsstatistik** (`scripts/analytics.gd`, GoatCounter-Seite `kimpixel`, Auswertung https://kimpixel.goatcounter.com): nur Web-Hauptversion (nicht lokal, PR-Vorschau, Tests), count.js wird per JavaScriptBridge geladen; Ereignisse als Pfade `Analytics.count("start/…")` (Start, `runde/ende/…`, `challenge/MODUS/ID/MEDAILLE`, `erfolg/ID`, `editor`, `geraet/…`, `spielzeit/Nmin`). Keine personenbezogenen Daten.
 
 **Rangliste** (`scripts/leaderboard.gd`, Server `server/` = Cloudflare Worker + D1, Anleitung `server/README.md`; Adresse in `Leaderboard.URL`, leer = „noch nicht eingerichtet“):
-Ranglisten je Challenge (`ch/MODUS/ID`) und Competition (`comp/SEK/TERMINAL/SETUP`, nur 30 km/h, 16 m, Seilzug-Grenze an, kein Freies Fahren, keine eigenen Setups).
+Ranglisten je Challenge (`ch/MODUS/ID`) und Competition (`comp/SEK/TERMINAL/SETUP`, nur 30 km/h, 16 m, kein Freies Fahren, keine eigenen Setups). **Seilzug-Grenze Aus = keine Rangliste** (auch Challenges; Hinweis an allen Schaltern: Einstellung, G, ☰, Hilfe).
 Der Server kennt keine Aufgaben: die **Wertungs-Version** `ver` rechnet das Spiel (Hash der Aufgabe ohne Texte/Medaillen + Features des Setups mit benutzten Bauteilen) –
 ändert sich eine Aufgabe/ein Setup, beginnt deren Rangliste automatisch neu. **Physik oder Punkte geändert, sodass alte Werte nicht vergleichbar sind → `Leaderboard.RULES` erhöhen**
 (alle neu) bzw. `"lb": N` in einer Aufgabe (nur diese). Eintragen nur mit gespeichertem Namen (Startseite → Rangliste, = Einwilligung); echte Einträge nur aus der Web-Hauptversion,

@@ -13,7 +13,7 @@ extends RefCounted
 ##   setup    Setup-Datei (Terminal 2)
 ##   start    {s, x, dir}: s = Abstand vom Startmast wie in den Setup-Dateien (ohne Verschiebung),
 ##            dir +1 = Richtung Endmast, -1 = Richtung Startsteg. Wende: {turn: "a"|"b", before, x}
-##   metric   Messwert: sink, height, dist, dist_5050, dist_bs, switches, press, time (s auf dem Slider), count, spin, points,
+##   metric   Messwert: sink, height, width (Weite eines Sprungs), dist, dist_5050, dist_bs, switches, press, time (s auf dem Slider), count, spin, points,
 ##            spins (360er im Drift), share (Anteil der Wende im Drift)
 ##   medals   Schwellen [Bronze, Silber, Gold]; lower = true: kleiner ist besser
 ##   target   kick/slide: {s0, s1, side} – Features mit Mitte in diesem Bereich (Setup-Koordinaten),
@@ -171,50 +171,57 @@ const MODES := [
 	# Invert Training: jede Aufgabe verlangt genau einen Trick ("trick" = Name wie im Spiel, "rank" = Anzahl
 	# Zusätze: Drehung je 180, Invert-Trick); mehr gemacht = fehlgeschlagen. Gemessen wird die Höhe.
 	{"id": "raley", "name": "Invert Training", "text": "Inverts: Tricks aus dem Raley-Absprung nach der Wende.", "tasks": [
-		{"id": "first", "name": "Raley", "title": "Raley stehen",
-		 "kind": "raley", "trick": "Raley", "rank": 0, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
-		 "metric": "height", "medals": [0.5, 1.5, 4.3],
-		 "goal": "Nach der Ufer-Wende Tempo aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: größte Höhe.",
+		{"id": "first", "name": "Raley – Höhe", "title": "Höchster Raley",
+		 "kind": "raley", "lb": 1, "trick": "Raley", "rank": 0, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
+		 "metric": "height", "medals": [3.0, 4.0, 5.0],
+		 "goal": "Nach der Ufer-Wende Seilzug aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: größte Höhe.",
 		 "keys": "Leertaste lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist",
 		 "keys_mobile": "SPRUNG lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist",
 		 "tip": "Nach der Wende weit nach außen fahren, dann hart gegen den Zug zur Seilmitte kanten – loslassen, solange der Seilzug über der Marke RALEY ist – je mehr Zug und Tempo, desto höher."},
+		{"id": "weit", "name": "Raley – Weite", "title": "Weitester Raley",
+		 "kind": "raley", "lb": 1, "trick": "Raley", "rank": 0, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
+		 "metric": "width", "medals": [14.0, 20.0, 26.0],
+		 "goal": "Nach der Ufer-Wende Seilzug aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: Weite vom Absprung bis zur Landung.",
+		 "keys": "Leertaste lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist",
+		 "keys_mobile": "SPRUNG lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist",
+		 "tip": "Weit nach außen, dann hart zur Seilmitte kanten – je mehr Zug und Tempo, desto weiter."},
 		{"id": "krypt", "name": "Krypt", "title": "Krypt (Raley 180 rechts)",
-		 "kind": "raley", "trick": "Krypt", "rank": 1, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
+		 "kind": "raley", "lb": 1, "trick": "Krypt", "rank": 1, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
 		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "Raley mit genau einer halben Drehung nach rechts. Gemessen: größte Höhe.",
 		 "keys": "Raley, dann gegen Ende →  halten (180)",
 		 "keys_mobile": "Raley, dann gegen Ende nach rechts neigen (180)",
 		 "tip": "Erst strecken lassen, dann ← / → : der Schwung bricht ab, du schwingst zurück und drehst aufrecht – rechtzeitig loslassen."},
 		{"id": "blindjudge", "name": "Blind Judge", "title": "Blind Judge (Raley 180 links)",
-		 "kind": "raley", "trick": "Blind Judge", "rank": 1, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
+		 "kind": "raley", "lb": 1, "trick": "Blind Judge", "rank": 1, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
 		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "Raley mit genau einer halben Drehung nach links. Gemessen: größte Höhe.",
 		 "keys": "Raley, dann gegen Ende ←  halten (180)",
 		 "keys_mobile": "Raley, dann gegen Ende nach links neigen (180)",
 		 "tip": "Erst strecken lassen, dann ← / → : der Schwung bricht ab, du schwingst zurück und drehst aufrecht – rechtzeitig loslassen."},
 		{"id": "313", "name": "313", "title": "313 (Raley 360 links)",
-		 "kind": "raley", "trick": "313", "rank": 2, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
+		 "kind": "raley", "lb": 1, "trick": "313", "rank": 2, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
 		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "Raley mit genau einer ganzen Drehung nach links. Gemessen: größte Höhe.",
 		 "keys": "Raley, dann gegen Ende ←  halten (360)",
 		 "keys_mobile": "Raley, dann gegen Ende nach links neigen (360)",
 		 "tip": "Viel Höhe holen – die ganze Drehung braucht die Zeit vom höchsten Punkt bis zur Landung."},
 		{"id": "sbend", "name": "S-Bend", "title": "S-Bend",
-		 "kind": "raley", "trick": "S-Bend", "rank": 1, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
+		 "kind": "raley", "lb": 1, "trick": "S-Bend", "rank": 1, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
 		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "Raley-Absprung und gestreckt einmal um die eigene Längsachse – ohne Drehung danach. Gemessen: größte Höhe.",
 		 "keys": "Raley, gleich nach dem Absprung ↑",
 		 "keys_mobile": "Raley, gleich nach dem Absprung ▲",
 		 "tip": "Die Taste nur ganz am Anfang drücken – später wird es ein normaler Raley."},
 		{"id": "backroll", "name": "Backroll (todo)", "title": "Backroll (Invert, todo)",
-		 "kind": "raley", "trick": "Backroll", "rank": 1, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
+		 "kind": "raley", "lb": 1, "trick": "Backroll", "rank": 1, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
 		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "Raley-Absprung und seitlich nach außen kopfüber rollen – ohne Drehung danach. Gemessen: größte Höhe.",
 		 "keys": "Raley, gleich nach dem Absprung ↓",
 		 "keys_mobile": "Raley, gleich nach dem Absprung ▼",
 		 "tip": "Die Taste nur ganz am Anfang drücken – später wird es ein normaler Raley."},
 		{"id": "sbend_blind", "name": "Special - S-Bend to Blind", "title": "Special: S-Bend to Blind",
-		 "kind": "raley", "trick": "S-Bend to Blind", "rank": 2, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
+		 "kind": "raley", "lb": 1, "trick": "S-Bend to Blind", "rank": 2, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
 		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "S-Bend und danach genau eine halbe Drehung nach links – blind landen. Gemessen: größte Höhe.",
 		 "keys": "Raley, gleich nach dem Absprung ↑, nach der Drehung um die Handle ←  (180)",
@@ -354,10 +361,12 @@ static func tasks(mode_id: String) -> Array:
 	return MODES[mode_index(mode_id)].get("tasks", [])
 
 
-## Medaille für einen Messwert: 0 keine, 1 Bronze, 2 Silber, 3 Gold.
+## Medaille für einen Messwert: 0 keine, 1 Bronze, 2 Silber, 3 Gold. Es zählt der angezeigte
+## (gerundete) Wert – wer „5,0 m“ sieht, hat die 5 m geschafft.
 static func medal_for(task: Dictionary, value: float) -> int:
 	var th: Array = task["medals"]
 	var lower: bool = task.get("lower", false)
+	value = shown(task, value)
 	var m := 0
 	for i in 3:
 		if (value <= float(th[i])) if lower else (value >= float(th[i])):
@@ -365,13 +374,23 @@ static func medal_for(task: Dictionary, value: float) -> int:
 	return m
 
 
+## Messwert so gerundet, wie format_value ihn zeigt – mit diesem Wert wird gewertet (Medaille, Bestwert, Rangliste).
+static func shown(task: Dictionary, value: float) -> float:
+	match task["metric"]:
+		"height", "width", "dist", "dist_5050", "dist_bs", "sink", "share":
+			return snappedf(value, 0.01)
+		"press", "time":
+			return snappedf(value, 0.1)
+	return roundf(value)
+
+
 ## Messwert lesbar, z. B. "2,4 m", "35 %", "3 Wechsel".
 static func format_value(task: Dictionary, value: float) -> String:
 	match task["metric"]:
 		"sink":
 			return "%d %% eingesunken" % roundi(value * 100.0)
-		"height", "dist", "dist_5050", "dist_bs":
-			return ("%.1f m" % value).replace(".", ",")
+		"height", "width", "dist", "dist_5050", "dist_bs":
+			return ("%.2f m" % value).replace(".", ",")   # cm-genau: so wird auch gewertet
 		"press", "time":
 			return ("%.1f s" % value).replace(".", ",")
 		"switches":
@@ -399,12 +418,22 @@ static func format_threshold(task: Dictionary, i: int) -> String:
 	return ("bis " if lower else "ab ") + t
 
 
+## Schlüssel der Bestleistung in [medaillen]. Mit "lb" in der Aufgabe (Rangliste neu, z. B. nach geänderter
+## Physik) beginnen auch die eigenen Bestwerte neu: "MODUS.ID@lbN".
+static func _key(mode_id: String, task_id: String) -> String:
+	var key := mode_id + "." + task_id
+	for t: Dictionary in tasks(mode_id):
+		if t["id"] == task_id and t.has("lb"):
+			return key + "@lb%d" % int(t["lb"])
+	return key
+
+
 ## Gespeicherte Bestleistung: [Medaille, Bestwert] (Bestwert NAN = noch kein Versuch gewertet).
 static func best(mode_id: String, task_id: String) -> Array:
 	var cfg := ConfigFile.new()
 	if cfg.load(GameSettings.FILE) != OK:
 		return [0, NAN]
-	var v: Variant = cfg.get_value(SECTION, mode_id + "." + task_id, [0, NAN])
+	var v: Variant = cfg.get_value(SECTION, _key(mode_id, task_id), [0, NAN])
 	return v if v is Array and (v as Array).size() == 2 else [0, NAN]
 
 
@@ -417,25 +446,7 @@ static func record(mode_id: String, task: Dictionary, value: float) -> bool:
 		return false
 	var cfg := ConfigFile.new()
 	cfg.load(GameSettings.FILE)
-	cfg.set_value(SECTION, mode_id + "." + task["id"], [maxi(int(old[0]), medal_for(task, value)), value])
+	cfg.set_value(SECTION, _key(mode_id, task["id"]), [maxi(int(old[0]), medal_for(task, value)), value])
 	cfg.save(GameSettings.FILE)
 	return true
 
-
-## Beste gesprungene Weite (Invert, Sprung-Start) in m, 0 = noch keine.
-static func best_width(mode_id: String, task_id: String) -> float:
-	var cfg := ConfigFile.new()
-	if cfg.load(GameSettings.FILE) != OK:
-		return 0.0
-	return float(cfg.get_value(SECTION, mode_id + "." + task_id + ".weite", 0.0))
-
-
-## Weite eintragen, wenn sie weiter ist. Liefert true bei neuer bester Weite.
-static func record_width(mode_id: String, task_id: String, width: float) -> bool:
-	if width <= best_width(mode_id, task_id):
-		return false
-	var cfg := ConfigFile.new()
-	cfg.load(GameSettings.FILE)
-	cfg.set_value(SECTION, mode_id + "." + task_id + ".weite", width)
-	cfg.save(GameSettings.FILE)
-	return true

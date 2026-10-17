@@ -612,7 +612,7 @@ func _page_game(p: VBoxContainer) -> void:
 	p.add_child(_small("HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"))
 	_opt_row(p, "Auf dem Slider einloggen", ["An", "Aus"], "assist_lock", [true, false])
 	_opt_row(p, "Überschlag dreht von selbst zu Ende", ["An", "Aus"], "assist_flip", [true, false])
-	_opt_row(p, "SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G)",
+	_opt_row(p, "SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G; Aus = keine Rangliste)",
 		["An", "Aus"], "grip", [1, 3])
 
 
