@@ -17,6 +17,8 @@ const VESTS := [Color(1.0, 0.45, 0.05), Color(0.85, 0.12, 0.12), Color(0.15, 0.4
 	Color(0.2, 0.7, 0.3), Color(0.95, 0.85, 0.15), Color(0.6, 0.25, 0.75), Color(0.1, 0.1, 0.12),
 	Color(0.92, 0.92, 0.9)]
 ## Seilzug-Grenze: ab so viel Zug wird einem die Handle aus der Hand gerissen
+## Wählbar nur noch 1 = An und 3 = Aus (für die Rangliste gleiche Bedingungen); 0 locker und 2 streng aus
+## früheren Versionen werden beim Laden zu An.
 const GRIP_TENSION := [7200.0, 5400.0, 4300.0, INF]   # INF = Seil reißt nie ab
 ## Neigungs-Empfindlichkeit am Handy: Grad Neigung für vollen Lenkausschlag
 const TILT_DEG := [35.0, 25.0, 16.0]
@@ -46,7 +48,7 @@ const DEFAULTS := {
 	"vest": 0,              # VESTS
 	"assist_lock": true,    # Hilfe: auf dem Slider einloggen
 	"assist_flip": true,    # Hilfe: Überschlag dreht losgelassen von selbst zu Ende
-	"grip": 1,              # 0 locker, 1 normal, 2 streng, 3 aus (reißt nie ab)
+	"grip": 1,              # Seilzug-Grenze: 1 an, 3 aus (reißt nie ab); früher auch 0 locker, 2 streng
 	"rope": 16.0,           # m Seillänge der eigenen Anlage
 	"speed": 30.0,          # km/h Anlagen-Tempo
 	"planes": 1,            # 0 aus, 1 normal, 2 Rush Hour
@@ -120,6 +122,8 @@ func load_file(mobile: bool) -> void:
 		if not cfg.has_section_key(SECTION, "rope") and cfg.has_section_key("anlage", "rope"):
 			values["rope"] = float(cfg.get_value("anlage", "rope"))
 			values["speed"] = float(cfg.get_value("anlage", "speed", 30.0))
+	if int(values["grip"]) != 3:       # Seilzug-Grenze locker/streng gibt es nicht mehr: An
+		values["grip"] = 1
 	# Wasser-Effekte passend zur Grafikstufe (neu, und einmalig nach dem Update, das sie gekoppelt hat)
 	if int(values["preset_ver"]) < PRESET_VER:
 		values.merge(WATER_PRESETS[clampi(int(values["quality"]), 0, 2)], true)

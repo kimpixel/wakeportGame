@@ -74,7 +74,8 @@ var _achieve_list: VBoxContainer
 var _achieve_count: Label
 var leaderboard: Leaderboard      # Online-Rangliste (von main.gd gesetzt, vor build)
 var _rank_pop: PanelContainer     # Rangliste der gewählten Challenge bzw. Competition
-var _rank_title: Label
+var _rank_select: SelectBox      # alle Disziplinen: Competition je Rundenlänge/Terminal/Setup, alle Challenges
+var _rank_entries: Array = []     # je Zeile der Auswahl {mode, task} bzw. {sec, terminal, setup}; Überschrift = {}
 var _rank_list: VBoxContainer
 var _rank_info: Label
 var _rank_name: LineEdit
@@ -609,8 +610,8 @@ func _page_game(p: VBoxContainer) -> void:
 	p.add_child(_small("HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"))
 	_opt_row(p, "Auf dem Slider einloggen", ["An", "Aus"], "assist_lock", [true, false])
 	_opt_row(p, "Überschlag dreht von selbst zu Ende", ["An", "Aus"], "assist_flip", [true, false])
-	_opt_row(p, "SEILZUG-GRENZE   (ab wann die Handle aus der Hand gerissen wird; im Spiel G)",
-		["Locker", "Normal", "Streng", "Aus"], "grip", [0, 1, 2, 3])
+	_opt_row(p, "SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G)",
+		["An", "Aus"], "grip", [1, 3])
 
 
 func _page_rider(p: VBoxContainer) -> void:
@@ -943,14 +944,20 @@ func _open_achievements() -> void:
 
 # ---------------------------------------------------------------- Rangliste
 
-## Rangliste der gewählten Challenge bzw. Competition (Terminal, Setup, Rundenlänge), darunter der eigene Name.
+## Rangliste: im Kopf eine Auswahl aller Disziplinen (Competition je Rundenlänge, Terminal und Setup, alle
+## Challenges), vorgewählt ist das gerade gewählte Spiel; darunter die Liste und der eigene Name.
 func _build_ranking() -> void:
 	var f := _popup_frame("RANGLISTE")
 	_rank_pop = f[0]
 	var v: VBoxContainer = f[1]
-	_rank_title = _label("", 20, Color.WHITE)
-	_rank_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	v.add_child(_rank_title)
+	var title: Label = f[2]
+	title.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	var head := title.get_parent()
+	(head as HBoxContainer).add_theme_constant_override("separation", 12)
+	_rank_select = _select(18)
+	_rank_select.item_selected.connect(func(_i: int) -> void: _fill_ranking())
+	head.add_child(_rank_select)
+	head.move_child(_rank_select, 1)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -1005,24 +1012,86 @@ func _build_ranking() -> void:
 func _open_ranking() -> void:
 	_rank_name.text = leaderboard.player_name
 	_update_rank_name("")
+	_fill_rank_select()
 	_show_popup(_rank_pop)
 	_fill_ranking()
 
 
-## Welche Rangliste gerade gewählt ist; [board, Hinweis] (Hinweis: warum dort nichts eingetragen wird).
+## Auswahl aller Disziplinen füllen: Competition 7:30, die Challenges je Modus, dann Competition 10:00 und 15:00
+## (eigene Setups haben keine Rangliste). Vorgewählt: das auf der Startseite gewählte Spiel.
+func _fill_rank_select() -> void:
+	_rank_select.clear()
+	_rank_entries.clear()
+	var setups: Array = FeatureSet.list_setups().filter(func(e: Dictionary) -> bool: return not e.get("user", false))
+	var terms: Array = ["T2", "T1"]                 # Terminal 2 zuerst (dort fährt man meist)
+	var add_comp := func(sec: int) -> void:
+		_rank_select.add_header("COMPETITION · RUNDE %s" % _clock_text(sec))
+		_rank_entries.append({})
+		for t: String in terms:
+			for st: Dictionary in setups:
+				_rank_select.add_item("%s · %s · %s" % [_terminal_name(t), str(st.get("name", st["id"])).get_slice(" (", 0),
+					_clock_text(sec)])
+				_rank_entries.append({"sec": sec, "terminal": t, "setup": st})
+	var lengths: Array = []
+	for m: Array in GameSettings.MODES:
+		if int(m[0]) > 0:
+			lengths.append(int(m[0]))
+	add_comp.call(lengths[0])
+	for m: Dictionary in Training.MODES:
+		var tasks: Array = m.get("tasks", [])
+		if tasks.is_empty():
+			continue
+		_rank_select.add_header(str(m["name"]).to_upper())
+		_rank_entries.append({})
+		for i in tasks.size():
+			_rank_select.add_item(tasks[i]["title"])
+			_rank_entries.append({"mode": m["id"], "task": i})
+	for sec: int in lengths.slice(1):
+		add_comp.call(sec)
+	# Vorwahl
+	var want := -1
+	var setup_id: String = ""
+	var all := FeatureSet.list_setups()
+	if _setup_idx >= 0 and _setup_idx < all.size():
+		setup_id = all[_setup_idx].get("id", "")
+	var sec_now := int(settings.get_v("mode"))
+	if sec_now <= 0:
+		sec_now = lengths[0]                        # Freies Fahren: Liste der normalen Runde
+	var first := -1                                 # eigenes Setup gewählt: erstes Setup dieser Anlage
+	for i in _rank_entries.size():
+		var e: Dictionary = _rank_entries[i]
+		if _cur_mode == Training.COMPETITION:
+			if e.get("sec", 0) == sec_now and e.get("terminal", "") == _terminal:
+				if first < 0:
+					first = i
+				if e["setup"].get("id", "") == setup_id:
+					want = i
+					break
+		elif e.get("mode", "") == _cur_mode and e.get("task", -1) == _cur_task:
+			want = i
+			break
+	if want < 0:
+		want = first
+	_rank_select.select(want if want >= 0 else 1)
+
+
+func _terminal_name(t: String) -> String:
+	var ti := _terminals.find(t)
+	return _terminal_names[ti] if ti >= 0 else t
+
+
+static func _clock_text(sec: int) -> String:
+	return "%d:%02d" % [sec / 60, sec % 60]
+
+
+## Die in der Auswahl gewählte Rangliste; [board, Hinweis] (Hinweis: warum dort mit den aktuellen
+## Einstellungen nichts eingetragen wird).
 func _ranking_board() -> Array:
-	if _cur_mode != Training.COMPETITION:
-		var list := Training.tasks(_cur_mode)
-		var t: Dictionary = list[clampi(_cur_task, 0, list.size() - 1)]
-		return [leaderboard.challenge_board(_cur_mode, t), ""]
-	var sec := int(settings.get_v("mode"))
-	var list := FeatureSet.list_setups()
-	var st: Dictionary = list[clampi(_setup_idx, 0, list.size() - 1)]
-	var why := Leaderboard.competition_blocked(settings, sec, st)
-	if sec <= 0:
-		sec = int(GameSettings.MODES[0][0])       # Freies Fahren: Liste der normalen Runde zeigen
-	var ti := _terminals.find(_terminal)
-	return [leaderboard.competition_board(sec, _terminal, st, _terminal_names[ti] if ti >= 0 else _terminal), why]
+	var e: Dictionary = _rank_entries[clampi(_rank_select.selected, 0, _rank_entries.size() - 1)]
+	if e.has("mode"):
+		return [leaderboard.challenge_board(e["mode"], Training.tasks(e["mode"])[e["task"]]), ""]
+	return [leaderboard.competition_board(e["sec"], e["terminal"], e["setup"], _terminal_name(e["terminal"])),
+		Leaderboard.competition_blocked(settings, e["sec"], e["setup"])]
 
 
 func _fill_ranking() -> void:
@@ -1030,7 +1099,6 @@ func _fill_ranking() -> void:
 	var b: Dictionary = a[0]
 	var why: String = a[1]
 	_rank_board = b
-	_rank_title.text = b["title"]
 	for c in _rank_list.get_children():
 		c.queue_free()
 	_rank_req += 1
@@ -1278,8 +1346,15 @@ func select_by_name(prefix: String) -> void:
 	if prefix == "@erfolge":
 		_open_achievements()
 		return
-	if prefix == "@rangliste":
+	if prefix.begins_with("@rangliste"):          # @ranglisteN: Zeile N der Disziplin-Auswahl, @rangliste+ Liste offen
 		_open_ranking()
+		var n := prefix.substr(10).trim_suffix("+")
+		if n.is_valid_int():
+			_rank_select.select(n.to_int())
+			_fill_ranking()
+		if prefix.ends_with("+"):
+			await get_tree().process_frame
+			_rank_select.pressed.emit()
 		return
 	if prefix.begins_with("@auswahl"):             # Liste offen: Spielmodi, @auswahl2 Challenges
 		await get_tree().process_frame

@@ -322,7 +322,7 @@ Features/Setups:
 
 Einstellungen (`scripts/game_settings.gd`, Reiter Spiel/Fahrer/Welt/Technik/Wasser/Musik in `start_screen.gd`,
 angewendet in `main.gd` `_apply_setting`): Spielmodus Runde 7:30 / 10:00 / 15:00 / Freies Fahren (keine Uhr, HUD zeigt „MODUS FREI“), Hilfen
-(Einloggen, Überschlag ausdrehen; je aus +15 %), Seilzug-Grenze (Locker/Normal/Streng/Aus; Taste G
+(Einloggen, Überschlag ausdrehen; je aus +15 %), Seilzug-Grenze (nur An/Aus, damit die Rangliste fair ist; früher locker/streng werden beim Laden zu An; Taste G
 und ☰-Menü schalten Abreißen an/aus), Brett, Stance Regular/Goofy, Helm,
 Weste, Seillänge, Anlagen-Tempo, Flugzeuge, NPC, Grafik, Lautstärken (Busse Effekte/Jubel/Flugzeuge),
 Kamera, Handy-Neigung. Gespeichert in user://settings.cfg [optionen]; Wetter/Uhrzeit **nicht**. **Nur Abweichungen vom Standard werden
@@ -338,7 +338,7 @@ Ranglisten je Challenge (`ch/MODUS/ID`) und Competition (`comp/SEK/TERMINAL/SETU
 Der Server kennt keine Aufgaben: die **Wertungs-Version** `ver` rechnet das Spiel (Hash der Aufgabe ohne Texte/Medaillen + Features des Setups mit benutzten Bauteilen) –
 ändert sich eine Aufgabe/ein Setup, beginnt deren Rangliste automatisch neu. **Physik oder Punkte geändert, sodass alte Werte nicht vergleichbar sind → `Leaderboard.RULES` erhöhen**
 (alle neu) bzw. `"lb": N` in einer Aufgabe (nur diese). Eintragen nur mit gespeichertem Namen (Startseite → Rangliste, = Einwilligung); echte Einträge nur aus der Web-Hauptversion,
-lokal/PR-Vorschau in Test-Ranglisten (`dev-…`, Name „ dev“); Tests senden nichts außer mit `--lb-url=http://127.0.0.1:8787 --lb-name=X` (lokal `npx wrangler dev --local` in `server/`, Log `RANGLISTE …`). Test-Bild `--screen=@rangliste`.
+lokal/PR-Vorschau in Test-Ranglisten (`dev-…`, Name „ dev“); Tests senden nichts außer mit `--lb-url=http://127.0.0.1:8787 --lb-name=X` (lokal `npx wrangler dev --local` in `server/`, Log `RANGLISTE …`). Fenster: Auswahl aller Disziplinen im Kopf (Competition 7:30, Challenges je Modus, Competition 10:00/15:00; vorgewählt das gewählte Spiel). Test-Bild `--screen=@rangliste[N][+]` (Zeile N, + = Liste offen).
 Handy im Browser: Name per `prompt()` (LineEdit hat dort keine Bildschirmtastatur).
 
 **Musik** (`scripts/music.gd`, Reiter „Musik“, Kanal `Musik`): **nur lizenzfreie Spiel-Musik im Repo** (Pixabay, `assets/music/`, Quellen in `assets/music/QUELLEN.md` pflegen; bekannte Titel bräuchten Master- und Verlagsrechte). `assets/music/` hat ein `.gdignore` (nicht importiert, nicht im index.pck): lokal direkt aus dem Ordner gelesen, im Web kopiert der Workflow die Dateien nach `music/` + `music/index.json`, das Spiel lädt per HTTPRequest nur laufenden + nächsten Titel. Dazu eigene MP3/OGG/WAV des Spielers (Desktop: nativer Dateidialog, Web: `<input type=file>` über JavaScriptBridge), Kopie nach `user://musik`. Einstellungen `music`, `music_src` (0 Spiel, 1 eigene, 2 beides), `vol_music`; gemischt abgespielt (`PROCESS_MODE_ALWAYS`), `Music.duck()` bei Jubel/Sturzruf/Countdown; Pausenmenü „Nächster Titel“; Link `Music.PLAYLIST_URL`. Tests spielen nie eigene Titel (Spiel-Musik schon): `--music=DATEI[,…]`.

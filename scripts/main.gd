@@ -72,7 +72,7 @@ var settings := GameSettings.new()
 var terrain: Terrain
 var _free := false              # Freies Fahren: keine Zeit, keine Strafzeit
 var _npc_on := true
-var _grip_on := 1               # Seilzug-Grenze, zu der G zurückschaltet
+var _grip_on := 1               # Seilzug-Grenze „An“ (GameSettings.GRIP_TENSION), zu der G zurückschaltet
 var _swum := false              # seit dem Sturz schon geschwommen (Panel aus)
 var _msaa_default := Viewport.MSAA_DISABLED
 var _touch_started := false     # dieser Finger hat die Anlage gestartet (kein Sprung)
@@ -701,8 +701,6 @@ func _apply_setting(key: String) -> void:
 			rider.trick_bonus = settings.trick_bonus()
 		"grip":
 			rider.crash_tension = GameSettings.GRIP_TENSION[clampi(int(v), 0, 3)]
-			if int(v) < 3:
-				_grip_on = int(v)        # zuletzt eingestellte Grenze (für G: wieder einschalten)
 		"rope", "speed":
 			_apply_anlage()
 		"planes":
