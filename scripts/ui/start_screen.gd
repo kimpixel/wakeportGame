@@ -16,6 +16,7 @@ signal start_pressed
 signal mode_chosen(id: String)
 signal task_chosen(idx: int)
 signal setups_changed(id: String, play: bool)   # Setup-Editor hat gespeichert bzw. gelöscht
+signal plants_changed                           # Setup-Editor hat die Bepflanzung gespeichert
 signal ingame_closed                            # Einstellungen im Spiel (Pause) geschlossen
 
 const BASE_SHORT := 740.0        # so viele Einheiten hat die kurze Bildschirmseite mindestens
@@ -262,6 +263,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_ui.add_child(_editor)
 	_editor.build()
 	_editor.saved.connect(func(id: String, play: bool) -> void: setups_changed.emit(id, play))
+	_editor.plants_saved.connect(func() -> void: plants_changed.emit())
 	_editor.closed.connect(func() -> void: get_viewport().disable_3d = false)
 
 

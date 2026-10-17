@@ -5,7 +5,7 @@ extends Node3D
 ## Testoptionen (nach "--" auf der Kommandozeile):
 ##   --autotest        Autopilot + Autostart + Telemetrie im Log
 ##   --quit=SEK        nach SEK Sekunden Simulationszeit beenden
-##   --shot=PFAD.png   Screenshot speichern (mit --shot-time=SEK) und beenden
+##   --shot=PFAD.png   Screenshot speichern (mit --shot-time=SEK) und beenden; Log „RENDER …“ = Draw Calls/Dreiecke des Bildes
 ##   --cam=side|orbit  Kameramodus beim Start
 ##   --setup=ID        Feature-Setup aus setups/index.json (z. B. 2026-09, a, b)
 ##   --terminal=T1|T2  an welcher Anlage man fährt (der NPC fährt an der anderen)
@@ -472,6 +472,7 @@ func _build_start_screen() -> void:
 		_task_idx = i
 		start_screen.refresh_mode(game_mode, _task_idx))
 	start_screen.setups_changed.connect(_on_setups_changed)
+	start_screen.plants_changed.connect(func() -> void: terrain.rebuild_vegetation())
 
 
 ## Setup-Editor hat ein eigenes Setup gespeichert (bzw. gelöscht): Listen neu laden, das
@@ -786,9 +787,10 @@ func _apply_quality(q: int) -> void:
 	vp.scaling_3d_scale = [0.6, 0.8, 1.0][q]
 	vp.msaa_3d = [Viewport.MSAA_DISABLED, Viewport.MSAA_DISABLED, _msaa_default][q]
 	weather.shadow_distance = [0.0, 110.0, 200.0][q]
+	weather.shadow_splits = [2, 2, 4][q]
 	weather.apply()
 	if terrain:
-		terrain.set_tree_density([0.35, 0.7, 1.0][q])
+		terrain.set_quality(q)
 
 
 func _apply_terminal(t: String) -> void:
@@ -1253,6 +1255,12 @@ func _take_shot() -> void:
 	await RenderingServer.frame_post_draw
 	get_viewport().get_texture().get_image().save_png(_shot_path)
 	print("screenshot saved: ", _shot_path)
+	# Aufwand des Bildes (zum Vergleichen von Grafik-Änderungen, z. B. Bäume/Pflanzen je Grafikstufe)
+	var vp_rid := get_viewport().get_viewport_rid()
+	print("RENDER draw calls %d, objekte %d, dreiecke %d" % [
+		RenderingServer.viewport_get_render_info(vp_rid, RenderingServer.VIEWPORT_RENDER_INFO_TYPE_VISIBLE, RenderingServer.VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME),
+		RenderingServer.viewport_get_render_info(vp_rid, RenderingServer.VIEWPORT_RENDER_INFO_TYPE_VISIBLE, RenderingServer.VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME),
+		RenderingServer.viewport_get_render_info(vp_rid, RenderingServer.VIEWPORT_RENDER_INFO_TYPE_VISIBLE, RenderingServer.VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME)])
 	get_tree().quit()
 
 

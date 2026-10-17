@@ -14,6 +14,7 @@ extends Control
 
 signal closed
 signal saved(id: String, play: bool)
+signal plants_saved                # Bepflanzung gespeichert: im Spiel neu aufbauen
 
 const SNAP := 0.1                # m Raster beim Verschieben
 const HISTORY := 80
@@ -90,6 +91,32 @@ var _json_edit: TextEdit
 var _btn_delete_setup: Button
 var _toast: Label
 var _toast_t := 0.0
+
+# Pflanzen (Reiter „Pflanzen“, siehe Plants): auf dem Luftbild malen, radieren, Automatik zurückholen
+const PLANT_PAGE := 4
+const PLANT_HISTORY := 30
+const BRUSHES := [0.5, 1.0, 2.0, 3.0, 5.0, 8.0, 12.0]
+const DENSITIES := [["locker", 0.6], ["normal", 1.0], ["dicht", 1.6]]
+const TOOLS := [["malen", "Malen"], ["radieren", "Radieren"], ["auto", "Automatik"], ["schieben", "Schieben"]]
+const LAYER_FILL := {"boden": Color(0.3, 0.85, 1.0, 0.25), "gehoelz": Color(1.0, 0.6, 0.2, 0.25)}
+var _plant_mode := false
+var _plant_id := "ufergras"
+var _plant_tool := "malen"
+var _brush := 3.0                # m Radius
+var _density := 1.0              # Faktor: größer = dichter
+var _plant_undo: Array[String] = []
+var _plant_redo: Array[String] = []
+var _plants_dirty := false
+var _painting := false
+var _paint_last := Vector2.INF   # letzter Pinselpunkt (s, x) beim Ziehen
+var _brush_px := Vector2(-1.0, -1.0)
+var _ground: Node3D              # Luftbild unter der Karte (nur im Reiter „Pflanzen“)
+var _plant_buttons := {}
+var _tool_buttons := {}
+var _density_buttons: Array[Button] = []
+var _brush_label: Label
+var _plant_info: Label
+var _btn_plant_reset: Button
 
 
 # ---------------------------------------------------------------- Aufbau
@@ -280,16 +307,17 @@ func _build_side() -> PanelContainer:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 10)
 	p.add_child(v)
-	var tabs := HBoxContainer.new()
-	tabs.add_theme_constant_override("separation", 6)
+	# Reiter umbrechen, wenn die Leiste zu schmal ist (fünf Reiter)
+	var tabs := HFlowContainer.new()
+	tabs.add_theme_constant_override("h_separation", 6)
+	tabs.add_theme_constant_override("v_separation", 6)
 	v.add_child(tabs)
 	var tg := ButtonGroup.new()
-	for title: String in ["Teile", "Hacks", "Auswahl", "Setup"]:
+	for title: String in ["Teile", "Hacks", "Auswahl", "Setup", "Pflanzen"]:
 		var b := host._button(title, 16)
 		b.toggle_mode = true
 		b.button_group = tg
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.clip_text = true
 		var idx := _tabs.size()
 		b.pressed.connect(func() -> void: _show_page(idx))
 		tabs.add_child(b)
@@ -308,6 +336,7 @@ func _build_side() -> PanelContainer:
 	_hack_list.add_child(host._small("Hacks werden beim Öffnen gesammelt …"))
 	_sel_box = _pages[2].get_child(0)
 	_build_setup_page(_pages[3].get_child(0))
+	_build_plant_page(_pages[PLANT_PAGE].get_child(0))
 	# 3D-Vorschau der Auswahl (bleibt bestehen, wird beim Füllen der Seite neu eingehängt)
 	_preview_frame = Control.new()
 	_preview_frame.custom_minimum_size = Vector2(0, 220)
@@ -326,6 +355,16 @@ func _show_page(idx: int) -> void:
 		_tabs[i].set_pressed_no_signal(i == idx)
 	if idx == 1 and _hack_templates.is_empty():
 		_collect_hacks()
+	var plants := idx == PLANT_PAGE
+	if plants != _plant_mode:
+		_plant_mode = plants
+		if _ground:
+			_ground.visible = plants
+		if plants:
+			_update_plant_ui()
+		_clamp_center()
+		_update_cam()
+		_update_info()
 
 
 ## Bauteile aus parts.json, nach Art sortiert. Antippen = in die Bildmitte stellen.
@@ -464,7 +503,7 @@ func _close() -> void:
 
 
 func _on_back() -> void:
-	if _dirty and not _leave_armed:
+	if (_dirty or _plants_dirty) and not _leave_armed:
 		_leave_armed = true
 		_show_toast("Nicht gespeichert! Nochmal „Zurück“ = trotzdem verlassen (bleibt bis zum Neuladen erhalten)")
 		return
@@ -577,6 +616,46 @@ func _build_lane() -> void:
 		var ws: float = k[0] + k[1] * TurnBuoys.WHITE_BEFORE
 		for side: float in [-1.0, 1.0]:
 			_marker(Vector3(side * TurnBuoys.WHITE_SIDE, 0.0, -ws), 0.6, Color(0.96, 0.96, 0.94), 0.6)
+	# Luftbild (grob weit, fein um die Anlagen) als Untergrund zum Pflanzen-Malen
+	_ground = Node3D.new()
+	_ground.visible = _plant_mode
+	_lane_root.add_child(_ground)
+	for k: Array in [[Geo.area, "dop_wide.jpg", -0.06], [Geo.core, "dop_core.jpg", -0.04]]:
+		var r: Rect2 = k[0]
+		# Bild oben = Norden: NW, NO, SO, SW (Rechteck relativ zum Ursprung, Position = Südwest-Ecke)
+		var corners := [Vector2(r.position.x, r.end.y), r.end, Vector2(r.end.x, r.position.y), r.position]
+		var uvs := [Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for i: int in [0, 1, 2, 0, 2, 3]:
+			var g := Geo.rel_to_game(corners[i].x, corners[i].y)
+			var sx := _world_to_sx(g)
+			st.set_uv(uvs[i])
+			st.add_vertex(Vector3(sx.y, k[2], -sx.x))
+		var mi := MeshInstance3D.new()
+		mi.mesh = st.commit()
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.cull_mode = BaseMaterial3D.CULL_DISABLED
+		m.albedo_texture = load(Geo.DIR + k[1])
+		mi.material_override = m
+		_ground.add_child(mi)
+
+
+## Setup-Koordinaten (s, x) des aktuellen Terminals -> Spielkoordinaten (x, z).
+func _sx_to_world(sx: Vector2) -> Vector2:
+	var real: CableSystem = host.cable_of[_terminal]
+	var off: float = host.s_offset.get(_terminal, 0.0)
+	var w := real.transform * Vector3(sx.y, 0.0, real.mast_a_z - sx.x - off)
+	return Vector2(w.x, w.z)
+
+
+## Spielkoordinaten (x, z) -> Setup-Koordinaten (s, x) des aktuellen Terminals.
+func _world_to_sx(g: Vector2) -> Vector2:
+	var real: CableSystem = host.cable_of[_terminal]
+	var off: float = host.s_offset.get(_terminal, 0.0)
+	var l := real.transform.affine_inverse() * Vector3(g.x, 0.0, g.y)
+	return Vector2(real.mast_a_z - l.z - off, l.x)
 
 
 func _marker(pos: Vector3, r: float, c: Color, h: float) -> void:
@@ -652,7 +731,7 @@ func _sx_to_screen(s: float, x: float, y := 0.0) -> Vector2:
 
 func _zoom_at(p: Vector2, f: float) -> void:
 	var before := _screen_to_sx(p)
-	_span = clampf(_span * f, 6.0, 300.0)
+	_span = clampf(_span * f, 6.0, 600.0 if _plant_mode else 300.0)
 	_update_cam()
 	var after := _screen_to_sx(p)
 	_center += before - after
@@ -663,8 +742,10 @@ func _zoom_at(p: Vector2, f: float) -> void:
 func _clamp_center() -> void:
 	if _lane.is_empty():
 		return
-	_center.x = clampf(_center.x, _lane["mast_a"] - 20.0, _lane["mast_b"] + 20.0)
-	_center.y = clampf(_center.y, -60.0, 60.0)
+	# Pflanzen: auch die Ufer weiter weg (Strand, Seitenufer, hinter dem Endmast)
+	var more := 150.0 if _plant_mode else 0.0
+	_center.x = clampf(_center.x, _lane["mast_a"] - 20.0 - more, _lane["mast_b"] + 20.0 + more)
+	_center.y = clampf(_center.y, -60.0 - more * 1.5, 60.0 + more * 1.5)
 
 
 ## Ganze Bahn bzw. alle Teile zeigen.
@@ -688,6 +769,9 @@ func _fit() -> void:
 # ---------------------------------------------------------------- Eingabe auf der Karte
 
 func _map_input(event: InputEvent) -> void:
+	if _plant_mode and _plant_input(event):
+		_view.accept_event()
+		return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_WHEEL_UP and mb.pressed:
@@ -871,6 +955,9 @@ func _begin(tag := "") -> void:
 
 
 func _undo_step() -> void:
+	if _plant_mode:
+		_plant_step(true)
+		return
 	if _undo.is_empty():
 		return
 	_redo.append(JSON.stringify([_data, _terminal, _sel]))
@@ -878,6 +965,9 @@ func _undo_step() -> void:
 
 
 func _redo_step() -> void:
+	if _plant_mode:
+		_plant_step(false)
+		return
 	if _redo.is_empty():
 		return
 	_undo.append(JSON.stringify([_data, _terminal, _sel]))
@@ -1276,7 +1366,11 @@ func _update_info() -> void:
 	lines.append("Eigenes Setup (gespeichert)" if _user_id != "" else "Noch nicht gespeichert – „Speichern“ legt ein eigenes Setup an.")
 	_setup_info.text = "\n".join(lines)
 	_btn_delete_setup.disabled = _user_id == ""
-	_status.text = "%s   ·   %d Teile   ·   Ziehen = verschieben, freie Fläche ziehen = Karte bewegen, Rad / + − = Zoom" % [_terminal, n]
+	if _plant_mode:
+		_status.text = "Pflanzen   ·   %s: %s   ·   linke Taste = Pinsel, rechte Taste ziehen = Karte bewegen, Rad / + − = Zoom" % [
+			{"malen": "Malen", "radieren": "Radieren", "auto": "Automatik", "schieben": "Schieben"}[_plant_tool], Plants.species(_plant_id)["name"]]
+	else:
+		_status.text = "%s   ·   %d Teile   ·   Ziehen = verschieben, freie Fläche ziehen = Karte bewegen, Rad / + − = Zoom" % [_terminal, n]
 
 
 func _clean_data() -> Dictionary:
@@ -1342,6 +1436,304 @@ func _delete_setup() -> void:
 	saved.emit(id, false)
 
 
+# ---------------------------------------------------------------- Pflanzen
+
+## Reiter „Pflanzen“: Werkzeug, Art, Pinsel, Dichte, Speichern.
+func _build_plant_page(page: VBoxContainer) -> void:
+	page.add_child(_hint("Auf dem Luftbild malen. Wo du malst, radierst oder die Automatik zurückholst, " +
+		"übernimmst du die Stelle: dort setzt das Spiel nichts Automatisches mehr (Wiesengras, Schilf, " +
+		"Ufergras bzw. Sträucher und Bäume aus dem Wald) – getrennt für Bodenpflanzen und Gehölze. " +
+		"Rechte Maustaste ziehen = Karte bewegen."))
+	page.add_child(host._small("WERKZEUG"))
+	var tools := GridContainer.new()
+	tools.columns = 2
+	tools.add_theme_constant_override("h_separation", 6)
+	tools.add_theme_constant_override("v_separation", 6)
+	page.add_child(tools)
+	var tg := ButtonGroup.new()
+	for t: Array in TOOLS:
+		var b := host._button(t[1], 16)
+		b.toggle_mode = true
+		b.button_group = tg
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var id: String = t[0]
+		b.tooltip_text = {"malen": "Gewählte Pflanze setzen", "radieren": "Pflanzen der Ebene entfernen (auch die automatischen)",
+			"auto": "Stellen wieder der Automatik überlassen (entfernt Gemaltes der Ebene)", "schieben": "Karte mit dem Finger bewegen"}[id]
+		b.pressed.connect(func() -> void:
+			_plant_tool = id
+			_update_plant_ui())
+		tools.add_child(b)
+		_tool_buttons[id] = b
+	page.add_child(host._small("PFLANZE   (Radieren/Automatik wirken auf ihre Ebene)"))
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 6)
+	grid.add_theme_constant_override("v_separation", 6)
+	page.add_child(grid)
+	var pg := ButtonGroup.new()
+	for sp: Dictionary in Plants.SPECIES:
+		var b := host._button(sp["name"], 16)
+		b.toggle_mode = true
+		b.button_group = pg
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.add_theme_color_override("font_color", (sp["color"] as Color).lightened(0.35))
+		var hr: Array = sp["h"]
+		b.tooltip_text = "%s: %.1f–%.1f m hoch, Abstand %.1f m – %s" % [sp["name"], hr[0], hr[1], sp["spacing"], Plants.LAYER_NAMES[sp["layer"]]]
+		var id: String = sp["id"]
+		b.pressed.connect(func() -> void:
+			_plant_id = id
+			if _plant_tool == "schieben":
+				_plant_tool = "malen"
+			_update_plant_ui())
+		grid.add_child(b)
+		_plant_buttons[id] = b
+	page.add_child(host._small("PINSEL"))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	page.add_child(row)
+	for d: int in [-1, 1]:
+		var b := host._button("−" if d < 0 else "+", 20)
+		b.custom_minimum_size = Vector2(56, 48)
+		b.pressed.connect(func() -> void:
+			var i := clampi(BRUSHES.find(_brush) + d, 0, BRUSHES.size() - 1)
+			_brush = BRUSHES[i]
+			_update_plant_ui())
+		row.add_child(b)
+		if d < 0:
+			_brush_label = host._label("", 16)
+			_brush_label.custom_minimum_size.x = 90
+			_brush_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			_brush_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			row.add_child(_brush_label)
+	page.add_child(host._small("DICHTE BEIM MALEN"))
+	var drow := HBoxContainer.new()
+	drow.add_theme_constant_override("separation", 6)
+	page.add_child(drow)
+	var dg := ButtonGroup.new()
+	for d: Array in DENSITIES:
+		var b := host._button(d[0], 16)
+		b.toggle_mode = true
+		b.button_group = dg
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var f: float = d[1]
+		b.pressed.connect(func() -> void:
+			_density = f
+			_update_plant_ui())
+		drow.add_child(b)
+		_density_buttons.append(b)
+	_plant_info = host._label("", 15, Color(1, 1, 1, 0.8))
+	_plant_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	page.add_child(_plant_info)
+	var save := host._button("PFLANZEN SPEICHERN", 16, true)
+	save.pressed.connect(_save_plants)
+	page.add_child(save)
+	var jrow := HBoxContainer.new()
+	jrow.add_theme_constant_override("separation", 6)
+	page.add_child(jrow)
+	var exp := host._button("Als JSON kopieren", 16)
+	exp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	exp.tooltip_text = "Für setups/plants.json im Projekt"
+	exp.pressed.connect(func() -> void:
+		DisplayServer.clipboard_set(Plants.to_json())
+		_show_toast("Bepflanzung als JSON in die Zwischenablage kopiert"))
+	jrow.add_child(exp)
+	_btn_plant_reset = host._button("Zurücksetzen", 16)
+	_btn_plant_reset.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_btn_plant_reset.tooltip_text = "Eigene Bepflanzung löschen, wieder die aus dem Spiel"
+	_btn_plant_reset.pressed.connect(func() -> void:
+		_plant_begin()
+		Plants.reset_user()
+		_plants_dirty = false
+		plants_saved.emit()
+		_update_plant_ui()
+		_show_toast("Bepflanzung aus dem Spiel geladen"))
+	jrow.add_child(_btn_plant_reset)
+
+
+func _update_plant_ui() -> void:
+	for id: String in _tool_buttons:
+		(_tool_buttons[id] as Button).set_pressed_no_signal(id == _plant_tool)
+	for id: String in _plant_buttons:
+		(_plant_buttons[id] as Button).set_pressed_no_signal(id == _plant_id)
+	for i in _density_buttons.size():
+		_density_buttons[i].set_pressed_no_signal(is_equal_approx(DENSITIES[i][1], _density))
+	_brush_label.text = "Ø %s m" % str(_brush * 2.0).trim_suffix(".0")
+	var counts := {}
+	for e: Array in Plants.hand_list():
+		counts[e[0]] = counts.get(e[0], 0) + 1
+	var parts: Array[String] = []
+	for sp: Dictionary in Plants.SPECIES:
+		if counts.has(sp["id"]):
+			parts.append("%s %d" % [sp["name"], counts[sp["id"]]])
+	var lines: Array[String] = ["Gemalt: " + (", ".join(parts) if not parts.is_empty() else "noch nichts")]
+	lines.append("Von Hand gepflegt: %d m² Boden, %d m² Gehölz" % [
+		(Plants.managed["boden"] as Dictionary).size() * int(Plants.CELL * Plants.CELL),
+		(Plants.managed["gehoelz"] as Dictionary).size() * int(Plants.CELL * Plants.CELL)])
+	lines.append("Ebene der Pflanze: " + Plants.LAYER_NAMES[Plants.layer_of(_plant_id)])
+	if _plants_dirty:
+		lines.append("Nicht gespeichert.")
+	_plant_info.text = "\n".join(lines)
+	_btn_plant_reset.visible = Plants.can_reset_user()
+	_btn_undo.disabled = _plant_undo.is_empty() if _plant_mode else _undo.is_empty()
+	_btn_redo.disabled = _plant_redo.is_empty() if _plant_mode else _redo.is_empty()
+	_update_info()
+	_overlay.queue_redraw()
+
+
+## Maus/Finger auf der Karte im Reiter „Pflanzen“. true = verarbeitet.
+func _plant_input(event: InputEvent) -> bool:
+	if event is InputEventMouseMotion:
+		var mm := event as InputEventMouseMotion
+		_brush_px = mm.position
+		if _painting:
+			var now := _screen_to_sx(mm.position)
+			_paint_line(_paint_last, now)
+			_paint_last = now
+			return true
+		_overlay.queue_redraw()
+		return false
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.button_index != MOUSE_BUTTON_LEFT or _plant_tool == "schieben":
+			return false
+		if mb.pressed:
+			_plant_begin()
+			_painting = true
+			_paint_last = _screen_to_sx(mb.position)
+			_paint_at(_paint_last)
+		elif _painting:
+			_painting = false
+			_update_plant_ui()
+		return true
+	return false
+
+
+## Pinsel von a nach b ziehen (Schritte von einem halben Pinsel, damit nichts ausgelassen wird).
+func _paint_line(a: Vector2, b: Vector2) -> void:
+	var n := maxi(1, ceili(a.distance_to(b) / maxf(_brush * 0.5, 0.25)))
+	for i in n:
+		_paint_at(a.lerp(b, float(i + 1) / n))
+
+
+## Einmal den Pinsel bei (s, x) anwenden.
+func _paint_at(sx: Vector2) -> void:
+	var w := _sx_to_world(sx)
+	var sp := Plants.species(_plant_id)
+	var layer: String = sp["layer"]
+	var r := _brush
+	var cells: Dictionary = Plants.managed[layer]
+	var c0 := Plants.cell_of(w.x - r, w.y - r)
+	var c1 := Plants.cell_of(w.x + r, w.y + r)
+	for cx in range(c0.x, c1.x + 1):
+		for cz in range(c0.y, c1.y + 1):
+			var mid := (Vector2(cx, cz) + Vector2(0.5, 0.5)) * Plants.CELL
+			if mid.distance_to(w) > r + Plants.CELL * 0.35:
+				continue
+			if _plant_tool == "auto":
+				cells.erase(Vector2i(cx, cz))
+			else:
+				cells[Vector2i(cx, cz)] = true
+	if _plant_tool != "malen":
+		for e: Array in Plants.hand_near(w.x, w.y, r, layer):
+			Plants.remove_hand(e)
+	else:
+		# festes Raster je Art: nochmal über dieselbe Stelle malen setzt nichts doppelt
+		var step: float = sp["spacing"] / _density
+		var salt := 7000 + Plants.SPECIES.find(sp) * 10
+		var hr: Array = sp["h"]
+		for gx in range(floori((w.x - r) / step), ceili((w.x + r) / step) + 1):
+			for gz in range(floori((w.y - r) / step), ceili((w.y + r) / step) + 1):
+				var px := (gx + Plants.rand01(gx, gz, salt) * 0.8 - 0.4) * step
+				var pz := (gz + Plants.rand01(gx, gz, salt + 1) * 0.8 - 0.4) * step
+				if Vector2(px, pz).distance_to(w) > r or not Plants.allowed(_plant_id, px, pz):
+					continue
+				if not Plants.hand_near(px, pz, step * 0.75, layer).is_empty():
+					continue
+				Plants.add_hand([_plant_id, px, pz, lerpf(hr[0], hr[1], Plants.rand01(gx, gz, salt + 2)), Plants.rand01(gx, gz, salt + 3) * TAU])
+	_plants_dirty = true
+	_overlay.queue_redraw()
+
+
+func _plant_begin() -> void:
+	_plant_undo.append(JSON.stringify(Plants.to_data()))
+	if _plant_undo.size() > PLANT_HISTORY:
+		_plant_undo.pop_front()
+	_plant_redo.clear()
+	_leave_armed = false
+
+
+func _plant_step(back: bool) -> void:
+	var from := _plant_undo if back else _plant_redo
+	var to := _plant_redo if back else _plant_undo
+	if from.is_empty():
+		return
+	to.append(JSON.stringify(Plants.to_data()))
+	Plants.from_data(JSON.parse_string(from.pop_back()))
+	_plants_dirty = true
+	_update_plant_ui()
+
+
+func _save_plants() -> void:
+	var file := Plants.save()
+	if file == "":
+		_show_toast("Speichern fehlgeschlagen")
+		return
+	_plants_dirty = false
+	_leave_armed = false
+	plants_saved.emit()
+	_update_plant_ui()
+	_show_toast("Bepflanzung gespeichert (%s), im Spiel neu aufgebaut" % file.get_file())
+
+
+## Pflanzen in der Karte: gepflegte Stellen getönt, automatische Pflanzen blass, gemalte kräftig, Pinsel.
+func _draw_plants(o: Control) -> void:
+	var view := Rect2(Vector2.ZERO, o.size).grow(30.0)
+	# Draufsicht: lineare Abbildung Spiel (x, z) -> Bildschirm, sonst je Punkt projizieren
+	var p0 := _game_to_screen(Vector2.ZERO)
+	var ax := _game_to_screen(Vector2(1.0, 0.0)) - p0
+	var az := _game_to_screen(Vector2(0.0, 1.0)) - p0
+	var proj := func(x: float, z: float) -> Vector2:
+		return p0 + ax * x + az * z if not _3d else _game_to_screen(Vector2(x, z))
+	var px_per_m := ax.length() if not _3d else 4.0
+	for layer: String in Plants.LAYERS:
+		var col: Color = LAYER_FILL[layer]
+		for c: Vector2i in Plants.managed[layer]:
+			var q := Vector2(c) * Plants.CELL
+			var a: Vector2 = proj.call(q.x, q.y)
+			if not view.has_point(a):
+				continue
+			o.draw_colored_polygon(PackedVector2Array([a, proj.call(q.x + Plants.CELL, q.y),
+				proj.call(q.x + Plants.CELL, q.y + Plants.CELL), proj.call(q.x, q.y + Plants.CELL)]), col)
+	for e: Array in Plants.auto_cache():
+		if Plants.is_managed(Plants.layer_of(e[0]), e[1], e[2]):
+			continue
+		var p: Vector2 = proj.call(e[1], e[2])
+		if view.has_point(p):
+			var sp := Plants.species(e[0])
+			var col: Color = sp["color"]
+			col.a = 0.45
+			o.draw_circle(p, maxf(1.5, float(e[3]) * float(sp["r"]) * px_per_m), col)
+	for e: Array in Plants.hand_list():
+		var p: Vector2 = proj.call(e[1], e[2])
+		if view.has_point(p):
+			var sp := Plants.species(e[0])
+			var rad := maxf(2.0, float(e[3]) * float(sp["r"]) * px_per_m)
+			o.draw_circle(p, rad, sp["color"])
+			if rad > 4.0:
+				o.draw_arc(p, rad, 0.0, TAU, 16, Color(0, 0, 0, 0.5), 1.0, true)
+	if _plant_tool != "schieben" and Rect2(Vector2.ZERO, o.size).has_point(_brush_px):
+		var col := {"malen": Color(1, 1, 1, 0.9), "radieren": Color(1, 0.35, 0.3, 0.9), "auto": Color(0.4, 0.8, 1.0, 0.9)}[_plant_tool] as Color
+		var c := _screen_to_sx(_brush_px)
+		var edge := _sx_to_screen(c.x + _brush, c.y)
+		o.draw_arc(_brush_px, _brush_px.distance_to(edge), 0.0, TAU, 48, col, 2.0, true)
+
+
+func _game_to_screen(g: Vector2) -> Vector2:
+	var sx := _world_to_sx(g)
+	return _sx_to_screen(sx.x, sx.y)
+
+
 # ---------------------------------------------------------------- Zeichnen (Überlagerung)
 
 func _draw_overlay() -> void:
@@ -1349,6 +1741,8 @@ func _draw_overlay() -> void:
 		return
 	var o := _overlay
 	var font := get_theme_default_font()
+	if _plant_mode:
+		_draw_plants(o)
 	# Maßstab entlang des Seils
 	var px_per_m := (_sx_to_screen(_center.x + 1.0, 0.0) - _sx_to_screen(_center.x, 0.0)).length()
 	var step := 10.0 if px_per_m > 4.0 else (20.0 if px_per_m > 1.6 else 50.0)
@@ -1460,7 +1854,9 @@ func layout(size_units: Vector2, k: float) -> void:
 
 
 ## Test (--screen=@editor:OPT:OPT…): t1, t2, 3d, sel=N (Zeile wählen), hack=N (Hack der Zeile),
-## seite=N (Reiter 0–3), add=ID (Bauteil einfügen), rot=GRAD, zoom=F, save (eigenes Setup speichern).
+## seite=N (Reiter 0–4), add=ID (Bauteil einfügen), rot=GRAD, zoom=F, save (eigenes Setup speichern),
+## Pflanzen: pflanzen (Reiter), mitte=S,X (Kartenmitte), art=ID, werkzeug=malen|radieren|auto, pinsel=R,
+## dichte=F, malen=S,X[,S2,X2] (Pinselstrich), psave (Bepflanzung speichern – schreibt setups/plants.json!).
 func run_test(opts: String) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -1488,6 +1884,33 @@ func run_test(opts: String) -> void:
 				_save(false)
 			"zoom":
 				_zoom_at(_map.size * 0.5, float(kv[1]))
+			"pflanzen":
+				_show_page(PLANT_PAGE)
+			"mitte":
+				var v := kv[1].split_floats(",")
+				_center = Vector2(v[0], v[1])
+				_clamp_center()
+				_update_cam()
+			"art":
+				_plant_id = kv[1]
+			"werkzeug":
+				_plant_tool = kv[1]
+			"pinsel":
+				_brush = float(kv[1])
+			"dichte":
+				_density = float(kv[1])
+			"malen":
+				var v := kv[1].split_floats(",")
+				_plant_begin()
+				var a := Vector2(v[0], v[1])
+				_paint_at(a)
+				if v.size() >= 4:
+					_paint_line(a, Vector2(v[2], v[3]))
+				_update_plant_ui()
+				print("PFLANZEN gemalt: %d, gepflegt Boden %d / Gehölz %d Zellen" % [Plants.hand_list().size(),
+					(Plants.managed["boden"] as Dictionary).size(), (Plants.managed["gehoelz"] as Dictionary).size()])
+			"psave":
+				_save_plants()
 
 
 func _process(delta: float) -> void:

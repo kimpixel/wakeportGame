@@ -24,6 +24,7 @@ var live := false                 # "Jetzt": Uhrzeit läuft mit der Rechneruhr m
 
 var sun: DirectionalLight3D
 var shadow_distance := 200.0     # Grafikqualität: 0 = keine Schatten
+var shadow_splits := 4           # Grafikqualität: Schatten-Kaskaden (2 = jeder Schattenwerfer halb so oft gezeichnet)
 var env: Environment
 var _sky_mat: ShaderMaterial
 var _rain: CPUParticles3D
@@ -212,6 +213,7 @@ func apply() -> void:
 	sun.light_energy = energy * (0.8 if _compat else 1.0)   # Web-Renderer (Compatibility): Wasser sonst grell
 	sun.shadow_enabled = energy > 0.08 and cloud < 0.85 and shadow_distance > 0.0
 	sun.directional_shadow_max_distance = maxf(shadow_distance, 1.0)
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS if shadow_splits == 2 else DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
 
 	# Umgebungslicht: Himmel + neutrales Grau, nachts dunkel, bei Wolken weicher
 	env.ambient_light_color = Color(0.62, 0.6, 0.55).lerp(Color(0.12, 0.14, 0.22), 1.0 - dayf)
