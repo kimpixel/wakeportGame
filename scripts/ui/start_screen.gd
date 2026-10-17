@@ -958,6 +958,7 @@ func _build_ranking() -> void:
 	_rank_select.item_selected.connect(func(_i: int) -> void: _fill_ranking())
 	head.add_child(_rank_select)
 	head.move_child(_rank_select, 1)
+	v.add_child(_rank_warning())
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -1007,6 +1008,39 @@ func _build_ranking() -> void:
 		_update_rank_name(str(r.get("error", "")) if not r.get("ok", false) else "Gelöscht: Name und alle Einträge.")
 		_fill_ranking())
 	v.add_child(_rank_forget)
+
+
+## Hinweis-Leiste (Warnung): Physik und Punkte ändern sich noch laufend, die Rangliste beginnt ab und zu neu
+## (Leaderboard.RULES bzw. Wertungs-Version).
+func _rank_warning() -> Control:
+	var p := PanelContainer.new()
+	var sb := _box(Color(0.32, 0.24, 0.04, 0.95), 10, 10)
+	sb.border_color = SEL
+	sb.set_border_width_all(0)
+	sb.border_width_left = 5
+	p.add_theme_stylebox_override("panel", sb)
+	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", 12)
+	p.add_child(h)
+	var badge := _label("!", 24, Color(0.1, 0.08, 0.02))
+	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	badge.custom_minimum_size = Vector2(36, 36)
+	badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	badge.add_theme_constant_override("outline_size", 0)
+	var bsb := StyleBoxFlat.new()
+	bsb.bg_color = SEL
+	bsb.set_corner_radius_all(18)
+	badge.add_theme_stylebox_override("normal", bsb)
+	h.add_child(badge)
+	var t := _label("Heads up! Das Game ist noch mitten im Shape – Physik und Punkte werden ständig nachgeschliffen. "
+		+ "Darum wird die Rangliste ab und zu gewiped. Kein Stress: einfach neu droppen und wieder ganz nach oben shredden.",
+		15, Color(1, 0.95, 0.8))
+	t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	t.custom_minimum_size.x = 100
+	h.add_child(t)
+	return p
 
 
 func _open_ranking() -> void:
