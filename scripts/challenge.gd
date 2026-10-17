@@ -393,7 +393,7 @@ func _physics_process(delta: float) -> void:
 			var over := c.laps > _laps0 and (absf(s_now - _s_turn) > float(task["end_after"]) \
 				or c.laps > _laps0 + 1 or c.state == CableSystem.State.BRAKE)
 			if over and _done_t < 0.0 and r.mode != Rider.Mode.AIR:
-				_fail("Kein Raley – mehr Tempo: weit raus, dann hart zur Mitte kanten")
+				_fail("Kein Raley – mehr Seilzug: weit raus, dann hart zur Mitte kanten (Marke RALEY)")
 				return
 	if _done_t >= 0.0:
 		if r.mode == Rider.Mode.WATER and r.pos.y < 0.15:

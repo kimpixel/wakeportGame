@@ -21,6 +21,7 @@ signal dock_yanked               # Sprung-Start: Seil reißt einen vom Steg
 signal skipped                   #Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
 ## Für die Spielmodi (Challenge): Landung nach einem Sprung bzw. Ende eines Slides, mit Messwerten
 signal jump_landed(info: Dictionary)   # raley, air_time, half_turns, rolls, popped, points
+signal jumped(info: Dictionary)        # Absprung (Leertaste): raley, tension, speed, load, vy – für Test-Ausgaben
 signal slide_ended(info: Dictionary)   # part, time, dist, dist_5050, dist_bs, switches, press, press_nose, press_tail, bs_share
 
 ## Bergung nach Sturz/Seilverlust (2-Mast-Anlage: niemand muss zurück zum Start):
@@ -79,7 +80,7 @@ static var TURN_RATE := 1.7
 static var SPIN_RATE := 7.5
 static var AIR_ASSIST := 5.0         # Brett dreht in der Luft langsam zur Flugrichtung
 const AIR_ASSIST_SLIDER := 8.0  # m: liegt ein Slider so weit voraus auf dem Flugweg, dreht nichts zurück
-static var POP_BASE := 2.2
+static var POP_BASE := 2.46
 static var SLIDE_FRICTION := 0.1     # Reibung Brett auf Feature-Oberfläche
 # Punkte: Slides sind mehr wert als Drehungen, Kombinationen am meisten
 static var SLIDE_BASE := 150.0
@@ -90,17 +91,20 @@ static var AIR_PER_S := 50.0
 const SPIN_PER_180 := 50
 static var COMBO_WINDOW := 3.0       # s Zeit für den nächsten Trick, damit die Kombination weiterläuft
 static var POP_LOAD := 2.8
-static var POP_ROPE := 1.8
+static var POP_ROPE := 0.8           # Ollie: Anteil aus dem Seilzug (der steigt mit dem Tempo) – klein, damit der Ollie kaum mit dem Tempo wächst
 static var POP_SCALE := 0.93         # Sprunghöhe insgesamt (Ollie): Verhältnis Tempo/Höhe
 static var POP_ON_RAMP := 0.35       # Absprung an der Rampe: Anteil des schwächeren Schubs
 static var KICK_REF := 0.31          # Bezugs-Steigung kurz vor der Kante: steiler wirft überproportional mehr
 static var POP_ON_KICK := 0.7        # Anteil der Sprungkraft, der auf dem Kicker zum Wurf dazukommt
 static var KICK_MAX_VY := 8.0        # m/s Obergrenze beim Absprung von der Kante
 static var RAMP_LAUNCH := 0.85       # Abwurf von der Rampenkante (Anteil der Steiggeschwindigkeit)
-# Raley: wer beim Absprung besonders schnell ist (Anschneiden), schwingt mit gestrecktem Körper
-# um den Griff nach hinten oben – Brett höher als der Kopf, Brust zum Wasser. Langsamer = Ollie.
-static var RALEY_SPEED := 40.0 / 3.6
+# Raley: wer beim Absprung viel Seilzug hat (hart gegen den Zug angeschnitten), schwingt mit gestrecktem
+# Körper um den Griff nach hinten oben – Brett höher als der Kopf, Brust zum Wasser. Weniger Zug = Ollie.
+static var RALEY_TENSION := 2500.0   # N Mindest-Seilzug beim Absprung (Marke RALEY in der Seilzug-Anzeige)
 static var RALEY_LOAD := 0.95        # nur mit voll aufgeladenem Sprung (Leertaste lange halten)
+static var RALEY_ROPE := 0.6         # m/s Steiggeschwindigkeit je 1000 N Seilzug über RALEY_TENSION
+static var RALEY_PER_SPEED := 0.06   # m/s Steiggeschwindigkeit je m/s Fahrtempo (addiert)
+static var RALEY_MAX_VY := 8.5       # m/s Obergrenze beim Raley-Absprung
 static var RALEY_MAX := 2.8          # rad: so weit schwingen Beine und Brett um den Griff (≈160°, Brett über dem Kopf)
 const RALEY_TORSO := 0.55       # Anteil davon für Becken/Oberkörper – der Rest wird Hohlkreuz
 static var RALEY_POINTS := 150
@@ -1544,8 +1548,16 @@ func test_jump() -> void:
 
 
 func _pop() -> void:
+	# Raley nur mit viel Seilzug, voll aufgeladen und kein Feature voraus
+	# (wer schräg auf ein Feature springt, macht einen normalen Sprung)
+	var fast := tension_smooth >= RALEY_TENSION and _load >= RALEY_LOAD and attached \
+		and not (features and _feature_ahead())
 	var lift := POP_BASE + POP_LOAD * _load + POP_ROPE * clampf((tension_smooth - 150.0) / 600.0, 0.0, 1.0)
 	lift *= clampf(horizontal_speed() / 6.0, 0.3, 1.0) * POP_SCALE
+	if fast:
+		# Raley: Höhe aus dem Seilzug über der Schwelle, dazu das Tempo (auf den vollen Sprung obendrauf)
+		lift = minf(lift + RALEY_ROPE * (tension_smooth - RALEY_TENSION) / 1000.0
+			+ RALEY_PER_SPEED * horizontal_speed(), RALEY_MAX_VY)
 	# Auf dem Kicker: Höhe = Kicker-Steigung (mit Tempo) + Sprungkraft. Wer an der Kante
 	# abspringt, bekommt den Wurf der Rampe und den Ollie zusammen – je steiler, desto mehr.
 	var kick := _kick_vy(_slope_here())
@@ -1555,16 +1567,13 @@ func _pop() -> void:
 	else:
 		var up := maxf(vel.y, 0.0)
 		vel.y = maxf(up, lift) + POP_ON_RAMP * minf(up, lift)
-	# Raley nur mit viel Power: sehr schnell, voll aufgeladen und kein Feature voraus
-	# (wer schräg auf ein Feature springt, macht einen normalen Sprung)
-	var fast := horizontal_speed() > RALEY_SPEED and _load >= RALEY_LOAD and attached \
-		and not (features and _feature_ahead())
 	_enter_air()
 	_popped = true
 	if fast:
 		_raley = true
 		var side := rope_dir.dot(right())
 		_raley_side = -signf(side) if absf(side) > 0.05 else -1.0
+	jumped.emit({"raley": fast, "tension": tension_smooth, "speed": horizontal_speed(), "load": _load, "vy": vel.y})
 
 
 ## Sprung-Haltung (Raley-Schwung, Überschlag, Press) sofort zurücksetzen – nach Sturz, Absaufen

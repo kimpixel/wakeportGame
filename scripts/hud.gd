@@ -6,7 +6,7 @@ extends CanvasLayer
 const HELP := """← / →   lenken   (in der Luft und beim Raley: drehen; auf dem Slider: Boardslide ↔ 50-50 umspringen)
 ↑ / ↓   in der Luft: Frontroll / Backroll (beim Invert gleich nach dem Absprung: ↑ S-Bend, ↓ Backroll)     auf dem Slider: Nosepress / Tailpress     im Drift: Drift-Press     Sprung-Start: auf dem Steg ↓ halten, bis das Seil losreißt (Brett längs: Nolli, quer: Raley Start)
 Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das Brett dreht frei, etwas schneller; quer vom Slider ins Wasser nur mit Drift
-Leertaste halten + loslassen   Absprung (langsam: Ollie, über 40 km/h, voll aufgeladen und ohne Feature voraus: Invert = Raley)
+Leertaste halten + loslassen   Absprung (Ollie; voll aufgeladen mit Seilzug über der Marke RALEY und ohne Feature voraus: Invert = Raley – Höhe aus Seilzug + Tempo)
 Start mit Countdown 3 – 2 – 1 – GO (Runde 7:30)     R  zurück zum Steg (−2:00, dann Countdown), in den Spielmodi: neuer Versuch     + / -  Anlagentempo
 Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−1:00)     R = Steg (−2:00)
 C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause (dort auch Einstellungen)
@@ -14,7 +14,7 @@ P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus     H  Hilfe ein/aus
 Tab  Startseite (Terminal, Feature-Setup, Einstellungen)"""
 
 const HELP_MOBILE := """Start mit Countdown          ← / → (bzw. Handy neigen mit Lenkung: Gyro)   lenken (auf dem Slider: Tipp bzw. deutlich neigen = Boardslide ↔ 50-50)
-SPRUNG (links) halten + loslassen   Absprung (schnell: Raley)
+SPRUNG (links) halten + loslassen   Absprung (voll aufgeladen, Seilzug über RALEY: Raley)
 Pfeil ↑ / ↓   in der Luft Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), auf dem Slider Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)
 DRIFT (links, über SPRUNG)   Kante lösen        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)
 ☰   Menü (pausiert): Einstellungen, Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Seil-Abreißen an/aus"""
@@ -360,7 +360,7 @@ func _label(size: int) -> Label:
 
 
 ## Die wichtigen Werte oben: Zeit (Text + Zustand), Punkte, Seilzug in N und Anteil bis zum Abriss.
-func set_stats(time_text: String, time_state: TimeState, score: int, tension_n: float, tension_ratio: float) -> void:
+func set_stats(time_text: String, time_state: TimeState, score: int, tension_n: float, tension_limit: float) -> void:
 	_time_value.text = time_text
 	_time_state = time_state
 	_time_label.text = "ZEIT UM" if time_state == TimeState.OVER else time_title
@@ -371,7 +371,7 @@ func set_stats(time_text: String, time_state: TimeState, score: int, tension_n: 
 	elif score < _score_target:
 		_score_shown = score               # neue Runde
 	_score_target = score
-	_gauge.set_value(tension_n, tension_ratio)
+	_gauge.set_value(tension_n, tension_n / tension_limit, tension_limit)
 
 
 ## Fahrer-Tempo (km/h) für die Tempo-Anzeige.
@@ -618,7 +618,7 @@ func _process(delta: float) -> void:
 
 
 ## Tempo-Anzeiger: km/h groß, darunter ein Balken bis MAX_KMH mit Marken an den Schwellen, ab denen
-## etwas geht (Drift-Press, Raley); eine Marke leuchtet, sobald man schnell genug ist.
+## etwas geht (Drift-Press); eine Marke leuchtet, sobald man schnell genug ist.
 class SpeedGauge extends Control:
 	const MAX_KMH := 50.0
 	var font: Font
@@ -640,30 +640,30 @@ class SpeedGauge extends Control:
 		draw_rect(Rect2(0, top, w, h), Color(1, 1, 1, 0.12))
 		var fill := clampf(_kmh / MAX_KMH, 0.0, 1.0) * w
 		draw_rect(Rect2(0, top, fill, h), ACCENT)
-		for m: Array in [["PRESS MAX", Rider.DPRESS_SPEED * 3.6], ["RALEY", Rider.RALEY_SPEED * 3.6]]:
+		for m: Array in [["PRESS MAX", Rider.DPRESS_SPEED * 3.6]]:
 			var x := clampf(float(m[1]) / MAX_KMH, 0.0, 1.0) * w
 			var on := _kmh >= float(m[1])
 			var c := Color(1.0, 0.85, 0.2) if on else Color(1, 1, 1, 0.45)
 			draw_rect(Rect2(x - 1.5, top - 3.0, 3.0, h + 6.0), c)
-			# Marken liegen eng: PRESS MAX endet an seiner Marke, RALEY beginnt an seiner
-			var raley: bool = m[0] == "RALEY"
-			draw_string(f, Vector2(x + 4.0 if raley else x - 104.0, top + h + 15.0), m[0],
-				HORIZONTAL_ALIGNMENT_LEFT if raley else HORIZONTAL_ALIGNMENT_RIGHT, 100.0, 12, c)
+			draw_string(f, Vector2(x - 104.0, top + h + 15.0), m[0], HORIZONTAL_ALIGNMENT_RIGHT, 100.0, 12, c)
 
 
 ## Großer Seilzug-Anzeiger: Segmente von grün über gelb nach rot, Spitzenwert-Marke,
+## Marke RALEY am Mindest-Seilzug (leuchtet, sobald genug Zug für einen Raley da ist),
 ## ab 85 % blinkt der Rahmen rot (gleich reißt die Handle aus der Hand).
 class TensionGauge extends Control:
 	const SEGMENTS := 24
 	var font: Font
 	var _n := 0.0
 	var _ratio := 0.0
+	var _limit := Rider.CRASH_TENSION
 	var _peak := 0.0
 	var _t := 0.0
 
-	func set_value(n: float, ratio: float) -> void:
+	func set_value(n: float, ratio: float, limit: float) -> void:
 		_n = n
 		_ratio = clampf(ratio, 0.0, 1.2)
+		_limit = maxf(limit, 1.0)
 		_peak = maxf(_peak, _ratio)
 
 	func _process(delta: float) -> void:
@@ -698,6 +698,12 @@ class TensionGauge extends Control:
 		if _peak > 0.02:
 			var px := clampf(_peak, 0.0, 1.0) * w
 			draw_rect(Rect2(px - 2.0, top - 2.0, 3.0, h + 4.0), Color(1, 1, 1, 0.85))
+		# Raley-Schwelle: Marke über den Segmenten, Name links daneben in der Kopfzeile
+		var rx := clampf(Rider.RALEY_TENSION / _limit, 0.0, 1.0) * w
+		var on := _n >= Rider.RALEY_TENSION
+		var rc := Color(1.0, 0.85, 0.2) if on else Color(1, 1, 1, 0.45)
+		draw_rect(Rect2(rx - 1.5, top - 8.0, 3.0, h + 10.0), rc)
+		draw_string(f, Vector2(rx - 104.0, top - 1.0), "RALEY", HORIZONTAL_ALIGNMENT_RIGHT, 100.0, 12, rc)
 		# Warnung kurz vor dem Abriss
 		if _ratio > 0.85:
 			var a := 0.5 + 0.5 * sin(_t * 18.0)
