@@ -389,6 +389,15 @@ func _ready() -> void:
 	challenge.panel = task_panel
 	challenge.home_requested.connect(_open_start_screen)
 	add_child(challenge)
+	# Menüs mit Tastatur/Gamepad bedienen (Fokus wandern, Knopf drücken)
+	var nav := MenuNav.new()
+	nav.touch = mobile.active
+	add_child(nav)
+	# Gamepad: Vibration und Lichtleiste (Farbe des Seilzugs)
+	var pad_fx := PadFx.new()
+	pad_fx.rider = rider
+	pad_fx.active = func() -> bool: return not start_screen.visible and not get_tree().paused
+	add_child(pad_fx)
 	if _quit_after > 0.0 and _mode_arg != "":   # Spielmodi stehen im Ergebnis-Fenster: Zeit inkl. Pause
 		get_tree().create_timer(_quit_after + 3.0, true).timeout.connect(get_tree().quit)
 	if _shot_path != "" and _mode_arg != "" and not _screen_arg:   # Spielmodus steht im Fenster: Zeit inkl. Pause
@@ -918,6 +927,8 @@ func _close_settings_ingame() -> void:
 		touch_pad.visible = true
 	if _settings_from == "pad" and touch_pad:
 		touch_pad.trigger("menu")             # ☰-Menü wieder auf (pausiert weiter)
+	elif _settings_from == "direct":
+		pause_menu.set_paused(false)          # Taste O / Options im Spiel: danach gleich weiter
 	else:
 		pause_menu.show_again()
 
@@ -1266,7 +1277,13 @@ func _take_shot() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("start"):
+	if event.is_action_pressed("settings"):
+		if pause_menu.can_pause.call():          # O / Options: Einstellungen direkt über dem pausierten Spiel
+			pause_menu.set_paused(true)
+			_open_settings_ingame("direct")
+	elif event.is_action_pressed("start"):
+		if start_screen.visible:
+			return
 		if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED and not _counting and not challenge.active:
 			_start_run()
 			rider.block_jump()
@@ -1274,6 +1291,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		challenge.start_attempt()            # Spielmodus: neuer Versuch
 	elif (event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down")) and challenge.active:
 		pass                                 # Spielmodus: festes Tempo
+	elif (event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down")) and event is InputEventJoypadButton \
+			and rider.mode == Rider.Mode.AIR:
+		pass                                 # L1/R1 in der Luft: schnelle Drehung, nicht Tempo
 	elif event.is_action_pressed("reset"):
 		_reset_to_dock()
 	elif event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down"):
@@ -1347,22 +1367,46 @@ func _on_trick(trick_name: String, points: int) -> void:
 # ---------------------------------------------------------------- Eingabe
 
 func _setup_input() -> void:
-	_bind("steer_left", [KEY_A, KEY_LEFT], [], [[JOY_AXIS_LEFT_X, -1.0]])
-	_bind("steer_right", [KEY_D, KEY_RIGHT], [], [[JOY_AXIS_LEFT_X, 1.0]])
+	# Gamepad (Namen wie PS4): Kreuz = A, Kreis = B, Dreieck = Y, Options = START, Share = BACK, PS = GUIDE
+	_bind("steer_left", [KEY_A, KEY_LEFT], [JOY_BUTTON_DPAD_LEFT], [[JOY_AXIS_LEFT_X, -1.0]])
+	_bind("steer_right", [KEY_D, KEY_RIGHT], [JOY_BUTTON_DPAD_RIGHT], [[JOY_AXIS_LEFT_X, 1.0]])
 	# ↑/↓: in der Luft Frontroll/Backroll, auf dem Slider Nose-/Tailpress, nach Sturz ↑ = schwimmen
-	_bind("pitch_front", [KEY_UP, KEY_W], [], [[JOY_AXIS_LEFT_Y, -1.0]])
-	_bind("pitch_back", [KEY_DOWN, KEY_S], [], [[JOY_AXIS_LEFT_Y, 1.0]])
-	# Strg (zur Not Alt): Kante lösen = Driften
-	_bind("release", [KEY_CTRL, KEY_ALT], [], [[JOY_AXIS_TRIGGER_LEFT, 1.0]])
+	_bind("pitch_front", [KEY_UP, KEY_W], [JOY_BUTTON_DPAD_UP], [[JOY_AXIS_LEFT_Y, -1.0]])
+	_bind("pitch_back", [KEY_DOWN, KEY_S], [JOY_BUTTON_DPAD_DOWN], [[JOY_AXIS_LEFT_Y, 1.0]])
+	# Strg (zur Not Alt): Kante lösen = Driften (Gamepad: Kreis oder L2)
+	_bind("release", [KEY_CTRL, KEY_ALT], [JOY_BUTTON_B], [[JOY_AXIS_TRIGGER_LEFT, 1.0]])
 	_bind("jump", [KEY_SPACE], [JOY_BUTTON_A], [])
 	_bind("swim", [], [], [])          # Handy: Bildschirm halten nach einem Sturz
 	_bind("hitbox", [KEY_F3], [], [])  # Debug: Fangzonen der Slider zeigen
 	_bind("rope_rip", [KEY_G], [], [])  # Seil-Abreißen an/aus
-	_bind("start", [KEY_SPACE], [JOY_BUTTON_START], [])
+	_bind("start", [KEY_SPACE], [JOY_BUTTON_A], [])
 	_bind("reset", [KEY_R], [JOY_BUTTON_BACK], [])
-	_bind("speed_up", [KEY_PAGEUP], [JOY_BUTTON_DPAD_UP], [], [KEY_PLUS, KEY_KP_ADD])
-	_bind("speed_down", [KEY_PAGEDOWN], [JOY_BUTTON_DPAD_DOWN], [], [KEY_MINUS, KEY_KP_SUBTRACT])
-	_bind("camera", [KEY_C], [JOY_BUTTON_Y], [])
+	_bind("speed_up", [KEY_PAGEUP], [JOY_BUTTON_RIGHT_SHOULDER], [], [KEY_PLUS, KEY_KP_ADD])
+	_bind("speed_down", [KEY_PAGEDOWN], [JOY_BUTTON_LEFT_SHOULDER], [], [KEY_MINUS, KEY_KP_SUBTRACT])
+	_bind("jump_analog", [], [], [[JOY_AXIS_TRIGGER_RIGHT, 1.0]])   # R2: Sprung analog aufladen
+	# L1/R1 in der Luft: schnelle halbe Drehung (auf dem Wasser Tempo), im Menü Reiter wechseln
+	_bind("spin_left", [], [JOY_BUTTON_LEFT_SHOULDER], [])
+	_bind("spin_right", [], [JOY_BUTTON_RIGHT_SHOULDER], [])
+	_bind("tab_prev", [], [JOY_BUTTON_LEFT_SHOULDER], [])
+	_bind("tab_next", [], [JOY_BUTTON_RIGHT_SHOULDER], [])
+	_bind("cam_zoom", [], [JOY_BUTTON_RIGHT_STICK], [])   # R3 halten: rechter Stick ↕ zoomt
+	# Menüs (MenuNav): Enter / PS / Touchpad = Start, O / Options = Einstellungen, Esc / PS = Pause
+	_bind("menu_start", [KEY_ENTER, KEY_KP_ENTER], [JOY_BUTTON_GUIDE, JOY_BUTTON_TOUCHPAD], [])
+	_bind("settings", [KEY_O], [JOY_BUTTON_START], [])
+	_bind("pause", [KEY_ESCAPE], [JOY_BUTTON_GUIDE], [])
+	# Godot-Menüaktionen: Leertaste / Kreuz drückt den Knopf mit Fokus (Enter startet, s. menu_start),
+	# Esc / Kreis zurück, Steuerkreuz und linker Stick bewegen den Fokus
+	for e: InputEvent in InputMap.action_get_events("ui_accept"):
+		var ek := e as InputEventKey
+		if ek and (ek.keycode in [KEY_ENTER, KEY_KP_ENTER] or ek.physical_keycode in [KEY_ENTER, KEY_KP_ENTER]):
+			InputMap.action_erase_event("ui_accept", e)
+	_ui_joy("ui_accept", JOY_BUTTON_A)
+	_ui_joy("ui_cancel", JOY_BUTTON_B)
+	_ui_joy("ui_left", JOY_BUTTON_DPAD_LEFT, JOY_AXIS_LEFT_X, -1.0)
+	_ui_joy("ui_right", JOY_BUTTON_DPAD_RIGHT, JOY_AXIS_LEFT_X, 1.0)
+	_ui_joy("ui_up", JOY_BUTTON_DPAD_UP, JOY_AXIS_LEFT_Y, -1.0)
+	_ui_joy("ui_down", JOY_BUTTON_DPAD_DOWN, JOY_AXIS_LEFT_Y, 1.0)
+	_bind("camera", [KEY_C], [], [])          # nur Tastatur (Dreieck bleibt frei)
 	_bind("autopilot", [KEY_P], [], [])
 	_bind("help", [KEY_H, KEY_F1], [], [])
 	_bind("mute", [KEY_M], [], [])
@@ -1371,6 +1415,27 @@ func _setup_input() -> void:
 	_bind("cam_right", [], [], [[JOY_AXIS_RIGHT_X, 1.0]])
 	_bind("cam_up", [], [], [[JOY_AXIS_RIGHT_Y, -1.0]])
 	_bind("cam_down", [], [], [[JOY_AXIS_RIGHT_Y, 1.0]])
+
+
+## Gamepad-Taste (und Stick-Richtung) zu einer Godot-Menüaktion, falls noch nicht drin.
+func _ui_joy(action: String, button: JoyButton, axis := JOY_AXIS_INVALID, value := 0.0) -> void:
+	var has_b := false
+	var has_a := axis == JOY_AXIS_INVALID
+	for e: InputEvent in InputMap.action_get_events(action):
+		if e is InputEventJoypadButton and (e as InputEventJoypadButton).button_index == button:
+			has_b = true
+		elif e is InputEventJoypadMotion and (e as InputEventJoypadMotion).axis == axis \
+				and signf((e as InputEventJoypadMotion).axis_value) == signf(value):
+			has_a = true
+	if not has_b:
+		var b := InputEventJoypadButton.new()
+		b.button_index = button
+		InputMap.action_add_event(action, b)
+	if not has_a:
+		var m := InputEventJoypadMotion.new()
+		m.axis = axis
+		m.axis_value = value
+		InputMap.action_add_event(action, m)
 
 
 ## physical_keys: Tastenposition (WASD auf jedem Layout gleich), logical_keys: Zeichen (+/-).

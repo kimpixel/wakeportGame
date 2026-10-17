@@ -29,23 +29,32 @@ Die Fahrphysik ist komplett selbst geschrieben und beruht auf dem Zugseil:
 - Längs zum Brett bremst das Wasser wenig. Quer dazu hält die Kante dagegen.
 - Wenn du schräg zum Seil fährst, schwingst du deshalb nach außen und kannst schneller werden als der Carrier.
 
+Gamepad-Namen wie beim PS4-Controller (Xbox: ✕ = A, ○ = B, △ = Y, Options = Start, Share = Back, PS = Guide). Das Gamepad vibriert bei Landung (je härter, desto stärker), Sturz, Rumpeln und Sprung-Start, brummt leicht auf dem Slider und warnt kurz vor dem Seilabriss; die Lichtleiste (DS4/DualSense) leuchtet in der Farbe der Seilzug-Anzeige (grün – gelb – rot, rot blinkend beim Sturz).
+
 | Taste | Gamepad | Funktion |
 |---|---|---|
-| ← / → (A / D) | linker Stick ↔ | Über die Kante lenken. In der Luft und beim Raley: drehen. **Auf dem Slider:** je Tipp eine Vierteldrehung, Boardslide ↔ 50-50 (rastet ein) |
-| ↑ / ↓ (W / S) | linker Stick ↕ | In der Luft: **Frontroll / Backroll** (nach Ollie, Kicker usw.). Halten dreht, loslassen dreht zur nächsten ganzen Umdrehung aus. Schief landen = Sturz. **Beim Invert** (siehe Leertaste) gleich nach dem Absprung: ↑ = **S-Bend**, ↓ = **Backroll** (Invert-Backroll, seitlich nach außen kopfüber), keine Taste = Raley. Im Drift (Strg): **Drift-Press** (siehe unten). Auf dem Slider: **Nosepress / Tailpress** – schon kurz vor dem Aufkommen über dem Slider gedrückt, gibt es keine Rolle, sondern gleich den Press. Auf dem Startsteg: **Sprung-Start** – ↓ halten (Handy ▼), man stemmt sich gegen das anfahrende Seil, der Seilzug lädt sich bis zur maximalen Seilspannung auf (Anzeige „SPRUNG-START %“); dann reißt das Seil einen nach vorne vom Steg in einen großen Sprung (voller Sprung plus Auflade-Power, +100). Die Brettstellung beim Riss entscheidet: **längs zum Seil (50-50) = Nolli**, **quer (mit ←/→ auf dem Steg um 90° gedreht) = Raley Start** – man sitzt tief auf der Kante, Brust zum Seil, und schwingt wie beim Raley um den Griff (+150 dazu). Je genauer längs bzw. quer, desto mehr Power. Vorher loslassen = normaler Start ohne Sprung |
-| Strg (zur Not Alt) | LT | **Driften**: Kante gelöst – man rutscht weiter, Lenken ändert die Richtung nicht (nur der Seilzug zieht einen), das Brett lässt sich dabei frei drehen; weniger Wasserwiderstand, also leicht schneller. Nach Sturz: sofort weiterfahren (−1:00) |
-| Leertaste halten + loslassen | A | Absprung: ein **Ollie**; voll aufgeladen mit Seilzug über der Marke **RALEY** (Seilzug-Anzeige) und ohne Feature voraus automatisch ein **Invert** – Höhe aus Seilzug plus Tempo (Raley; mit ↑/↓ S-Bend bzw. Backroll). Erst wenn der Invert fast fertig ist, lässt sich drehen – beim Raley bricht ←/→ nach der Streckung den Schwung ab, man schwingt schnell zurück und dreht aufrecht: Raley 180 = **Blind Judge** (links) / **Krypt** (rechts), Raley 360 = **313** (links) / **BS 313** (rechts) |
-| – | Start | Die Anlage startet von selbst nach dem Countdown 3 – 2 – 1 – GO (auch nach R oder einer Bergung am Steg) |
-| R | Back | zurück zum Startsteg (kostet 2:00 Spielzeit) |
-| Leertaste halten | A | nach Sturz oder Seilverlust: zur Handle schwimmen (Bauchlage, Brett hinten oben). Ein Panel zeigt, was geht und was es kostet |
-| + / − | Steuerkreuz ↑/↓ | Tempo der Anlage (16–40 km/h) |
-| C | Y | Kamera: Verfolger, Orbit oder Ufer |
-| Tab | – | zurück zur Startseite (mit ihr beginnt das Spiel). Im Hintergrund die echte Szene, die Kamera schwenkt langsam von der Seeseite über die gewählte Anlage. Darüber das Menü: Spielmodus, Terminal und Feature-Setup bzw. die Aufgaben, **Einstellungen** (Wetter, Datum, Uhrzeit, Jetzt) und **Spiel starten**. Tasten: Leertaste Start, Esc schließt ein Fenster. Passt sich an Handy (hoch und quer) und Desktop an |
-| Maus / Mausrad | rechter Stick | Umsehen / Zoom |
+| ← / → (A / D) | linker Stick ↔, Steuerkreuz ↔ | Über die Kante lenken. In der Luft und beim Raley: drehen. **Auf dem Slider:** je Tipp eine Vierteldrehung, Boardslide ↔ 50-50 (rastet ein) |
+| ↑ / ↓ (W / S) | linker Stick ↕, Steuerkreuz ↕ | In der Luft: **Frontroll / Backroll** (nach Ollie, Kicker usw.). Halten dreht, loslassen dreht zur nächsten ganzen Umdrehung aus. Schief landen = Sturz. **Beim Invert** (siehe Leertaste) gleich nach dem Absprung: ↑ = **S-Bend**, ↓ = **Backroll** (Invert-Backroll, seitlich nach außen kopfüber), keine Taste = Raley. Im Drift (Strg): **Drift-Press** (siehe unten). Auf dem Slider: **Nosepress / Tailpress** – schon kurz vor dem Aufkommen über dem Slider gedrückt, gibt es keine Rolle, sondern gleich den Press. Auf dem Startsteg: **Sprung-Start** – ↓ halten (Handy ▼), man stemmt sich gegen das anfahrende Seil, der Seilzug lädt sich bis zur maximalen Seilspannung auf (Anzeige „SPRUNG-START %“); dann reißt das Seil einen nach vorne vom Steg in einen großen Sprung (voller Sprung plus Auflade-Power, +100). Die Brettstellung beim Riss entscheidet: **längs zum Seil (50-50) = Nolli**, **quer (mit ←/→ auf dem Steg um 90° gedreht) = Raley Start** – man sitzt tief auf der Kante, Brust zum Seil, und schwingt wie beim Raley um den Griff (+150 dazu). Je genauer längs bzw. quer, desto mehr Power. Vorher loslassen = normaler Start ohne Sprung |
+| Strg (zur Not Alt) | ○ oder L2 | **Driften**: Kante gelöst – man rutscht weiter, Lenken ändert die Richtung nicht (nur der Seilzug zieht einen), das Brett lässt sich dabei frei drehen; weniger Wasserwiderstand, also leicht schneller. Nach Sturz: sofort weiterfahren (−1:00) |
+| Leertaste halten + loslassen | ✕, oder R2 (analog: so tief gedrückt, so viel Ladung – durchgedrückt sofort voll) | Absprung: ein **Ollie**; voll aufgeladen mit Seilzug über der Marke **RALEY** (Seilzug-Anzeige) und ohne Feature voraus automatisch ein **Invert** – Höhe aus Seilzug plus Tempo (Raley; mit ↑/↓ S-Bend bzw. Backroll). Erst wenn der Invert fast fertig ist, lässt sich drehen – beim Raley bricht ←/→ nach der Streckung den Schwung ab, man schwingt schnell zurück und dreht aufrecht: Raley 180 = **Blind Judge** (links) / **Krypt** (rechts), Raley 360 = **313** (links) / **BS 313** (rechts) |
+| – | – | Die Anlage startet von selbst nach dem Countdown 3 – 2 – 1 – GO (auch nach R oder einer Bergung am Steg) |
+| R | Share | zurück zum Startsteg (kostet 2:00 Spielzeit) |
+| Leertaste halten | ✕ | nach Sturz oder Seilverlust: zur Handle schwimmen (Bauchlage, Brett hinten oben). Ein Panel zeigt, was geht und was es kostet |
+| + / − | R1 / L1 (auf dem Wasser) | Tempo der Anlage (16–40 km/h) |
+| – | L1 / R1 (in der Luft) | schnelle halbe Drehung nach links / rechts (mehrmals tippen = 360, 540 …; beim Invert im normalen Drehtempo) |
+| C | – | Kamera: Verfolger, Orbit oder Ufer |
+| Tab | – | zurück zur Startseite (mit ihr beginnt das Spiel). Im Hintergrund die echte Szene, die Kamera schwenkt langsam von der Seeseite über die gewählte Anlage. Darüber das Menü: Spielmodus, Terminal und Feature-Setup bzw. die Aufgaben, **Einstellungen** (Wetter, Datum, Uhrzeit, Jetzt) und **Spiel starten**. Passt sich an Handy (hoch und quer) und Desktop an |
+| Maus / Mausrad | rechter Stick | Umsehen / Zoom. Mit dem Stick: loslassen = Kamera geht gleich wieder hinter den Fahrer; R3 halten + rechter Stick ↕ = Zoom |
 | P | – | Autopilot (fährt auch Features) |
-| Esc | Start | **Pause** (Fenster mit Weiter, Einstellungen, Hilfe, Startseite); am Handy pausiert das ☰-Menü. Die Einstellungen öffnen sich direkt über dem pausierten Spiel |
+| Esc | PS | **Pause** (Fenster mit Weiter, Einstellungen, Hilfe, Startseite); am Handy pausiert das ☰-Menü |
+| O | Options | **Einstellungen** direkt über dem pausierten Spiel (danach geht es weiter); auf der Startseite das Einstellungs-Fenster |
 | M | – | Ton aus/an |
 | G | – | Seil-Abreißen an/aus (bei „Aus“ wird einem die Handle nie aus der Hand gerissen – dann **keine Rangliste**; auch unter Einstellungen → Spiel → Seilzug-Grenze) |
+| Tab / Umschalt+Tab, Pfeile | Steuerkreuz, linker Stick | **Menüs** (Startseite, Fenster, Pause, Challenge): Knopf wählen (weißer Rahmen); in einer Auswahlliste die Zeile, auf einem Schieber ←/→ den Wert |
+| Leertaste | ✕ | Menüs: gewählten Knopf drücken (Auswahlbox öffnen, Zeile wählen) |
+| Enter | PS (oder Touchpad) | Menüs: **Spiel starten** bzw. Los / Nochmal / Weiter |
+| – | L1 / R1 | Menüs: Reiter der Einstellungen wechseln |
+| Esc | ○ | Menüs: zurück (Liste oder Fenster schließen; in der Challenge zur Startseite) |
 | F3 | – | Debug: Fangzonen der Slider einblenden (gelb; wer im Sprung hineinkommt, gleitet aufs Rail) glattes Plastik (blau; nur rutschen, kein Slide, kein Lenken) und Safetys/Auffahrten und Kicker (orange; fährt man wie einen Kicker, kein Slide) |
 
 **Auf dem Handy/Tablet** (im Browser, wird automatisch erkannt):

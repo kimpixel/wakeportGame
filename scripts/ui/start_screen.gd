@@ -263,6 +263,9 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_editor.build()
 	_editor.saved.connect(func(id: String, play: bool) -> void: setups_changed.emit(id, play))
 	_editor.closed.connect(func() -> void: get_viewport().disable_3d = false)
+	# Tastatur/Gamepad (MenuNav): Menü mit Fokus anfangs auf Start; der Editor bedient sich selbst
+	MenuNav.add_scope(_menu, 0, _start_btn)
+	MenuNav.add_scope(_editor, 15, null, true)
 
 
 ## Spielmodus und Challenge anzeigen (Auswahl mit Pokalen, kurzes Ziel).
@@ -330,8 +333,10 @@ func _make_theme() -> Theme:
 	var normal := _box(Color(0.12, 0.15, 0.18), 12)
 	var hover := _box(Color(0.2, 0.24, 0.28), 12)
 	var down := _box(Color(Hud.ACCENT, 0.85), 12)
-	for st: String in ["normal", "focus"]:
-		th.set_stylebox(st, "Button", normal)
+	th.set_stylebox("normal", "Button", normal)
+	th.set_stylebox("focus", "Button", MenuNav.focus_box())    # Tastatur/Gamepad: weißer Rahmen
+	th.set_stylebox("focus", "HSlider", MenuNav.focus_box(6))
+	th.set_stylebox("focus", "LineEdit", MenuNav.focus_box(6))
 	th.set_stylebox("hover", "Button", hover)
 	th.set_stylebox("pressed", "Button", down)
 	th.set_stylebox("hover_pressed", "Button", down)
@@ -502,6 +507,8 @@ func _popup_frame(title: String) -> Array:
 	head.add_child(l)
 	var x := _button("✕", 24)
 	x.custom_minimum_size = Vector2(56, 52)
+	x.set_meta("nav_close", true)                # Fokus beim Öffnen nicht aufs Schließen
+	MenuNav.add_scope(p, 10)
 	x.pressed.connect(_close_popups)
 	head.add_child(x)
 	return [p, v, l]
@@ -1480,29 +1487,53 @@ func _process(delta: float) -> void:
 
 # ---------------------------------------------------------------- Tastatur
 
+## Einstellungen: nächster bzw. vorheriger Reiter (im Kreis), Fokus auf den Reiter.
+func _next_tab(d: int) -> void:
+	var n := _tab_buttons.size()
+	var cur := 0
+	for i in n:
+		if _tab_buttons[i].button_pressed:
+			cur = i
+	var b := _tab_buttons[posmod(cur + d, n)]
+	b.button_pressed = true
+	b.pressed.emit()
+	b.focus_mode = Control.FOCUS_ALL
+	b.grab_focus()
+
+
+## Enter / PS = Spiel starten, Esc / Kreis = Fenster schließen, O / Options = Einstellungen.
+## Fokus wandern und Knöpfe drücken (Leertaste / Kreuz) macht MenuNav bzw. Godot.
 func _input(event: InputEvent) -> void:
-	if not visible or not (event is InputEventKey) or not event.pressed or event.is_echo() or editor_open():
+	if not visible or not event.is_pressed() or event.is_echo() or editor_open():
 		return
-	var k := (event as InputEventKey).physical_keycode
+	var cancel := event.is_action_pressed("ui_cancel")
 	var focus := get_viewport().gui_get_focus_owner()
-	if focus is LineEdit:          # Namen tippen: Leertaste/Tab starten nichts, Esc beendet das Tippen
-		if k != KEY_ESCAPE:
+	if focus is LineEdit and event is InputEventKey:   # Namen tippen: nur Esc beendet das Tippen
+		if not cancel:
 			return
 		focus.release_focus()
-	if _ingame:                 # im Spiel: Leertaste/Tab starten nichts, Esc schließt
-		if k == KEY_ESCAPE:
+	if _settings.visible and (event.is_action_pressed("tab_prev") or event.is_action_pressed("tab_next")):
+		_next_tab(-1 if event.is_action_pressed("tab_prev") else 1)    # L1/R1: Reiter der Einstellungen
+		get_viewport().set_input_as_handled()
+		return
+	if _ingame:                 # im Spiel: nichts starten, Esc / Enter / O schließen
+		if cancel or event.is_action_pressed("menu_start") or event.is_action_pressed("settings"):
 			_close_popups()
 			get_viewport().set_input_as_handled()
 		return
-	match k:
-		KEY_ESCAPE:
-			if not _popup_open():
-				return
-			_close_popups()
-		KEY_SPACE, KEY_TAB:
-			if _popup_open():
-				_close_popups()
-			start_pressed.emit()
-		_:
+	if cancel:
+		if not _popup_open():
 			return
+		_close_popups()
+	elif event.is_action_pressed("settings"):
+		if _settings.visible:
+			_close_popups()
+		else:
+			_show_popup(_settings)
+	elif event.is_action_pressed("menu_start"):
+		if _popup_open():
+			_close_popups()
+		start_pressed.emit()
+	else:
+		return
 	get_viewport().set_input_as_handled()
