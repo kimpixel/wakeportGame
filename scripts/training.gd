@@ -173,49 +173,49 @@ const MODES := [
 	{"id": "raley", "name": "Invert Training", "text": "Inverts: Tricks aus dem Raley-Absprung nach der Wende.", "tasks": [
 		{"id": "first", "name": "Raley", "title": "Raley stehen",
 		 "kind": "raley", "trick": "Raley", "rank": 0, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
-		 "metric": "height", "medals": [0.5, 1.5, 2.2],
+		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "Nach der Ufer-Wende Tempo aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: größte Höhe.",
-		 "keys": "Leertaste lange halten (voll aufladen) + loslassen bei über 40 km/h",
-		 "keys_mobile": "SPRUNG lange halten (voll aufladen) + loslassen bei über 40 km/h",
-		 "tip": "Nach der Wende weit nach außen fahren, dann hart gegen den Zug zur Seilmitte kanten – im schnellsten Moment loslassen."},
+		 "keys": "Leertaste lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist",
+		 "keys_mobile": "SPRUNG lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist",
+		 "tip": "Nach der Wende weit nach außen fahren, dann hart gegen den Zug zur Seilmitte kanten – loslassen, solange der Seilzug über der Marke RALEY ist – je mehr Zug und Tempo, desto höher."},
 		{"id": "krypt", "name": "Krypt", "title": "Krypt (Raley 180 rechts)",
 		 "kind": "raley", "trick": "Krypt", "rank": 1, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
-		 "metric": "height", "medals": [0.5, 1.5, 2.2],
+		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "Raley mit genau einer halben Drehung nach rechts. Gemessen: größte Höhe.",
 		 "keys": "Raley, dann gegen Ende →  halten (180)",
 		 "keys_mobile": "Raley, dann gegen Ende nach rechts neigen (180)",
 		 "tip": "Erst strecken lassen, dann ← / → : der Schwung bricht ab, du schwingst zurück und drehst aufrecht – rechtzeitig loslassen."},
 		{"id": "blindjudge", "name": "Blind Judge", "title": "Blind Judge (Raley 180 links)",
 		 "kind": "raley", "trick": "Blind Judge", "rank": 1, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
-		 "metric": "height", "medals": [0.5, 1.5, 2.2],
+		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "Raley mit genau einer halben Drehung nach links. Gemessen: größte Höhe.",
 		 "keys": "Raley, dann gegen Ende ←  halten (180)",
 		 "keys_mobile": "Raley, dann gegen Ende nach links neigen (180)",
 		 "tip": "Erst strecken lassen, dann ← / → : der Schwung bricht ab, du schwingst zurück und drehst aufrecht – rechtzeitig loslassen."},
 		{"id": "313", "name": "313", "title": "313 (Raley 360 links)",
 		 "kind": "raley", "trick": "313", "rank": 2, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
-		 "metric": "height", "medals": [0.5, 1.5, 2.2],
+		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "Raley mit genau einer ganzen Drehung nach links. Gemessen: größte Höhe.",
 		 "keys": "Raley, dann gegen Ende ←  halten (360)",
 		 "keys_mobile": "Raley, dann gegen Ende nach links neigen (360)",
 		 "tip": "Viel Höhe holen – die ganze Drehung braucht die Zeit vom höchsten Punkt bis zur Landung."},
 		{"id": "sbend", "name": "S-Bend", "title": "S-Bend",
 		 "kind": "raley", "trick": "S-Bend", "rank": 1, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
-		 "metric": "height", "medals": [0.5, 1.5, 2.2],
+		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "Raley-Absprung und gestreckt einmal um die eigene Längsachse – ohne Drehung danach. Gemessen: größte Höhe.",
 		 "keys": "Raley, gleich nach dem Absprung ↑",
 		 "keys_mobile": "Raley, gleich nach dem Absprung ▲",
 		 "tip": "Die Taste nur ganz am Anfang drücken – später wird es ein normaler Raley."},
 		{"id": "backroll", "name": "Backroll (todo)", "title": "Backroll (Invert, todo)",
 		 "kind": "raley", "trick": "Backroll", "rank": 1, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
-		 "metric": "height", "medals": [0.5, 1.5, 2.2],
+		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "Raley-Absprung und seitlich nach außen kopfüber rollen – ohne Drehung danach. Gemessen: größte Höhe.",
 		 "keys": "Raley, gleich nach dem Absprung ↓",
 		 "keys_mobile": "Raley, gleich nach dem Absprung ▼",
 		 "tip": "Die Taste nur ganz am Anfang drücken – später wird es ein normaler Raley."},
 		{"id": "sbend_blind", "name": "Special - S-Bend to Blind", "title": "Special: S-Bend to Blind",
 		 "kind": "raley", "trick": "S-Bend to Blind", "rank": 2, "setup": LEER, "start": {"turn": "a", "before": 45.0, "x": -2.0}, "end_after": 90.0,
-		 "metric": "height", "medals": [0.5, 1.5, 2.2],
+		 "metric": "height", "medals": [0.5, 1.5, 4.3],
 		 "goal": "S-Bend und danach genau eine halbe Drehung nach links – blind landen. Gemessen: größte Höhe.",
 		 "keys": "Raley, gleich nach dem Absprung ↑, nach der Drehung um die Handle ←  (180)",
 		 "keys_mobile": "Raley, gleich nach dem Absprung ▲, nach der Drehung um die Handle nach links neigen (180)",
@@ -418,5 +418,24 @@ static func record(mode_id: String, task: Dictionary, value: float) -> bool:
 	var cfg := ConfigFile.new()
 	cfg.load(GameSettings.FILE)
 	cfg.set_value(SECTION, mode_id + "." + task["id"], [maxi(int(old[0]), medal_for(task, value)), value])
+	cfg.save(GameSettings.FILE)
+	return true
+
+
+## Beste gesprungene Weite (Invert, Sprung-Start) in m, 0 = noch keine.
+static func best_width(mode_id: String, task_id: String) -> float:
+	var cfg := ConfigFile.new()
+	if cfg.load(GameSettings.FILE) != OK:
+		return 0.0
+	return float(cfg.get_value(SECTION, mode_id + "." + task_id + ".weite", 0.0))
+
+
+## Weite eintragen, wenn sie weiter ist. Liefert true bei neuer bester Weite.
+static func record_width(mode_id: String, task_id: String, width: float) -> bool:
+	if width <= best_width(mode_id, task_id):
+		return false
+	var cfg := ConfigFile.new()
+	cfg.load(GameSettings.FILE)
+	cfg.set_value(SECTION, mode_id + "." + task_id + ".weite", width)
 	cfg.save(GameSettings.FILE)
 	return true

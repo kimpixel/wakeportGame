@@ -86,7 +86,7 @@ Alle Test-Argumente stehen im Kopf von `scripts/main.gd` und in `CLAUDE.md`.
   Ton, Tempo und Grafik im Handy-Browser prüfen – Web-Probleme zeigen die Headless-Tests nicht.
 - **Handy-Code strikt getrennt:** Touch/Neigung/Web-Audio-Tricks dürfen die Desktop-Eingabe nie beeinflussen.
 - **Audio-Busse** nur in `default_bus_layout.tres` anlegen (zur Laufzeit angelegte Busse sind im Browser stumm).
-- Temporäre Test-Werte (z. B. `RALEY_SPEED := 0.0 #TMP`) vor dem Commit zurücksetzen.
+- Temporäre Test-Werte (z. B. `RALEY_TENSION := 0.0 #TMP`) vor dem Commit zurücksetzen.
 
 ## Wo was steht
 

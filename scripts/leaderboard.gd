@@ -18,7 +18,7 @@ extends Node
 
 const URL := "https://wakethehack-rangliste.kimpixel.workers.dev"   # Adresse des Workers (siehe server/README.md)
 const HOST := "kimpixel.github.io"
-const RULES := 1                 # erhöhen = alle Ranglisten beginnen neu
+const RULES := 2                # erhöhen = alle Ranglisten beginnen neu
 const SECTION := "rangliste"
 const TIMEOUT := 8.0             # s
 const NAME_MAX := 16

@@ -152,6 +152,7 @@ var _set_args: Array[String] = []   # Test: --set=NAME=WERT
 var _music_args := PackedStringArray()   # Test: --music=DATEI[,DATEI]
 var _hold: Array = []           # Test: [Aktion, von, bis] (--hold)
 var _jump_at := -1.0           # Test: zu dieser Zeit abspringen
+var _peak_y := 0.0             # Test-Ausgabe: größte Höhe des laufenden Sprungs
 var _test_dpress := INF       # Test: Drift-Press fest (--dpress)
 var _test_pitch := 0.0         # Test: ↑/↓ in der Luft
 var _touch_at: Array[float] = []   # Test: Finger auf den Bildschirm
@@ -236,6 +237,14 @@ func _ready() -> void:
 	npc.trick_landed.connect(func(trick: String, pts: int) -> void:
 		if _test_log:
 			print("NPC TRICK: ", trick, " +", pts))
+	rider.jumped.connect(func(info: Dictionary) -> void:
+		_peak_y = rider.pos.y
+		if _test_log:
+			print("ABSPRUNG %s: Seilzug %d N, %.1f km/h, Ladung %.2f, vy %.2f m/s" % [
+				"RALEY" if info["raley"] else "Ollie", roundi(info["tension"]), info["speed"] * 3.6, info["load"], info["vy"]]))
+	rider.jump_landed.connect(func(info: Dictionary) -> void:
+		if _test_log:
+			print("FLUG %s: %.2f s, Höhe %.2f m" % [info["name"], info["air_time"], _peak_y]))
 	rider.crashed.connect(_on_crashed)
 	rider.rope_lost.connect(_on_crashed)
 	rider.grabbed.connect(func() -> void:
@@ -1003,6 +1012,8 @@ func _physics_process(delta: float) -> void:
 		_jump_at = -1.0
 		rider.test_jump()
 	_max_tension = maxf(_max_tension, rider.tension_smooth)
+	if rider.mode == Rider.Mode.AIR:
+		_peak_y = maxf(_peak_y, rider.pos.y)
 	if _test_log:
 		_log_t += delta
 		if _log_t >= 1.0:
@@ -1167,7 +1178,7 @@ func _process(_delta: float) -> void:
 		state = Hud.TimeState.RUNNING
 	hud.time_title = "VERSUCH" if challenge.active else ("MODUS" if _free_ride() else "ZEIT")
 	hud.set_stats(time_text, state,
-		_final_score if _finishing else rider.score, rider.tension_smooth, rider.tension_smooth / minf(rider.crash_tension, Rider.CRASH_TENSION))
+		_final_score if _finishing else rider.score, rider.tension_smooth, minf(rider.crash_tension, Rider.CRASH_TENSION))
 	hud.set_speed(rider.horizontal_speed() * 3.6)
 	hud.set_debug("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nWenden %d   ·   Kamera: %s%s" % [
 		roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
