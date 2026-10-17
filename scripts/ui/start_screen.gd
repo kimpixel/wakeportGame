@@ -478,6 +478,8 @@ func _layout() -> void:
 func _fit_popup(p: PanelContainer, size: Vector2) -> void:
 	var w := minf(size.x - 32.0, 760.0)
 	var h := minf(size.y - 32.0, 640.0)
+	if p == _rank_pop and size.x < size.y:      # Rangliste hochkant: ganze Höhe, damit die Liste Platz hat
+		h = size.y - 32.0
 	p.custom_minimum_size = Vector2(w, 0)
 	p.size = Vector2(w, h)
 	p.position = (size - Vector2(w, h)) * 0.5
