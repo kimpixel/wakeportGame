@@ -69,12 +69,6 @@ Ledge, „cheesewedge“ = Cheese Wedge, „Transitionrail“ = Transition Rail.
   Button im Band), erst dann pushen.
 - README.md und die Hilfe im HUD (`scripts/hud.gd`, `HELP`/`HELP_MOBILE`) bei Steuerungs- und
   Regeländerungen mitpflegen.
-- **Ranglisten-Reset immer ausdrücklich nennen**: Setzt eine Änderung Ranglisten zurück (neue Wertungs-Version:
-  `Leaderboard.RULES` erhöht, `"lb"` in einer Aufgabe, Aufgabe in `Training.MODES` außer Texten/Medaillen geändert,
-  Features eines Setups oder benutzte Bauteile in `parts.json` geändert), das dem Nutzer **vor dem Commit klar sagen**
-  und **auflisten, welche Ranglisten betroffen sind** (z. B. „alle“, „Kicker: Kicker M mit Absprung“, „Competition
-  Terminal 2 · Setup D, alle Rundenlängen“). Auch in die Commit-Nachricht schreiben („Rangliste neu: …“). Wird
-  nichts zurückgesetzt, obwohl sich Physik/Punkte ändern, ebenfalls kurz erwähnen (alte Werte zählen weiter).
 
 ## Testen
 
@@ -362,6 +356,13 @@ Der Server kennt keine Aufgaben: die **Wertungs-Version** `ver` rechnet das Spie
 (alle neu) bzw. `"lb": N` in einer Aufgabe (nur diese). Eintragen nur mit gespeichertem Namen (Startseite → Rangliste, = Einwilligung); echte Einträge nur aus der Web-Hauptversion,
 lokal/PR-Vorschau in Test-Ranglisten (`dev-…`, Name „ dev“); Tests senden nichts außer mit `--lb-url=http://127.0.0.1:8787 --lb-name=X` (lokal `npx wrangler dev --local` in `server/`, Log `RANGLISTE …`). Fenster: Auswahl der Disziplinen im Kopf (Competition 7:30, Challenges je Modus, Competition 10:00/15:00), **nur die mit Einträgen** (Server `/boards`, bei Fehler alle); vorgewählt das gewählte Spiel, sonst die erste. Test-Bild `--screen=@rangliste[N][+]` (Zeile N, + = Liste offen).
 Handy im Browser: Name per `prompt()` (LineEdit hat dort keine Bildschirmtastatur).
+- **Ranglisten-Reset immer ausdrücklich nennen** (gilt für jede Änderung, egal von wem): Setzt eine Änderung Ranglisten
+  zurück (neue Wertungs-Version: `Leaderboard.RULES` erhöht, `"lb"` in einer Aufgabe, Aufgabe in `Training.MODES` außer
+  Texten/Medaillen geändert, Features eines Setups oder benutzte Bauteile in `parts.json` geändert), das **vor dem Commit
+  klar sagen** und **auflisten, welche Ranglisten betroffen sind** (z. B. „alle“, „Kicker: Kicker M mit Absprung“,
+  „Competition Terminal 2 · Setup D, alle Rundenlängen“). Immer auch in die Commit-Nachricht („Rangliste neu: …“), damit es
+  in der Git-Historie steht. Wird nichts zurückgesetzt, obwohl sich Physik/Punkte ändern, ebenfalls kurz erwähnen
+  (alte Werte zählen weiter).
 
 **Musik** (`scripts/music.gd`, Reiter „Musik“, Kanal `Musik`): **nur lizenzfreie Spiel-Musik im Repo** (Pixabay, `assets/music/`, Quellen in `assets/music/QUELLEN.md` pflegen; bekannte Titel bräuchten Master- und Verlagsrechte). `assets/music/` hat ein `.gdignore` (nicht importiert, nicht im index.pck): lokal direkt aus dem Ordner gelesen, im Web kopiert der Workflow die Dateien nach `music/` + `music/index.json`, das Spiel lädt per HTTPRequest nur laufenden + nächsten Titel. Dazu eigene MP3/OGG/WAV des Spielers (Desktop: nativer Dateidialog, Web: `<input type=file>` über JavaScriptBridge), Kopie nach `user://musik`. Einstellungen `music`, `music_src` (0 Spiel, 1 eigene, 2 beides), `vol_music`; gemischt abgespielt (`PROCESS_MODE_ALWAYS`), `Music.duck()` bei Jubel/Sturzruf/Countdown; Pausenmenü „Nächster Titel“; Link `Music.PLAYLIST_URL`. Tests spielen nie eigene Titel (Spiel-Musik schon): `--music=DATEI[,…]`.
 
