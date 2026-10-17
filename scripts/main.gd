@@ -21,7 +21,7 @@ extends Node3D
 ##   --game-time=SEK   Test: Spielzeit (normal 450 s); im Autotest läuft dann eine Runde mit Zeit
 ##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, regen, dunst)
 ##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30
-##   --plane=S         Test: sofort ein Jet im Anflug, S m vor dem See (negativ) bzw. danach
+##   --plane=S[,nah|weit[,start|landung]] Test: sofort ein Jet, S m vor dem See (negativ) bzw. danach; nah = tief über dem See
 ##   --pike-at=SEK     Test: zu dieser Zeit springt der Hecht knapp vor dem Fahrer (Erfolg "fisch")
 ##   --sup-at=SEK      Test: ein SUP aus der Seemitte kommt herüber, das rote Boot vertreibt ihn
 ##   --drop-at=S[,x,y,z|,boot]  Test: Fahrer zu dieser Zeit in die Luft setzen (Standard: über den Startsteg, Erfolg "steg";
@@ -106,6 +106,8 @@ var airplanes: Airplanes
 var music: Music
 var leaderboard: Leaderboard     # Online-Rangliste (Challenges, Competition)
 var _plane_arg := NAN
+var _plane_near := -1
+var _plane_land := -1
 var _load_arg := NAN
 var _passive_arg := false       # Test: Fahrer ohne Autopilot, ohne Eingaben
 var _weather_arg := ""
@@ -321,7 +323,7 @@ func _ready() -> void:
 	airplanes.jet_sound = sfx.make_jet_loop()
 	add_child(airplanes)
 	if not is_nan(_plane_arg):
-		airplanes.spawn_at(_plane_arg)
+		airplanes.spawn_at(_plane_arg, _plane_near, _plane_land)
 	cam.doppler_tracking = Camera3D.DOPPLER_TRACKING_IDLE_STEP
 	ambient.pike_hit.connect(func() -> void:
 		hud.show_trick("Hecht erwischt!")
@@ -1520,7 +1522,12 @@ func _parse_args() -> void:
 		elif arg.begins_with("--day="):
 			_day_arg = arg.substr(6).to_int()
 		elif arg.begins_with("--plane="):
-			_plane_arg = arg.substr(8).to_float()
+			var pa := arg.substr(8).split(",")
+			_plane_arg = pa[0].to_float()
+			if pa.size() > 1:
+				_plane_near = 1 if pa[1] == "nah" else 0
+			if pa.size() > 2:
+				_plane_land = 0 if pa[2] == "start" else 1
 		elif arg.begins_with("--load="):
 			_load_arg = arg.substr(7).to_float()
 		elif arg == "--passive":
