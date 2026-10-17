@@ -69,6 +69,12 @@ Ledge, „cheesewedge“ = Cheese Wedge, „Transitionrail“ = Transition Rail.
   Button im Band), erst dann pushen.
 - README.md und die Hilfe im HUD (`scripts/hud.gd`, `HELP`/`HELP_MOBILE`) bei Steuerungs- und
   Regeländerungen mitpflegen.
+- **Ranglisten-Reset immer ausdrücklich nennen**: Setzt eine Änderung Ranglisten zurück (neue Wertungs-Version:
+  `Leaderboard.RULES` erhöht, `"lb"` in einer Aufgabe, Aufgabe in `Training.MODES` außer Texten/Medaillen geändert,
+  Features eines Setups oder benutzte Bauteile in `parts.json` geändert), das dem Nutzer **vor dem Commit klar sagen**
+  und **auflisten, welche Ranglisten betroffen sind** (z. B. „alle“, „Kicker: Kicker M mit Absprung“, „Competition
+  Terminal 2 · Setup D, alle Rundenlängen“). Auch in die Commit-Nachricht schreiben („Rangliste neu: …“). Wird
+  nichts zurückgesetzt, obwohl sich Physik/Punkte ändern, ebenfalls kurz erwähnen (alte Werte zählen weiter).
 
 ## Testen
 
