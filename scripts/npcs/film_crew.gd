@@ -572,7 +572,29 @@ static func make_boat() -> Node3D:
 	Util.box(boat, Vector3(0.3, 0.22, 0.42), Vector3(0.38, 0.34, 1.5), Util.mat(Color(0.8, 0.1, 0.08), 0.5))
 	Util.box(boat, Vector3(0.06, 0.04, 0.06), Vector3(0.38, 0.47, 1.38), black)
 	_outboard(boat)
+	# Innenboden als Kollisionskörper: wer hineinfällt (Ragdoll), bleibt im Boot liegen (Erfolg "boot")
+	var floor_pts := PackedVector3Array()
+	for i in HULL_N + 1:
+		for p: Vector3 in _section(float(i) / HULL_N, true):
+			floor_pts.append(Vector3(p.x, minf(p.y, FLOOR_Y + 0.02), p.z))
+	var shape := ConvexPolygonShape3D.new()
+	shape.points = floor_pts
+	var col := CollisionShape3D.new()
+	col.shape = shape
+	var body := StaticBody3D.new()
+	body.collision_layer = FeaturePart.LAYER_COLLIDE
+	body.collision_mask = 0
+	body.add_child(col)
+	boat.add_child(body)
 	return boat
+
+
+## Ist der Punkt (Welt) im Boot? Grundriss des Rumpfs plus margin, bis height über der Wasserlinie.
+static func in_boat(boat: Node3D, p: Vector3, margin := 0.0, height := 0.9) -> bool:
+	var l := boat.global_transform.affine_inverse() * p
+	if l.z < BOW_Z - margin or l.z > STERN_Z + margin or l.y > height:
+		return false
+	return absf(l.x) < _half_width(l.z, false) + margin
 
 
 ## Halbspant bei t (0 = Spiegel, 1 = Bugspitze): Punkte von der linken Bordkante über den Kiel

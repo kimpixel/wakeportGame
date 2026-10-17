@@ -24,7 +24,8 @@ extends Node3D
 ##   --plane=S         Test: sofort ein Jet im Anflug, S m vor dem See (negativ) bzw. danach
 ##   --pike-at=SEK     Test: zu dieser Zeit springt der Hecht knapp vor dem Fahrer (Erfolg "fisch")
 ##   --sup-at=SEK      Test: ein SUP aus der Seemitte kommt herüber, das rote Boot vertreibt ihn
-##   --drop-at=S[,x,y,z]  Test: Fahrer zu dieser Zeit in die Luft setzen (Standard: über den Startsteg, Erfolg "steg")
+##   --drop-at=S[,x,y,z|,boot]  Test: Fahrer zu dieser Zeit in die Luft setzen (Standard: über den Startsteg, Erfolg "steg";
+##                     boot = über das rote Boot am Liegeplatz, Erfolg "boot")
 ##   --erfolg=ID,…     Test: geheime Erfolge als erreicht zeigen (z. B. --screen=@erfolge --erfolg=fisch)
 ##   --lb-url=URL      Test: Rangliste über diesen Worker (z. B. lokal http://127.0.0.1:8787), --lb-name=NAME
 ##   --dpress=W        Test: Drift-Press fest zeigen (-1 Tailpress … +1 Nosepress), auch ohne Drift
@@ -143,6 +144,7 @@ var _pike_at := -1.0           # Test: Hecht springt zu dieser Zeit knapp vor de
 var _sup_at := -1.0            # Test: ein SUP aus der Seemitte kommt zu dieser Zeit herüber
 var _drop_at := -1.0           # Test: Fahrer zu dieser Zeit an _drop_pos in die Luft setzen
 var _drop_pos := Vector3.INF   # Test: wohin (INF = über den Startsteg)
+var _in_boat := false          # Fahrer ist gerade im roten Boot (Erfolg "boot" nur beim Hineinkommen melden)
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
 var _pause_at := -1.0           # Test: zu dieser Zeit pausieren (und Screenshot)
 var _settings_at := -1.0        # Test: zu dieser Zeit die Einstellungen im Spiel öffnen
@@ -969,6 +971,7 @@ func _physics_process(delta: float) -> void:
 	if not is_nan(_load_arg):
 		rider._load = _load_arg            # Test: Sprung so weit aufgeladen (nur Haltung)
 	_check_buoy(rider)
+	_check_boat()
 	_track_turn()
 	_recover(rider, pc, delta)
 
@@ -1397,14 +1400,38 @@ func _unlock_achievement(id: String) -> void:
 		print("ERFOLG ", id)
 
 
+## Geheimer Erfolg "boot": ins rote Boot gefahren (Sturz) oder beim Sturz hineingefallen.
+func _check_boat() -> void:
+	if start_screen and start_screen.visible:
+		return
+	var crashed := rider.mode == Rider.Mode.CRASHED
+	if crashed and not (rider._ragdoll and rider._ragdoll.active):
+		return                                      # schwimmend zählt nicht
+	var hit := false
+	for b: Node3D in [film.boat, beach.boat]:
+		if b and b.is_visible_in_tree() and FilmCrew.in_boat(b, rider.pos, 0.0 if crashed else 0.25):
+			hit = true
+	if hit and not _in_boat:
+		if not crashed:
+			rider.crash("Ins Boot gefahren!")
+		hud.show_trick("Boot crash!")
+		_unlock_achievement("boot")
+	_in_boat = hit
+
+
 ## Test --drop-at: Fahrer mit etwas Tempo in die Luft setzen (z. B. über den Steg oder in einen Mückenschwarm).
 func _test_drop() -> void:
 	var p := _drop_pos
-	if p == Vector3.INF:
+	if p == Vector3.ZERO and beach.boat:
+		p = beach.boat.global_position + Vector3(0.0, 1.0, 0.0)
+	elif p == Vector3.INF:
 		var d := rider.dock_rect.get_center()
 		p = Vector3(d.x, rider.start_pos.y + 1.2, d.y)
 	rider.pos = p
 	rider.vel = Vector3(0.0, 1.0, -3.0)
+	if _drop_pos == Vector3.ZERO:
+		rider.let_go("Test: ins Boot")          # sonst zieht das Seil ihn vom Boot weg
+		rider.vel = Vector3(0.0, 0.5, 0.0)
 	rider.mode = Rider.Mode.AIR
 	rider.air_time = 0.0
 	print("DROP ", p)
@@ -1459,7 +1486,9 @@ func _parse_args() -> void:
 		elif arg.begins_with("--drop-at="):
 			var v := arg.substr(10).split_floats(",")
 			_drop_at = v[0]
-			if v.size() >= 4:
+			if arg.ends_with(",boot"):
+				_drop_pos = Vector3.ZERO
+			elif v.size() >= 4:
 				_drop_pos = Vector3(v[1], v[2], v[3])
 		elif arg.begins_with("--pike-at="):
 			_pike_at = arg.substr(10).to_float()

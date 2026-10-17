@@ -12,6 +12,7 @@ const LIST := [
 	{"id": "sup", "name": "Nass gespritzt", "text": "Einen SUP-Paddler mit voller Fahrt nass gespritzt."},
 	{"id": "steg", "name": "Steg-Landung", "text": "Aus der Luft auf dem Startsteg gelandet."},
 	{"id": "insekt", "name": "Insekten fressen", "text": "Am Waldrand von Terminal 1 durch einen Mückenschwarm gefahren. Mahlzeit!"},
+	{"id": "boot", "name": "Boot crash", "text": "Ins rote Boot gefahren oder hineingefallen."},
 ]
 
 static var no_save := false       # Tests: nur für diese Sitzung merken
