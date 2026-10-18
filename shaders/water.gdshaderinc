@@ -5,7 +5,10 @@
 
 #define WAKE_COUNT 96
 
+#define BOAT_COUNT 32
+
 uniform vec4 wake_points[WAKE_COUNT]; // x, z, Entstehungszeit, Stärke
+uniform vec4 boat_points[BOAT_COUNT]; // Bootswelle (größer, siehe BOAT_* in water.gd)
 uniform float sim_time = 0.0;
 uniform vec3 deep_color : source_color = vec3(0.02, 0.15, 0.19);
 uniform vec3 shallow_color : source_color = vec3(0.07, 0.33, 0.35);
@@ -37,6 +40,12 @@ const float WAKE_K = 3.0;
 const float WAKE_AMP = 0.2;
 const float WAKE_DECAY = 0.55;
 const float WAKE_LIFE = 5.6;
+const float BOAT_SPEED = 3.2;
+const float BOAT_WIDTH = 2.5;
+const float BOAT_K = 1.25;
+const float BOAT_AMP = 0.32;
+const float BOAT_DECAY = 0.25;
+const float BOAT_LIFE = 8.0;
 
 varying vec3 v_world_normal;
 varying vec3 v_world_pos;
@@ -79,6 +88,23 @@ float surface(vec2 p, float t, out float foam) {
 		// Schaumspur hinter dem Brett + Schaum auf den Wellenkämmen
 		foam += w.w * 0.22 * exp(-age * 1.4) * exp(-r * r / (0.2 + age * 0.7));
 		foam += max(ring - 0.06, 0.0) * 2.5;
+	}
+	for (int i = 0; i < BOAT_COUNT; i++) {
+		vec4 w = boat_points[i];
+		float age = t - w.z;
+		if (age < 0.0 || age > BOAT_LIFE) {
+			continue;
+		}
+		float r = distance(p, w.xy);
+		float front = BOAT_SPEED * age + 0.5;
+		float d = r - front;
+		float env = exp(-d * d / (BOAT_WIDTH * BOAT_WIDTH));
+		float decay = (1.0 - exp(-age * 2.0)) * exp(-age * BOAT_DECAY) / sqrt(1.0 + 0.15 * front);
+		float ring = w.w * BOAT_AMP * env * decay * cos(d * BOAT_K);
+		h += ring;
+		// breite Schaumspur hinter dem Heck + Schaum auf den großen Kämmen
+		foam += w.w * 0.3 * exp(-age * 0.9) * exp(-r * r / (0.6 + age * 1.6));
+		foam += max(ring - 0.15, 0.0) * 1.5;
 	}
 	return h;
 }
