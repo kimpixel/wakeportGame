@@ -319,6 +319,7 @@ func _ready() -> void:
 	film.game = self
 	add_child(film)
 	film.build()
+	film.cam.mobile = mobile.active      # Handy: kein Livebild links
 	# Einflugschneise Frankfurt: Jets im Landeanflug über dem See
 	airplanes = Airplanes.new()
 	airplanes.jet_sound = sfx.make_jet_loop()
