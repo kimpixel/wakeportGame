@@ -7,6 +7,7 @@ render_mode cull_disabled, diffuse_lambert_wrap, specular_disabled;
 uniform bool cards = false;
 uniform sampler2D leaf_tex : source_color, filter_linear_mipmap, repeat_disable;
 uniform float brightness = 1.0;
+global uniform float snow;          // Schneedecke 0..1 (Weather, project.godot [shader_globals])
 uniform float wind = 0.06;           // Ausschlag oben in m
 
 varying float v_ao;
@@ -65,6 +66,9 @@ void fragment() {
 	}
 	// etwas sattere Grüntöne (das bläuliche Himmelslicht macht sie sonst grau)
 	c = max(mix(vec3(dot(c, vec3(0.3, 0.59, 0.11))), c, 1.35), vec3(0.0));
+	// Schnee liegt oben auf der Krone
+	vec3 wn = (INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz;
+	c = mix(c, vec3(0.78, 0.8, 0.85) * shade, snow * (0.2 + 0.6 * smoothstep(-0.1, 0.7, wn.y)));
 	ALBEDO = c * brightness;
 	ROUGHNESS = 0.9;
 }

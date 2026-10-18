@@ -43,7 +43,8 @@ func update_reflections() -> void:
 		probe.max_distance = 400.0
 		probe.enable_shadows = false
 		probe.reflection_mask = REFLECT_LAYER
-		probe.intensity = FeaturePart.REFLECT
+		probe.intensity = FeaturePart.REFLECT * Weather.reflect
+		probe.add_to_group("feature_probe")              # Weather.apply dimmt sie nachts
 		part.add_child(probe)
 		_probes.append(probe)
 var _catalog: Dictionary = {}

@@ -8,6 +8,7 @@ uniform vec4 area_rect;   // dE0, dN0, dE1, dN1 relativ zum T2-Startmast
 uniform vec4 core_rect;
 uniform vec2 dir_u;       // T2-Richtung in (E, N)
 uniform float brightness = 1.0;
+global uniform float snow;          // Schneedecke 0..1 (Weather, project.godot [shader_globals])
 
 varying vec2 v_rel;
 varying float v_h;
@@ -38,6 +39,9 @@ void fragment() {
 	col = mix(col, vec3(0.55, 0.5, 0.4), watery * (1.0 - smoothstep(1.5, 3.0, v_h)));
 	// unter Wasser: heller Kies, wird vom Wasser ohnehin verdeckt
 	col = mix(col, vec3(0.45, 0.5, 0.42), smoothstep(-0.05, -0.6, v_h));
+	// Schnee: alles über dem Wasser, flache Stellen voll
+	vec3 wn = (INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz;
+	col = mix(col, vec3(0.86, 0.88, 0.92), snow * smoothstep(0.1, 0.5, v_h) * clamp(0.5 + wn.y * 0.6, 0.0, 1.0));
 	ALBEDO = col * brightness;
 	ROUGHNESS = 0.95;
 	SPECULAR = 0.2;

@@ -143,6 +143,15 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	tb.add_child(t)
 	var place := _label("Wakeport Raunheim", 20, Color(1, 1, 1, 0.85))
 	tb.add_child(place)
+	# Szenario (Datum, Uhrzeit, Wetter; jeder Start würfelt eins aus)
+	var scene_l := _label("", 18, Color(1, 1, 1, 0.7))
+	tb.add_child(scene_l)
+	if weather:
+		var upd := func() -> void:
+			var n := weather.scenario_name()
+			scene_l.text = ("„%s“   " % n if n != "" else "") + "%s, %s" % [weather.date_text(), weather.time_text()]
+		weather.changed.connect(upd)
+		upd.call()
 	_result = _label("", 24, SEL)
 	tb.add_child(_result)
 
@@ -178,6 +187,43 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 			_mode_select.add_header("COMMUNITY CHALLENGE")
 	_mode_select.item_selected.connect(func(i: int) -> void: mode_chosen.emit(_mode_ids[i]))
 	left.add_child(_mode_select)
+	# Szenario (Datum, Uhrzeit, Wetter): Standard Zufällig = nach jedem Spiel ein neues
+	if weather and settings:
+		left.add_child(_small("SZENARIO"))
+		var scenes := Weather.scenario_list()
+		var ss := _select(18)
+		ss.add_item("Zufällig")
+		for sc: Dictionary in scenes:
+			ss.add_item(sc["name"])
+		ss.item_selected.connect(func(i: int) -> void:
+			if i == 0:
+				settings.set_v("scenario", "")
+				weather.set_scenario(Weather.random_scenario(weather.scenario))
+			else:
+				settings.set_v("scenario", scenes[i - 1]["id"])
+				weather.set_scenario(scenes[i - 1]["id"]))
+		ss.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		# Shuffle: sofort ein anderes Szenario würfeln (stellt auf Zufällig)
+		var shuffle := _button("", 18)
+		shuffle.tooltip_text = "Neues Szenario würfeln"
+		shuffle.custom_minimum_size = Vector2(56, 0)
+		shuffle.draw.connect(func() -> void: _draw_shuffle(shuffle))
+		shuffle.pressed.connect(func() -> void:
+			settings.set_v("scenario", "")
+			ss.select(0)
+			weather.set_scenario(Weather.random_scenario(weather.scenario)))
+		var srow := HBoxContainer.new()
+		srow.add_theme_constant_override("separation", 8)
+		srow.add_child(ss)
+		srow.add_child(shuffle)
+		left.add_child(srow)
+		_syncers.append(func() -> void:
+			var cur := str(settings.get_v("scenario"))
+			var si := 0
+			for k in scenes.size():
+				if scenes[k]["id"] == cur:
+					si = k + 1
+			ss.select(si))
 	_comp_box = VBoxContainer.new()
 	_comp_box.add_theme_constant_override("separation", 6)
 	right.add_child(_comp_box)
@@ -361,6 +407,28 @@ func _make_theme() -> Theme:
 	th.set_icon("grabber_highlight", "HSlider", _knob(Hud.ACCENT.lightened(0.4)))
 	th.set_stylebox("panel", "ScrollContainer", StyleBoxEmpty.new())
 	return th
+
+
+## Shuffle-Symbol: zwei gekreuzte Pfeile nach rechts (gezeichnet, Emoji fehlen im Browser-Font).
+func _draw_shuffle(b: Button) -> void:
+	var c := b.size * 0.5
+	var w := minf(b.size.x, b.size.y) * 0.22
+	var col := Color.WHITE
+	var lw := maxf(2.0, w * 0.18)
+	var a0 := c + Vector2(-w * 1.3, -w * 0.7)
+	var a1 := c + Vector2(w * 1.1, w * 0.7)
+	var b0 := c + Vector2(-w * 1.3, w * 0.7)
+	var b1 := c + Vector2(w * 1.1, -w * 0.7)
+	b.draw_line(a0, a0 + Vector2(w * 0.5, 0.0), col, lw, true)
+	b.draw_line(a0 + Vector2(w * 0.5, 0.0), a1 - Vector2(w * 0.5, 0.0), col, lw, true)
+	b.draw_line(a1 - Vector2(w * 0.5, 0.0), a1, col, lw, true)
+	b.draw_line(b0, b0 + Vector2(w * 0.5, 0.0), col, lw, true)
+	b.draw_line(b0 + Vector2(w * 0.5, 0.0), b1 - Vector2(w * 0.5, 0.0), col, lw, true)
+	b.draw_line(b1 - Vector2(w * 0.5, 0.0), b1, col, lw, true)
+	for tip: Vector2 in [a1, b1]:
+		var h := w * 0.45
+		b.draw_colored_polygon(PackedVector2Array([tip + Vector2(h * 0.6, 0.0), tip + Vector2(-h * 0.5, -h * 0.7),
+			tip + Vector2(-h * 0.5, h * 0.7)]), col)
 
 
 func _box(c: Color, r: int, margin := 10) -> StyleBoxFlat:
@@ -641,11 +709,12 @@ func _page_rider(p: VBoxContainer) -> void:
 
 func _page_world(p: VBoxContainer) -> void:
 	if weather:
+		# Szenario wählt man auf der Startseite; hier das Wetter von Hand (gilt bis zum Neustart)
 		var ws := _select(18)
 		for n: String in weather.preset_names():
 			ws.add_item(n)
 		ws.item_selected.connect(func(i: int) -> void: weather.set_preset(i))
-		_row(p, "WETTER   (jeder Start: Do. 6. August, 19:45, sonnig)").add_child(ws)
+		_row(p, "WETTER   (von Hand, bis zum Neustart; Szenario auf der Startseite)").add_child(ws)
 		var date_l := _small("DATUM")
 		var day_s := _slider(1.0, 365.0, 1.0)
 		_row(p, "", date_l).add_child(day_s)

@@ -15,6 +15,7 @@ varying vec3 wp;                     // Weltposition
 varying vec3 wn;                     // Welt-Normale
 varying float axis_len;              // Streckung der Rohrachse
 
+global uniform float feature_light;  // Dämmerung/Nacht: helles Weiß abdunkeln (Weather, project.godot [shader_globals])
 #include "res://shaders/feature_common.gdshaderinc"
 
 void vertex() {
@@ -61,7 +62,7 @@ void fragment() {
 	float wear = smoothstep(0.85, 1.0, normalize(wn).y) * smoothstep(0.35, 0.7, noise(vec3(c.x * 30.0, c.y * 0.3, sd + 2.0)));
 	rough = mix(rough, 0.6, wear * 0.5);
 	col = water_dirt(col, wp.y, vec3(c.x, mp.y, c.y), sd, 1.0, rough);
-	ALBEDO = col;
+	ALBEDO = col * feature_light;
 	ROUGHNESS = clamp(rough, 0.0, 1.0);
-	SPECULAR = 0.3;
+	SPECULAR = 0.3 * feature_light;
 }

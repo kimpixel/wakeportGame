@@ -15,6 +15,7 @@ uniform float wet_dark = 0.052;      // so viel dunkler wird der nasse Kunststof
 uniform float wet_fresnel = 0.82;    // flach geschaut tritt das Weiß so weit zugunsten der Spiegelung zurück
 uniform float wet_coat = 0.396;       // Stärke der Klarlack-Schicht (zweiter, glatter Glanz)
 
+global uniform float feature_light;  // Dämmerung/Nacht: helles Weiß abdunkeln (Weather, project.godot [shader_globals])
 varying vec3 lp;                     // lokale Position (Teil-Koordinaten)
 varying vec3 wp;                     // Weltposition
 varying vec3 ln;                     // lokale Normale
@@ -93,9 +94,9 @@ void fragment() {
 	float facing = clamp(dot(NORMAL, VIEW), 0.0, 1.0);
 	float fres = 0.04 + 0.96 * pow(1.0 - facing, 5.0);
 	col *= 1.0 - wet * (wet_dark + (1.0 - wet_dark) * wet_fresnel * fres);
-	ALBEDO = col;
+	ALBEDO = col * feature_light;
 	ROUGHNESS = mix(rough, wet_rough, wet);
-	SPECULAR = mix(0.5, 1.0, wet);
-	CLEARCOAT = wet * wet_coat;
+	SPECULAR = mix(0.5, 1.0, wet) * feature_light;      // nachts kein Glanzfleck vom Mond
+	CLEARCOAT = wet * wet_coat * feature_light;
 	CLEARCOAT_ROUGHNESS = 0.02;
 }

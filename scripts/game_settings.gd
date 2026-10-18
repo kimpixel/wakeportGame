@@ -54,6 +54,7 @@ const DEFAULTS := {
 	"planes": 1,            # 0 aus, 1 normal, 2 Rush Hour
 	"npc": true,            # Fahrer auf der anderen Anlage
 	"film": 0,              # Challenge-Filmteam: 0 Zufall, 1 Boot, 2 FPV-Drohne, 3 aus
+	"scenario": "",         # Szenario (Weather.SCENARIOS): "" = zufällig, bei jedem Spiel neu
 	"vol_fx": 1.0,          # Lautstärke Effekte (0..1)
 	"vol_cheer": 1.0,       # Lautstärke Jubel
 	"vol_planes": 1.0,      # Lautstärke Flugzeuge

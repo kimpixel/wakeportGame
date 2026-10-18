@@ -68,6 +68,7 @@ const HANDLE_HEIGHT := 1.0
 const BRIDLE_LEN := 0.3          # Dreieck am Griff: Leinen laufen nach 30 cm zum Seil zusammen
 const BRIDLE_HALF := 0.19        # Leinen sitzen an den Griff-Enden (halbe Griffbreite)
 const BRIDLE_SEGS := 6           # Glieder je Leine (zum Durchhängen)
+const ROPE_COLOR := Color(1.0, 0.85, 0.1)   # gelbe Zugleine
 static var CRASH_TENSION := 5400.0
 static var AIR_MAX_TENSION := 1400.0      # in der Luft federn die Arme den Seilzug ab
 
@@ -373,7 +374,7 @@ func _ready() -> void:
 		n.top_level = true
 
 	_rope_mesh = ImmediateMesh.new()
-	_rope_mat = Util.mat(Color(1.0, 0.85, 0.1), 1.0, true)
+	_rope_mat = Util.mat(ROPE_COLOR, 1.0, true)
 	var rope_mi := MeshInstance3D.new()
 	rope_mi.mesh = _rope_mesh
 	rope_mi.top_level = true
@@ -3008,6 +3009,7 @@ func _draw_line_segs(first: int, a: Vector3, b: Vector3, length: float) -> void:
 ## Zugseil vom Knoten (Kurvenstelle t0) bis zum Carrier.
 func _draw_rope(a: Vector3, b: Vector3, sag: float, t0: float) -> void:
 	_rope_mesh.clear_surfaces()
+	_rope_mat.albedo_color = ROPE_COLOR * Weather.lum     # unbeleuchtete Linie: nachts abdunkeln, sonst leuchtet sie
 	_rope_mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, _rope_mat)
 	for i in 21:
 		_rope_mesh.surface_add_vertex(_rope_at(a, b, sag, lerpf(t0, 1.0, i / 20.0)))
