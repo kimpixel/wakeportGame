@@ -561,6 +561,14 @@ func _roll_scenario() -> void:
 		weather.set_scenario(fixed)
 
 
+## Im Spiel neues Szenario würfeln (Z, Touchpad, ☰-Menü): stellt auf Zufällig und zeigt den Namen.
+func _shuffle_scenario() -> void:
+	settings.set_v("scenario", "")
+	weather.set_scenario(Weather.random_scenario(weather.scenario))
+	start_screen.sync_settings()
+	hud.show_trick(weather.scenario_name())
+
+
 ## "Spiel starten": Competition beginnt direkt mit Countdown, die Spielmodi mit ihrer Aufgabe.
 func _on_start_pressed() -> void:
 	_remember_game()
@@ -970,6 +978,8 @@ func _on_pad_menu(id: String) -> void:
 			AudioServer.set_bus_mute(0, not AudioServer.is_bus_mute(0))
 		"rope_rip":
 			_toggle_rope_rip()
+		"shuffle":
+			_shuffle_scenario()
 
 
 ## Finger weg: nicht mehr schwimmen.
@@ -1297,7 +1307,9 @@ func _take_shot() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("settings"):
+	if event.is_action_pressed("shuffle") and not start_screen.visible:
+		_shuffle_scenario()
+	elif event.is_action_pressed("settings"):
 		if pause_menu.can_pause.call():          # O / Options: Einstellungen direkt über dem pausierten Spiel
 			pause_menu.set_paused(true)
 			_open_settings_ingame("direct")
@@ -1402,7 +1414,7 @@ func _setup_input() -> void:
 	_bind("hitbox", [KEY_F3], [], [])  # Debug: Fangzonen der Slider zeigen
 	_bind("rope_rip", [KEY_G], [], [])  # Seil-Abreißen an/aus
 	_bind("start", [KEY_SPACE], [JOY_BUTTON_A], [])
-	_bind("reset", [KEY_R], [JOY_BUTTON_BACK], [])
+	_bind("reset", [KEY_R], [JOY_BUTTON_TOUCHPAD], [])   # Touchpad im Spiel = Neustart (Share würfelt das Szenario)
 	_bind("speed_up", [KEY_PAGEUP], [JOY_BUTTON_RIGHT_SHOULDER], [], [KEY_PLUS, KEY_KP_ADD])
 	_bind("speed_down", [KEY_PAGEDOWN], [JOY_BUTTON_LEFT_SHOULDER], [], [KEY_MINUS, KEY_KP_SUBTRACT])
 	_bind("jump_analog", [], [], [[JOY_AXIS_TRIGGER_RIGHT, 1.0]])   # R2: Sprung analog aufladen
@@ -1415,6 +1427,7 @@ func _setup_input() -> void:
 	# Menüs (MenuNav): Enter / PS / Touchpad = Start, O / Options = Einstellungen, Esc / PS = Pause
 	_bind("menu_start", [KEY_ENTER, KEY_KP_ENTER], [JOY_BUTTON_GUIDE, JOY_BUTTON_TOUCHPAD], [])
 	_bind("settings", [KEY_O], [JOY_BUTTON_START], [])
+	_bind("shuffle", [], [JOY_BUTTON_BACK], [], [KEY_Z])   # Szenario würfeln (Z wie Zufall, Share): Startseite und im Spiel
 	_bind("pause", [KEY_ESCAPE], [JOY_BUTTON_GUIDE], [])
 	# Godot-Menüaktionen: Leertaste / Kreuz drückt den Knopf mit Fokus (Enter startet, s. menu_start),
 	# Esc / Kreis zurück, Steuerkreuz und linker Stick bewegen den Fokus

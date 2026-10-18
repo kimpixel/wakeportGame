@@ -7,7 +7,7 @@ extends CanvasLayer
 ##  * rechts Pfeil hoch / runter (in der Luft Frontroll/Backroll bzw. beim Invert S-Bend/Backroll, auf dem Slider Nose-/Tailpress, im Drift Drift-Press);
 ##    mit Einstellung „Lenkung: Tasten“ dazu links / rechts = Steuerkreuz (statt Handy neigen)
 ##  * im Wasser nach einem Sturz heißen die Tasten SCHWIMMEN (SPRUNG) und SKIP (DRIFT)
-##  * rechts unter der HUD-Leiste ☰ (nicht in der Leiste)   Menü: Weiter, Einstellungen, Hilfe, Zurück zum Steg, Startseite, Ton
+##  * rechts unter der HUD-Leiste ☰ (nicht in der Leiste)   Menü: Weiter, Einstellungen, Hilfe, Zurück zum Steg, Startseite, Ton, Szenario würfeln
 ## Die Finger verteilt MobileInput: wer eine Taste trifft, drückt sie; alle anderen Finger
 ## springen bzw. starten wie bisher. Stil wie die HUD-Leiste.
 
@@ -98,7 +98,7 @@ func _ready() -> void:
 	_menu_box.add_theme_constant_override("separation", 14)
 	_menu.add_child(_menu_box)
 	for e: Array in [["Weiter", "close"], ["Einstellungen", "settings"], ["Hilfe ein/aus", "help"], ["Zurück zum Steg  (−2:00)", "reset"],
-			["Startseite", "home"], ["Ton aus/an", "mute"], ["Seil-Abreißen an/aus  (aus: keine Rangliste)", "rope_rip"]]:
+			["Startseite", "home"], ["Ton aus/an", "mute"], ["Szenario würfeln", "shuffle"], ["Seil-Abreißen an/aus  (aus: keine Rangliste)", "rope_rip"]]:
 		var b := PadButton.new()
 		b.text = e[0]
 		b.id = e[1]
