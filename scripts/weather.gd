@@ -457,7 +457,8 @@ func apply() -> void:
 	reflect = lerpf(0.12, 1.0, dusk) * (1.0 - 0.3 * cloud)
 	if is_inside_tree():
 		for pr in get_tree().get_nodes_in_group("feature_probe"):
-			(pr as ReflectionProbe).intensity = FeaturePart.REFLECT * reflect
+			if (pr as ReflectionProbe).reflection_mask != 0:    # noch in der Aufnahme: blendet selbst ein
+				(pr as ReflectionProbe).intensity = FeaturePart.REFLECT * reflect
 	Spray.set_light(lum)
 	changed.emit()
 
