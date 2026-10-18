@@ -131,7 +131,14 @@ static var INVERT_POINTS := 300
 # ↑/↓ in der Luft: Frontroll/Backroll um die Brettlängsachse; auf dem Slider: Nose-/Tailpress
 static var FLIP_RATE := 6.5          # rad/s Überschlag
 static var FLIP_LAND_TOL := 0.7      # rad: so schief darf man nach einem Überschlag landen
-const FLIP_PRESS_MAX := 1.2    # rad: so weit angefangene Rolle wird über einem Slider noch zum Press (zurückgenommen)
+const FLIP_PRESS_MAX := 1.2    # rad: so weit angefangene Rolle wird vor einem Slider noch zum Press (zurückgenommen)
+# Press vormerken: führt der Flug auf einen Slider und reicht die restliche Flugzeit nicht mehr für die Rolle,
+# heißt ↑/↓ in der Luft „gleich pressen“ (keine Rolle, Landung direkt im Press)
+static var PREPRESS_MARGIN := 1.0    # × Zeit für den Rest der Rolle: darunter wird gepresst statt gerollt
+static var PREPRESS_TILT := 0.5      # so weit kippt das Brett schon in der Luft (Anteil vom Press)
+const PREPRESS_LOOK := 2.5     # s: so weit wird die Flugbahn vorausgerechnet
+const PREPRESS_DT := 0.02      # s: Schrittweite der Vorausberechnung
+const PREPRESS_EVERY := 0.1    # s: so oft wird neu gerechnet, solange ↑/↓ gehalten wird
 static var FLIP_POINTS := 300
 static var PRESS_ANG := 0.45         # rad: Brett beim Press gekippt (Fotos: ca. 25°, anderes Ende deutlich in der Luft)
 ## Körperhaltung beim Press kommt aus Blender (blender/nosepress.blend -> tools/export_pose.py)
@@ -260,7 +267,9 @@ var _bs_time := 0.0             # Zeit im Boardslide
 var _slide_dist := 0.0          # gerutschte Meter (gesamt / im Boardslide) – für die Spielmodi
 var _bs_dist := 0.0
 var _flip := 0.0                # Überschlag im Sprung (rad, + = Frontroll)
-var _flip_lock := false         # ↑/↓ war beim Abheben schon gedrückt (z. B. Press vom Slider) -> erst loslassen
+var _flip_lock := false         # Sprung-Start: ↓ vom Gegenhalten am Steg noch gedrückt -> erst loslassen
+var _prepress := false          # ↑/↓ in der Luft = Press vormerken (Flug endet gleich auf einem Slider)
+var _prepress_t := 0.0          # Zeit bis zur nächsten Vorausberechnung
 var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
 var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Oberkörper vor)
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
@@ -816,6 +825,7 @@ func _step_dock_start(delta: float) -> void:
 			vel.y += DOCK_YANK_LIFT * fit * fit
 			_load = 0.0
 			_jump_start = kind
+			_flip_lock = absf(_pitch_in) > 0.1   # ↓ vom Gegenhalten: keine Rolle/kein Invert, bis losgelassen
 			if kind == "raley":
 				_raley = true
 				var side := rope_dir.dot(right())
@@ -1592,6 +1602,7 @@ func _pop() -> void:
 		vel.y = maxf(up, lift) + POP_ON_RAMP * minf(up, lift)
 	_enter_air()
 	_popped = true
+	_prepress = false                 # abgesprungen: ↑/↓ heißt wieder Rolle (oder Press vormerken, s. _step_air)
 	if fast:
 		_raley = true
 		var side := rope_dir.dot(right())
@@ -1610,6 +1621,7 @@ func _clear_air_pose() -> void:
 	_sbend_pivot = Vector3.INF
 	_invert_ang = 0.0
 	_flip = 0.0
+	_prepress = false
 	_tuck = 0.0
 	_press_vis = 0.0
 	_press_bs_vis = 0.0
@@ -1631,7 +1643,11 @@ func _enter_air() -> void:
 	_popped = false
 	_catch_part = null
 	_flip = 0.0
-	_flip_lock = absf(_pitch_in) > 0.1
+	_flip_lock = false              # ↑/↓ vom Press beim Abspringen gehalten: gleich Rolle (Sprung-Start sperrt selbst)
+	# ohne Absprung übers Ende des Sliders gerutscht: der Press bleibt (keine Rolle, die nicht mehr fertig würde);
+	# springt man ab, nimmt _pop() das zurück
+	_prepress = absf(_pitch_in) > 0.1 and _ground_kind == "feature"
+	_prepress_t = 0.0
 
 
 func _step_air(delta: float, rope: Vector3) -> void:
@@ -1678,13 +1694,22 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	# Drehung zur nächsten ganzen Umdrehung aus (bzw. zurück, wenn kaum angefangen).
 	if _flip_lock and absf(_pitch_in) <= 0.1:
 		_flip_lock = false
-	# Im Sinkflug knapp über einem Slider (Fangzone) heißt ↑/↓ „gleich pressen“, nicht Überschlag:
-	# eine kaum angefangene Rolle wird zurückgenommen, bis zum Loslassen gibt es keine
-	if absf(_pitch_in) > 0.1 and not _flip_lock and absf(_flip) < FLIP_PRESS_MAX and vel.y < 0.5 \
-			and features and not features.catch_at(pos).is_empty():
-		_flip_lock = true
+	# Press vormerken: endet der Flug gleich auf einem Slider und reicht die Zeit nicht mehr für die
+	# (restliche) Rolle, heißt ↑/↓ „gleich pressen“ – eine kaum angefangene Rolle wird zurückgenommen,
+	# bis zum Loslassen gibt es keine. Fliegt man ins Wasser oder lange genug, bleibt es die Rolle.
+	if absf(_pitch_in) <= 0.1:
+		_prepress = false
+		_prepress_t = 0.0
+	elif not _raley and not _flip_lock and not _prepress and absf(_flip) < FLIP_PRESS_MAX and not autopilot:
+		_prepress_t -= delta
+		if _prepress_t <= 0.0:
+			_prepress_t = PREPRESS_EVERY
+			var t_land := _slider_landing_time(rope.y / MASS - GRAVITY)
+			_prepress = t_land >= 0.0 and t_land < (TAU - FLIP_LAND_TOL - absf(_flip)) / FLIP_RATE * PREPRESS_MARGIN
 	if _raley:
 		pass                                   # Invert: ↑/↓ wählen oben die Variante, kein Überschlag
+	elif _prepress:
+		_flip = move_toward(_flip, 0.0, FLIP_RATE * 1.5 * delta)
 	elif absf(_pitch_in) > 0.1 and not _flip_lock:
 		_flip += _pitch_in * FLIP_RATE * delta
 	elif assist_flip:
@@ -1744,6 +1769,33 @@ func _slope_here() -> float:
 	if h1 < 0.1 and h0 < 0.1:
 		return 0.0
 	return maxf((h0 - h1) / 0.3, 0.0)
+
+
+## Wohin führt der Flug? Wurfbahn ab jetzt mit der jetzigen Steigbeschleunigung ay (Schwerkraft + Seil),
+## waagrecht geradeaus, bis zum Aufsetzen.
+## Zeit bis zur Landung auf einem Slider (Fangzone oder Slide-Fläche), -1 = landet woanders
+## (Wasser, Kicker, Safety, glattes Plastik) oder erst später als PREPRESS_LOOK.
+func _slider_landing_time(ay: float) -> float:
+	if features == null:
+		return -1.0
+	if _catch_part != null:
+		return 0.0                          # gleitet schon aufs Rail
+	var p := pos
+	var v := vel
+	var t := 0.0
+	while t <= PREPRESS_LOOK:
+		if v.y < 0.5 and assist_lock and not features.catch_at(p).is_empty():
+			return t
+		var obstacle := _obstacle_height(p.x, p.z)
+		if v.y <= 0.0 and p.y <= maxf(water.height_at(p.x, p.z, 1.0), obstacle):
+			var part := features.part_at(p.x, p.z)
+			if part and obstacle > p.y - 0.3 and part.is_slide() and not part.on_ramp(p) and not part.is_slick_at(p):
+				return t
+			return -1.0
+		v.y += ay * PREPRESS_DT
+		p += v * PREPRESS_DT
+		t += PREPRESS_DT
+	return -1.0
 
 
 ## Hineingleiten aufs Rail. true = dieses Bild erledigt (gleitet noch oder ist gelandet).
@@ -2035,6 +2087,8 @@ func _process(delta: float) -> void:
 		target_crouch = maxf(target_crouch, _tuck)
 		_crouch = maxf(_crouch, _tuck * 0.95)
 	var press_target := _pitch_in if (mode == Mode.WATER and _slide_part != null) else 0.0
+	if mode == Mode.AIR and _prepress:
+		press_target = _pitch_in * PREPRESS_TILT       # vorgemerkter Press: Brett kippt schon im Anflug
 	_press_vis = lerpf(_press_vis, press_target, 1.0 - exp(-delta * 10.0))
 	var bs_target := 1.0 if (mode == Mode.WATER and _slide_part != null and _is_boardslide(_slide_part)) else 0.0
 	_press_bs_vis = lerpf(_press_bs_vis, bs_target, 1.0 - exp(-delta * 10.0))
