@@ -132,7 +132,7 @@ Fallstricke:
 | `scripts/spray_sheet.gd`, `scripts/spray.gd` | Gischt, zwei Begriffe: **Wasserwand** (`SpraySheet`, Vorhang aus ballistischen Flugbahnen, Ansatz über die ganze Kante, Fächer von flach bis steil; zur Seilseite; Stärke 0..1 = Summe gewichteter Anteile Seilzug/Tempo/Winkel/Sprung-Ladung, Parameter `WALL_*` im F4-Panel; Seite aus der Neigung des Fahrers, Achse immer in Fahrtrichtung, auch switch) und **Tropfen** (`Spray`, weiche Wolken-Sprites, klein anfangen, groß und durchsichtig am Ende, fliegen nach hinten; kleine Gischt auf der anderen Kante, Landung mit Spritzer-Kranz, Drift-Press, Hecht, Boot). Keine Kugeln, kein Sprühnebel. **Performance**: die Wasserwand rechnet je Bild jeden Punkt einmal und nur mit `Water.ambient` (nie `height_at` je Punkt – das machte das Handy sehr langsam); Zeilen/Takt, Tropfen-Menge und Proximity Fade (Tiefenkopie im Browser, nur Hoch) je Grafikstufe (`set_quality`) |
 | `scripts/weather.gd`, `scripts/sun_calc.gd`, `shaders/sky.gdshader` | Wetter, Sonnenstand nach echter Lage; **Szenarien** (`Weather.SCENARIOS`); Himmel mit Wolkenballen (Hash ohne `sin`, sonst kantige Facetten), nachts Mond, Sterne, Milchstraße, Lichtglocke Frankfurt; Regenbogen, Kondensstreifen. Schnee: globaler Shader-Parameter `snow` (project.godot `[shader_globals]`) in Gelände/Laub/Gras. Unbeleuchtete Materialien (Zugleine, Gischt, Regen) mit `Weather.lum` abdunkeln, sonst leuchten sie nachts. **Features ab Blauer Stunde/nachts**: globaler Parameter `feature_light` (0,12 nachts, auch Glanz/Klarlack) dimmt das Weiß, blauer Ball über `Weather.dim_at_night`; **Bojen** (rot/weiß, gelbe Leine) leuchten dann leicht (`Weather.glow_at_night`, Signalfarben sollen auffallen); dazu `Weather.reflect` (Reflection Probes), gedämpfte Himmelsspiegelung (`radiance`, nur `AT_CUBEMAP_PASS`) und kaum Glanz vom Mondlicht – sonst stechen sie grell heraus. Bodennebel: ein Bild-Durchgang `shaders/mist.gdshader` (Nebelmenge je Blickstrahl exakt integriert, Dichte `Weather.MIST_DENSITY` über dem Wasser, nach oben exponentiell dünner; Strahl endet am Tiefenpuffer bzw. bei y = 0) – keine waagrechten Schichten, die schnitten Wellen/Ufer/Features als Treppen |
 | `scripts/sfx.gd`, `assets/sounds/` | Sounds; `positiv/` (Jubel), `negativ/` (Ruf beim Sturz), `feature_hit/`, `landing/` aus Videoaufnahmen |
-| `scripts/npcs/` | Umgebung (Steuermänner, wartende Fahrer, SUPs), Flugzeuge im Anflug |
+| `scripts/npcs/` | Umgebung (Steuermänner, wartende Fahrer, SUPs), Flugzeuge im Anflug; **Leben nach Jahreszeit** (alle über `apply_season(weather)` bei jedem `Weather.changed`; Werte `Weather.warm`/`heat`/`daylight`/`month()`): `ambient.gd` Hecht nur April–Oktober, SUPs nach Wärme (Winter/Regen/Nacht keine, Hitzetag + `SUP_EXTRA` je Grafikstufe, nie zwischen den Bahnen); `bathers.gd` Hitzetag: Luftmatratzen/Schwimmringe (Person `float`/`ring`, nur einmal posiert) im Badebereich und seeseitig, Liegewiese am Nordstrand (x −200..−120), Obergrenzen je Grafikstufe; `wildlife.gd` Haubentaucher (März–Nov., tauchen vor dem Fahrer), Schwanenpaar (Küken Mai–Sep., Herz), Graureiher, Kranichzug (Feb./März, Okt./Nov.), Libellen, Fledermäuse, Glühwürmchen, Eisschollen (Dez.–Feb.); `storm.gd` Gewitter-Blitze. Herbstlaub/kahle Laubbäume: globale Shader-Parameter `autumn`/`bare` (`Weather._leaves`), Pappelflug im Mai. Kein Wind/keine höheren Wellen (Physik = Rangliste) |
 | `scripts/wakeboard.gd`, `shaders/boot*.gdshader*` | Board + Bindungen (Schaft knickt per Shader mit dem Schienbein) |
 | `setups/parts.json`, `setups/setup_*.json`, `setups/index.json` | Bauteil-Katalog, Feature-Setups je Terminal |
 
@@ -180,7 +180,7 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
   Kicker M ohne Absprung 1,6 m, mit Absprung bis 3,0 m (L 3,8 m), Full Pipe 13 m.
 
 Geheime Erfolge (`scripts/achievements.gd`, Liste auf der Startseite Taste „Erfolge“, Meldung `Hud.show_achievement`):
-- Immer **10 Plätze** (`SLOTS`), nicht erreichte ausgegraut („Geheim“, ohne Text); neue Erfolge hinten an `LIST` hängen.
+- Immer **12 Plätze** (`SLOTS`), nicht erreichte ausgegraut („Geheim“, ohne Text); neue Erfolge hinten an `LIST` hängen.
   Gespeichert in user://settings.cfg [erfolge] (Datum); **Tests speichern nichts** (jedes Kommandozeilen-Argument).
   Freischalten über `main.gd _unlock_achievement(id)` (nicht hinter der Startseite). Test: `--screen=@erfolge --erfolg=fisch`.
 - **Fischkontakt** (`fisch`): mit dem springenden Hecht zusammenstoßen (`Ambient.pike_hit`). Damit er erreichbar ist,
@@ -197,6 +197,14 @@ Geheime Erfolge (`scripts/achievements.gd`, Liste auf der Startseite Taste „Er
 - **Boot crash** (`boot`): ins rote Boot fahren (= Sturz „Ins Boot gefahren!“) oder beim Sturz als Ragdoll hineinfallen
   (`main.gd _check_boat`, `FilmCrew.in_boat`: Rumpf-Grundriss, fahrend +0,25 m; schwimmend zählt nicht). Gilt für das Filmteam-/Patrouillen-Boot
   und das Boot am Liegeplatz. Innenboden hat einen Kollisionskörper (`LAYER_COLLIDE`), die Ragdoll bleibt im Boot liegen. Test `--drop-at=4,boot`.
+- **Was ein Frechdachs** (`frechdachs`): Haubentaucher taucht vor einem ab (liegt in der Fahrspur, ±2,5 m) und hinter einem auf der anderen
+  Seite wieder auf (`Wildlife.grebe_sneaked`). Einer lebt nahe der T2-Spur.
+- **Schwanenliebe** (`schwanenliebe`): das Schwanenpaar formt mit den Hälsen ein Herz (alle 45–90 s, 11 s lang), Fahrer bis `HEART_SEE` 20 m dran.
+  **Keine Tier-Ärgern-Erfolge** (Nutzerwunsch: nichts Tierquälerisches, lieber was Süßes; Schwäne weichen aus).
+- **Zugvogel** (`zugvogel`): Raley-Absprung, während der Kranichzug über dem See ist (`Wildlife.cranes_overhead`, Okt./Nov., Feb./März).
+- **Badegast** (`badegast`): Hitzetag, Luftmatratze nass spritzen wie beim SUP; ein „Schläfer“ treibt ab und zu bis x = −13,5 an die Bahn.
+- **Blitzableiter** (`blitz`): Szenario „Gewitter – YOLO“ (nie gewürfelt): Blitze alle 3–9 s, 22 % knapp neben dem Fahrer, Volltreffer 1,5 %
+  (frühestens 90 s nach Start/letztem Treffer) = Sturz „Vom Blitz getroffen!“ (`Storm`, Licht `Weather.flash`, Donner `Sfx.thunder` synthetisch).
 - **Ho ho ho!** (`nikolaus`): am 6. Dezember im Schnee eine Wende schaffen (`Weather.is_nikolaus`, in `_track_turn`). Das Szenario
   „Nikolaus-Session“ (Schnee) kommt nur am echten 6. Dezember (dann immer); sonst Datum 6. Dezember + Wetter Schnee von Hand. Test `--scenario=nikolaus`.
 

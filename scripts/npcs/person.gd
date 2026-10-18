@@ -12,6 +12,10 @@ extends Node3D
 ##  * "boat_driver" – sitzt hinten im Boot, eine Hand an der Pinne (hold), die andere auf dem Knie
 ##  * "filmer"     – steht im Boot, dreht sich zum Fahrer (watch), Kamera mit beiden Händen vor dem Gesicht
 ##  * "pilot"      – FPV-Drohnenpilot: steht, FPV-Brille auf, Funke mit beiden Händen vor dem Bauch
+##  * "float"      – Badegast liegt auf dem Rücken (Luftmatratze), Hände hinter dem Kopf; Kopf Richtung lokal -Z
+##  * "towel"      – wie float, aber auf dem Handtuch an Land, Arme neben dem Körper
+##  * "ring"       – sitzt im Schwimmring, Beine vorne über dem Ring, Arme auf dem Ring
+##  Badegäste (float, towel, ring) werden nur einmal posiert, danach rechnet die Figur nichts mehr (billig).
 
 const WALK_SPEED := 0.9
 const STRIDE := 0.32                 # halbe Schrittlänge
@@ -78,6 +82,9 @@ func setup(model: String) -> bool:
 		"pilot":
 			_build_radio()
 			_attach_goggles()
+		"float", "towel":
+			_fig.rotation.x = -PI * 0.5          # liegt auf dem Rücken: Kopf nach -Z, Gesicht nach oben
+			_fig.position.y = 0.11
 	return true
 
 
@@ -109,6 +116,10 @@ func _process(delta: float) -> void:
 		"pilot":
 			_pose_legs(0.0, 0.02)
 			_hold_remote()
+		"float", "towel", "ring":
+			_pose_bather()
+			set_process(false)               # Haltung bleibt stehen, nur der Knoten bewegt sich noch
+			return
 	if watch and kind != "sup":
 		_rig.look_at(_rig.to_skel(watch.global_position + watch_offset), 1.2)
 	elif kind == "sup":
@@ -309,6 +320,29 @@ func _attach_helmet() -> void:
 	var h := Helmet.new(helmet_design)
 	h.transform = Transform3D(_rig.rest_global("head").basis.orthonormalized().inverse(), Vector3.ZERO)
 	att.add_child(h)
+
+
+# ---------------------------------------------------------------- Badegäste
+
+func _pose_bather() -> void:
+	var g := global_transform
+	if kind == "ring":
+		# Becken tief im Ring, Oberkörper leicht zurückgelehnt, Beine vorne hoch über dem Ring
+		_rig.set_pelvis(_rig.to_skel(g * Vector3(0.0, -0.05, -0.05)), Basis(Vector3.RIGHT, -0.35))
+		for side: String in ["l", "r"]:
+			var sx := 1.0 if side == "l" else -1.0
+			_rig.leg(side, _rig.to_skel(g * Vector3(sx * 0.16, 0.12, 0.85)), _rig.to_skel(g * Vector3(sx * 0.2, 1.0, 0.5)))
+			_rig.arm(side, _rig.to_skel(g * Vector3(sx * 0.5, 0.18, -0.05)), _rig.to_skel(g * Vector3(sx * 0.9, 0.5, -0.4)))
+		return
+	# liegt auf dem Rücken (Figur ist um X gekippt): Beine locker, Arme hinter dem Kopf bzw. neben dem Körper
+	for side: String in ["l", "r"]:
+		var sx := 1.0 if side == "l" else -1.0
+		_rig.leg(side, _rig.to_skel(g * Vector3(sx * 0.17 + sx * randf() * 0.05, 0.12, -0.02)),
+			_rig.to_skel(g * Vector3(sx * 0.2, 0.6, -0.5)))
+		if kind == "float":
+			_rig.arm(side, _rig.to_skel(g * Vector3(sx * 0.09, 0.07, -1.62)), _rig.to_skel(g * Vector3(sx * 0.75, 0.05, -1.5)))
+		else:
+			_rig.arm(side, _rig.to_skel(g * Vector3(sx * 0.32, 0.12, -0.85)), _rig.to_skel(g * Vector3(sx * 0.6, 0.3, -1.2)))
 
 
 # ---------------------------------------------------------------- SUP

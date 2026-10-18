@@ -4,6 +4,8 @@ render_mode cull_disabled, diffuse_burley;
 // Geschlossenes Kronendach des Waldes außerhalb des Datengebiets (bis zum Horizont).
 uniform vec3 base_color : source_color = vec3(0.11, 0.2, 0.1);
 uniform float brightness = 1.0;
+global uniform float autumn;
+global uniform float bare;
 global uniform float snow;          // Schneedecke 0..1 (Weather, project.godot [shader_globals])
 
 varying float v_n;
@@ -34,7 +36,9 @@ void vertex() {
 }
 
 void fragment() {
-	ALBEDO = mix(base_color, vec3(0.62, 0.64, 0.68), snow * 0.55) * (0.7 + 0.6 * v_n) * brightness;
+	vec3 col = mix(base_color, vec3(0.2, 0.13, 0.04), autumn * 0.45);   // ferner Mischwald: Herbstton
+	col = mix(col, vec3(0.13, 0.11, 0.09), bare * 0.5);                // Winter: kahle Laubbäume grau-braun
+	ALBEDO = mix(col, vec3(0.62, 0.64, 0.68), snow * 0.55) * (0.7 + 0.6 * v_n) * brightness;
 	ROUGHNESS = 1.0;
 	SPECULAR = 0.1;
 }
