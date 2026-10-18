@@ -413,6 +413,9 @@ func _place_boat(_delta: float) -> void:
 	boat.global_transform = Transform3D(Basis.from_euler(Vector3(pitch, yaw, roll), EULER_ORDER_YXZ),
 		Vector3(p.x, h + 0.03 + sin(_t * 1.1) * 0.02 - 0.02 * clampf(_bv / 6.0, 0.0, 1.0), p.z))
 	_spray.emitting = _bv > 2.0
+	if game.water and _delta > 0.0:                     # große Bootswelle vom Heck (Challenge und Patrouille)
+		var stern := boat.global_transform * Vector3(0.0, 0.0, STERN_Z)
+		game.water.emit_boat_wake(stern, _bv, _delta)
 	if _motor:                                          # Standgas tuckert, mit Tempo höher und lauter
 		var thr := clampf(_bv / BOAT_MAX + absf(_bturn) * 0.2, 0.0, 1.0)
 		_motor.pitch_scale = lerpf(0.45, 1.25, thr)
