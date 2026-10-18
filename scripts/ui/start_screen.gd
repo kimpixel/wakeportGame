@@ -16,6 +16,7 @@ signal start_pressed
 signal mode_chosen(id: String)
 signal task_chosen(idx: int)
 signal setups_changed(id: String, play: bool)   # Setup-Editor hat gespeichert bzw. gelöscht
+signal plants_changed                           # Setup-Editor hat die Bepflanzung gespeichert
 signal ingame_closed                            # Einstellungen im Spiel (Pause) geschlossen
 
 const BASE_SHORT := 740.0        # so viele Einheiten hat die kurze Bildschirmseite mindestens
@@ -97,6 +98,11 @@ var _k := 1.0
 # Kamera im Hintergrund
 var _cam: Camera3D
 var _orbit := 0.0
+var _user_phi := 0.0              # Gamepad rechter Stick: eigener Schwenk (rad), Höhe (m), Abstand (m)
+var _user_h := 0.0
+var _user_r := 0.0
+var _user_idle := 99.0            # s seit der letzten Stick-Bewegung
+const USER_HOLD := 4.0            # s: so lange bleibt die Kamera nach dem Loslassen stehen
 var _focus := Vector3.ZERO
 var _focus_goal := Vector3.ZERO
 var _radius := 170.0
@@ -310,6 +316,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_ui.add_child(_editor)
 	_editor.build()
 	_editor.saved.connect(func(id: String, play: bool) -> void: setups_changed.emit(id, play))
+	_editor.plants_saved.connect(func() -> void: plants_changed.emit())
 	_editor.closed.connect(func() -> void: get_viewport().disable_3d = false)
 	# Tastatur/Gamepad (MenuNav): Menü mit Fokus anfangs auf Start; der Editor bedient sich selbst
 	MenuNav.add_scope(_menu, 0, _start_btn)
@@ -1544,15 +1551,37 @@ func _process(delta: float) -> void:
 		for p: PanelContainer in [_settings, _browser, _detail, _achieve, _rank_pop]:
 			if p.visible:
 				_fit_popup(p, _ui.size)
-	_orbit += ORBIT_SPEED * delta
+	# Gamepad rechter Stick: ↔ schwenken, ↕ Höhe (R3 gehalten: ↕ Abstand); nach dem Loslassen bleibt die
+	# Kamera kurz stehen, dann läuft der Schwenk weiter und die eigene Verstellung geht langsam zurück
+	var look := Input.get_vector("cam_left", "cam_right", "cam_up", "cam_down")
+	if look.length() > 0.1:
+		_user_idle = 0.0
+		_user_phi -= look.x * 0.8 * delta
+		if Input.is_action_pressed("cam_zoom"):
+			_user_r += look.y * 120.0 * delta
+		else:
+			_user_h -= look.y * 40.0 * delta
+	else:
+		_user_idle += delta
+		if _user_idle > USER_HOLD:
+			var back := 1.0 - exp(-delta * 0.3)
+			_user_phi = lerpf(_user_phi, 0.0, back)
+			_user_h = lerpf(_user_h, 0.0, back)
+			_user_r = lerpf(_user_r, 0.0, back)
+	if _user_idle > USER_HOLD:
+		_orbit += ORBIT_SPEED * delta
 	_focus = _focus.lerp(_focus_goal, 1.0 - exp(-delta * 0.8))
 	_radius = lerpf(_radius, _radius_goal, 1.0 - exp(-delta * 0.8))
 	# langsamer Schwenk um die Anlage, Höhe atmet leicht mit
 	# Schwenk von der Seeseite (lokal -x der Anlage) hin und her, nie über Land
 	var phi := 1.05 * sin(_orbit)
+	_user_phi = clampf(phi + _user_phi, -1.45, 1.45) - phi
+	phi += _user_phi
 	var side := _basis * Vector3(-cos(phi), 0.0, sin(phi))
-	var h := 34.0 + 12.0 * sin(_orbit * 1.7)
-	var pos := _focus + side * _radius + Vector3.UP * h
+	var h0 := 34.0 + 12.0 * sin(_orbit * 1.7)
+	_user_h = clampf(h0 + _user_h, 6.0, 140.0) - h0
+	_user_r = clampf(_radius + _user_r, 40.0, 400.0) - _radius
+	var pos := _focus + side * (_radius + _user_r) + Vector3.UP * (h0 + _user_h)
 	_cam.look_at_from_position(pos, _focus + Vector3(0.0, 2.0, 0.0), Vector3.UP)
 
 

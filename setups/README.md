@@ -12,6 +12,8 @@ Das Setup wählst du auf der Startseite aus. Für ein neues Setup legst du eine 
 
 Bequemer geht es mit dem **Setup-Editor** im Spiel (Startseite): Er speichert eigene Setups auf dem Gerät (`user://setups/`). Mit „Als JSON kopieren“ bekommst du genau dieses Dateiformat – als `setup_*.json` hier ablegen und in `index.json` eintragen, dann ist es fest im Spiel.
 
+`plants.json` ist die **Bepflanzung** (Reiter „Pflanzen“ im Setup-Editor, unabhängig vom Setup): von Hand gesetzte Pflanzen `[art, x, z, höhe, drehung]` in Spielkoordinaten und die von Hand gepflegten 2-m-Zellen je Ebene (`boden`, `gehoelz`), in denen das Spiel nichts automatisch setzt. Aus dem Projekt gestartet speichert der Editor direkt hierher (dann committen); fehlt die Datei, gibt es nur die Automatik.
+
 ## Modulare Teile
 
 | Modul | Aufbau |

@@ -20,6 +20,8 @@ Die echten Feature-Setups von T1 und T2 stehen modular in [setups/](setups/READM
 
 **Setup-Editor** (Taste auf der Startseite): eigene Setups für T1 und T2 bauen. Links die Bahn von oben (Raster, Seil, Masten, Wenden, Bojen; umschaltbar auf 3D), rechts die Bauteile, alle Hacks aus den echten Setups, die Eigenschaften der Auswahl mit 3D-Vorschau und das Setup selbst (Vorlage laden, Terminal leeren/kopieren, JSON kopieren/einfügen). Teil antippen = auswählen (doppelt = ganzer Hack, Umschalt/Strg = mehrere), ziehen = verschieben, freie Fläche ziehen = Karte bewegen, Rad bzw. + / − = Zoom. Tasten: Pfeile 0,1 m (Umschalt 1 m), Q/E drehen, F Richtung, M spiegeln, Strg+D duplizieren, Entf löschen, Strg+Z/Strg+Y. Zusammenstehende Teile werden als Hack orange markiert. **Speichern** legt ein eigenes Setup an (im Browser bzw. auf dem Gerät gespeichert), es erscheint dann unter FEATURE-SETUP; **Speichern & Fahren** startet gleich.
 
+Im Reiter **Pflanzen** bepflanzt man die Ufer auf dem Luftbild: Pflanze wählen (Schilf, Ufergras, Wiesengras, Strauch, Laubbaum, Kiefer), Pinselgröße und Dichte, dann **Malen**, **Radieren** oder **Automatik** (Stelle wieder dem Spiel überlassen); rechte Maustaste bzw. Werkzeug *Schieben* bewegt die Karte. Das Spiel setzt am Ufer selbst Schilf, Ufergras und Sträucher. Wo man malt oder radiert, gilt nur noch das Gemalte (Bodenpflanzen und Gehölze getrennt). **Pflanzen speichern** baut die Bepflanzung im Spiel sofort neu auf.
+
 Über den weißen Schwimmsteg, den Holzsteg und die Wendebojen fährt man einfach drüber: Die Boje wird unter Wasser gedrückt, der Fahrer macht ein kleines „Ups“. Der blaue Gummiball (in manchen Setups) dagegen muss übersprungen werden.
 
 ## Steuerung
@@ -45,7 +47,7 @@ Gamepad-Namen wie beim PS4-Controller (Xbox: ✕ = A, ○ = B, △ = Y, Options 
 | – | L1 / R1 (in der Luft) | schnelle halbe Drehung nach links / rechts (mehrmals tippen = 360, 540 …; beim Invert im normalen Drehtempo) |
 | C | – | Kamera: Verfolger, Orbit oder Ufer |
 | Tab | – | zurück zur Startseite (mit ihr beginnt das Spiel). Im Hintergrund die echte Szene, die Kamera schwenkt langsam von der Seeseite über die gewählte Anlage. Darüber das Menü: Spielmodus, Terminal und Feature-Setup bzw. die Aufgaben, **Einstellungen** (Wetter, Datum, Uhrzeit, Jetzt) und **Spiel starten**. Passt sich an Handy (hoch und quer) und Desktop an |
-| Maus / Mausrad | rechter Stick | Umsehen / Zoom. Mit dem Stick: loslassen = Kamera geht gleich wieder hinter den Fahrer; R3 halten + rechter Stick ↕ = Zoom |
+| Maus / Mausrad | rechter Stick | Umsehen / Zoom. Mit dem Stick: loslassen = Kamera geht gleich wieder hinter den Fahrer; R3 halten + rechter Stick ↕ = Zoom. Auf der Startseite: Stick ↔ schwenkt die Kamera, ↕ Höhe (R3: Abstand), nach 4 s läuft der Schwenk weiter |
 | P | – | Autopilot (fährt auch Features) |
 | Esc | PS | **Pause** (Fenster mit Weiter, Einstellungen, Hilfe, Startseite); am Handy pausiert das ☰-Menü |
 | O | Options | **Einstellungen** direkt über dem pausierten Spiel (danach geht es weiter); auf der Startseite das Einstellungs-Fenster |

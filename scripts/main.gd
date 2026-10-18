@@ -5,7 +5,9 @@ extends Node3D
 ## Testoptionen (nach "--" auf der Kommandozeile):
 ##   --autotest        Autopilot + Autostart + Telemetrie im Log
 ##   --quit=SEK        nach SEK Sekunden Simulationszeit beenden
-##   --shot=PFAD.png   Screenshot speichern (mit --shot-time=SEK) und beenden
+##   --shot=PFAD.png   Screenshot speichern (mit --shot-time=SEK) und beenden; Log „RENDER …“ = Draw Calls/Dreiecke des Bildes
+##   --bg / --fg       Fenster unsichtbar im Hintergrund (außerhalb des Bildschirms, ohne Fokus) bzw. sichtbar;
+##                     --bg gilt automatisch bei --shot und --write-movie
 ##   --cam=side|orbit  Kameramodus beim Start
 ##   --setup=ID        Feature-Setup aus setups/index.json (z. B. 2026-09, a, b)
 ##   --terminal=T1|T2  an welcher Anlage man fährt (der NPC fährt an der anderen)
@@ -175,7 +177,8 @@ var _log_t := 0.0
 func _ready() -> void:
 	_setup_input()
 	_parse_args()
-	Analytics.init()                         # Nutzungsstatistik (nur Web-Hauptversion)
+	_background_window()
+	Analytics.init()                        # Nutzungsstatistik (nur Web-Hauptversion)
 	_build_environment()
 	Geo.ensure_loaded()
 	terrain = Terrain.new()
@@ -535,6 +538,7 @@ func _build_start_screen() -> void:
 		_task_idx = i
 		start_screen.refresh_mode(game_mode, _task_idx))
 	start_screen.setups_changed.connect(_on_setups_changed)
+	start_screen.plants_changed.connect(func() -> void: terrain.rebuild_vegetation())
 
 
 ## Setup-Editor hat ein eigenes Setup gespeichert (bzw. gelöscht): Listen neu laden, das
@@ -871,6 +875,7 @@ func _apply_quality(q: int) -> void:
 	vp.scaling_3d_scale = [0.6, 0.8, 1.0][q]
 	vp.msaa_3d = [Viewport.MSAA_DISABLED, Viewport.MSAA_DISABLED, _msaa_default][q]
 	weather.shadow_distance = [0.0, 110.0, 200.0][q]
+	weather.shadow_splits = [2, 2, 4][q]
 	if ambient:
 		ambient.quality = q                   # Zusatz-Paddler und Badegäste an Hitzetagen
 		bathers.quality = q
@@ -878,7 +883,7 @@ func _apply_quality(q: int) -> void:
 		bathers.apply_season(weather)
 	weather.apply()
 	if terrain:
-		terrain.set_tree_density([0.35, 0.7, 1.0][q])
+		terrain.set_quality(q)
 	if features and features.reflections != (q >= 1):
 		features.reflections = q >= 1       # nasse Features spiegeln die Umgebung (Reflection Probes) ab Mittel
 		features.update_reflections()
@@ -1351,6 +1356,12 @@ func _take_shot() -> void:
 	await RenderingServer.frame_post_draw
 	get_viewport().get_texture().get_image().save_png(_shot_path)
 	print("screenshot saved: ", _shot_path)
+	# Aufwand des Bildes (zum Vergleichen von Grafik-Änderungen, z. B. Bäume/Pflanzen je Grafikstufe)
+	var vp_rid := get_viewport().get_viewport_rid()
+	print("RENDER draw calls %d, objekte %d, dreiecke %d" % [
+		RenderingServer.viewport_get_render_info(vp_rid, RenderingServer.VIEWPORT_RENDER_INFO_TYPE_VISIBLE, RenderingServer.VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME),
+		RenderingServer.viewport_get_render_info(vp_rid, RenderingServer.VIEWPORT_RENDER_INFO_TYPE_VISIBLE, RenderingServer.VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME),
+		RenderingServer.viewport_get_render_info(vp_rid, RenderingServer.VIEWPORT_RENDER_INFO_TYPE_VISIBLE, RenderingServer.VIEWPORT_RENDER_INFO_PRIMITIVES_IN_FRAME)])
 	get_tree().quit()
 
 
@@ -1589,6 +1600,26 @@ func _test_drop() -> void:
 	rider.mode = Rider.Mode.AIR
 	rider.air_time = 0.0
 	print("DROP ", p)
+
+
+## Test: Fenster unsichtbar im Hintergrund (--bg; automatisch bei --shot und --write-movie, --fg schaltet ab).
+## Es wird normal gerendert, liegt aber links außerhalb aller Bildschirme und nimmt keinen Fokus –
+## minimiert ginge nicht (Godot zeichnet dann nicht), headless rendert gar nicht.
+func _background_window() -> void:
+	var user := OS.get_cmdline_user_args()
+	if "--fg" in user or DisplayServer.get_name() == "headless" or OS.has_feature("web"):
+		return
+	if not ("--bg" in user or _shot_path != "" or "--write-movie" in OS.get_cmdline_args()):
+		return
+	var win := get_window()
+	if win.mode != Window.MODE_WINDOWED:
+		win.mode = Window.MODE_WINDOWED
+	win.set_flag(Window.FLAG_NO_FOCUS, true)
+	var left := 0
+	for i in DisplayServer.get_screen_count():
+		left = mini(left, DisplayServer.screen_get_position(i).x)
+	win.position = Vector2i(left - win.size.x - 200, 0)
+	print("FENSTER im Hintergrund: ", win.position)
 
 
 func _parse_args() -> void:

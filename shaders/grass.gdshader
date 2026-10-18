@@ -33,6 +33,7 @@ uniform float wind_strength = 0.12;
 uniform vec2 wind_direction = vec2(0.8, 0.6);
 uniform float fade_begin = 55.0;
 uniform float fade_end = 85.0;
+uniform float alpha_boost = 0.0;     // dünne Halme (Schilf): Alpha in groben Mipmaps anheben, sonst verschwinden sie
 
 // Instanzfarbe ist sRGB; der Compatibility-Renderer (Web) liefert sie schon linear.
 vec3 to_linear(vec3 c) {
@@ -62,6 +63,11 @@ void fragment() {
 	vec4 t = texture(texture_albedo, UV);
 	ALBEDO = mix(t.rgb * to_linear(COLOR.rgb), vec3(0.85, 0.87, 0.9), snow * 0.8) * mix(0.55, 1.0, 1.0 - UV.y) * brightness;
 	ALPHA = t.a;
+	if (alpha_boost > 0.0) {
+		vec2 px = UV * vec2(textureSize(texture_albedo, 0));
+		float lod = max(0.0, 0.5 * log2(max(dot(dFdx(px), dFdx(px)), dot(dFdy(px), dFdy(px)))));
+		ALPHA = t.a * (1.0 + lod * alpha_boost);
+	}
 	ALPHA_SCISSOR_THRESHOLD = 0.5;
 	ROUGHNESS = 1.0;
 	if (!FRONT_FACING) {
