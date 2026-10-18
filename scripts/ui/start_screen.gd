@@ -89,6 +89,7 @@ var _detail_title: Label
 var _detail_text: Label
 var _preview: FeaturePreview
 var _syncers: Array[Callable] = []
+var _shuffle_btn: Button         # Szenario würfeln (auch Z / Share, Aktion "shuffle")
 var _tab_buttons: Array[Button] = []
 var _font: Font
 var _k := 1.0
@@ -205,13 +206,14 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 		ss.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		# Shuffle: sofort ein anderes Szenario würfeln (stellt auf Zufällig)
 		var shuffle := _button("", 18)
-		shuffle.tooltip_text = "Neues Szenario würfeln"
+		shuffle.tooltip_text = "Neues Szenario würfeln  (Z, Gamepad: Share)"
 		shuffle.custom_minimum_size = Vector2(56, 0)
 		shuffle.draw.connect(func() -> void: _draw_shuffle(shuffle))
 		shuffle.pressed.connect(func() -> void:
 			settings.set_v("scenario", "")
 			ss.select(0)
 			weather.set_scenario(Weather.random_scenario(weather.scenario)))
+		_shuffle_btn = shuffle
 		var srow := HBoxContainer.new()
 		srow.add_theme_constant_override("separation", 8)
 		srow.add_child(ss)
@@ -1603,6 +1605,8 @@ func _input(event: InputEvent) -> void:
 		if _popup_open():
 			_close_popups()
 		start_pressed.emit()
+	elif event.is_action_pressed("shuffle") and _shuffle_btn and not _popup_open():
+		_shuffle_btn.pressed.emit()          # Z / Share: neues Szenario würfeln
 	else:
 		return
 	get_viewport().set_input_as_handled()
