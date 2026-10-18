@@ -546,7 +546,7 @@ func _apply_wet() -> void:
 		_white.set_shader_parameter("wet_coat", WET_COAT)
 	for c in get_children():
 		if c is ReflectionProbe:
-			(c as ReflectionProbe).intensity = REFLECT
+			(c as ReflectionProbe).intensity = REFLECT * Weather.reflect
 
 
 ## F4-Panel: geänderte Werte sofort auf alle Features übertragen
@@ -598,6 +598,7 @@ func _ready() -> void:
 			var rubber := Util.mat(Color(0.05, 0.12, 0.55), 0.3)
 			rubber.clearcoat_enabled = true
 			rubber.clearcoat = 0.6
+			Weather.dim_at_night(rubber)
 			var mi := MeshInstance3D.new()
 			mi.mesh = ball
 			mi.material_override = rubber

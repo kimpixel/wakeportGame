@@ -87,7 +87,7 @@ Wichtige Test-Argumente (vollständig im Kopf von `scripts/main.gd`): `--autotes
 `--shot=P --shot-time=S`, `--view=x,y,z,lx,ly,lz`, `--closeup=x,y,z[,lx,ly,lz]` (relativ zum Fahrer),
 `--terminal=T1|T2`, `--setup=ID`, `--screen[=NAME|@liste|@einstellungen]`, `--no-screen`,
 `--mobile --tilt=GRAD`, `--jump-at=S`, `--pitch=±1`, `--hold=AKTION@T0-T1`, `--crash-at=S`, `--letgo-at=S`,
-`--game-time=S`, `--weather=ID --hour=H --day=T`, `--plane=S`, `--passive`.
+`--game-time=S`, `--scenario=ID`, `--weather=ID --hour=H --day=T`, `--plane=S`, `--passive`.
 
 **Musik bei eigenen Tests aus**: immer `--set=music=false` anhängen (speichert nichts), außer der Ton/die Musik
 selbst soll geprüft werden.
@@ -130,7 +130,7 @@ Fallstricke:
 | `scripts/terrain.gd`, `shaders/foliage.gdshader`, `bark.gdshader`, `grass.gdshader` | Gelände aus DGM/Luftbild; Wald: Kronen aus dunkler Hülle + Blattkarten (Textur zur Laufzeit gemalt), je Art 3 Varianten, MultiMesh-Kacheln `TREE_CHUNK` 160 m, ab `FAR_RANGE` nur grobe Hülle (Sichtweiten), Schatten wirft nur die grobe Hülle (eigenes MultiMesh); dichter Mischwald aus Laubbäumen und Kiefern, **Fichten nur vereinzelt (2 %)**; **Waldmantel**: bis 14 m vom Wasser Kronen fast bis zum Boden plus Büsche (`_near_water`), damit vom See eine geschlossene grüne Wand steht; Gras am Ufer beider Anlagen (aus SimpleGrassTextured, `assets/grass/`), nicht am Strand der Startmasten. Compatibility-Renderer liefert Instanzfarben schon linear (`to_linear` in den Shadern) |
 | `scripts/water.gd`, `shaders/water.gdshaderinc` | Wasser: Höhenfunktion = Physik = Grafik (Grundwellen `_wave`, spitz bei `fx_sharp`; Heckwelle; `impact()` Aufprallwelle beim Landen). Effekte `fx_*` einzeln schaltbar (Reiter **Wasser**, Einstellungen `w_*`), **gekoppelt an die Grafikstufe** (`GameSettings.WATER_PRESETS`, `set_quality`; weicht ein Effekt ab, zeigt die Grafik „Custom“ = `quality_shown()`, gespeichert bleibt die Stufe); nur `w_clear` (Durchsicht) braucht den transparenten Tiefen-Shader `water_depth.gdshader`. Farbe `w_color` Türkis/Seeblau (Standard Seeblau, „ein See ist blau“). Flach geschaut wird die Spiegelung stark gedämpft (sonst wurde der See in der Ferne weiß). **Keine Schaumkränze** (passten nicht) |
 | `scripts/spray_sheet.gd`, `scripts/spray.gd` | Gischt, zwei Begriffe: **Wasserwand** (`SpraySheet`, Vorhang aus ballistischen Flugbahnen, Ansatz über die ganze Kante, Fächer von flach bis steil; zur Seilseite; Stärke 0..1 = Summe gewichteter Anteile Seilzug/Tempo/Winkel/Sprung-Ladung, Parameter `WALL_*` im F4-Panel; Seite aus der Neigung des Fahrers, Achse immer in Fahrtrichtung, auch switch) und **Tropfen** (`Spray`, weiche Wolken-Sprites, klein anfangen, groß und durchsichtig am Ende, fliegen nach hinten; kleine Gischt auf der anderen Kante, Landung mit Spritzer-Kranz, Drift-Press, Hecht, Boot). Keine Kugeln, kein Sprühnebel. **Performance**: die Wasserwand rechnet je Bild jeden Punkt einmal und nur mit `Water.ambient` (nie `height_at` je Punkt – das machte das Handy sehr langsam); Zeilen/Takt, Tropfen-Menge und Proximity Fade (Tiefenkopie im Browser, nur Hoch) je Grafikstufe (`set_quality`) |
-| `scripts/weather.gd`, `scripts/sun_calc.gd`, `shaders/sky.gdshader` | Wetter, Sonnenstand nach echter Lage |
+| `scripts/weather.gd`, `scripts/sun_calc.gd`, `shaders/sky.gdshader` | Wetter, Sonnenstand nach echter Lage; **Szenarien** (`Weather.SCENARIOS`); Himmel mit Wolkenballen (Hash ohne `sin`, sonst kantige Facetten), nachts Mond, Sterne, Milchstraße, Lichtglocke Frankfurt; Regenbogen, Kondensstreifen. Schnee: globaler Shader-Parameter `snow` (project.godot `[shader_globals]`) in Gelände/Laub/Gras. Unbeleuchtete Materialien (Zugleine, Gischt, Regen) mit `Weather.lum` abdunkeln, sonst leuchten sie nachts. **Features ab Blauer Stunde/nachts**: globaler Parameter `feature_light` (0,12 nachts, auch Glanz/Klarlack) dimmt das Weiß, blauer Ball über `Weather.dim_at_night`; **Bojen** (rot/weiß, gelbe Leine) leuchten dann leicht (`Weather.glow_at_night`, Signalfarben sollen auffallen); dazu `Weather.reflect` (Reflection Probes), gedämpfte Himmelsspiegelung (`radiance`, nur `AT_CUBEMAP_PASS`) und kaum Glanz vom Mondlicht – sonst stechen sie grell heraus. Bodennebel: ein Bild-Durchgang `shaders/mist.gdshader` (Nebelmenge je Blickstrahl exakt integriert, Dichte `Weather.MIST_DENSITY` über dem Wasser, nach oben exponentiell dünner; Strahl endet am Tiefenpuffer bzw. bei y = 0) – keine waagrechten Schichten, die schnitten Wellen/Ufer/Features als Treppen |
 | `scripts/sfx.gd`, `assets/sounds/` | Sounds; `positiv/` (Jubel), `negativ/` (Ruf beim Sturz), `feature_hit/`, `landing/` aus Videoaufnahmen |
 | `scripts/npcs/` | Umgebung (Steuermänner, wartende Fahrer, SUPs), Flugzeuge im Anflug |
 | `scripts/wakeboard.gd`, `shaders/boot*.gdshader*` | Board + Bindungen (Schaft knickt per Shader mit dem Schienbein) |
@@ -197,6 +197,8 @@ Geheime Erfolge (`scripts/achievements.gd`, Liste auf der Startseite Taste „Er
 - **Boot crash** (`boot`): ins rote Boot fahren (= Sturz „Ins Boot gefahren!“) oder beim Sturz als Ragdoll hineinfallen
   (`main.gd _check_boat`, `FilmCrew.in_boat`: Rumpf-Grundriss, fahrend +0,25 m; schwimmend zählt nicht). Gilt für das Filmteam-/Patrouillen-Boot
   und das Boot am Liegeplatz. Innenboden hat einen Kollisionskörper (`LAYER_COLLIDE`), die Ragdoll bleibt im Boot liegen. Test `--drop-at=4,boot`.
+- **Ho ho ho!** (`nikolaus`): am 6. Dezember im Schnee eine Wende schaffen (`Weather.is_nikolaus`, in `_track_turn`). Das Szenario
+  „Nikolaus-Session“ (Schnee) kommt nur am echten 6. Dezember (dann immer); sonst Datum 6. Dezember + Wetter Schnee von Hand. Test `--scenario=nikolaus`.
 
 Spiel (Competition):
 - Runde **7:30** (Einstellung „Competition: Rundenlänge“), Start nach Countdown. Danach holt der Operator den Fahrer zum Start, dann Startseite mit Ergebnis.
@@ -207,8 +209,15 @@ Spiel (Competition):
 - Strafzeit: Strg nach Sturz −1:00 (sofort unter dem Seil weiter), R zurück zum Steg −2:00.
 - Einsinken: Brett trägt nur mit Seilzug oder Tempo. Schlaffes Seil + langsam = absaufen (wie
   Wasserstart, keine Punkte für die Wende). Wende: 15 Punkte, außen um die weiße Boje 30.
-- Jeder Start: **Do. 6. August (2026), 19:45, sonnig** (Abendsonne). Wetter/Uhrzeit werden nicht gespeichert,
-  „Jetzt“ nur auf Knopfdruck. (Grund: es darf nie nachts dunkel starten.)
+- **Szenario** (`Weather.SCENARIOS`: Datum, Uhrzeit, Wetter, Extras `mist`/`rainbow`/`trails`; Name auf der Startseite unter
+  „Wakeport Raunheim“): Auswahl **SZENARIO direkt im Startseiten-Menü** mit Shuffle-Taste daneben (würfelt sofort, stellt auf Zufällig; Symbol gezeichnet, `_draw_shuffle`) – die wenigsten gehen in die Einstellungen, Einstellung `scenario`,
+  Standard „Zufällig“ = nach jedem Spiel neu gewürfelt, sobald die Startseite aufgeht (`main.gd _roll_scenario`, nie dasselbe zweimal;
+  R/Neustart/nächste Challenge würfeln nicht). **Night Session** wird nicht gewürfelt (`pick: false`, schwerer → unfair für die Rangliste), nur gezielt wählbar.
+  Wetter/Datum/Uhrzeit von Hand (Einstellungen → Welt) bleiben bis zum Neustart. Vom Nutzer festgelegt: **After Hour Raley Session** (18. Aug.
+  19:45 sonnig), **Early Bird Session** (8. Sep. 8:45 Dunst + Bodennebel), **Hochsommer. Was für eine Hitze** (6. Juli 12:00);
+  dazu Regen, Nacht, Sonne hinter den Bäumen (Baumschatten halb über der Bahn), Nach dem Schauer (Regenbogen), Blaue Stunde,
+  Goldener Oktober, Kondensstreifen; Nikolaus nur am 6. Dezember. Tests nehmen fest `afterhour` (`--scenario=ID`).
+  Wetter/Uhrzeit werden nicht gespeichert, „Jetzt“ nur auf Knopfdruck.
 - Jubel (und beim Sturz ein enttäuschter Ruf aus `assets/sounds/negativ`, 0,4 s danach): nur vom **eigenen Operator**, immer nur **ein** Ruf (kein neuer, solange einer läuft + 3 s).
 - Flugzeuge: Anflug Frankfurt (Betriebsrichtung 07) tief über dem See. Geräusch **ohne reine Töne**
   (Pfeifen klang am Handy wie Piepen).

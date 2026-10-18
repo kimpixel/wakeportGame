@@ -77,9 +77,15 @@ static func _material() -> StandardMaterial3D:
 	_mat.proximity_fade_distance = 0.3
 	_mat.emission_enabled = true
 	_mat.emission = Color(0.25, 0.28, 0.3)     # etwas Eigenhelligkeit: Gischt leuchtet im Licht leicht
-	_mat.emission_energy_multiplier = 0.4
+	_mat.emission_energy_multiplier = 0.4 * Weather.lum
 	_mat_quality()
 	return _mat
+
+
+## Eigenhelligkeit mit dem Tageslicht (sonst leuchten die Tropfen nachts), aus Weather.apply.
+static func set_light(l: float) -> void:
+	if _mat:
+		_mat.emission_energy_multiplier = 0.4 * l
 
 
 static func _mat_quality() -> void:

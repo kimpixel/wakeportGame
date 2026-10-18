@@ -19,8 +19,10 @@ extends Node3D
 ##   --hold=AKT@T0-T1,…  Test: Eingabe-Aktion (z. B. release, steer_right) von T0 bis T1 s halten
 ##   --pitch=±1        Test: in der Luft ↑ (+1, Frontroll; Invert: S-Bend) bzw. ↓ (-1, Backroll) halten
 ##   --game-time=SEK   Test: Spielzeit (normal 450 s); im Autotest läuft dann eine Runde mit Zeit
-##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, regen, dunst)
-##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30
+##   --scenario=ID     Szenario (Weather.SCENARIOS, z. B. nacht, earlybird, regenbogen, nikolaus); ohne Argumente
+##                     würfelt jeder Start eins aus, Tests nehmen sonst "afterhour" (18. August 19:45, sonnig)
+##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, schauer, regen, dunst, schnee)
+##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr
 ##   --plane=S[,nah|weit[,start|landung]] Test: sofort ein Jet, S m vor dem See (negativ) bzw. danach; nah = tief über dem See
 ##   --pike-at=SEK     Test: zu dieser Zeit springt der Hecht knapp vor dem Fahrer (Erfolg "fisch")
 ##   --sup-at=SEK      Test: ein SUP aus der Seemitte kommt herüber, das rote Boot vertreibt ihn
@@ -111,6 +113,7 @@ var _plane_land := -1
 var _load_arg := NAN
 var _passive_arg := false       # Test: Fahrer ohne Autopilot, ohne Eingaben
 var _weather_arg := ""
+var _scenario_arg := ""
 var _hour_arg := NAN
 var _day_arg := 0
 var start_screen: StartScreen
@@ -343,6 +346,8 @@ func _ready() -> void:
 		_unlock_achievement("steg"))
 	if not _test_log:
 		settings.load_file(mobile.active)     # Tests laufen immer mit Standardwerten
+	if OS.get_cmdline_user_args().is_empty() and str(settings.get_v("scenario")) != "":
+		weather.set_scenario(str(settings.get_v("scenario")))   # fest gewähltes Szenario
 	# eigene Musik des Spielers (an/aus kommt mit den Einstellungen)
 	music = Music.new()
 	music.enabled = false
@@ -525,6 +530,7 @@ func _open_start_screen() -> void:
 	_finishing = false
 	_reset()
 	start_screen.set_result(_last_result)
+	_roll_scenario()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	hud.visible = false
 	start_screen.activate()
@@ -539,6 +545,19 @@ func _open_start_screen() -> void:
 		mobile.release_pad()
 		touch_pad.close_menu()
 		touch_pad.visible = false
+
+
+## Szenario "Zufällig" (Standard): nach jedem Spiel ein neues würfeln, sobald die Startseite aufgeht – so zeigt
+## sie schon das nächste, und jeder Start (Competition/Challenge) sieht anders aus. R/Neustart würfelt nicht.
+## Von Hand eingestelltes Wetter (weather.scenario leer) bleibt; Tests würfeln nie.
+func _roll_scenario() -> void:
+	if not OS.get_cmdline_user_args().is_empty() or weather.scenario == "":
+		return
+	var fixed := str(settings.get_v("scenario"))
+	if fixed == "":
+		weather.set_scenario(Weather.random_scenario(weather.scenario))
+	elif fixed != weather.scenario:
+		weather.set_scenario(fixed)
 
 
 ## "Spiel starten": Competition beginnt direkt mit Countdown, die Spielmodi mit ihrer Aufgabe.
@@ -1339,6 +1358,8 @@ func _track_turn() -> void:
 		_turn_active = false
 		if not _turn_sank:
 			rider.award("Wende um die Boje" if _turn_around else "Saubere Wende", 30 if _turn_around else 15)
+			if weather.is_nikolaus():
+				_unlock_achievement("nikolaus")
 		elif _test_log:
 			print("WENDE abgesoffen – keine Punkte")
 
@@ -1584,6 +1605,8 @@ func _parse_args() -> void:
 			_view_arg = PackedFloat32Array(Array(arg.substr(7).split(",")).map(func(v: String) -> float: return v.to_float()))
 		elif arg.begins_with("--game-time="):
 			_game_time = arg.substr(12).to_float()
+		elif arg.begins_with("--scenario="):
+			_scenario_arg = arg.substr(11)
 		elif arg.begins_with("--weather="):
 			_weather_arg = arg.substr(10)
 		elif arg.begins_with("--hour="):
@@ -1617,12 +1640,15 @@ func _build_environment() -> void:
 	Geo.ensure_loaded()
 	weather = Weather.new()
 	add_child(weather)
-	# Jeder Start: Do. 6. August (2026) 19:45, sonnig (Abendsonne, nie Nacht). Änderungen in den Einstellungen gelten
-	# nur für diese Sitzung; "Jetzt" holt bei Bedarf die echte Uhrzeit und das Wetter.
-	weather.preset = weather.find_preset("sonnig")
-	weather.day = 218                 # 6. August
-	weather.hour = 19.75
-	weather.live = false
+	# Jeder Start würfelt ein Szenario (Datum, Uhrzeit, Wetter, Extras; Weather.SCENARIOS), am 6. Dezember immer
+	# Nikolaus. Tests nehmen fest "afterhour". Änderungen in den Einstellungen gelten nur für diese Sitzung;
+	# "Jetzt" holt bei Bedarf die echte Uhrzeit und das Wetter.
+	var sc := _scenario_arg
+	if sc == "":
+		sc = Weather.random_scenario() if OS.get_cmdline_user_args().is_empty() else "afterhour"
+	weather.set_scenario(sc)
+	if _weather_arg != "" or not is_nan(_hour_arg) or _day_arg > 0:
+		weather.scenario = ""
 	if _weather_arg != "":
 		weather.preset = weather.find_preset(_weather_arg)
 	if not is_nan(_hour_arg):

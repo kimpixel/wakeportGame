@@ -80,6 +80,7 @@ func update_reflections() -> void:
 		probe.enable_shadows = false
 		probe.reflection_mask = 0                        # erst nach der Aufnahme wirksam (siehe unten)
 		probe.intensity = 0.0
+		probe.add_to_group("feature_probe")              # Weather.apply dimmt sie nachts
 		add_child(probe)
 		var c := r.get_center()
 		probe.global_transform = cable.transform * Transform3D(Basis.IDENTITY, Vector3(c.x, 1.6, c.y))   # etwa Augenhöhe
@@ -92,7 +93,7 @@ func update_reflections() -> void:
 			return                                       # inzwischen neu geladen
 	for p in _probes:
 		p.reflection_mask = REFLECT_LAYER
-		create_tween().tween_property(p, "intensity", FeaturePart.REFLECT, 0.8)
+		create_tween().tween_property(p, "intensity", FeaturePart.REFLECT * Weather.reflect, 0.8)   # nachts gedämpft
 	print("SPIEGELUNG ein: %d Probes nach %.1f s" % [_probes.size(), Time.get_ticks_msec() / 1000.0])
 
 
