@@ -8,7 +8,7 @@ extends CanvasLayer
 ## Gruppen: [Name, [[Skript, Parameter, min, max], …]]. min/max weglassen = automatisch (0 … 3 × Standard).
 const GROUPS := [
 	["Drift-Press", [
-		["rider", "DPRESS_SPEED", 0.0, 12.0], ["rider", "DPRESS_SIDE", -1.0, 1.0], ["rider", "DPRESS_WRONG", 0.0, 0.8], ["rider", "DPRESS_DRAG", 0.0, 4.0], ["rider", "DPRESS_FALL_ANG", 0.2, 1.57], ["rider", "DPRESS_TURN", 0.05, 2.0],
+		["rider", "DPRESS_SPEED", 0.0, 12.0], ["rider", "DPRESS_DRAG", 0.0, 4.0], ["rider", "DPRESS_FALL_ANG", 0.2, 1.57], ["rider", "DPRESS_TURN", 0.05, 2.0],
 		["rider", "DPRESS_RISE", 0.2, 10.0], ["rider", "DPRESS_ANG", 0.0, 1.6], ["rider", "DPRESS_END"],
 		["challenge", "DPRESS_FULL", 0.0, 1.0]]],
 	["Wasserwand", [["sheet", "WALL_BASE", 0.0, 3.0], ["sheet", "WALL_SPEED_MIN", 0.0, 10.0], ["sheet", "WALL_SPEED_MAX", 0.0, 14.0],

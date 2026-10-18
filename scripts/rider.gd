@@ -152,8 +152,6 @@ static var DRIFT_SPIN := 1.2          # im Drift dreht das flache Brett so viel 
 # Drift-Press: im Drift auf dem Wasser ↑ = Nosepress, ↓ = Tailpress (Brett kippt weit um das Ende,
 # Oberkörper legt sich nach hinten, die freie Hand streift das Wasser – nach Fotoserie)
 static var DPRESS_SPEED := 9.048      # m/s: ab diesem Tempo ist im Drift-Press der volle Winkel möglich (ca. 33 km/h), darunter anteilig weniger
-static var DPRESS_WRONG := deg_to_rad(10.0)   # so weit darf das Brett im Press zur falschen Seite stehen (Toleranz)
-static var DPRESS_SIDE := -1           # Seite des Tailpress-Winkels (+1 / -1); Nosepress spiegelverkehrt
 static var DPRESS_ANG := 0.85         # rad: so steil steht das Brett im vollen Drift-Press (Fotos: ca. 50°)
 static var DPRESS_RISE := 2.5         # 1/s: so schnell baut sich der Drift-Press auf (Bewegung, kein Ruck)
 static var DPRESS_END := 0.68         # m: Drehpunkt am Brett-Ende (Brett 1,49 m)
@@ -265,7 +263,7 @@ var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom K
 var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Oberkörper vor)
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
 var _press_bs_vis := 0.0        # 1 = Press im Boardslide (Brett seitlich versetzt, Ende über dem Slider)
-var dpress_angle := 0.0         # Drift-Press: Drift-Winkel zur Fahrtrichtung, zur erlaubten Seite positiv (rad)
+var dpress_angle := 0.0         # Drift-Press: Drift-Winkel zur Fahrtrichtung, links/rechts gleich (rad, 0 … PI/2)
 var dpress_allowed := 0.0       # Drift-Press: so weit darf er bei diesem Tempo gerade sein (rad)
 var _dpress_vis := 0.0          # sichtbarer Drift-Press (+ Nose, - Tail; Nose = Ende am vorderen Fuß)
 var test_dpress := INF          # Test: Drift-Press fest auf diesen Wert (--dpress)
@@ -1246,19 +1244,13 @@ func _drift_rope(delta: float) -> void:
 	tension_smooth = lerpf(_tension_prev, tension, 1.0 - exp(-delta * 12.0))
 
 
-## Drift-Winkel mit Vorzeichen: Brett-Längsachse gegen die Fahrtrichtung, zur erlaubten Seite des
-## Press positiv (Tailpress zur einen, Nosepress spiegelverkehrt zur anderen Seite; Goofy gespiegelt).
-## Fährt man switch (Tail voraus), tauschen Nose und Tail – die Seite dreht mit.
+## Drift-Winkel: Brett-Längsachse (Nose oder Tail, was näher liegt) gegen die Fahrtrichtung, 0 … PI/2.
+## Symmetrisch – nach links wie nach rechts gleich (das Seil zieht nach vorne).
 func _drift_angle() -> float:
 	var vh := Vector3(vel.x, 0.0, vel.z)
 	if vh.length() < 0.5:
 		return 0.0
-	var a := wrapf(yaw - atan2(-vh.x, -vh.z), -PI, PI)
-	var side := (-1.0 if DPRESS_SIDE < 0 else 1.0) * _facing() * (1.0 if _dpress_vis < 0.0 else -1.0)
-	if absf(a) > PI * 0.5:
-		a = wrapf(a - PI, -PI, PI)
-		side = -side
-	return a * side
+	return absf(wrapf(yaw - _aligned_yaw(atan2(-vh.x, -vh.z)), -PI, PI))
 
 
 func _step_water(delta: float, rope: Vector3) -> void:
@@ -1327,8 +1319,8 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var dp_hold := smoothstep(0.2, 0.8, absf(_dpress_vis)) if drift else 0.0
 	dpress_angle = _drift_angle() if dp_hold > 0.0 else 0.0
 	dpress_allowed = DPRESS_FALL_ANG * clampf(speed / DPRESS_SPEED, 0.0, 1.0)   # mehr Tempo = mehr Winkel
-	if dp_hold > 0.5 and (dpress_angle > dpress_allowed or dpress_angle < -DPRESS_WRONG):
-		crash("Drift-Press zu quer gedriftet!" if dpress_angle > 0.0 else "Drift-Press zur falschen Seite!")
+	if dp_hold > 0.5 and dpress_angle > dpress_allowed:
+		crash("Drift-Press zu quer gedriftet!")
 		return
 	var dp_drag := DPRESS_DRAG * dp_hold * clampf(1.0 - maxf(dpress_angle, 0.0) / DPRESS_FALL_ANG, 0.0, 1.0)
 	if drift:
@@ -2266,7 +2258,7 @@ func board_state_text() -> String:
 	if mode != Mode.WATER:
 		return ""
 	if absf(_dpress_vis) > 0.3 and drifting:
-		return "%s – Drift-Winkel %d°  (erlaubt %d° bis %d°)" % ["NOSEPRESS" if _dpress_vis > 0.0 else "TAILPRESS", roundi(rad_to_deg(dpress_angle)), -roundi(rad_to_deg(DPRESS_WRONG)), roundi(rad_to_deg(dpress_allowed))]
+		return "%s – Drift-Winkel %d°  (erlaubt bis %d°)" % ["NOSEPRESS" if _dpress_vis > 0.0 else "TAILPRESS", roundi(rad_to_deg(dpress_angle)), roundi(rad_to_deg(dpress_allowed))]
 	if _release > 0.3:
 		return "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)" % absf(slip)
 	return ""
