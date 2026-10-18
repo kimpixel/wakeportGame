@@ -205,12 +205,57 @@ func say_count(text: String) -> void:
 		Music.duck(a.get_length() + 0.3)
 
 
+var _thunder: Array[AudioStreamWAV] = []
+
+
 func _player(db: float) -> AudioStreamPlayer:
 	var p := AudioStreamPlayer.new()
 	p.bus = BUS_FX
 	p.volume_db = db
 	add_child(p)
 	return p
+
+
+## Donner nach einem Blitz: kommt mit Schallgeschwindigkeit (delay), nah mit scharfem Knall, fern nur Grollen.
+func thunder(dist: float) -> void:
+	if _thunder.is_empty():
+		for k in 3:
+			_thunder.append(_make_thunder(k))
+	var p := _player(lerpf(4.0, -14.0, clampf(dist / 600.0, 0.0, 1.0)))
+	p.stream = _thunder[(0 if dist < 40.0 else 1 + randi() % 2)]
+	p.pitch_scale = randf_range(0.85, 1.1)
+	get_tree().create_timer(dist / 343.0).timeout.connect(func() -> void:
+		p.play()
+		p.finished.connect(p.queue_free))
+	Music.duck(2.0 + dist / 343.0)
+
+
+## Donner synthetisch (kein reiner Ton): tiefes Rauschen in mehreren Grollen-Wellen, Variante 0 mit Knall vorne.
+func _make_thunder(variant: int) -> AudioStreamWAV:
+	var dur := 4.5
+	var n := int(dur * RATE)
+	var low := _lowpass(_noise(n, 77 + variant), 0.012)
+	var mid := _lowpass(_noise(n, 91 + variant), 0.08)
+	var crack := _lowpass(_noise(n, 13 + variant), 0.5)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5 + variant
+	var bumps: Array[Vector2] = []                 # (Zeit, Stärke) der Grollen-Wellen
+	for k in 5:
+		bumps.append(Vector2(rng.randf_range(0.0, 2.5), rng.randf_range(0.4, 1.0)))
+	for i in n:
+		var t := float(i) / RATE
+		var env := 0.0
+		for b in bumps:
+			var d := t - b.x
+			if d > 0.0:
+				env += b.y * d / 0.15 * exp(1.0 - d / 0.15) * 0.35 + b.y * exp(-d / 1.2) * 0.25 * smoothstep(0.0, 0.1, d)
+		var v := low[i] * 6.0 + mid[i] * 1.2 * exp(-t / 1.0)
+		if variant == 0:
+			v += crack[i] * exp(-t / 0.08) * 2.5   # nah: scharfer Knall
+		out[i] = v * env * (1.0 - smoothstep(dur - 0.8, dur, t))
+	return _to_wav(_normalize(out, 0.9))
 
 
 ## Kurzes Platschen an einer Stelle im See (z. B. Hecht taucht auf/ab).

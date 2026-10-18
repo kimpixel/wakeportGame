@@ -104,6 +104,9 @@ var _terminal_arg := ""
 var _start := {}                 # "T1"/"T2" -> {pos, yaw, dock, mast_b}
 var sfx: Sfx
 var ambient: Ambient
+var wildlife: Wildlife
+var bathers: Bathers
+var storm: Storm
 var film: FilmCrew                 # Filmteam der Challenges (rotes Boot oder FPV-Drohne)
 var weather: Weather
 var airplanes: Airplanes
@@ -321,6 +324,46 @@ func _ready() -> void:
 	ambient.player = rider
 	add_child(ambient)
 	ambient.build()
+	# Tiere je nach Jahreszeit und Badegäste an heißen Tagen (folgen dem Wetter/Szenario)
+	wildlife = Wildlife.new()
+	wildlife.water = water
+	wildlife.features = features
+	wildlife.player = rider
+	add_child(wildlife)
+	wildlife.build()
+	bathers = Bathers.new()
+	bathers.water = water
+	bathers.features = features
+	bathers.player = rider
+	add_child(bathers)
+	storm = Storm.new()                       # Szenario Gewitter: Blitze (ganz selten ein Volltreffer)
+	storm.weather = weather
+	storm.sfx = sfx
+	storm.water = water
+	storm.player = rider
+	add_child(storm)
+	var season := func() -> void:
+		ambient.apply_season(weather)
+		wildlife.apply_season(weather)
+		bathers.apply_season(weather)
+		storm.apply_season(weather)
+	weather.changed.connect(season)
+	season.call()
+	wildlife.grebe_sneaked.connect(func() -> void:
+		hud.show_trick("Was ein Frechdachs!")
+		_unlock_achievement("frechdachs"))
+	wildlife.swans_love.connect(func() -> void:
+		hud.show_trick("Schwanenliebe")
+		_unlock_achievement("schwanenliebe"))
+	storm.struck.connect(func() -> void:
+		_unlock_achievement("blitz"))
+	bathers.splashed.connect(func() -> void:
+		hud.show_trick("Badegast nass gespritzt!")
+		_unlock_achievement("badegast"))
+	rider.jumped.connect(func(info: Dictionary) -> void:
+		if info.get("raley", false) and wildlife.cranes_overhead():
+			hud.show_trick("Zugvogel!")
+			_unlock_achievement("zugvogel"))
 	film = FilmCrew.new()
 	film.game = self
 	add_child(film)
@@ -833,6 +876,11 @@ func _apply_quality(q: int) -> void:
 	vp.msaa_3d = [Viewport.MSAA_DISABLED, Viewport.MSAA_DISABLED, _msaa_default][q]
 	weather.shadow_distance = [0.0, 110.0, 200.0][q]
 	weather.shadow_splits = [2, 2, 4][q]
+	if ambient:
+		ambient.quality = q                   # Zusatz-Paddler und Badegäste an Hitzetagen
+		bathers.quality = q
+		ambient.apply_season(weather)
+		bathers.apply_season(weather)
 	weather.apply()
 	if terrain:
 		terrain.set_quality(q)

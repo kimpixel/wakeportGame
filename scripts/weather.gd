@@ -18,10 +18,11 @@ const PRESETS := [
 	{"id": "regen", "name": "Regen", "cloud": 1.0, "rain": 1.0, "haze": 0.35},
 	{"id": "dunst", "name": "Dunst", "cloud": 0.4, "rain": 0.0, "haze": 1.0, "mist": 0.6},
 	{"id": "schnee", "name": "Schnee", "cloud": 0.9, "rain": 0.0, "haze": 0.35, "snow": 1.0},
+	{"id": "gewitter", "name": "Gewitter", "cloud": 1.0, "rain": 1.0, "haze": 0.3, "storm": 1.0},
 ]
 
 ## Szenarien: day = Tag im Jahr (2026), hour = deutsche Uhrzeit, preset = Wetter-id; Extras überschreiben
-## das Wetter (cloud, rain, haze, mist = Bodennebel, rainbow, trails = Kondensstreifen).
+## das Wetter (cloud, rain, haze, mist = Bodennebel, rainbow, trails = Kondensstreifen, hot = Hitzetag: viele Badegäste).
 ## only = "MM-TT": nur an diesem echten Kalendertag im Würfel (dann immer), sonst nicht in der Liste.
 ## pick = false: nicht gewürfelt (Nacht ist schwerer – unfair für die Rangliste), nur gezielt wählbar.
 const SCENARIOS := [
@@ -29,7 +30,7 @@ const SCENARIOS := [
 	{"id": "earlybird", "name": "Early Bird Session", "day": 251, "hour": 8.75, "preset": "dunst", "mist": 1.0,
 		"haze": 0.55, "cloud": 0.12},
 	{"id": "hochsommer", "name": "Hochsommer. Was für eine Hitze", "day": 187, "hour": 12.0, "preset": "sonnig",
-		"haze": 0.25},
+		"haze": 0.25, "hot": 1.0},
 	{"id": "regen", "name": "Schöne Regen-Session", "day": 196, "hour": 16.5, "preset": "regen"},
 	{"id": "nacht", "name": "Night Session", "day": 222, "hour": 22.75, "preset": "sonnig", "pick": false},
 	{"id": "baumschatten", "name": "Sonne hinter den Bäumen", "day": 265, "hour": 18.9, "preset": "sonnig"},
@@ -39,6 +40,7 @@ const SCENARIOS := [
 	{"id": "oktober", "name": "Goldener Oktober", "day": 285, "hour": 16.25, "preset": "heiter", "haze": 0.15},
 	{"id": "kondens", "name": "Chemtrails, oder Kondensstreifen? ;-)", "day": 160, "hour": 15.0, "preset": "sonnig",
 		"trails": 1.0},
+	{"id": "gewitter", "name": "Gewitter – YOLO", "day": 205, "hour": 18.25, "preset": "gewitter", "pick": false},
 	{"id": "nikolaus", "name": "Nikolaus-Session", "day": 340, "hour": 15.0, "preset": "schnee", "only": "12-06"},
 ]
 const NIKOLAUS_DAY := 340         # 6. Dezember: im Schnee fahren = geheimer Erfolg "nikolaus"
@@ -88,6 +90,16 @@ var preset := 0
 var scenario := ""                # id des Szenarios ("" = von Hand eingestellt)
 var live := false                 # "Jetzt": Uhrzeit läuft mit der Rechneruhr mit
 
+## Jahreszeit und Stimmung für Leben am See (Ambient, Wildlife, Bathers), gesetzt in apply()
+var warm := 1.0                   # 0 Mitte Januar … 1 Mitte Juli
+var heat := 0.0                   # heißer Badetag (Sommer, Sonne, Nachmittag; Szenario hot): viele SUPs, Badegäste
+var daylight := 1.0               # 0 Nacht … 1 Tag
+var rain_now := 0.0
+var snow_now := 0.0
+var storm := 0.0                  # Gewitter (Blitze: Storm)
+var autumn := 0.0                 # Herbstfärbung der Laubbäume
+var bare := 0.0                   # Laubbäume kahl (Winter)
+
 var sun: DirectionalLight3D
 var shadow_distance := 200.0     # Grafikqualität: 0 = keine Schatten
 var shadow_splits := 4           # Grafikqualität: Schatten-Kaskaden (2 = jeder Schattenwerfer halb so oft gezeichnet)
@@ -95,10 +107,16 @@ var env: Environment
 var _sky_mat: ShaderMaterial
 var _rain: CPUParticles3D
 var _snow: CPUParticles3D
+var _fluff: CPUParticles3D        # Pappelflug im Mai (weiße Samenflocken)
 var _drop_mat: StandardMaterial3D
 var _flake_mat: StandardMaterial3D
 var _mist: MeshInstance3D
 var _mist_mat: ShaderMaterial
+var _sky_energy := 1.0
+var _amb_energy := 1.0
+var _sun_energy := 1.0
+var _flash := 0.0                 # Blitz: hellt Himmel und Szene kurz auf (flash)
+var _flash_t := 0.0
 var _extra := {}                  # Extras des Szenarios (überschreiben das Wetter)
 var _http: HTTPRequest
 var _compat := false
@@ -179,6 +197,21 @@ func _ready() -> void:
 	_snow.emitting = false
 	add_child(_snow)
 
+	# Pappelflug (Mai): wenige große, langsam treibende Flocken
+	_fluff = _snow.duplicate() as CPUParticles3D
+	_fluff.amount = 120 if _compat else 260
+	_fluff.direction = Vector3(1.0, -0.15, 0.4)
+	_fluff.spread = 60.0
+	_fluff.initial_velocity_min = 0.3
+	_fluff.initial_velocity_max = 0.9
+	_fluff.scale_amount_min = 1.0
+	_fluff.scale_amount_max = 2.0
+	_fluff.lifetime = 9.0
+	_fluff.preprocess = 9.0
+	_fluff.emission_box_extents = Vector3(22.0, 4.0, 22.0)
+	_fluff.emitting = false
+	add_child(_fluff)
+
 	_build_mist()
 
 	_http = HTTPRequest.new()
@@ -255,7 +288,7 @@ func set_scenario(id: String) -> void:
 	hour = s["hour"]
 	preset = find_preset(s["preset"])
 	_extra = {}
-	for k: String in ["cloud", "rain", "haze", "mist", "rainbow", "trails"]:
+	for k: String in ["cloud", "rain", "haze", "mist", "rainbow", "trails", "hot"]:
 		if s.has(k):
 			_extra[k] = s[k]
 	apply()
@@ -393,7 +426,9 @@ func apply() -> void:
 	_sky_mat.set_shader_parameter("snow", snow)
 	_sky_mat.set_shader_parameter("rainbow", _val(p, "rainbow"))
 	_sky_mat.set_shader_parameter("trails", _val(p, "trails"))
-	_sky_mat.set_shader_parameter("energy", 1.0)
+	storm = _val(p, "storm")
+	_sky_energy = 1.0 - 0.45 * storm                      # Gewitter: düster
+	_sky_mat.set_shader_parameter("energy", _sky_energy)
 	var dusk := smoothstep(0.3, 1.0, dayf)                # 0 ab Blauer Stunde bis Nacht, 1 am Tag
 	_sky_mat.set_shader_parameter("radiance", lerpf(0.25, 1.0, dusk))
 
@@ -412,6 +447,7 @@ func apply() -> void:
 	sun.light_color = color
 	sun.light_specular = 0.05 if up < 0.05 else 0.5          # Mond: kaum Glanzflecken auf den nassen Features
 	sun.light_energy = energy * (0.8 if _compat else 1.0)   # Web-Renderer (Compatibility): Wasser sonst grell
+	_sun_energy = sun.light_energy
 	sun.shadow_enabled = energy > 0.08 and cloud < 0.85 and shadow_distance > 0.0
 	sun.directional_shadow_max_distance = maxf(shadow_distance, 1.0)
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS if shadow_splits == 2 else DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
@@ -420,7 +456,8 @@ func apply() -> void:
 	env.ambient_light_color = Color(0.62, 0.6, 0.55).lerp(Color(0.09, 0.11, 0.2), 1.0 - dayf)
 	env.ambient_light_sky_contribution = 0.45
 	env.ambient_light_energy = (lerpf(0.12, 1.0, dayf) * (1.0 + 0.3 * cloud + 0.25 * snow)
-		* (0.7 if _compat else 1.0))
+		* (0.7 if _compat else 1.0) * (1.0 - 0.4 * storm))
+	_amb_energy = env.ambient_light_energy
 	env.tonemap_exposure = (0.9 if _compat else 1.0) * lerpf(0.9, 1.0, dayf)
 	# Dunst, Regen und Schnee: kürzere Sicht
 	var hor := Color(0.7, 0.78, 0.88).lerp(Color(0.03, 0.04, 0.07), 1.0 - dayf)
@@ -444,6 +481,18 @@ func apply() -> void:
 	if rain > 0.0 and _rain.amount != drops:
 		_rain.amount = drops
 	_snow.emitting = snow > 0.0
+	# Jahreszeit: Wärme (Kurve über das Jahr), Badetag, Laub
+	daylight = dayf
+	rain_now = rain
+	snow_now = snow
+	warm = 0.5 - 0.5 * cos(TAU * (day - 20) / 365.0)
+	var afternoon := smoothstep(10.0, 13.0, hour) * (1.0 - smoothstep(19.0, 21.0, hour))
+	heat = clampf(smoothstep(0.75, 0.97, warm) * afternoon * (1.0 - cloud) * (1.0 - rain) * 1.3, 0.0, 1.0)
+	heat = maxf(heat, _val(p, "hot"))
+	_leaves()
+	RenderingServer.global_shader_parameter_set("autumn", autumn)
+	RenderingServer.global_shader_parameter_set("bare", bare)
+	_fluff.emitting = day >= 125 and day <= 160 and rain == 0.0 and dayf > 0.5
 	RenderingServer.global_shader_parameter_set("snow", snow)
 	# Features (fast weiß) stechen in der Dämmerung und nachts neben dunklem Wald und Wasser grell heraus
 	feature_light = lerpf(0.12, 1.0, dusk)
@@ -465,7 +514,41 @@ func apply() -> void:
 	changed.emit()
 
 
+## Laub nach Tag im Jahr: ab Ende September gelb/rot, ab November kahl, im April wieder grün.
+func _leaves() -> void:
+	var d := float(day)
+	if d >= 330.0 or d < 95.0:
+		autumn = 0.5                 # letzte braune Blätter
+		bare = 0.85
+	elif d < 130.0:
+		autumn = 0.5 * (1.0 - smoothstep(95.0, 110.0, d))
+		bare = 0.85 * (1.0 - smoothstep(95.0, 128.0, d))
+	else:
+		autumn = smoothstep(262.0, 292.0, d)
+		bare = 0.85 * smoothstep(295.0, 330.0, d)
+
+
+## Monat 1..12 des eingestellten Tages.
+func month() -> int:
+	return int(SunCalc._date(year, day)["month"])
+
+
+## Blitz: Himmel und Szene flackern kurz hell auf (Stärke 0..1, nah = 1).
+func flash(strength: float) -> void:
+	_flash = maxf(_flash, strength)
+	_flash_t = 0.0
+
+
 func _process(delta: float) -> void:
+	if _flash > 0.0:
+		_flash_t += delta
+		var f := _flash * exp(-_flash_t * 9.0) * (0.6 + 0.4 * absf(sin(_flash_t * 55.0)))   # flackert
+		if _flash_t > 0.6:
+			_flash = 0.0
+			f = 0.0
+		_sky_mat.set_shader_parameter("energy", _sky_energy * (1.0 + f * 3.0))
+		env.ambient_light_energy = _amb_energy * (1.0 + f * 6.0)
+		sun.light_energy = _sun_energy + f * 1.5
 	_anim_t += delta
 	_sky_mat.set_shader_parameter("t", _anim_t)
 	if _mist.visible:
@@ -476,8 +559,9 @@ func _process(delta: float) -> void:
 			_live_t = 0.0
 			_sync_clock()
 			apply()
-	if _rain.emitting or _snow.emitting:
+	if _rain.emitting or _snow.emitting or _fluff.emitting:
 		var cam := get_viewport().get_camera_3d()
 		if cam:
 			_rain.global_position = cam.global_position + Vector3(0.0, 9.0, 0.0)
 			_snow.global_position = cam.global_position + Vector3(0.0, 8.0, 0.0)
+			_fluff.global_position = cam.global_position + Vector3(0.0, 2.0, 0.0)

@@ -5,7 +5,7 @@ class_name Achievements
 ## Neue Erfolge hinten an LIST anhängen (die Reihenfolge ist die Reihenfolge in der Liste).
 
 const SECTION := "erfolge"
-const SLOTS := 10                 # so viele Plätze zeigt die Liste (auch noch nicht ausgedachte)
+const SLOTS := 12                 # so viele Plätze zeigt die Liste (auch noch nicht ausgedachte)
 
 const LIST := [
 	{"id": "fisch", "name": "Fischkontakt", "text": "Mit einem springenden Hecht zusammengestoßen."},
@@ -14,6 +14,11 @@ const LIST := [
 	{"id": "insekt", "name": "Insekten fressen", "text": "Am Waldrand von Terminal 1 durch einen Mückenschwarm gefahren. Mahlzeit!"},
 	{"id": "boot", "name": "Boot crash", "text": "Ins rote Boot gefahren oder hineingefallen."},
 	{"id": "nikolaus", "name": "Ho ho ho!", "text": "Am Nikolaustag im Schnee eine Wende gefahren."},
+	{"id": "frechdachs", "name": "Was ein Frechdachs", "text": "Ein Haubentaucher ist direkt unter dir durchgetaucht."},
+	{"id": "schwanenliebe", "name": "Schwanenliebe", "text": "Zwei Schwäne haben mit ihren Hälsen ein Herz geformt – und du warst dabei."},
+	{"id": "zugvogel", "name": "Zugvogel", "text": "Einen Raley gesprungen, während die Kraniche über den See ziehen."},
+	{"id": "blitz", "name": "Blitzableiter", "text": "Im Gewitter gefahren und vom Blitz getroffen. YOLO!"},
+	{"id": "badegast", "name": "Badegast", "text": "An einem heißen Tag einen Badegast auf der Luftmatratze nass gespritzt."},
 ]
 
 static var no_save := false       # Tests: nur für diese Sitzung merken

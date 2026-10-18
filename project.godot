@@ -31,3 +31,11 @@ feature_light={
 "type": "float",
 "value": 1.0
 }
+autumn={
+"type": "float",
+"value": 0.0
+}
+bare={
+"type": "float",
+"value": 0.0
+}

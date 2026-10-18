@@ -10,6 +10,8 @@ extends Node3D
 ##  * Mückenschwärme am Waldrand neben T1 – wer durchfährt, verschluckt ein Insekt (Erfolg "Insekten fressen")
 ##  * ab und zu springt ein Hecht in einem Halbbogen aus dem Wasser – wer ihn trifft, macht "Ups"
 ##    (geheimer Erfolg "Fischkontakt", siehe Achievements)
+##  * Jahreszeit (apply_season, aus Weather): Hecht springt nur April–Oktober (Frühjahr und Herbst öfter),
+##    SUPs nur bei warmem, trockenem Wetter am Tag – an heißen Tagen deutlich mehr (Obergrenze je Grafikstufe)
 
 signal pike_hit
 signal sup_intruding(person: Node3D)   # Paddler aus der Seemitte kommt der T2-Bahn zu nah
@@ -42,6 +44,8 @@ var water: Water
 var features: FeatureSet
 var sfx: Sfx
 var player: Rider                   # Spieler (für den Hecht)
+var quality := 2                    # Grafikstufe (main.gd): begrenzt die Zusatz-Paddler an heißen Tagen
+const SUP_EXTRA := [1, 2, 4]        # so viele zusätzliche Paddler an Hitzetagen je Grafikstufe
 
 var _operators := {}                # "T1"/"T2" -> Person
 var _sups: Array[Dictionary] = []   # {person, path: Array[Vector3], s, speed}
@@ -55,6 +59,10 @@ var _splash: CPUParticles3D
 var _insects: Array[Dictionary] = []   # {node, home, phase, cool}
 var _t := 0.0
 var _sup_coming := false            # gerade kommt einer herüber (immer nur einer)
+var _pike_on := true                # Jahreszeit: Hecht aktiv
+var _pike_rate := 1.0               # Wartezeit-Faktor (kleiner = öfter)
+var _sup_extra_built := false
+var _weather: Weather
 
 
 func build() -> void:
@@ -84,6 +92,69 @@ func build() -> void:
 	_build_sups()
 	_build_pike()
 	_build_insects()
+
+
+## Jahreszeit und Wetter anwenden (bei jedem Weather.changed): Hecht und SUPs.
+func apply_season(w: Weather) -> void:
+	_weather = w
+	var m := w.month()
+	_pike_on = m >= 4 and m <= 10
+	_pike_rate = 0.6 if m in [4, 5, 9, 10] else 1.0
+	# SUPs: Winter/Regen/Nacht keine, Übergangszeit wenige, Sommer alle, Hitzetag noch mehr
+	var n := 0
+	if w.rain_now < 0.3 and w.snow_now == 0.0 and w.daylight > 0.5:
+		if w.warm > 0.75:
+			n = 4
+		elif w.warm > 0.55:
+			n = 2
+		elif w.warm > 0.4:
+			n = 1
+	if w.heat > 0.3 and n > 0:
+		if not _sup_extra_built:
+			_build_extra_sups()
+		n += int(round(SUP_EXTRA[clampi(quality, 0, 2)] * w.heat))
+	# Reihenfolge: zuerst der freie Paddler (kommt zur Bahn herüber), dann die Runden im Badebereich
+	var order: Array[Dictionary] = []
+	for sup in _sups:
+		if sup.get("free", false):
+			order.append(sup)
+			break
+	for sup in _sups:
+		if not order.has(sup):
+			order.append(sup)
+	for i in order.size():
+		var on := i < n
+		var p: Person = order[i]["person"]
+		if not on and order[i].get("state", "") in ["come", "leave"]:
+			order[i]["state"] = "roam"
+			order[i]["at"] = SUP_CENTER
+			order[i]["goal"] = SUP_CENTER
+			_sup_coming = false
+		order[i]["on"] = on
+		p.visible = on
+		p.process_mode = Node.PROCESS_MODE_INHERIT if on else Node.PROCESS_MODE_DISABLED
+
+
+## Hitzetag: zusätzliche Paddler auf Runden im Badebereich und seeseitig hinter der Bahn (erst bei Bedarf geladen).
+func _build_extra_sups() -> void:
+	_sup_extra_built = true
+	var models := ["res://assets/characters/guest_m.glb", "res://assets/characters/guest_f.glb"]
+	var loops := [[Vector2(36.0, 70.0), Vector2(10.0, 5.0), 1.0, 0.7], [Vector2(24.0, 50.0), Vector2(8.0, 4.0), 2.0, 0.65],
+		[Vector2(110.0, 42.0), Vector2(16.0, 8.0), 0.5, 0.6], [Vector2(55.0, 74.0), Vector2(9.0, 5.0), 3.0, 0.7]]
+	for k in mini(loops.size(), SUP_EXTRA[2]):
+		var l: Array = loops[k]
+		var pts: Array[Vector3] = []
+		for j in 32:
+			var a := TAU * j / 32.0
+			var rel: Vector2 = l[0] + Vector2(cos(a) * l[1].x, sin(a) * l[1].y)
+			var g := Geo.rel_to_game(rel.x, rel.y)
+			if Geo.height(g.x, g.y) < -0.8 and g.x < -20.0:     # nie zwischen den Bahnen (T2 bei x = 0)
+				pts.append(Vector3(g.x, 0.0, g.y))
+		if pts.size() < 8:
+			continue
+		var p := _sup_person(models[k % 2])
+		if p:
+			_sups.append({"person": p, "path": pts, "s": float(l[2]) / TAU * pts.size(), "speed": l[3], "wet": 0.0, "cool": 0.0})
 
 
 ## Steuermann einer Anlage ("T1"/"T2") oder null.
@@ -144,6 +215,8 @@ func _sup_person(model: String) -> Person:
 
 func _move_sups(delta: float) -> void:
 	for sup: Dictionary in _sups:
+		if not sup.get("on", true):
+			continue
 		var p: Person = sup["person"]
 		var pos: Vector3
 		var d: Vector3
@@ -227,7 +300,7 @@ func send_back(person: Node3D) -> void:
 func sup_come_now() -> void:
 	seed(7)                                  # Test: immer dieselbe Stelle
 	for sup: Dictionary in _sups:
-		if sup.get("free", false) and sup["state"] == "roam":
+		if sup.get("free", false) and sup["state"] == "roam" and sup.get("on", true):
 			sup["at"] = Vector2(SUP_ALERT_X - 4.0, -120.0)
 			sup["timer"] = 0.0
 			return
@@ -410,9 +483,11 @@ func _splash_at(p: Vector3) -> void:
 
 func _move_pike(delta: float) -> void:
 	if _pike_t < 0.0:
+		if not _pike_on:
+			return                               # Winter: der Hecht ist nicht in Sprunglaune
 		_pike_next -= delta
 		if _pike_next <= 0.0:
-			_pike_next = randf_range(15.0, 35.0)
+			_pike_next = randf_range(15.0, 35.0) * _pike_rate
 			_start_pike()
 		return
 	_pike_t += delta / PIKE_TIME

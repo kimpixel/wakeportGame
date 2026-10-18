@@ -8,10 +8,13 @@ uniform bool cards = false;
 uniform sampler2D leaf_tex : source_color, filter_linear_mipmap, repeat_disable;
 uniform float brightness = 1.0;
 global uniform float snow;          // Schneedecke 0..1 (Weather, project.godot [shader_globals])
+global uniform float autumn;        // Herbstfärbung der Laubbäume 0..1 (Weather._leaves)
+global uniform float bare;          // Laubbäume kahl 0..1 (Winter)
 uniform float wind = 0.06;           // Ausschlag oben in m
 
 varying float v_ao;
 varying float v_tone;
+varying vec3 v_wp;
 
 float hash3(vec3 p) {
 	p = fract(p * 0.3183099 + 0.1);
@@ -40,11 +43,14 @@ void vertex() {
 	}
 	VERTEX += (inverse(MODEL_MATRIX) * vec4(sway, 0.0)).xyz;
 	v_ao = UV2.x;
+	v_wp = wp;
 	v_tone = hash3(floor(origin * 0.5) + 0.5);
 }
 
 void fragment() {
 	vec3 c = to_linear(COLOR.rgb);
+	// Laubbaum? (Instanzfarbe heller und grüner als Kiefer/Fichte, die bleiben im Herbst und Winter grün)
+	float decid = smoothstep(0.27, 0.33, COLOR.g);
 	float shade = mix(0.3, 1.15, v_ao) * (0.9 + 0.2 * v_tone);
 	if (cards) {
 		vec4 t = texture(leaf_tex, UV);
@@ -52,6 +58,8 @@ void fragment() {
 		vec2 px = UV * vec2(textureSize(leaf_tex, 0));
 		float lod = max(0.0, 0.5 * log2(max(dot(dFdx(px), dFdx(px)), dot(dFdy(px), dFdy(px)))));
 		ALPHA = t.a * (1.0 + lod * 0.45);
+		// Winter: die meisten Blätter sind weg (stückweise, je Blattbüschel)
+		ALPHA *= step(bare * decid, hash3(floor(v_wp * 1.3) + 0.5));
 		ALPHA_SCISSOR_THRESHOLD = 0.5;
 		c *= t.rgb * 1.25 * shade;
 		// Blattkarten: beide Seiten gleich beleuchtet (Normale zeigt vom Kronenmittelpunkt weg)
@@ -66,6 +74,13 @@ void fragment() {
 	}
 	// etwas sattere Grüntöne (das bläuliche Himmelslicht macht sie sonst grau)
 	c = max(mix(vec3(dot(c, vec3(0.3, 0.59, 0.11))), c, 1.35), vec3(0.0));
+	// Herbst: gelb bis rotbraun (je Baum anders); kahl: Hülle wird zu grau-braunem Astwerk
+	float lumc = dot(c, vec3(0.3, 0.59, 0.11));
+	vec3 fall = mix(vec3(1.0, 0.68, 0.12), vec3(0.85, 0.3, 0.06), v_tone) * lumc * 2.3;
+	c = mix(c, fall, autumn * decid);
+	if (!cards) {
+		c = mix(c, vec3(0.2, 0.17, 0.14) * shade, bare * decid);
+	}
 	// Schnee liegt oben auf der Krone
 	vec3 wn = (INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz;
 	c = mix(c, vec3(0.78, 0.8, 0.85) * shade, snow * (0.2 + 0.6 * smoothstep(-0.1, 0.7, wn.y)));
