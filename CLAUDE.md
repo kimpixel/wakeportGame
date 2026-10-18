@@ -77,7 +77,8 @@ Godot liegt im Repo-Root: `./Godot_v4.7.2-stable_win64_console.exe`. Kein ffmpeg
 ```bash
 # Headless-Smoke-Test (Autopilot, Log mit TRICK:/CRASH:/t=… Zeilen)
 ./Godot_v4.7.2-stable_win64_console.exe --headless --path . --fixed-fps 120 -- --autotest --set=music=false --quit=30
-# Screenshot (mit Fenster, nur zur eigenen Selbstkontrolle), z. B. Nahaufnahme am Fahrer
+# Screenshot (mit Fenster, nur zur eigenen Selbstkontrolle; Fenster läuft automatisch unsichtbar im Hintergrund,
+# außerhalb des Bildschirms ohne Fokus – auch bei --write-movie bzw. mit --bg; --fg zeigt es), z. B. Nahaufnahme am Fahrer
 ./Godot_v4.7.2-stable_win64_console.exe --path . --fixed-fps 120 -- --autotest --jump-at=12 --closeup=0,1.2,4.5,0,1.0,0 --shot=PFAD.png --shot-time=12.4 --set=music=false
 # Handy nachstellen
 ./Godot_v4.7.2-stable_win64_console.exe --path . --resolution 540x1170 -- --mobile --tilt=0

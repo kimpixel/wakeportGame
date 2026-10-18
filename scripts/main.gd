@@ -6,6 +6,8 @@ extends Node3D
 ##   --autotest        Autopilot + Autostart + Telemetrie im Log
 ##   --quit=SEK        nach SEK Sekunden Simulationszeit beenden
 ##   --shot=PFAD.png   Screenshot speichern (mit --shot-time=SEK) und beenden; Log „RENDER …“ = Draw Calls/Dreiecke des Bildes
+##   --bg / --fg       Fenster unsichtbar im Hintergrund (außerhalb des Bildschirms, ohne Fokus) bzw. sichtbar;
+##                     --bg gilt automatisch bei --shot und --write-movie
 ##   --cam=side|orbit  Kameramodus beim Start
 ##   --setup=ID        Feature-Setup aus setups/index.json (z. B. 2026-09, a, b)
 ##   --terminal=T1|T2  an welcher Anlage man fährt (der NPC fährt an der anderen)
@@ -172,7 +174,8 @@ var _log_t := 0.0
 func _ready() -> void:
 	_setup_input()
 	_parse_args()
-	Analytics.init()                         # Nutzungsstatistik (nur Web-Hauptversion)
+	_background_window()
+	Analytics.init()                        # Nutzungsstatistik (nur Web-Hauptversion)
 	_build_environment()
 	Geo.ensure_loaded()
 	terrain = Terrain.new()
@@ -1549,6 +1552,26 @@ func _test_drop() -> void:
 	rider.mode = Rider.Mode.AIR
 	rider.air_time = 0.0
 	print("DROP ", p)
+
+
+## Test: Fenster unsichtbar im Hintergrund (--bg; automatisch bei --shot und --write-movie, --fg schaltet ab).
+## Es wird normal gerendert, liegt aber links außerhalb aller Bildschirme und nimmt keinen Fokus –
+## minimiert ginge nicht (Godot zeichnet dann nicht), headless rendert gar nicht.
+func _background_window() -> void:
+	var user := OS.get_cmdline_user_args()
+	if "--fg" in user or DisplayServer.get_name() == "headless" or OS.has_feature("web"):
+		return
+	if not ("--bg" in user or _shot_path != "" or "--write-movie" in OS.get_cmdline_args()):
+		return
+	var win := get_window()
+	if win.mode != Window.MODE_WINDOWED:
+		win.mode = Window.MODE_WINDOWED
+	win.set_flag(Window.FLAG_NO_FOCUS, true)
+	var left := 0
+	for i in DisplayServer.get_screen_count():
+		left = mini(left, DisplayServer.screen_get_position(i).x)
+	win.position = Vector2i(left - win.size.x - 200, 0)
+	print("FENSTER im Hintergrund: ", win.position)
 
 
 func _parse_args() -> void:
