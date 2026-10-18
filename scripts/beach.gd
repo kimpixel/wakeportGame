@@ -863,6 +863,7 @@ func _build_water_items() -> void:
 	tube.radial_segments = 10
 	tube.rings = 1
 	var yellow := Util.mat(Color(1.0, 0.82, 0.1), 0.45)
+	Weather.glow_at_night(yellow)
 	var link_mat := Util.mat(Color(0.15, 0.15, 0.15), 0.6)
 	var pts := [Vector2(4.0, 11.0), Vector2(22.0, 26.0), Vector2(60.0, 55.0), Vector2(110.0, 92.0)]
 	for s in pts.size() - 1:

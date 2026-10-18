@@ -28,6 +28,7 @@ render_mode cull_disabled, diffuse_lambert_wrap, specular_disabled;
 
 uniform sampler2D texture_albedo : source_color, filter_linear_mipmap, repeat_disable;
 uniform float brightness = 1.0;
+global uniform float snow;          // Schneedecke 0..1 (Weather, project.godot [shader_globals])
 uniform float wind_strength = 0.12;
 uniform vec2 wind_direction = vec2(0.8, 0.6);
 uniform float fade_begin = 55.0;
@@ -60,7 +61,7 @@ void vertex() {
 
 void fragment() {
 	vec4 t = texture(texture_albedo, UV);
-	ALBEDO = t.rgb * to_linear(COLOR.rgb) * mix(0.55, 1.0, 1.0 - UV.y) * brightness;
+	ALBEDO = mix(t.rgb * to_linear(COLOR.rgb), vec3(0.85, 0.87, 0.9), snow * 0.8) * mix(0.55, 1.0, 1.0 - UV.y) * brightness;
 	ALPHA = t.a;
 	if (alpha_boost > 0.0) {
 		vec2 px = UV * vec2(textureSize(texture_albedo, 0));

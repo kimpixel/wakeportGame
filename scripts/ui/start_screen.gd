@@ -144,6 +144,15 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	tb.add_child(t)
 	var place := _label("Wakeport Raunheim", 20, Color(1, 1, 1, 0.85))
 	tb.add_child(place)
+	# Szenario (Datum, Uhrzeit, Wetter; jeder Start würfelt eins aus)
+	var scene_l := _label("", 18, Color(1, 1, 1, 0.7))
+	tb.add_child(scene_l)
+	if weather:
+		var upd := func() -> void:
+			var n := weather.scenario_name()
+			scene_l.text = ("„%s“   " % n if n != "" else "") + "%s, %s" % [weather.date_text(), weather.time_text()]
+		weather.changed.connect(upd)
+		upd.call()
 	_result = _label("", 24, SEL)
 	tb.add_child(_result)
 
@@ -179,6 +188,43 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 			_mode_select.add_header("COMMUNITY CHALLENGE")
 	_mode_select.item_selected.connect(func(i: int) -> void: mode_chosen.emit(_mode_ids[i]))
 	left.add_child(_mode_select)
+	# Szenario (Datum, Uhrzeit, Wetter): Standard Zufällig = nach jedem Spiel ein neues
+	if weather and settings:
+		left.add_child(_small("SZENARIO"))
+		var scenes := Weather.scenario_list()
+		var ss := _select(18)
+		ss.add_item("Zufällig")
+		for sc: Dictionary in scenes:
+			ss.add_item(sc["name"])
+		ss.item_selected.connect(func(i: int) -> void:
+			if i == 0:
+				settings.set_v("scenario", "")
+				weather.set_scenario(Weather.random_scenario(weather.scenario))
+			else:
+				settings.set_v("scenario", scenes[i - 1]["id"])
+				weather.set_scenario(scenes[i - 1]["id"]))
+		ss.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		# Shuffle: sofort ein anderes Szenario würfeln (stellt auf Zufällig)
+		var shuffle := _button("", 18)
+		shuffle.tooltip_text = "Neues Szenario würfeln"
+		shuffle.custom_minimum_size = Vector2(56, 0)
+		shuffle.draw.connect(func() -> void: _draw_shuffle(shuffle))
+		shuffle.pressed.connect(func() -> void:
+			settings.set_v("scenario", "")
+			ss.select(0)
+			weather.set_scenario(Weather.random_scenario(weather.scenario)))
+		var srow := HBoxContainer.new()
+		srow.add_theme_constant_override("separation", 8)
+		srow.add_child(ss)
+		srow.add_child(shuffle)
+		left.add_child(srow)
+		_syncers.append(func() -> void:
+			var cur := str(settings.get_v("scenario"))
+			var si := 0
+			for k in scenes.size():
+				if scenes[k]["id"] == cur:
+					si = k + 1
+			ss.select(si))
 	_comp_box = VBoxContainer.new()
 	_comp_box.add_theme_constant_override("separation", 6)
 	right.add_child(_comp_box)
@@ -265,6 +311,9 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_editor.saved.connect(func(id: String, play: bool) -> void: setups_changed.emit(id, play))
 	_editor.plants_saved.connect(func() -> void: plants_changed.emit())
 	_editor.closed.connect(func() -> void: get_viewport().disable_3d = false)
+	# Tastatur/Gamepad (MenuNav): Menü mit Fokus anfangs auf Start; der Editor bedient sich selbst
+	MenuNav.add_scope(_menu, 0, _start_btn)
+	MenuNav.add_scope(_editor, 15, null, true)
 
 
 ## Spielmodus und Challenge anzeigen (Auswahl mit Pokalen, kurzes Ziel).
@@ -332,8 +381,10 @@ func _make_theme() -> Theme:
 	var normal := _box(Color(0.12, 0.15, 0.18), 12)
 	var hover := _box(Color(0.2, 0.24, 0.28), 12)
 	var down := _box(Color(Hud.ACCENT, 0.85), 12)
-	for st: String in ["normal", "focus"]:
-		th.set_stylebox(st, "Button", normal)
+	th.set_stylebox("normal", "Button", normal)
+	th.set_stylebox("focus", "Button", MenuNav.focus_box())    # Tastatur/Gamepad: weißer Rahmen
+	th.set_stylebox("focus", "HSlider", MenuNav.focus_box(6))
+	th.set_stylebox("focus", "LineEdit", MenuNav.focus_box(6))
 	th.set_stylebox("hover", "Button", hover)
 	th.set_stylebox("pressed", "Button", down)
 	th.set_stylebox("hover_pressed", "Button", down)
@@ -358,6 +409,28 @@ func _make_theme() -> Theme:
 	th.set_icon("grabber_highlight", "HSlider", _knob(Hud.ACCENT.lightened(0.4)))
 	th.set_stylebox("panel", "ScrollContainer", StyleBoxEmpty.new())
 	return th
+
+
+## Shuffle-Symbol: zwei gekreuzte Pfeile nach rechts (gezeichnet, Emoji fehlen im Browser-Font).
+func _draw_shuffle(b: Button) -> void:
+	var c := b.size * 0.5
+	var w := minf(b.size.x, b.size.y) * 0.22
+	var col := Color.WHITE
+	var lw := maxf(2.0, w * 0.18)
+	var a0 := c + Vector2(-w * 1.3, -w * 0.7)
+	var a1 := c + Vector2(w * 1.1, w * 0.7)
+	var b0 := c + Vector2(-w * 1.3, w * 0.7)
+	var b1 := c + Vector2(w * 1.1, -w * 0.7)
+	b.draw_line(a0, a0 + Vector2(w * 0.5, 0.0), col, lw, true)
+	b.draw_line(a0 + Vector2(w * 0.5, 0.0), a1 - Vector2(w * 0.5, 0.0), col, lw, true)
+	b.draw_line(a1 - Vector2(w * 0.5, 0.0), a1, col, lw, true)
+	b.draw_line(b0, b0 + Vector2(w * 0.5, 0.0), col, lw, true)
+	b.draw_line(b0 + Vector2(w * 0.5, 0.0), b1 - Vector2(w * 0.5, 0.0), col, lw, true)
+	b.draw_line(b1 - Vector2(w * 0.5, 0.0), b1, col, lw, true)
+	for tip: Vector2 in [a1, b1]:
+		var h := w * 0.45
+		b.draw_colored_polygon(PackedVector2Array([tip + Vector2(h * 0.6, 0.0), tip + Vector2(-h * 0.5, -h * 0.7),
+			tip + Vector2(-h * 0.5, h * 0.7)]), col)
 
 
 func _box(c: Color, r: int, margin := 10) -> StyleBoxFlat:
@@ -504,6 +577,8 @@ func _popup_frame(title: String) -> Array:
 	head.add_child(l)
 	var x := _button("✕", 24)
 	x.custom_minimum_size = Vector2(56, 52)
+	x.set_meta("nav_close", true)                # Fokus beim Öffnen nicht aufs Schließen
+	MenuNav.add_scope(p, 10)
 	x.pressed.connect(_close_popups)
 	head.add_child(x)
 	return [p, v, l]
@@ -614,7 +689,7 @@ func _page_game(p: VBoxContainer) -> void:
 	p.add_child(_small("HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"))
 	_opt_row(p, "Auf dem Slider einloggen", ["An", "Aus"], "assist_lock", [true, false])
 	_opt_row(p, "Überschlag dreht von selbst zu Ende", ["An", "Aus"], "assist_flip", [true, false])
-	_opt_row(p, "SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G)",
+	_opt_row(p, "SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G; Aus = keine Rangliste)",
 		["An", "Aus"], "grip", [1, 3])
 
 
@@ -636,11 +711,12 @@ func _page_rider(p: VBoxContainer) -> void:
 
 func _page_world(p: VBoxContainer) -> void:
 	if weather:
+		# Szenario wählt man auf der Startseite; hier das Wetter von Hand (gilt bis zum Neustart)
 		var ws := _select(18)
 		for n: String in weather.preset_names():
 			ws.add_item(n)
 		ws.item_selected.connect(func(i: int) -> void: weather.set_preset(i))
-		_row(p, "WETTER   (jeder Start: Do. 6. August, 19:45, sonnig)").add_child(ws)
+		_row(p, "WETTER   (von Hand, bis zum Neustart; Szenario auf der Startseite)").add_child(ws)
 		var date_l := _small("DATUM")
 		var day_s := _slider(1.0, 365.0, 1.0)
 		_row(p, "", date_l).add_child(day_s)
@@ -1482,29 +1558,53 @@ func _process(delta: float) -> void:
 
 # ---------------------------------------------------------------- Tastatur
 
+## Einstellungen: nächster bzw. vorheriger Reiter (im Kreis), Fokus auf den Reiter.
+func _next_tab(d: int) -> void:
+	var n := _tab_buttons.size()
+	var cur := 0
+	for i in n:
+		if _tab_buttons[i].button_pressed:
+			cur = i
+	var b := _tab_buttons[posmod(cur + d, n)]
+	b.button_pressed = true
+	b.pressed.emit()
+	b.focus_mode = Control.FOCUS_ALL
+	b.grab_focus()
+
+
+## Enter / PS = Spiel starten, Esc / Kreis = Fenster schließen, O / Options = Einstellungen.
+## Fokus wandern und Knöpfe drücken (Leertaste / Kreuz) macht MenuNav bzw. Godot.
 func _input(event: InputEvent) -> void:
-	if not visible or not (event is InputEventKey) or not event.pressed or event.is_echo() or editor_open():
+	if not visible or not event.is_pressed() or event.is_echo() or editor_open():
 		return
-	var k := (event as InputEventKey).physical_keycode
+	var cancel := event.is_action_pressed("ui_cancel")
 	var focus := get_viewport().gui_get_focus_owner()
-	if focus is LineEdit:          # Namen tippen: Leertaste/Tab starten nichts, Esc beendet das Tippen
-		if k != KEY_ESCAPE:
+	if focus is LineEdit and event is InputEventKey:   # Namen tippen: nur Esc beendet das Tippen
+		if not cancel:
 			return
 		focus.release_focus()
-	if _ingame:                 # im Spiel: Leertaste/Tab starten nichts, Esc schließt
-		if k == KEY_ESCAPE:
+	if _settings.visible and (event.is_action_pressed("tab_prev") or event.is_action_pressed("tab_next")):
+		_next_tab(-1 if event.is_action_pressed("tab_prev") else 1)    # L1/R1: Reiter der Einstellungen
+		get_viewport().set_input_as_handled()
+		return
+	if _ingame:                 # im Spiel: nichts starten, Esc / Enter / O schließen
+		if cancel or event.is_action_pressed("menu_start") or event.is_action_pressed("settings"):
 			_close_popups()
 			get_viewport().set_input_as_handled()
 		return
-	match k:
-		KEY_ESCAPE:
-			if not _popup_open():
-				return
-			_close_popups()
-		KEY_SPACE, KEY_TAB:
-			if _popup_open():
-				_close_popups()
-			start_pressed.emit()
-		_:
+	if cancel:
+		if not _popup_open():
 			return
+		_close_popups()
+	elif event.is_action_pressed("settings"):
+		if _settings.visible:
+			_close_popups()
+		else:
+			_show_popup(_settings)
+	elif event.is_action_pressed("menu_start"):
+		if _popup_open():
+			_close_popups()
+		start_pressed.emit()
+	else:
+		return
 	get_viewport().set_input_as_handled()

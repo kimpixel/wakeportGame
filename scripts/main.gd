@@ -19,12 +19,15 @@ extends Node3D
 ##   --hold=AKT@T0-T1,…  Test: Eingabe-Aktion (z. B. release, steer_right) von T0 bis T1 s halten
 ##   --pitch=±1        Test: in der Luft ↑ (+1, Frontroll; Invert: S-Bend) bzw. ↓ (-1, Backroll) halten
 ##   --game-time=SEK   Test: Spielzeit (normal 450 s); im Autotest läuft dann eine Runde mit Zeit
-##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, regen, dunst)
-##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr; Tests sonst 21. Juni 14:30
-##   --plane=S         Test: sofort ein Jet im Anflug, S m vor dem See (negativ) bzw. danach
+##   --scenario=ID     Szenario (Weather.SCENARIOS, z. B. nacht, earlybird, regenbogen, nikolaus); ohne Argumente
+##                     würfelt jeder Start eins aus, Tests nehmen sonst "afterhour" (18. August 19:45, sonnig)
+##   --weather=ID      Wetter (sonnig, heiter, bewoelkt, bedeckt, schauer, regen, dunst, schnee)
+##   --hour=H --day=T  Uhrzeit (deutsche Zeit) und Tag im Jahr
+##   --plane=S[,nah|weit[,start|landung]] Test: sofort ein Jet, S m vor dem See (negativ) bzw. danach; nah = tief über dem See
 ##   --pike-at=SEK     Test: zu dieser Zeit springt der Hecht knapp vor dem Fahrer (Erfolg "fisch")
 ##   --sup-at=SEK      Test: ein SUP aus der Seemitte kommt herüber, das rote Boot vertreibt ihn
-##   --drop-at=S[,x,y,z]  Test: Fahrer zu dieser Zeit in die Luft setzen (Standard: über den Startsteg, Erfolg "steg")
+##   --drop-at=S[,x,y,z|,boot]  Test: Fahrer zu dieser Zeit in die Luft setzen (Standard: über den Startsteg, Erfolg "steg";
+##                     boot = über das rote Boot am Liegeplatz, Erfolg "boot")
 ##   --erfolg=ID,…     Test: geheime Erfolge als erreicht zeigen (z. B. --screen=@erfolge --erfolg=fisch)
 ##   --lb-url=URL      Test: Rangliste über diesen Worker (z. B. lokal http://127.0.0.1:8787), --lb-name=NAME
 ##   --dpress=W        Test: Drift-Press fest zeigen (-1 Tailpress … +1 Nosepress), auch ohne Drift
@@ -105,9 +108,12 @@ var airplanes: Airplanes
 var music: Music
 var leaderboard: Leaderboard     # Online-Rangliste (Challenges, Competition)
 var _plane_arg := NAN
+var _plane_near := -1
+var _plane_land := -1
 var _load_arg := NAN
 var _passive_arg := false       # Test: Fahrer ohne Autopilot, ohne Eingaben
 var _weather_arg := ""
+var _scenario_arg := ""
 var _hour_arg := NAN
 var _day_arg := 0
 var start_screen: StartScreen
@@ -143,6 +149,7 @@ var _pike_at := -1.0           # Test: Hecht springt zu dieser Zeit knapp vor de
 var _sup_at := -1.0            # Test: ein SUP aus der Seemitte kommt zu dieser Zeit herüber
 var _drop_at := -1.0           # Test: Fahrer zu dieser Zeit an _drop_pos in die Luft setzen
 var _drop_pos := Vector3.INF   # Test: wohin (INF = über den Startsteg)
+var _in_boat := false          # Fahrer ist gerade im roten Boot (Erfolg "boot" nur beim Hineinkommen melden)
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
 var _pause_at := -1.0           # Test: zu dieser Zeit pausieren (und Screenshot)
 var _settings_at := -1.0        # Test: zu dieser Zeit die Einstellungen im Spiel öffnen
@@ -205,6 +212,7 @@ func _ready() -> void:
 	buoys.add_cable(cable_t1)
 
 	features = FeatureSet.new()
+	features.reflections = int(settings.values["quality"]) >= 1
 	add_child(features)
 	_setups = FeatureSet.list_setups()
 	_setup_idx = _initial_setup()
@@ -314,12 +322,13 @@ func _ready() -> void:
 	film.game = self
 	add_child(film)
 	film.build()
+	film.cam.mobile = mobile.active      # Handy: kein Livebild links
 	# Einflugschneise Frankfurt: Jets im Landeanflug über dem See
 	airplanes = Airplanes.new()
 	airplanes.jet_sound = sfx.make_jet_loop()
 	add_child(airplanes)
 	if not is_nan(_plane_arg):
-		airplanes.spawn_at(_plane_arg)
+		airplanes.spawn_at(_plane_arg, _plane_near, _plane_land)
 	cam.doppler_tracking = Camera3D.DOPPLER_TRACKING_IDLE_STEP
 	ambient.pike_hit.connect(func() -> void:
 		hud.show_trick("Hecht erwischt!")
@@ -338,6 +347,8 @@ func _ready() -> void:
 		_unlock_achievement("steg"))
 	if not _test_log:
 		settings.load_file(mobile.active)     # Tests laufen immer mit Standardwerten
+	if OS.get_cmdline_user_args().is_empty() and str(settings.get_v("scenario")) != "":
+		weather.set_scenario(str(settings.get_v("scenario")))   # fest gewähltes Szenario
 	# eigene Musik des Spielers (an/aus kommt mit den Einstellungen)
 	music = Music.new()
 	music.enabled = false
@@ -384,6 +395,15 @@ func _ready() -> void:
 	challenge.panel = task_panel
 	challenge.home_requested.connect(_open_start_screen)
 	add_child(challenge)
+	# Menüs mit Tastatur/Gamepad bedienen (Fokus wandern, Knopf drücken)
+	var nav := MenuNav.new()
+	nav.touch = mobile.active
+	add_child(nav)
+	# Gamepad: Vibration und Lichtleiste (Farbe des Seilzugs)
+	var pad_fx := PadFx.new()
+	pad_fx.rider = rider
+	pad_fx.active = func() -> bool: return not start_screen.visible and not get_tree().paused
+	add_child(pad_fx)
 	if _quit_after > 0.0 and _mode_arg != "":   # Spielmodi stehen im Ergebnis-Fenster: Zeit inkl. Pause
 		get_tree().create_timer(_quit_after + 3.0, true).timeout.connect(get_tree().quit)
 	if _shot_path != "" and _mode_arg != "" and not _screen_arg:   # Spielmodus steht im Fenster: Zeit inkl. Pause
@@ -512,6 +532,7 @@ func _open_start_screen() -> void:
 	_finishing = false
 	_reset()
 	start_screen.set_result(_last_result)
+	_roll_scenario()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	hud.visible = false
 	start_screen.activate()
@@ -526,6 +547,19 @@ func _open_start_screen() -> void:
 		mobile.release_pad()
 		touch_pad.close_menu()
 		touch_pad.visible = false
+
+
+## Szenario "Zufällig" (Standard): nach jedem Spiel ein neues würfeln, sobald die Startseite aufgeht – so zeigt
+## sie schon das nächste, und jeder Start (Competition/Challenge) sieht anders aus. R/Neustart würfelt nicht.
+## Von Hand eingestelltes Wetter (weather.scenario leer) bleibt; Tests würfeln nie.
+func _roll_scenario() -> void:
+	if not OS.get_cmdline_user_args().is_empty() or weather.scenario == "":
+		return
+	var fixed := str(settings.get_v("scenario"))
+	if fixed == "":
+		weather.set_scenario(Weather.random_scenario(weather.scenario))
+	elif fixed != weather.scenario:
+		weather.set_scenario(fixed)
 
 
 ## "Spiel starten": Competition beginnt direkt mit Countdown, die Spielmodi mit ihrer Aufgabe.
@@ -760,7 +794,7 @@ func _toggle_rope_rip() -> void:
 	var off := int(settings.get_v("grip")) == 3
 	settings.set_v("grip", _grip_on if off else 3)
 	start_screen.sync_settings()
-	hud.show_trick("Seil reißt ab: " + ("an" if off else "aus"))
+	hud.show_trick("Seil reißt ab: " + ("an" if off else "aus – keine Rangliste"))
 
 
 ## NPC auf der anderen Anlage an/aus.
@@ -791,6 +825,9 @@ func _apply_quality(q: int) -> void:
 	weather.apply()
 	if terrain:
 		terrain.set_quality(q)
+	if features and features.reflections != (q >= 1):
+		features.reflections = q >= 1       # nasse Features spiegeln die Umgebung (Reflection Probes) ab Mittel
+		features.update_reflections()
 
 
 func _apply_terminal(t: String) -> void:
@@ -912,6 +949,8 @@ func _close_settings_ingame() -> void:
 		touch_pad.visible = true
 	if _settings_from == "pad" and touch_pad:
 		touch_pad.trigger("menu")             # ☰-Menü wieder auf (pausiert weiter)
+	elif _settings_from == "direct":
+		pause_menu.set_paused(false)          # Taste O / Options im Spiel: danach gleich weiter
 	else:
 		pause_menu.show_again()
 
@@ -971,6 +1010,7 @@ func _physics_process(delta: float) -> void:
 	if not is_nan(_load_arg):
 		rider._load = _load_arg            # Test: Sprung so weit aufgeladen (nur Haltung)
 	_check_buoy(rider)
+	_check_boat()
 	_track_turn()
 	_recover(rider, pc, delta)
 
@@ -1265,7 +1305,13 @@ func _take_shot() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("start"):
+	if event.is_action_pressed("settings"):
+		if pause_menu.can_pause.call():          # O / Options: Einstellungen direkt über dem pausierten Spiel
+			pause_menu.set_paused(true)
+			_open_settings_ingame("direct")
+	elif event.is_action_pressed("start"):
+		if start_screen.visible:
+			return
 		if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED and not _counting and not challenge.active:
 			_start_run()
 			rider.block_jump()
@@ -1273,6 +1319,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		challenge.start_attempt()            # Spielmodus: neuer Versuch
 	elif (event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down")) and challenge.active:
 		pass                                 # Spielmodus: festes Tempo
+	elif (event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down")) and event is InputEventJoypadButton \
+			and rider.mode == Rider.Mode.AIR:
+		pass                                 # L1/R1 in der Luft: schnelle Drehung, nicht Tempo
 	elif event.is_action_pressed("reset"):
 		_reset_to_dock()
 	elif event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down"):
@@ -1318,6 +1367,8 @@ func _track_turn() -> void:
 		_turn_active = false
 		if not _turn_sank:
 			rider.award("Wende um die Boje" if _turn_around else "Saubere Wende", 30 if _turn_around else 15)
+			if weather.is_nikolaus():
+				_unlock_achievement("nikolaus")
 		elif _test_log:
 			print("WENDE abgesoffen – keine Punkte")
 
@@ -1346,22 +1397,46 @@ func _on_trick(trick_name: String, points: int) -> void:
 # ---------------------------------------------------------------- Eingabe
 
 func _setup_input() -> void:
-	_bind("steer_left", [KEY_A, KEY_LEFT], [], [[JOY_AXIS_LEFT_X, -1.0]])
-	_bind("steer_right", [KEY_D, KEY_RIGHT], [], [[JOY_AXIS_LEFT_X, 1.0]])
+	# Gamepad (Namen wie PS4): Kreuz = A, Kreis = B, Dreieck = Y, Options = START, Share = BACK, PS = GUIDE
+	_bind("steer_left", [KEY_A, KEY_LEFT], [JOY_BUTTON_DPAD_LEFT], [[JOY_AXIS_LEFT_X, -1.0]])
+	_bind("steer_right", [KEY_D, KEY_RIGHT], [JOY_BUTTON_DPAD_RIGHT], [[JOY_AXIS_LEFT_X, 1.0]])
 	# ↑/↓: in der Luft Frontroll/Backroll, auf dem Slider Nose-/Tailpress, nach Sturz ↑ = schwimmen
-	_bind("pitch_front", [KEY_UP, KEY_W], [], [[JOY_AXIS_LEFT_Y, -1.0]])
-	_bind("pitch_back", [KEY_DOWN, KEY_S], [], [[JOY_AXIS_LEFT_Y, 1.0]])
-	# Strg (zur Not Alt): Kante lösen = Driften
-	_bind("release", [KEY_CTRL, KEY_ALT], [], [[JOY_AXIS_TRIGGER_LEFT, 1.0]])
+	_bind("pitch_front", [KEY_UP, KEY_W], [JOY_BUTTON_DPAD_UP], [[JOY_AXIS_LEFT_Y, -1.0]])
+	_bind("pitch_back", [KEY_DOWN, KEY_S], [JOY_BUTTON_DPAD_DOWN], [[JOY_AXIS_LEFT_Y, 1.0]])
+	# Strg (zur Not Alt): Kante lösen = Driften (Gamepad: Kreis oder L2)
+	_bind("release", [KEY_CTRL, KEY_ALT], [JOY_BUTTON_B], [[JOY_AXIS_TRIGGER_LEFT, 1.0]])
 	_bind("jump", [KEY_SPACE], [JOY_BUTTON_A], [])
 	_bind("swim", [], [], [])          # Handy: Bildschirm halten nach einem Sturz
 	_bind("hitbox", [KEY_F3], [], [])  # Debug: Fangzonen der Slider zeigen
 	_bind("rope_rip", [KEY_G], [], [])  # Seil-Abreißen an/aus
-	_bind("start", [KEY_SPACE], [JOY_BUTTON_START], [])
+	_bind("start", [KEY_SPACE], [JOY_BUTTON_A], [])
 	_bind("reset", [KEY_R], [JOY_BUTTON_BACK], [])
-	_bind("speed_up", [KEY_PAGEUP], [JOY_BUTTON_DPAD_UP], [], [KEY_PLUS, KEY_KP_ADD])
-	_bind("speed_down", [KEY_PAGEDOWN], [JOY_BUTTON_DPAD_DOWN], [], [KEY_MINUS, KEY_KP_SUBTRACT])
-	_bind("camera", [KEY_C], [JOY_BUTTON_Y], [])
+	_bind("speed_up", [KEY_PAGEUP], [JOY_BUTTON_RIGHT_SHOULDER], [], [KEY_PLUS, KEY_KP_ADD])
+	_bind("speed_down", [KEY_PAGEDOWN], [JOY_BUTTON_LEFT_SHOULDER], [], [KEY_MINUS, KEY_KP_SUBTRACT])
+	_bind("jump_analog", [], [], [[JOY_AXIS_TRIGGER_RIGHT, 1.0]])   # R2: Sprung analog aufladen
+	# L1/R1 in der Luft: schnelle halbe Drehung (auf dem Wasser Tempo), im Menü Reiter wechseln
+	_bind("spin_left", [], [JOY_BUTTON_LEFT_SHOULDER], [])
+	_bind("spin_right", [], [JOY_BUTTON_RIGHT_SHOULDER], [])
+	_bind("tab_prev", [], [JOY_BUTTON_LEFT_SHOULDER], [])
+	_bind("tab_next", [], [JOY_BUTTON_RIGHT_SHOULDER], [])
+	_bind("cam_zoom", [], [JOY_BUTTON_RIGHT_STICK], [])   # R3 halten: rechter Stick ↕ zoomt
+	# Menüs (MenuNav): Enter / PS / Touchpad = Start, O / Options = Einstellungen, Esc / PS = Pause
+	_bind("menu_start", [KEY_ENTER, KEY_KP_ENTER], [JOY_BUTTON_GUIDE, JOY_BUTTON_TOUCHPAD], [])
+	_bind("settings", [KEY_O], [JOY_BUTTON_START], [])
+	_bind("pause", [KEY_ESCAPE], [JOY_BUTTON_GUIDE], [])
+	# Godot-Menüaktionen: Leertaste / Kreuz drückt den Knopf mit Fokus (Enter startet, s. menu_start),
+	# Esc / Kreis zurück, Steuerkreuz und linker Stick bewegen den Fokus
+	for e: InputEvent in InputMap.action_get_events("ui_accept"):
+		var ek := e as InputEventKey
+		if ek and (ek.keycode in [KEY_ENTER, KEY_KP_ENTER] or ek.physical_keycode in [KEY_ENTER, KEY_KP_ENTER]):
+			InputMap.action_erase_event("ui_accept", e)
+	_ui_joy("ui_accept", JOY_BUTTON_A)
+	_ui_joy("ui_cancel", JOY_BUTTON_B)
+	_ui_joy("ui_left", JOY_BUTTON_DPAD_LEFT, JOY_AXIS_LEFT_X, -1.0)
+	_ui_joy("ui_right", JOY_BUTTON_DPAD_RIGHT, JOY_AXIS_LEFT_X, 1.0)
+	_ui_joy("ui_up", JOY_BUTTON_DPAD_UP, JOY_AXIS_LEFT_Y, -1.0)
+	_ui_joy("ui_down", JOY_BUTTON_DPAD_DOWN, JOY_AXIS_LEFT_Y, 1.0)
+	_bind("camera", [KEY_C], [], [])          # nur Tastatur (Dreieck bleibt frei)
 	_bind("autopilot", [KEY_P], [], [])
 	_bind("help", [KEY_H, KEY_F1], [], [])
 	_bind("mute", [KEY_M], [], [])
@@ -1370,6 +1445,27 @@ func _setup_input() -> void:
 	_bind("cam_right", [], [], [[JOY_AXIS_RIGHT_X, 1.0]])
 	_bind("cam_up", [], [], [[JOY_AXIS_RIGHT_Y, -1.0]])
 	_bind("cam_down", [], [], [[JOY_AXIS_RIGHT_Y, 1.0]])
+
+
+## Gamepad-Taste (und Stick-Richtung) zu einer Godot-Menüaktion, falls noch nicht drin.
+func _ui_joy(action: String, button: JoyButton, axis := JOY_AXIS_INVALID, value := 0.0) -> void:
+	var has_b := false
+	var has_a := axis == JOY_AXIS_INVALID
+	for e: InputEvent in InputMap.action_get_events(action):
+		if e is InputEventJoypadButton and (e as InputEventJoypadButton).button_index == button:
+			has_b = true
+		elif e is InputEventJoypadMotion and (e as InputEventJoypadMotion).axis == axis \
+				and signf((e as InputEventJoypadMotion).axis_value) == signf(value):
+			has_a = true
+	if not has_b:
+		var b := InputEventJoypadButton.new()
+		b.button_index = button
+		InputMap.action_add_event(action, b)
+	if not has_a:
+		var m := InputEventJoypadMotion.new()
+		m.axis = axis
+		m.axis_value = value
+		InputMap.action_add_event(action, m)
 
 
 ## physical_keys: Tastenposition (WASD auf jedem Layout gleich), logical_keys: Zeichen (+/-).
@@ -1405,14 +1501,38 @@ func _unlock_achievement(id: String) -> void:
 		print("ERFOLG ", id)
 
 
+## Geheimer Erfolg "boot": ins rote Boot gefahren (Sturz) oder beim Sturz hineingefallen.
+func _check_boat() -> void:
+	if start_screen and start_screen.visible:
+		return
+	var crashed := rider.mode == Rider.Mode.CRASHED
+	if crashed and not (rider._ragdoll and rider._ragdoll.active):
+		return                                      # schwimmend zählt nicht
+	var hit := false
+	for b: Node3D in [film.boat, beach.boat]:
+		if b and b.is_visible_in_tree() and FilmCrew.in_boat(b, rider.pos, 0.0 if crashed else 0.25):
+			hit = true
+	if hit and not _in_boat:
+		if not crashed:
+			rider.crash("Ins Boot gefahren!")
+		hud.show_trick("Boot crash!")
+		_unlock_achievement("boot")
+	_in_boat = hit
+
+
 ## Test --drop-at: Fahrer mit etwas Tempo in die Luft setzen (z. B. über den Steg oder in einen Mückenschwarm).
 func _test_drop() -> void:
 	var p := _drop_pos
-	if p == Vector3.INF:
+	if p == Vector3.ZERO and beach.boat:
+		p = beach.boat.global_position + Vector3(0.0, 1.0, 0.0)
+	elif p == Vector3.INF:
 		var d := rider.dock_rect.get_center()
 		p = Vector3(d.x, rider.start_pos.y + 1.2, d.y)
 	rider.pos = p
 	rider.vel = Vector3(0.0, 1.0, -3.0)
+	if _drop_pos == Vector3.ZERO:
+		rider.let_go("Test: ins Boot")          # sonst zieht das Seil ihn vom Boot weg
+		rider.vel = Vector3(0.0, 0.5, 0.0)
 	rider.mode = Rider.Mode.AIR
 	rider.air_time = 0.0
 	print("DROP ", p)
@@ -1467,7 +1587,9 @@ func _parse_args() -> void:
 		elif arg.begins_with("--drop-at="):
 			var v := arg.substr(10).split_floats(",")
 			_drop_at = v[0]
-			if v.size() >= 4:
+			if arg.ends_with(",boot"):
+				_drop_pos = Vector3.ZERO
+			elif v.size() >= 4:
 				_drop_pos = Vector3(v[1], v[2], v[3])
 		elif arg.begins_with("--pike-at="):
 			_pike_at = arg.substr(10).to_float()
@@ -1492,6 +1614,8 @@ func _parse_args() -> void:
 			_view_arg = PackedFloat32Array(Array(arg.substr(7).split(",")).map(func(v: String) -> float: return v.to_float()))
 		elif arg.begins_with("--game-time="):
 			_game_time = arg.substr(12).to_float()
+		elif arg.begins_with("--scenario="):
+			_scenario_arg = arg.substr(11)
 		elif arg.begins_with("--weather="):
 			_weather_arg = arg.substr(10)
 		elif arg.begins_with("--hour="):
@@ -1499,7 +1623,12 @@ func _parse_args() -> void:
 		elif arg.begins_with("--day="):
 			_day_arg = arg.substr(6).to_int()
 		elif arg.begins_with("--plane="):
-			_plane_arg = arg.substr(8).to_float()
+			var pa := arg.substr(8).split(",")
+			_plane_arg = pa[0].to_float()
+			if pa.size() > 1:
+				_plane_near = 1 if pa[1] == "nah" else 0
+			if pa.size() > 2:
+				_plane_land = 0 if pa[2] == "start" else 1
 		elif arg.begins_with("--load="):
 			_load_arg = arg.substr(7).to_float()
 		elif arg == "--passive":
@@ -1520,12 +1649,15 @@ func _build_environment() -> void:
 	Geo.ensure_loaded()
 	weather = Weather.new()
 	add_child(weather)
-	# Jeder Start: Do. 6. August (2026) 19:45, sonnig (Abendsonne, nie Nacht). Änderungen in den Einstellungen gelten
-	# nur für diese Sitzung; "Jetzt" holt bei Bedarf die echte Uhrzeit und das Wetter.
-	weather.preset = weather.find_preset("sonnig")
-	weather.day = 218                 # 6. August
-	weather.hour = 19.75
-	weather.live = false
+	# Jeder Start würfelt ein Szenario (Datum, Uhrzeit, Wetter, Extras; Weather.SCENARIOS), am 6. Dezember immer
+	# Nikolaus. Tests nehmen fest "afterhour". Änderungen in den Einstellungen gelten nur für diese Sitzung;
+	# "Jetzt" holt bei Bedarf die echte Uhrzeit und das Wetter.
+	var sc := _scenario_arg
+	if sc == "":
+		sc = Weather.random_scenario() if OS.get_cmdline_user_args().is_empty() else "afterhour"
+	weather.set_scenario(sc)
+	if _weather_arg != "" or not is_nan(_hour_arg) or _day_arg > 0:
+		weather.scenario = ""
 	if _weather_arg != "":
 		weather.preset = weather.find_preset(_weather_arg)
 	if not is_nan(_hour_arg):

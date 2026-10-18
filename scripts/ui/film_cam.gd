@@ -19,12 +19,13 @@ const SLIDE_SHOT := 0.35         # s auf dem Slider, dann abdrücken
 const FRAME := 2.6               # Bildhöhe (m) am Fahrer – Zoom passt sich der Entfernung an (Fahrer bildfüllend)
 
 var crew: FilmCrew
-var mobile := false
+var mobile := false               # Handy: Livebild ausgeblendet
 var recording := false
 var photos: Array[Texture2D] = []
 
 var _vp: SubViewport
 var _cam: Camera3D
+var _live := false                # Filmteam da, Kamera läuft
 var _live_box: PanelContainer
 var _live_title: Label
 var _rec_dot: Label
@@ -105,8 +106,10 @@ func _label(size: int, color: Color) -> Label:
 	return l
 
 
+## Am Handy kein Livebild (zu wenig Platz) – die Kamera läuft trotzdem für die Fotos im Ergebnis.
 func _set_live(on: bool) -> void:
-	_live_box.visible = on
+	_live = on
+	_live_box.visible = on and not mobile
 	_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS if on else SubViewport.UPDATE_DISABLED
 
 
@@ -123,7 +126,7 @@ func set_source(mode: String) -> void:
 
 ## Versuch läuft (nach GO): Fotos sammeln.
 func begin() -> void:
-	recording = _live_box.visible
+	recording = _live
 	photos.clear()
 	_last_shot = -99.0
 	_slide_t = 0.0
@@ -146,11 +149,12 @@ func stop_recording() -> void:
 
 func _process(delta: float) -> void:
 	_t += delta
-	if not _live_box.visible:
+	if not _live:
 		return
-	_rec_dot.modulate.a = 1.0 if fmod(_t, 1.0) < 0.6 else 0.25
 	_update_cam(delta, false)
-	_layout()
+	if _live_box.visible:
+		_rec_dot.modulate.a = 1.0 if fmod(_t, 1.0) < 0.6 else 0.25
+		_layout()
 
 
 func _physics_process(delta: float) -> void:

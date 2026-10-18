@@ -145,6 +145,12 @@ static func set_quality(q: int) -> void:
 		_mat.proximity_fade_enabled = quality >= 2
 
 
+## Helligkeit (unbeleuchtetes Material, sonst leuchtet die Gischt nachts), aus Weather.apply.
+static func set_light(l: float) -> void:
+	if _mat:
+		_mat.albedo_color = Color(l, l, l)
+
+
 ## Deckkraft: an der Kante dicht, zum Ende des Bogens und zur höchsten Bahn hin ausgedünnt.
 func _alpha(s: Array, age: float, f: float) -> float:
 	var life := age / (LIFE * (0.35 + 0.65 * float(s[5])))   # wenig Druck: kurzer Vorhang
@@ -162,7 +168,7 @@ static func _material() -> StandardMaterial3D:
 	_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_mat.vertex_color_use_as_albedo = true
-	_mat.albedo_color = Color(1.0, 1.0, 1.0)
+	_mat.albedo_color = Color(Weather.lum, Weather.lum, Weather.lum)   # unbeleuchtet: nachts abdunkeln
 	_mat.albedo_texture = _texture()
 	_mat.texture_repeat = true
 	_mat.proximity_fade_distance = 0.3

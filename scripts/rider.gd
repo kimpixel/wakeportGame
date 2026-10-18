@@ -16,6 +16,7 @@ signal rope_lost(reason: String) # Handle verloren (kein Sturz): ausgleiten, abs
 signal grabbed                   # nach dem Schwimmen die Handle wieder gegriffen
 signal sank                      # zu langsam geworden und abgesoffen: wie ein Wasserstart
 signal landed_on_dock            # aus der Luft auf dem Startsteg gelandet (geheimer Erfolg)
+signal touched_down(fall: float)  # aus der Luft gelandet (Wasser oder Feature), fall = Fallgeschwindigkeit m/s
 signal restarted                 # Neustart (Steg/Versuch): Sounds stoppen
 signal dock_yanked               # Sprung-Start: Seil reißt einen vom Steg
 signal skipped                   #Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
@@ -67,6 +68,7 @@ const HANDLE_HEIGHT := 1.0
 const BRIDLE_LEN := 0.3          # Dreieck am Griff: Leinen laufen nach 30 cm zum Seil zusammen
 const BRIDLE_HALF := 0.19        # Leinen sitzen an den Griff-Enden (halbe Griffbreite)
 const BRIDLE_SEGS := 6           # Glieder je Leine (zum Durchhängen)
+const ROPE_COLOR := Color(1.0, 0.85, 0.1)   # gelbe Zugleine
 static var CRASH_TENSION := 5400.0
 static var AIR_MAX_TENSION := 1400.0      # in der Luft federn die Arme den Seilzug ab
 
@@ -78,6 +80,7 @@ static var GRIP_QUAD := 160.0        # Querwiderstand der Kante
 static var GRIP_LIN := 180.0
 static var TURN_RATE := 1.7
 static var SPIN_RATE := 7.5
+static var QUICK_SPIN_RATE := 12.0    # rad/s: Gamepad L1/R1 in der Luft, halbe Drehung am Stück (ca. 0,26 s)
 static var AIR_ASSIST := 5.0         # Brett dreht in der Luft langsam zur Flugrichtung
 const AIR_ASSIST_SLIDER := 8.0  # m: liegt ein Slider so weit voraus auf dem Flugweg, dreht nichts zurück
 static var POP_BASE := 2.46
@@ -100,10 +103,10 @@ static var KICK_MAX_VY := 8.0        # m/s Obergrenze beim Absprung von der Kant
 static var RAMP_LAUNCH := 0.85       # Abwurf von der Rampenkante (Anteil der Steiggeschwindigkeit)
 # Raley: wer beim Absprung viel Seilzug hat (hart gegen den Zug angeschnitten), schwingt mit gestrecktem
 # Körper um den Griff nach hinten oben – Brett höher als der Kopf, Brust zum Wasser. Weniger Zug = Ollie.
-static var RALEY_TENSION := 2500.0   # N Mindest-Seilzug beim Absprung (Marke RALEY in der Seilzug-Anzeige)
-static var RALEY_LOAD := 0.95        # nur mit voll aufgeladenem Sprung (Leertaste lange halten)
+static var RALEY_TENSION := 3358.0   # N Mindest-Seilzug beim Absprung (Marke RALEY in der Seilzug-Anzeige)
+static var RALEY_LOAD := 0.8         # nur mit (fast) voll aufgeladenem Sprung (Leertaste lange halten)
 static var RALEY_ROPE := 0.6         # m/s Steiggeschwindigkeit je 1000 N Seilzug über RALEY_TENSION
-static var RALEY_PER_SPEED := 0.06   # m/s Steiggeschwindigkeit je m/s Fahrtempo (addiert)
+static var RALEY_PER_SPEED := 0.2    # m/s Steiggeschwindigkeit je m/s Fahrtempo (addiert)
 static var RALEY_MAX_VY := 8.5       # m/s Obergrenze beim Raley-Absprung
 static var RALEY_MAX := 2.8          # rad: so weit schwingen Beine und Brett um den Griff (≈160°, Brett über dem Kopf)
 const RALEY_TORSO := 0.55       # Anteil davon für Becken/Oberkörper – der Rest wird Hohlkreuz
@@ -276,6 +279,9 @@ var _edge_vis := 0.0
 var _release_vis := 0.0
 var _jump_held := false
 var _load := 0.0
+var _trig_load := 0.0              # Gamepad R2: tiefster Druck beim Aufladen
+var _quick_spin := 0.0             # Gamepad L1/R1: noch zu drehender Rest der halben Drehung (rad)
+var last_land_fall := 0.0          # Fallgeschwindigkeit bei der letzten Landung (m/s, Vibration)
 var dock_charge := 0.0          # Sprung-Start: aufgeladener Seilzug (0..1), fürs HUD
 var _brace := false             # stemmt sich auf dem Steg gegen das Seil (↓)
 var _yanked := false            # Seil hat losgerissen: Absprung, sobald die Spannung raus ist
@@ -368,7 +374,7 @@ func _ready() -> void:
 		n.top_level = true
 
 	_rope_mesh = ImmediateMesh.new()
-	_rope_mat = Util.mat(Color(1.0, 0.85, 0.1), 1.0, true)
+	_rope_mat = Util.mat(ROPE_COLOR, 1.0, true)
 	var rope_mi := MeshInstance3D.new()
 	rope_mi.mesh = _rope_mesh
 	rope_mi.top_level = true
@@ -1035,7 +1041,13 @@ func _read_input(delta: float) -> void:
 		_edge = 0.0
 		_release = Input.get_action_strength("release")
 
-	var held := (Input.is_action_pressed("jump") and not autopilot) or _npc_charge > 0.0
+	# Gamepad R2 (zusätzlich): Ladung folgt dem Druck, durchgedrückt sofort voll; loslassen = Absprung
+	var trig := 0.0 if autopilot else Input.get_action_strength("jump_analog")
+	if trig > 0.1 and mode == Mode.WATER and not _jump_block:
+		_trig_load = maxf(_trig_load, trig)
+	elif trig <= 0.1:
+		_trig_load = 0.0
+	var held := (Input.is_action_pressed("jump") and not autopilot) or _npc_charge > 0.0 or trig > 0.1
 	# Leertaste hat gerade die Anlage gestartet: erst loslassen, bevor sie wieder lädt
 	if _jump_block:
 		if held:
@@ -1044,12 +1056,23 @@ func _read_input(delta: float) -> void:
 			_jump_block = false
 	if held:
 		if mode == Mode.WATER:
-			_load = minf(_load + delta / 0.5, 1.0)
+			if Input.is_action_pressed("jump") or autopilot or _npc_charge > 0.0:
+				_load = minf(_load + delta / 0.5, 1.0)
+			else:
+				_load = _trig_load                     # nur R2: so tief wie gedrückt (höchster Wert)
 	else:
 		if _jump_held and mode == Mode.WATER and _load > 0.0:
 			_pop()
 		_load = 0.0
 	_jump_held = held
+	# Gamepad L1/R1 in der Luft: schnelle halbe Drehung (links/rechts), wird in _step_air ausgeführt
+	if mode != Mode.AIR or autopilot:
+		_quick_spin = 0.0
+	else:
+		if Input.is_action_just_pressed("spin_left"):
+			_quick_spin += PI
+		if Input.is_action_just_pressed("spin_right"):
+			_quick_spin -= PI
 
 
 func _autopilot_input(delta: float) -> void:
@@ -1629,12 +1652,18 @@ func _step_air(delta: float, rope: Vector3) -> void:
 		_invert = "sbend" if _pitch_in > 0.0 else "backroll"
 	# ←/→ nach der Streckung (S-Bend: nach der Längsdrehung) bricht den Schwung ab, gedreht wird erst aufrecht
 	var stretched := phase >= (SBEND_CUT if _invert == "sbend" else RALEY_STRETCH)
-	if _raley and _invert != "backroll" and absf(_steer) > 0.1 and stretched:
+	if _raley and _invert != "backroll" and (absf(_steer) > 0.1 or _quick_spin != 0.0) and stretched:
 		_raley_cut = true
 	var spin_from := INVERT_SPIN_BACK if _invert == "backroll" else INVERT_SPIN_RALEY
 	var upright := _raley_ang < RALEY_SPIN_ANG and (_invert != "sbend" or _invert_ang > TAU - 0.3)   # S-Bend erst ganz herumgedreht
 	var can_spin := not _raley or phase >= spin_from or (_raley_cut and upright)
-	if absf(_steer) > 0.1 and can_spin:
+	if _quick_spin != 0.0 and can_spin:
+		# L1/R1: halbe Drehung am Stück; beim Invert nur normales Drehtempo (313 bleibt schwer)
+		var rate := SPIN_RATE if _raley else QUICK_SPIN_RATE
+		var step := signf(_quick_spin) * minf(absf(_quick_spin), rate * delta)
+		yaw += step
+		_quick_spin -= step
+	elif absf(_steer) > 0.1 and can_spin:
 		yaw -= _steer * SPIN_RATE * delta
 	else:
 		var vh := Vector3(vel.x, 0.0, vel.z)
@@ -1772,10 +1801,13 @@ func _land(surf: float) -> void:
 		_absorb = LAND_TIME                  # Landung in den Knien abfedern, je härter, desto tiefer
 		_absorb_amt = clampf(-vel.y / 6.0, 0.45, 0.9)
 	pos.y = surf
+	last_land_fall = -vel.y
 	vel.y = 0.0
 	vel.x *= 0.97
 	vel.z *= 0.97
 	mode = Mode.WATER
+	if air_time > 0.25:
+		touched_down.emit(last_land_fall)
 	if air_time > 0.3 and _in_dock(pos.x, pos.z):
 		landed_on_dock.emit()
 	var half_turns := int(round(absf(_spin_accum) / PI))
@@ -2977,6 +3009,7 @@ func _draw_line_segs(first: int, a: Vector3, b: Vector3, length: float) -> void:
 ## Zugseil vom Knoten (Kurvenstelle t0) bis zum Carrier.
 func _draw_rope(a: Vector3, b: Vector3, sag: float, t0: float) -> void:
 	_rope_mesh.clear_surfaces()
+	_rope_mat.albedo_color = ROPE_COLOR * Weather.lum     # unbeleuchtete Linie: nachts abdunkeln, sonst leuchtet sie
 	_rope_mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, _rope_mat)
 	for i in 21:
 		_rope_mesh.surface_add_vertex(_rope_at(a, b, sag, lerpf(t0, 1.0, i / 20.0)))

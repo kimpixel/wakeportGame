@@ -26,6 +26,8 @@ var _touched := {}                 # "fahrer:boje" -> gerade berührt (nur einma
 func add_cable(cable: CableSystem) -> void:
 	var red_mat := Util.mat(Color(0.9, 0.12, 0.1), 0.4)
 	var white_mat := Util.mat(Color(0.95, 0.95, 0.93), 0.4)
+	Weather.glow_at_night(red_mat)             # Signalfarben: auch in der Dämmerung und nachts gut zu sehen
+	Weather.glow_at_night(white_mat)
 	for end: float in [1.0, -1.0]:
 		var turn_z := cable.turn_b_z if end > 0.0 else cable.turn_a_z
 		# Abstand vom Startmast; die Bojen liegen auf der Seite, von der man anfährt

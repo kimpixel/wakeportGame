@@ -15,6 +15,16 @@ const WAKE_K := 3.0
 const WAKE_AMP := 0.2
 const WAKE_DECAY := 0.55
 const WAKE_LIFE := 5.6
+## Bootswelle: eigene, viel größere Kreiswellen (längere Welle, breiter, lebt länger) – entlang der
+## Fahrt ausgesendet ergibt das die große V-Welle hinter dem Boot. Gleiche Werte im Shader (BOAT_*).
+const BOAT_COUNT := 32
+const BOAT_INTERVAL := 0.25
+const BOAT_SPEED := 3.2
+const BOAT_WIDTH := 2.5
+const BOAT_K := 1.25
+const BOAT_AMP := 0.32
+const BOAT_DECAY := 0.25
+const BOAT_LIFE := 8.0
 
 var sim_time := 0.0
 
@@ -32,6 +42,9 @@ var _tex_foam: NoiseTexture2D
 var _points := PackedVector4Array()
 var _next := 0
 var _emit_timers := {}   # pro Fahrer ein eigener Takt
+var _boat_points := PackedVector4Array()
+var _boat_next := 0
+var _boat_timer := 0.0
 const PATCH_SIZE := 160.0          # feines Gitter rund um den Fahrer
 const LAKE_RECT := Rect2(-490.0, -635.0, 595.0, 720.0)   # ganzer See in Spielkoordinaten
 
@@ -48,6 +61,9 @@ func _ready() -> void:
 	_points.resize(WAKE_COUNT)
 	for i in WAKE_COUNT:
 		_points[i] = Vector4(0.0, 0.0, -1000.0, 0.0)
+	_boat_points.resize(BOAT_COUNT)
+	for i in BOAT_COUNT:
+		_boat_points[i] = Vector4(0.0, 0.0, -1000.0, 0.0)
 
 	var compat := RenderingServer.get_current_rendering_method() == "gl_compatibility"
 	for k: String in FX_KEYS:
@@ -169,9 +185,25 @@ func emit_wake(pos: Vector3, strength: float, delta: float, emitter := 0) -> voi
 	_next = (_next + 1) % WAKE_COUNT
 
 
+## Bootswelle: jeden Physikschritt vom fahrenden Boot (Heck). Stärke aus dem Bootstempo: langsam klein,
+## ab ca. 7 m/s richtig groß (Kamm bis ca. 0,6 m über dem See).
+func emit_boat_wake(pos: Vector3, speed: float, delta: float) -> void:
+	_boat_timer -= delta
+	if _boat_timer > 0.0:
+		return
+	_boat_timer = BOAT_INTERVAL
+	if speed < 1.5:
+		return
+	var s := 1.4 * smoothstep(1.5, 9.0, speed)
+	_boat_points[_boat_next] = Vector4(pos.x, pos.z, sim_time, s)
+	_boat_next = (_boat_next + 1) % BOAT_COUNT
+
+
 func clear_wake() -> void:
 	for i in WAKE_COUNT:
 		_points[i] = Vector4(0.0, 0.0, -1000.0, 0.0)
+	for i in BOAT_COUNT:
+		_boat_points[i] = Vector4(0.0, 0.0, -1000.0, 0.0)
 
 
 ## Wasserhöhe an (x, z). min_age blendet ganz frische Wellen aus
@@ -185,6 +217,13 @@ func height_at(x: float, z: float, min_age := 0.0) -> float:
 		var dx := x - p.x
 		var dz := z - p.y
 		h += ring(sqrt(dx * dx + dz * dz), age, p.w)
+	for p: Vector4 in _boat_points:
+		var age := sim_time - p.z
+		if age < 0.0 or age > BOAT_LIFE:
+			continue
+		var dx := x - p.x
+		var dz := z - p.y
+		h += boat_ring(sqrt(dx * dx + dz * dz), age, p.w)
 	return h
 
 
@@ -207,6 +246,14 @@ static func ring(r: float, age: float, strength: float) -> float:
 	return strength * WAKE_AMP * env * decay * cos(d * WAKE_K)
 
 
+static func boat_ring(r: float, age: float, strength: float) -> float:
+	var front := BOAT_SPEED * age + 0.5
+	var d := r - front
+	var env := exp(-d * d / (BOAT_WIDTH * BOAT_WIDTH))
+	var decay := (1.0 - exp(-age * 2.0)) * exp(-age * BOAT_DECAY) / sqrt(1.0 + 0.15 * front)
+	return strength * BOAT_AMP * env * decay * cos(d * BOAT_K)
+
+
 func _process(_delta: float) -> void:
 	if follow:
 		var c := follow.global_position
@@ -217,6 +264,7 @@ func _process(_delta: float) -> void:
 		m.set_shader_parameter("sim_time", sim_time)
 		m.set_shader_parameter("hole_center", hole)
 	_material.set_shader_parameter("wake_points", _points)
+	_material.set_shader_parameter("boat_points", _boat_points)
 	if sun:
 		var to_sun := sun.global_transform.basis.z.normalized()
 		for m: ShaderMaterial in [_material, _coarse_material]:

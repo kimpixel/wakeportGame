@@ -1,15 +1,27 @@
 class_name Airplanes
 extends Node3D
-## Flugzeuge im Landeanflug auf Frankfurt (Betriebsrichtung 07): Der Wakeport liegt in der
-## Einflugschneise – alle ein, zwei Minuten kommt ein Jet aus Westsüdwest, überfliegt den See
-## im 3°-Gleitpfad in etwa 260 m Höhe (Fahrwerk draußen, Lichter an) und ist laut.
+## Flugzeuge über dem See: Der Wakeport liegt in der Einflugschneise von Frankfurt. Meist landen sie
+## (Betriebsrichtung 07, Jet aus Westsüdwest, Fahrwerk draußen, sinkt bis zum Flughafen), ein Teil
+## startet in Gegenrichtung und steigt (`DEPART_SHARE`). Jeder Jet hat eigene Linie: Kurs, Seitenversatz
+## und Höhe streuen. Ein Teil kommt tief fast direkt über den See (`NEAR_SHARE`) – dann wirkt er riesig.
+## Die Höhe ist an den Flughafen gebunden (`AIRPORT_H` bei `AIRPORT_S`), so taucht kein Jet in den Wald.
 
-const HEADING := 69.0             # Anflugkurs (Grad, rechtweisend)
-const GLIDE := 3.0                # Gleitwinkel (Grad)
-const ALT_OVER_LAKE := 260.0      # Höhe über dem See
-const SIDE_OFFSET := 120.0        # Anfluglinie so weit seitlich der Seemitte (m)
-const T_FROM := -5500.0           # Strecke vor / nach dem See (m)
-const T_TO := 4300.0
+const HEADING := 69.0             # Kurs Richtung Flughafen (Grad, rechtweisend)
+const HEADING_SPREAD := 6.0       # Kurs je Jet ± so viel Grad (Linie dreht um den Punkt über dem See)
+const GLIDE := 3.0                # Steigwinkel vom See weg vom Flughafen (Grad): Landung
+const CLIMB := 6.0                # dasselbe beim Start
+const AIRPORT_S := 4300.0         # Flughafen so weit vom See entlang der Linie (m)
+const AIRPORT_H := 40.0           # Höhe dort (über dem See, über den Bäumen)
+const FAR_S := 5500.0             # Strecke auf der anderen Seite des Sees (m)
+const ALT_OVER_LAKE := Vector2(200.0, 300.0)   # normale Jets: Höhe über dem See (von, bis)
+const SIDE_LANES := [-260.0, 120.0, 650.0]     # normale Jets: Linien seitlich der Seemitte (m, + Norden)
+const SIDE_SPREAD := 90.0                      # ± um die Linie
+const NEAR_SHARE := 0.35          # Anteil der Jets, die tief und nah über den See kommen
+const NEAR_ALT := Vector2(65.0, 100.0)      # Höhe über dem See (von, bis)
+const NEAR_SIDE := Vector2(-40.0, 40.0)     # seitlich der Seemitte (von, bis)
+const DEPART_SHARE := 0.3         # Anteil Starts (fliegen vom Flughafen weg, also entgegen)
+const RUSH_GAP := Vector2(7.0, 13.0)       # Rush Hour: Sekunden bis zum nächsten Jet (von, bis)
+const NORMAL_GAP := Vector2(65.0, 140.0)
 
 const TYPES := [
 	# Länge, Spannweite, Triebwerke, Häufigkeit
@@ -21,48 +33,48 @@ const TAIL_COLORS := [Color(0.05, 0.14, 0.38), Color(0.78, 0.1, 0.1), Color(0.95
 	Color(0.1, 0.42, 0.3), Color(0.18, 0.18, 0.2), Color(0.35, 0.55, 0.85)]
 
 var jet_sound: AudioStream
-var _dir := Vector3.FORWARD       # Flugrichtung (waagerecht)
-var _origin := Vector3.ZERO       # Punkt der Anfluglinie über dem See (Höhe 0)
+var _heading := 0.0               # Kurs zum Flughafen im Spiel (rad um +Y, 0 = -Z)
+var _north := Vector3.RIGHT       # waagerecht Richtung Norden
+var _lake := Vector3.ZERO         # Mitte der T2-Bahn
 var _planes: Array[Dictionary] = []
 var _next := 25.0
-var rate := 1                     # Einstellungen: 0 aus, 1 normal, 2 Rush Hour
+var rate := 1:                    # Einstellungen: 0 aus, 1 normal, 2 Rush Hour
+	set(v):
+		var was := rate
+		rate = v
+		if v == 2 and was != 2 and is_inside_tree():
+			_fill_rush()
 var _t := 0.0
 
 
 func _ready() -> void:
 	var a := deg_to_rad(HEADING)
 	var d := Geo.rel_to_game(sin(a), cos(a))
-	_dir = Vector3(d.x, 0.0, d.y).normalized()
-	var north := Geo.rel_to_game(0.0, 1.0)
-	var side := Vector3(_dir.z, 0.0, -_dir.x)
-	if side.dot(Vector3(north.x, 0.0, north.y)) < 0.0:
-		side = -side
-	var lake := Vector3(0.0, 0.0, Lake.MAST_B_Z * 0.5)       # Mitte der T2-Bahn
-	_origin = lake + side * SIDE_OFFSET
+	_heading = atan2(-d.x, -d.y)
+	var n := Geo.rel_to_game(0.0, 1.0)
+	_north = Vector3(n.x, 0.0, n.y).normalized()
+	_lake = Vector3(0.0, 0.0, Lake.MAST_B_Z * 0.5)
+	if rate == 2:
+		_fill_rush()
 
 
 func _process(delta: float) -> void:
 	_t += delta
 	_next -= delta
 	if _next <= 0.0:
-		_next = randf_range(20.0, 45.0) if rate == 2 else randf_range(65.0, 140.0)
+		var gap := RUSH_GAP if rate == 2 else NORMAL_GAP
+		_next = randf_range(gap.x, gap.y)
 		if rate > 0:
 			_spawn()
-	var slope := tan(deg_to_rad(GLIDE))
 	for i in range(_planes.size() - 1, -1, -1):
 		var p: Dictionary = _planes[i]
 		p["s"] = float(p["s"]) + float(p["speed"]) * delta
-		var s: float = p["s"]
 		var node: Node3D = p["node"]
-		if s > T_TO:
+		if float(p["s"]) > float(p["s_end"]):
 			node.queue_free()
 			_planes.remove_at(i)
 			continue
-		var pos := _origin + _dir * s + Vector3.UP * (ALT_OVER_LAKE - s * slope)
-		# Anflughaltung: Nase leicht hoch, sanftes Schaukeln
-		var b := Basis.looking_at(_dir, Vector3.UP)
-		b = b * Basis(Vector3.RIGHT, deg_to_rad(2.5)) * Basis(Vector3.FORWARD, 0.03 * sin(_t * 0.5 + float(p["phase"])))
-		node.global_transform = Transform3D(b, pos)
+		node.global_transform = Transform3D(_attitude(p), _pos(p))
 		# Lichter: Blitzer und rotes Drehlicht blinken
 		var strobe := fmod(_t + float(p["phase"]), 1.2) < 0.06
 		for l: Node3D in p["strobes"]:
@@ -72,14 +84,62 @@ func _process(delta: float) -> void:
 			l.visible = beacon
 
 
-## Test: sofort ein Flugzeug an Stelle s der Anfluglinie (0 = über dem See).
-func spawn_at(s: float) -> void:
-	_spawn()
-	_planes[-1]["s"] = s
-	print("Jet bei ", _origin + _dir * s + Vector3.UP * (ALT_OVER_LAKE - s * tan(deg_to_rad(GLIDE))), " Richtung ", _dir)
+## Abstand zum Flughafen-Ende der Linie: s läuft in Flugrichtung, 0 = über dem See.
+func _to_airport(p: Dictionary) -> float:
+	return float(p["s"]) if p["land"] else -float(p["s"])
 
 
-func _spawn() -> void:
+## Höhe über dem See: zum Flughafen hin linear auf AIRPORT_H, auf der anderen Seite steigend.
+func _height(p: Dictionary) -> float:
+	var a := _to_airport(p)
+	var alt: float = p["alt"]
+	if a >= 0.0:
+		return lerpf(alt, AIRPORT_H, a / AIRPORT_S)
+	return alt - a * tan(deg_to_rad(float(p["slope"])))
+
+
+func _pos(p: Dictionary) -> Vector3:
+	var dir: Vector3 = p["dir"]
+	var side := Vector3(-dir.z, 0.0, dir.x)
+	if side.dot(_north) < 0.0:
+		side = -side
+	return _lake + side * float(p["side"]) + dir * float(p["s"]) + Vector3.UP * _height(p)
+
+
+## Lage: Nase im Flugweg (sinkt bzw. steigt), leicht hoch, sanftes Schaukeln.
+func _attitude(p: Dictionary) -> Basis:
+	var dir: Vector3 = p["dir"]
+	var a := _to_airport(p)
+	var alt: float = p["alt"]
+	var climb := (alt - AIRPORT_H) / AIRPORT_S if a >= 0.0 else tan(deg_to_rad(float(p["slope"])))
+	var path := atan(climb) * (-1.0 if p["land"] else 1.0)
+	var b := Basis.looking_at(dir, Vector3.UP)
+	return b * Basis(Vector3.RIGHT, path + deg_to_rad(2.5 if p["land"] else 6.0)) \
+		* Basis(Vector3.FORWARD, 0.03 * sin(_t * 0.5 + float(p["phase"])))
+
+
+## Rush Hour sofort voll: Jets schon auf ihren Linien verteilt (sonst erst nach Minuten).
+func _fill_rush() -> void:
+	var k := randf_range(0.0, 1.0)
+	var n := int((AIRPORT_S + FAR_S) / (73.0 * (RUSH_GAP.x + RUSH_GAP.y) * 0.5))
+	for i in n:
+		_spawn()
+		var p: Dictionary = _planes[-1]
+		p["s"] = lerpf(float(p["s"]), float(p["s_end"]), fmod(k + float(i) / float(n), 1.0))
+	_next = randf_range(RUSH_GAP.x, RUSH_GAP.y)
+
+
+## Test: sofort ein Jet an Stelle s seiner Linie (0 = über dem See, negativ = davor);
+## near: 1 nah, 0 normal, -1 Zufall; land: 1 Landung, 0 Start, -1 Zufall.
+func spawn_at(s: float, near := -1, land := -1) -> void:
+	_spawn(near, land)
+	var p: Dictionary = _planes[-1]
+	p["s"] = s
+	print("Jet bei ", _pos(p), " Richtung ", p["dir"], " Höhe über See ", p["alt"], " seitlich ", p["side"],
+		" ", "Landung" if p["land"] else "Start")
+
+
+func _spawn(near := -1, land := -1) -> void:
 	var r := randf()
 	var type: Dictionary = TYPES[0]
 	var acc := 0.0
@@ -88,14 +148,16 @@ func _spawn() -> void:
 		if r <= acc:
 			type = t
 			break
-	var info := _build(type, TAIL_COLORS.pick_random())
+	var landing := randf() >= DEPART_SHARE if land < 0 else land == 1
+	var info := _build(type, TAIL_COLORS.pick_random(), landing)
 	var node: Node3D = info["node"]
 	add_child(node)
 	if jet_sound:
 		var snd := AudioStreamPlayer3D.new()
 		snd.bus = Sfx.BUS_PLANES
 		snd.stream = jet_sound
-		snd.unit_size = 90.0 * (1.3 if int(type["engines"]) == 4 else 1.0) * (1.0 if float(type["len"]) < 50.0 else 1.25)
+		snd.unit_size = 90.0 * (1.3 if int(type["engines"]) == 4 else 1.0) * (1.0 if float(type["len"]) < 50.0 else 1.25) \
+			* (1.0 if landing else 1.4)
 		snd.max_distance = 8000.0
 		snd.volume_db = 2.0
 		snd.pitch_scale = randf_range(0.92, 1.06)
@@ -104,13 +166,23 @@ func _spawn() -> void:
 		snd.attenuation_filter_db = -18.0
 		node.add_child(snd)
 		snd.play(Sfx.loop_start(2.5))
-	_planes.append({"node": node, "s": T_FROM, "speed": randf_range(68.0, 78.0), "phase": randf() * 10.0,
-		"strobes": info["strobes"], "beacons": info["beacons"]})
+	var close := randf() < NEAR_SHARE if near < 0 else near == 1
+	var alt := randf_range(NEAR_ALT.x, NEAR_ALT.y) if close else randf_range(ALT_OVER_LAKE.x, ALT_OVER_LAKE.y)
+	var side := randf_range(NEAR_SIDE.x, NEAR_SIDE.y) if close \
+		else float(SIDE_LANES.pick_random()) + randf_range(-SIDE_SPREAD, SIDE_SPREAD)
+	var h := _heading + deg_to_rad(randf_range(-HEADING_SPREAD, HEADING_SPREAD))
+	var dir := Vector3(-sin(h), 0.0, -cos(h))
+	if not landing:
+		dir = -dir
+	_planes.append({"node": node, "s": -FAR_S if landing else -AIRPORT_S, "s_end": AIRPORT_S if landing else FAR_S,
+		"land": landing, "dir": dir, "slope": GLIDE if landing else CLIMB,
+		"speed": randf_range(68.0, 78.0) if landing else randf_range(80.0, 95.0), "phase": randf() * 10.0,
+		"alt": alt, "side": side, "strobes": info["strobes"], "beacons": info["beacons"]})
 
 
 ## Einfaches Verkehrsflugzeug aus Grundkörpern: Rumpf, gepfeilte Flügel, Leitwerk,
-## Triebwerke, ausgefahrenes Fahrwerk, Lichter. Lokal: Nase nach -Z, oben +Y.
-func _build(type: Dictionary, tail: Color) -> Dictionary:
+## Triebwerke, Fahrwerk (nur beim Landen draußen), Lichter. Lokal: Nase nach -Z, oben +Y.
+func _build(type: Dictionary, tail: Color, gear := true) -> Dictionary:
 	var root := Node3D.new()
 	var L: float = type["len"]
 	var span: float = type["span"]
@@ -150,8 +222,9 @@ func _build(type: Dictionary, tail: Color) -> Dictionary:
 			var eng := _mesh(root, _cyl(r * 0.42, r * 0.38, L * 0.11), grey, Vector3(x, -r * 0.95, z))
 			eng.rotation.x = PI * 0.5
 			_mesh(root, _cyl(r * 0.3, r * 0.3, 0.05), dark, Vector3(x, -r * 0.95, z - L * 0.056)).rotation.x = PI * 0.5
-	# Fahrwerk ausgefahren
-	for g: Vector3 in [Vector3(0, 0, -L * 0.3), Vector3(-r * 0.9, 0, L * 0.03), Vector3(r * 0.9, 0, L * 0.03)]:
+	# Fahrwerk ausgefahren (Landung)
+	var wheels: Array[Vector3] = [Vector3(0, 0, -L * 0.3), Vector3(-r * 0.9, 0, L * 0.03), Vector3(r * 0.9, 0, L * 0.03)]
+	for g: Vector3 in (wheels if gear else [] as Array[Vector3]):
 		_mesh(root, _cyl(r * 0.06, r * 0.06, r * 0.9), grey, g + Vector3(0, -r * 1.35, 0))
 		var wheel := _mesh(root, _cyl(r * 0.22, r * 0.22, r * 0.3), dark, g + Vector3(0, -r * 1.8, 0))
 		wheel.rotation.z = PI * 0.5

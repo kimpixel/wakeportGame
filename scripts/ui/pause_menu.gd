@@ -58,6 +58,7 @@ func _ready() -> void:
 	_button("Startseite", func() -> void:
 		set_paused(false)
 		home_pressed.emit())
+	MenuNav.add_scope(_dim, 30)
 
 
 func _button(text: String, on_press: Callable) -> Button:
@@ -65,7 +66,7 @@ func _button(text: String, on_press: Callable) -> Button:
 	b.text = text
 	b.custom_minimum_size = Vector2(320, 56)
 	b.add_theme_font_size_override("font_size", 24)
-	b.focus_mode = Control.FOCUS_NONE
+	b.add_theme_stylebox_override("focus", MenuNav.focus_box(4))
 	b.pressed.connect(on_press)
 	_box.add_child(b)
 	return b
@@ -84,6 +85,7 @@ func set_paused(on: bool) -> void:
 	get_tree().paused = on
 	_dim.visible = on
 	if on:
+		MenuNav.reset_focus(_dim)            # Fokus auf „Weiter“
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		_update_music()
 
@@ -104,8 +106,16 @@ func is_paused() -> bool:
 	return _dim.visible
 
 
+## Esc / PS: Pause an/aus; in der Pause schließen auch Kreis (ui_cancel) und Enter, O / Options öffnet die Einstellungen.
 func _unhandled_input(event: InputEvent) -> void:
-	var k := event as InputEventKey
-	if k and k.pressed and not k.echo and k.physical_keycode == KEY_ESCAPE:
+	if not event.is_pressed() or event.is_echo():
+		return
+	if event.is_action_pressed("pause"):
 		set_paused(not is_paused())
-		get_viewport().set_input_as_handled()
+	elif is_paused() and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("menu_start")):
+		set_paused(false)
+	elif is_paused() and event.is_action_pressed("settings"):
+		settings_pressed.emit()
+	else:
+		return
+	get_viewport().set_input_as_handled()

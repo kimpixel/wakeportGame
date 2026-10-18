@@ -28,7 +28,7 @@ const GROUPS := [
 		["rider", "POP_ON_RAMP", 0.0, 1.0], ["rider", "KICK_REF"], ["rider", "POP_ON_KICK", 0.0, 2.0],
 		["rider", "KICK_MAX_VY"], ["rider", "RAMP_LAUNCH", 0.0, 2.0], ["rider", "AIR_KNEES"], ["rider", "LAND_TIME"]]],
 	["Luft", [
-		["rider", "SPIN_RATE"], ["rider", "AIR_ASSIST"], ["rider", "FLIP_RATE"], ["rider", "FLIP_LAND_TOL", 0.0, 1.6],
+		["rider", "SPIN_RATE"], ["rider", "QUICK_SPIN_RATE"], ["rider", "AIR_ASSIST"], ["rider", "FLIP_RATE"], ["rider", "FLIP_LAND_TOL", 0.0, 1.6],
 		["rider", "RALEY_TENSION", 0.0, 5400.0], ["rider", "RALEY_LOAD", 0.0, 1.0], ["rider", "RALEY_ROPE", 0.0, 3.0], ["rider", "RALEY_PER_SPEED", 0.0, 0.5], ["rider", "RALEY_MAX_VY", 4.0, 14.0], ["rider", "RALEY_MAX", 0.0, 3.2], ["rider", "INVERT_SPIN_RALEY", 0.3, 0.95], ["rider", "RALEY_STRETCH", 0.1, 0.8], ["rider", "SBEND_CUT", 0.22, 0.72], ["rider", "RALEY_CUT_RATE", 2.0, 30.0], ["rider", "RALEY_SPIN_ANG", 0.0, 2.8]]],
 	["Slider", [
 		["rider", "SLIDE_FRICTION", 0.0, 1.0], ["rider", "PRESS_ANG", 0.0, 1.2], ["rider", "SNAP_RATE"],
@@ -39,8 +39,11 @@ const GROUPS := [
 		["rider", "SLIDE_BASE"], ["rider", "SLIDE_PER_S"], ["rider", "BOARDSLIDE_BONUS"], ["rider", "PRESS_BONUS"],
 		["rider", "SWITCH_BONUS"], ["rider", "AIR_PER_S"], ["rider", "RALEY_POINTS"], ["rider", "INVERT_POINTS"], ["rider", "FLIP_POINTS"],
 		["rider", "COMBO_WINDOW"]]],
+	["Features", [["feature", "WET_DARK", 0.0, 1.0], ["feature", "WET_FRESNEL", 0.0, 1.0], ["feature", "WET_ROUGH", 0.0, 0.5],
+		["feature", "WET_COAT", 0.0, 1.0], ["feature", "REFLECT", 0.0, 2.0]]],
 ]
-const SCRIPTS := {"rider": "res://scripts/rider.gd", "challenge": "res://scripts/challenge.gd", "sheet": "res://scripts/spray_sheet.gd"}
+const SCRIPTS := {"rider": "res://scripts/rider.gd", "challenge": "res://scripts/challenge.gd", "sheet": "res://scripts/spray_sheet.gd",
+	"feature": "res://scripts/features/feature_part.gd"}
 
 var rider: Rider                 # Live-Werte oben im Fenster
 var _dim: Control
@@ -201,6 +204,8 @@ func _add_row(list: VBoxContainer, e: Array, notes: Dictionary) -> void:
 
 func _apply(r: Dictionary, x: float) -> void:
 	r["script"].set(r["name"], roundi(x) if r["int"] else x)
+	if r["script"].has_method("debug_changed"):
+		r["script"].call("debug_changed")      # z. B. Features: neue Werte in die Materialien übertragen
 	_show(r)
 
 

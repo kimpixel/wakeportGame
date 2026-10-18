@@ -98,7 +98,7 @@ func _ready() -> void:
 	_menu_box.add_theme_constant_override("separation", 14)
 	_menu.add_child(_menu_box)
 	for e: Array in [["Weiter", "close"], ["Einstellungen", "settings"], ["Hilfe ein/aus", "help"], ["Zurück zum Steg  (−2:00)", "reset"],
-			["Startseite", "home"], ["Ton aus/an", "mute"], ["Seil-Abreißen an/aus", "rope_rip"]]:
+			["Startseite", "home"], ["Ton aus/an", "mute"], ["Seil-Abreißen an/aus  (aus: keine Rangliste)", "rope_rip"]]:
 		var b := PadButton.new()
 		b.text = e[0]
 		b.id = e[1]

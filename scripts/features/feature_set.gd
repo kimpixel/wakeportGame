@@ -5,6 +5,7 @@ extends Node3D
 ## Bietet der Fahrerphysik eine Abfrage der Hindernis-Oberkante an jedem Punkt.
 
 const PARTS_FILE := "res://setups/parts.json"
+const TR_REF_WIDTH := 3.2        # Transition Rail: Breite, auf die sich die x-Positionen in den Setups beziehen
 const INDEX_FILE := "res://setups/index.json"
 const USER_DIR := "user://setups"                  # eigene Setups aus dem Setup-Editor
 const USER_INDEX := "user://setups/index.json"
@@ -13,6 +14,89 @@ const OVERRIDES := ["length", "width", "height", "height_end", "ramp_in", "ramp_
 var parts: Array[FeaturePart] = []
 var setup_name := ""
 var colliders := true          # Kollisionskörper für die Ragdoll (Katalog der Startseite: aus)
+var reflections := false       # Spiegelung der Umgebung auf den nassen Features (nur im Spiel, je Grafikstufe)
+var _probes: Array[ReflectionProbe] = []
+var _probe_gen := 0
+
+const PROBE_FRAMES := 7          # Bilder je Probe für die Aufnahme (6 Würfelseiten, großzügig), danach einblenden
+const PROBE_GAP := 3.0          # Teile mit weniger Abstand teilen sich eine Reflection Probe
+
+const REFLECT_LAYER := 1 << 10   # Sichtbarkeits-Ebene der Features: nur sie bekommen die Probe-Spiegelung (nicht der See)
+
+
+## Nasse Features spiegeln die Umgebung wie ein nasser Boden: je Feature eine Reflection Probe, die beim Laden
+## einmal Himmel, Wald, Ufer und Nachbar-Features aufnimmt (UPDATE_ONCE, kein Schatten). Wirkt nur auf die
+## Features (reflection_mask), sonst bekäme der See eckige Spiegel-Flecken. Aus = nur Himmelsspiegelung.
+func update_reflections() -> void:
+	_probe_gen += 1
+	var gen := _probe_gen
+	for p in _probes:
+		p.queue_free()
+	_probes.clear()
+	for part in parts:
+		for c in part.get_children():
+			if c is MeshInstance3D:
+				(c as MeshInstance3D).layers = 1 | REFLECT_LAYER
+	if not reflections:
+		return
+	# Nahe beieinander stehende Teile (Module, Hacks) teilen sich eine Probe: je Seilanlage Grundrisse
+	# (im Seil-Koordinatensystem) zusammenfassen, solange sie weniger als PROBE_GAP auseinander liegen.
+	# Jedes Teil einzeln wären über 60 Probes – das Maximum von Godot und eine lange Aufnahme.
+	var clusters: Array = []                             # [cable, Rect2 (x, -z)]
+	for part in parts:
+		var to_cable := part.cable.transform.affine_inverse() * transform * part.transform
+		var r := Rect2()
+		var first := true
+		for cx: float in [-0.5, 0.5]:
+			for cz: float in [-0.5, 0.5]:
+				var p := to_cable * Vector3(cx * part.width, 0.0, cz * part.length)
+				if first:
+					r = Rect2(p.x, p.z, 0.0, 0.0)
+					first = false
+				else:
+					r = r.expand(Vector2(p.x, p.z))
+		clusters.append([part.cable, r])
+	var merged := true
+	while merged:
+		merged = false
+		for i in clusters.size():
+			for j in range(i + 1, clusters.size()):
+				if clusters[i][0] == clusters[j][0] and (clusters[i][1] as Rect2).grow(PROBE_GAP * 0.5).intersects((clusters[j][1] as Rect2).grow(PROBE_GAP * 0.5)):
+					clusters[i][1] = (clusters[i][1] as Rect2).merge(clusters[j][1])
+					clusters.remove_at(j)
+					merged = true
+					break
+			if merged:
+				break
+	for cl: Array in clusters:
+		var cable: CableSystem = cl[0]
+		var r: Rect2 = cl[1]
+		var probe := ReflectionProbe.new()
+		probe.update_mode = ReflectionProbe.UPDATE_ONCE
+		probe.size = Vector3(r.size.x + 6.0, 8.0, r.size.y + 6.0)
+		probe.origin_offset = Vector3.ZERO
+		probe.box_projection = false
+		probe.max_distance = 400.0
+		probe.enable_shadows = false
+		probe.reflection_mask = 0                        # erst nach der Aufnahme wirksam (siehe unten)
+		probe.intensity = 0.0
+		probe.add_to_group("feature_probe")              # Weather.apply dimmt sie nachts
+		add_child(probe)
+		var c := r.get_center()
+		probe.global_transform = cable.transform * Transform3D(Basis.IDENTITY, Vector3(c.x, 1.6, c.y))   # etwa Augenhöhe
+		_probes.append(probe)
+	# Die Probes werden über mehrere Bilder nacheinander aufgenommen; währenddessen würde die Spiegelung auf den
+	# Features flackern. Darum unsichtbar aufnehmen und danach weich einblenden.
+	for _i in _probes.size() * PROBE_FRAMES + 15:
+		await get_tree().process_frame
+		if gen != _probe_gen:
+			return                                       # inzwischen neu geladen
+	for p in _probes:
+		p.reflection_mask = REFLECT_LAYER
+		create_tween().tween_property(p, "intensity", FeaturePart.REFLECT * Weather.reflect, 0.8)   # nachts gedämpft
+	print("SPIEGELUNG ein: %d Probes nach %.1f s" % [_probes.size(), Time.get_ticks_msec() / 1000.0])
+
+
 var _catalog: Dictionary = {}
 
 
@@ -112,6 +196,7 @@ func load_data(setup: Dictionary, terminals: Dictionary, s_offset := {}, label :
 			r["s"] = float(r.get("s", 0.0)) + off
 			r["_row"] = i
 			_place(r, terminals[terminal], label)
+	update_reflections()
 
 
 func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transform3D.IDENTITY) -> void:
@@ -174,6 +259,14 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 	part.inner_v = 1.0 if absf(side_pt.x) < absf(on_cable.x) else -1.0
 	if p.has("inner_v"):
 		part.inner_v = signf(float(p["inner_v"]))      # z. B. gespiegelte 1/2 Transition Rails
+	# Transition Rail: Setup-Positionen beziehen sich auf die alte Breite (TR_REF_WIDTH). Breiter wird es nur
+	# zur Seilseite (Transition) hin – Rail und Rückwand bleiben, wo die Nachbarn (Hacks) anschließen.
+	if part.type == "transition" and part.width != TR_REF_WIDTH:
+		world = world * Transform3D(Basis.IDENTITY, Vector3((part.width - TR_REF_WIDTH) * 0.5 * part.inner_v, 0.0, 0.0))
+		part.transform = world
+		on_cable = cable.transform.affine_inverse() * world.origin
+		part.s_center = cable.mast_a_z - on_cable.z
+		part.x_center = on_cable.x
 	add_child(part)
 	parts.append(part)
 	if show_hitboxes:
