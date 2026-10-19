@@ -245,7 +245,7 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
 - ←/→ (A/D) lenken; in der Luft, beim Raley und auf dem Slider drehen (Slider dreht schnell).
 - ↑/↓ (W/S): in der Luft **Frontroll/Backroll**; auf dem Slider **Nose-/Tailpress** (kippt entlang
   der Brettlänge, also quer bei quergestelltem Brett).
-  Wer beim Abheben ↑/↓ noch hält (Press vom Slider), bekommt keinen Überschlag, bis er loslässt.
+  **Press vormerken** (`Rider._prepress`, `_slider_landing_time`): bei ↑/↓ in der Luft wird die Flugbahn vorausgerechnet (Schwerkraft + Seil, alle `PREPRESS_EVERY` 0,1 s); endet sie auf einem Slider (Fangzone oder Slide-Fläche) und reicht die Zeit nicht mehr für die (restliche) Rolle (`(TAU − FLIP_LAND_TOL − |flip|) / FLIP_RATE × PREPRESS_MARGIN`), gibt es keine Rolle (bis `FLIP_PRESS_MAX` angefangene wird zurückgenommen), das Brett kippt schon in der Luft (`PREPRESS_TILT`), Landung direkt im Press. Sonst Rolle. **Keine Sperre beim Abspringen** vom Slider: ↑/↓ gehalten = gleich Rolle; nur ohne Absprung übers Ende gerutscht bleibt der Press. Sprung-Start sperrt weiter (`_flip_lock`, ↓ vom Gegenhalten).
 - Leertaste: halten + loslassen = Sprung; startet auch die Anlage (dann ohne Sprung). Im Spiel kein Enter (Enter = Start nur in Menüs).
   **Nach Sturz: Leertaste halten = schwimmen, Strg = sofort weiter (−1:00), R = Steg (−2:00)** –
   angezeigt in einem Panel mit Zeitkosten (`Hud.show_recovery`).
@@ -314,7 +314,7 @@ Tricks/Optik:
   Geschwommen wird **in runden Bögen** wie ein Mensch, nicht Ecke für Ecke: Zielpunkt 2,5 m voraus auf dem
   Weg (`SWIM_LOOKAHEAD`), Schwimmrichtung dreht höchstens `SWIM_TURN` 1,2 rad/s.
 - **Fangzone der Slider** (Rail, Pipe, schmale Ledge ≤ 1 m, Rail im Transition Rail): ±0,55 m seitlich,
-  0,45 m unter bis 1,3 m über der Oberkante (`FeaturePart.CATCH_*`). Im Sinkflug in der Zone startet ↑/↓ keine Rolle (`FLIP_PRESS_MAX`: kaum angefangene wird zurückgenommen) – man will pressen. Wer im Sinkflug hineinkommt, gleitet
+  0,45 m unter bis 1,3 m über der Oberkante (`FeaturePart.CATCH_*`). Wann ↑/↓ statt Rolle den Press vormerkt, entscheidet die Flugbahn, nicht die Zone (siehe Steuerung Desktop, „Press vormerken“). Wer im Sinkflug hineinkommt, gleitet
   seitlich/nach oben auf die Slide-Linie (`Rider._catch_glide`), kein Hochspringen. Gehört zur Hilfe
   „Einloggen“. Debug: **F3** bzw. `--hitbox` blendet ein: Fangzonen **gelb**, glattes Plastik **blau**, Safety/Auffahrt und
   Kicker **orange** (fährt man wie einen Kicker).
@@ -382,7 +382,7 @@ Test: `--set=NAME=WERT` (ohne Speichern), `--screen=@einstellungenN` (Reiter N).
 Ranglisten je Challenge (`ch/MODUS/ID`) und Competition (`comp/SEK/TERMINAL/SETUP`, nur 30 km/h, 16 m, kein Freies Fahren, keine eigenen Setups). **Seilzug-Grenze Aus = keine Rangliste** (auch Challenges; Hinweis an allen Schaltern: Einstellung, G, ☰, Hilfe).
 Der Server kennt keine Aufgaben: die **Wertungs-Version** `ver` rechnet das Spiel (Hash der Aufgabe ohne Texte/Medaillen + Features des Setups mit benutzten Bauteilen) –
 ändert sich eine Aufgabe/ein Setup, beginnt deren Rangliste automatisch neu. **Physik oder Punkte geändert, sodass alte Werte nicht vergleichbar sind → `Leaderboard.RULES` erhöhen**
-(alle neu) bzw. `"lb": N` in einer Aufgabe (nur diese). Eintragen nur mit gespeichertem Namen (Startseite → Rangliste, = Einwilligung); echte Einträge nur aus der Web-Hauptversion,
+(alle neu) bzw. `"lb": N` in einer Aufgabe (nur diese). Jedes gewertete Ergebnis wird eingetragen, ohne Namen anonym („Anonym #XXXX“ aus dem Schlüssel, Server `displayName`), mit Namen (Startseite → Rangliste) alle Einträge des Geräts unter diesem Namen; Schalter „In der Rangliste erscheinen“ Aus = alles auf dem Server löschen und nichts mehr senden (`Leaderboard.hidden`, [rangliste] hidden); echte Einträge nur aus der Web-Hauptversion,
 lokal/PR-Vorschau in Test-Ranglisten (`dev-…`, Name „ dev“); Tests senden nichts außer mit `--lb-url=http://127.0.0.1:8787 --lb-name=X` (lokal `npx wrangler dev --local` in `server/`, Log `RANGLISTE …`). Fenster: Auswahl der Disziplinen im Kopf (Competition 7:30, Challenges je Modus, Competition 10:00/15:00), **nur die mit Einträgen** (Server `/boards`, bei Fehler alle); vorgewählt das gewählte Spiel, sonst die erste. Test-Bild `--screen=@rangliste[N][+]` (Zeile N, + = Liste offen).
 Handy im Browser: Name per `prompt()` (LineEdit hat dort keine Bildschirmtastatur).
 - **Ranglisten-Reset immer ausdrücklich nennen** (gilt für jede Änderung, egal von wem): Setzt eine Änderung Ranglisten

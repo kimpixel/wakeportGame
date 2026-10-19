@@ -1200,11 +1200,11 @@ func _end_session() -> void:
 func _submit_round(score: int) -> void:
 	var sec := roundi(_game_time)
 	var st: Dictionary = _setups[_setup_idx]
-	if not leaderboard.enabled() or (_test_log and not leaderboard.has_name()):
+	if not leaderboard.participating():
 		return
 	var why := Leaderboard.competition_blocked(settings, sec, st)
-	if why != "" or not leaderboard.has_name():
-		_last_result += "   ·   " + (why if why != "" else "Rangliste: Namen eintragen")
+	if why != "":
+		_last_result += "   ·   " + why
 		return
 	var b := leaderboard.competition_board(sec, terminal, st, TERMINAL_NAMES[TERMINALS.find(terminal)])
 	var r := await leaderboard.submit(b, score)

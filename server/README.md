@@ -69,5 +69,7 @@ curl -X POST https://…workers.dev/admin/purge  -H "Authorization: Bearer $T" -
 ## Datenschutz
 
 Gespeichert werden nur Name, Bestwerte, Datum, Spielversion und der SHA-256 einer zufälligen Geräte-Nummer.
-Die IP nur gehasht mit Tagessalz für das Rate-Limit (nach 10 Minuten gelöscht). Eingetragen wird erst,
-wenn der Spieler einen Namen speichert. „Nicht mehr teilnehmen“ löscht Spieler und Einträge (`/forget`).
+Die IP nur gehasht mit Tagessalz für das Rate-Limit (nach 10 Minuten gelöscht). Ohne Namen wird anonym
+eingetragen („Anonym #XXXX“ aus dem Schlüssel, keine personenbezogenen Daten). Der Schalter „In der Rangliste
+erscheinen“ auf Aus löscht Spieler und Einträge (`/forget`) und sendet danach nichts mehr. Admin-Befehle nehmen auch
+„Anonym #XXXX“ als Namen.
