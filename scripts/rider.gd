@@ -2854,11 +2854,16 @@ static func _load_pose(path: String) -> Array:
 ## Press: Körper in die Blender-Pose überblenden (w 0..1). Die Posen gelten mit dem linken Fuß vorne
 ## (Goofy gespiegelt). Nosepress: nosepress.json; 50-50-Tailpress: tailpress.json; sonst (Boardslide-
 ## Tailpress) die Nosepress gespiegelt (links <-> rechts, Nose <-> Tail).
+## Switch = gespiegelt, nicht gedreht: der andere Fuß führt, also wie die andere Fußstellung
+## (Regular switch = Goofy-Pose); Nose/Tail zählen in Fahrtrichtung.
 ## Liefert die Hand, die die Handle hält (Welt), oder INF ohne Pose.
 var _pose_t := 0.0
 
 func _apply_press_pose(w: float, delta: float) -> Vector3:
-	var pl := _press_local()
+	_press_local()                       # hält _press_lead (switch) aktuell
+	var sw := _press_lead < 0.0
+	var g := goofy != sw                 # rechter Fuß führt: Pose wie Goofy
+	var pl := _press_vis                 # > 0 Nosepress, < 0 Tailpress (in Fahrtrichtung)
 	var path := PRESS_POSE
 	var own_tail := pl < 0.0 and _press_bs_vis < 0.5 and not _load_pose(TAIL_POSE).is_empty()
 	if own_tail:
@@ -2869,7 +2874,7 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	_pose_t += delta
 	var fps: float = _pose_cache.get(path + ":fps", 24.0)
 	var fr: Dictionary = frames[int(_pose_t * fps) % frames.size()]
-	var mirror := goofy if own_tail else (pl < 0.0) != goofy
+	var mirror := g if own_tail else (pl < 0.0) != g
 	var before := _rig.snapshot()
 	var skel := _rig.skeleton
 	# Modellraum (Figur wie in der Vorlage) -> Skelettraum
@@ -2897,7 +2902,8 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	if goofy:
 		bx = bx * Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
 	var p: Vector3 = fr["pelvis"]
-	var pelvis_world := bx * Vector3(p.x * _facing(), p.y, p.z * (-1.0 if pl < 0.0 and not own_tail else 1.0))
+	var zs := (-1.0 if pl < 0.0 and not own_tail else 1.0) * (-1.0 if sw else 1.0)   # switch: entlang des Bretts gespiegelt
+	var pelvis_world := bx * Vector3(p.x * _facing(), p.y, p.z * zs)
 	var pel := _rig.idx("pelvis")
 	var pp := skel.get_bone_parent(pel)
 	var parent_t := skel.get_bone_global_pose(pp) if pp >= 0 else Transform3D.IDENTITY
@@ -2908,7 +2914,7 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	# Handle: im Nosepress in der vorderen Hand der Pose; im 50-50-Tailpress ebenfalls in der vorderen Hand
 	var hold := "hand_r" if mirror else "hand_l"
 	if pl < 0.0 and _press_bs_vis < 0.5:
-		hold = "hand_r" if goofy else "hand_l"
+		hold = "hand_r" if g else "hand_l"
 	return skel.global_transform * skel.get_bone_global_pose(_rig.idx(hold)).origin
 
 
