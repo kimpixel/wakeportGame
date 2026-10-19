@@ -35,8 +35,9 @@ Der Server weiß nichts über Aufgaben oder Punkte. Jede Rangliste ist `board` (
 Neue Version = neue, leere Rangliste. Die alten Einträge bleiben in der Datenbank (Hinweis „Wertung
 geändert“ im Spiel), mit `/admin/purge` lassen sie sich löschen.
 
-Echte Einträge kommen nur aus der Web-Hauptversion. Lokal und in PR-Vorschauen schreibt das Spiel in
-Test-Ranglisten (`ver` beginnt mit `dev-`, Name mit „ dev“), unfertige Änderungen verfälschen also nichts.
+Echte Einträge kommen aus der Web-Hauptversion und vom lokalen Spiel am Desktop. Nur PR-Vorschauen schreiben
+in Test-Ranglisten (`ver` beginnt mit `dev-`, Name mit „ dev“). Lokale, noch unveröffentlichte Wertungs-Änderungen
+landen automatisch in einer neuen Rangliste (andere `ver`), die alten bleiben unberührt.
 
 ## Lokal testen
 

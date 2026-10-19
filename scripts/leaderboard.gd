@@ -12,9 +12,10 @@ extends Node
 ##
 ## Jedes gewertete Ergebnis wird eingetragen: ohne Namen anonym („Anonym #XXXX“, keine personenbezogenen Daten),
 ## mit Namen (Startseite → Rangliste) unter diesem Namen – auch die früheren anonymen Einträge des Geräts.
-## Schalter „In der Rangliste erscheinen“ aus: alles auf dem Server gelöscht, nichts mehr gesendet. Echte Einträge
-## nur aus der Web-Hauptversion; lokal und in PR-Vorschauen landen sie in eigenen Test-Ranglisten (ver "dev-…"),
-## damit unfertige Änderungen nichts verfälschen. Tests (Kommandozeile) senden nichts, außer mit
+## Schalter „In der Rangliste erscheinen“ aus: alles auf dem Server gelöscht, nichts mehr gesendet. Web-Hauptversion
+## und lokales Spiel am Desktop tragen in die echten Ranglisten ein (lokal mit eigener Geräte-Nummer, eigener Name);
+## nur PR-Vorschauen landen in eigenen Test-Ranglisten (ver "dev-…", Name mit „ dev“). Unveröffentlichte Änderungen
+## mit neuer Wertung landen lokal in einer eigenen (neuen) Rangliste. Tests (Kommandozeile) senden nichts, außer mit
 ## --lb-url=URL [--lb-name=NAME] (lokaler Worker, nichts gespeichert).
 ## Gespeichert in user://settings.cfg [rangliste]: id (geheime Geräte-Nummer), name, hidden.
 
@@ -60,7 +61,7 @@ func _ready() -> void:
 		player_id = _new_id()
 	else:
 		_load()
-		dev = not _main_web()
+		dev = OS.has_feature("web") and not _main_web()    # nur PR-Vorschauen; lokal zählt wie die Web-Version
 	var bl: GDScript = preload("res://scripts/ui/branch_label.gd")
 	_build = bl.text() if bl.available() else "lokal"
 
@@ -90,7 +91,7 @@ func set_hidden(v: bool) -> Dictionary:
 	return r
 
 
-## Web-Hauptversion (nicht lokal, nicht PR-Vorschau)?
+## Web-Hauptversion (im Browser, nicht PR-Vorschau)?
 static func _main_web() -> bool:
 	if not OS.has_feature("web"):
 		return false
