@@ -225,7 +225,7 @@ Spiel (Competition):
 - **Szenario** (`Weather.SCENARIOS`: Datum, Uhrzeit, Wetter, Extras `mist`/`rainbow`/`trails`; Name auf der Startseite unter
   „Wakeport Raunheim“): Auswahl **SZENARIO direkt im Startseiten-Menü** mit Shuffle-Taste daneben (würfelt sofort, stellt auf Zufällig; Symbol gezeichnet, `_draw_shuffle`) – die wenigsten gehen in die Einstellungen, Einstellung `scenario`,
   Standard „Zufällig“ = nach jedem Spiel neu gewürfelt, sobald die Startseite aufgeht (`main.gd _roll_scenario`, nie dasselbe zweimal;
-  R/Neustart/nächste Challenge würfeln nicht). **Night Session** wird nicht gewürfelt (`pick: false`, schwerer → unfair für die Rangliste), nur gezielt wählbar.
+  R/Neustart/nächste Challenge würfeln nicht). **Night Session** und **Blaue Stunde** werden nicht gewürfelt (`pick: false`; zu dunkel, vor allem im Web/am Handy → schwerer, unfair für die Rangliste), nur gezielt wählbar.
   Wetter/Datum/Uhrzeit von Hand (Einstellungen → Welt) bleiben bis zum Neustart. Vom Nutzer festgelegt: **After Hour Raley Session** (18. Aug.
   19:45 sonnig), **Early Bird Session** (8. Sep. 8:45 Dunst + Bodennebel), **Hochsommer. Was für eine Hitze** (6. Juli 12:00);
   dazu Regen, Nacht, Sonne hinter den Bäumen (Baumschatten halb über der Bahn), Nach dem Schauer (Regenbogen), Blaue Stunde,
