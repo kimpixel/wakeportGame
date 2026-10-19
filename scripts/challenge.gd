@@ -821,10 +821,7 @@ func _finish(ok: bool) -> void:
 func _submit_rank() -> void:
 	var lb: Leaderboard = game.leaderboard
 	_rank_text = ""
-	if not lb.enabled() or (game._test_log and not lb.has_name()):
-		return
-	if not lb.has_name():
-		_rank_text = "Rangliste: Namen auf der Startseite eintragen (Taste Rangliste)"
+	if not lb.participating():
 		return
 	if int(game.settings.get_v("grip")) == 3:
 		_rank_text = "Rangliste nicht mit Seilzug-Grenze „Aus“"
@@ -839,6 +836,8 @@ func _submit_rank() -> void:
 		_rank_text = ("Rangliste: Platz %d von %d" % [int(r["rank"]), int(r["total"])]) if r.get("improved", false) \
 			else ("Rangliste: Platz %d von %d mit deinem Bestwert %s" % [int(r["rank"]), int(r["total"]),
 				Training.format_value(task, float(r["value"]))])
+		if not lb.has_name():
+			_rank_text += "   ·   als %s" % str(r.get("name", "Anonym"))
 	else:
 		_rank_text = "Rangliste: " + str(r.get("error", "Fehler"))
 	if panel.is_open():

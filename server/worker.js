@@ -5,7 +5,7 @@
 // Physik, ändert sich ver -> neue, leere Rangliste, ohne dass hier etwas angepasst werden muss.
 //
 // Öffentlich (JSON per POST):
-//   /score   {id, name, board, ver, value, lower, build}  Bestwert eintragen (nur wenn besser)
+//   /score   {id, name?, board, ver, value, lower, build} Bestwert eintragen (nur wenn besser; ohne Name anonym)
 //   /top     {board, ver, lower, n, id?}                   beste n Einträge + eigener Platz
 //   /name    {id, name}                                    Namen festlegen bzw. ändern
 //   /forget  {id}                                          Spieler und alle Einträge löschen
@@ -124,12 +124,20 @@ function cleanName(raw) {
   return [name, null];
 }
 
-// Spieler anlegen oder umbenennen. Liefert {key} oder {error, status}.
+// Anzeigename: ohne Namen „Anonym #XXXX“ (aus dem Schlüssel, bleibt je Gerät gleich, verrät die Geräte-Nummer nicht)
+function displayName(name, key) {
+  return name || "Anonym #" + String(key).slice(0, 4).toUpperCase();
+}
+
+// Spieler anlegen oder umbenennen. Ohne Namen: anonymer Spieler (name "", lname "~key" – echte Namen beginnen nie
+// mit "~"); ein vorhandener Name bleibt. Liefert {key, name} oder {error, status}.
 async function upsertPlayer(env, key, rawName, now) {
   const p = await env.DB.prepare("SELECT name, banned FROM players WHERE key = ?").bind(key).first();
   if (p && p.banned) return { error: "gesperrt", status: 403 };
   if (rawName === undefined || rawName === null || rawName === "") {
-    return p ? { key, name: p.name } : { error: "Name fehlt", status: 400 };
+    if (!p) await env.DB.prepare("INSERT INTO players (key, name, lname, created) VALUES (?, '', ?, ?)")
+      .bind(key, "~" + key, now).run();
+    return { key, name: displayName(p ? p.name : "", key) };
   }
   const [name, err] = cleanName(rawName);
   if (err) return { error: err, status: 400 };
@@ -199,18 +207,20 @@ async function top(b, env) {
   const key = await playerKey(b.id);
   const order = a.lower ? "ASC" : "DESC";
   const rows = await env.DB.prepare(
-    `SELECT p.name, s.value, s.updated, s.player = ? AS me FROM scores s JOIN players p ON p.key = s.player
+    `SELECT p.name, s.player AS k, s.value, s.updated, s.player = ? AS me FROM scores s JOIN players p ON p.key = s.player
      WHERE s.board = ? AND s.ver = ? AND p.banned = 0
      ORDER BY s.value ${order}, s.updated ASC LIMIT ?`
   ).bind(key || "", a.board, a.ver, n).all();
-  const entries = rows.results.map((r, i) => ({ rank: i + 1, name: r.name, value: r.value, date: r.updated, me: !!r.me }));
+  const entries = rows.results.map((r, i) => ({ rank: i + 1, name: displayName(r.name, r.k), anon: !r.name,
+    value: r.value, date: r.updated, me: !!r.me }));
   let me = null;
   if (key) {
     const own = await env.DB.prepare(
       `SELECT s.value, s.updated, p.name FROM scores s JOIN players p ON p.key = s.player
        WHERE s.board = ? AND s.ver = ? AND s.player = ? AND p.banned = 0`
     ).bind(a.board, a.ver, key).first();
-    if (own) me = { rank: await rankOf(env, a, own.value, own.updated), value: own.value, name: own.name, date: own.updated };
+    if (own) me = { rank: await rankOf(env, a, own.value, own.updated), value: own.value,
+      name: displayName(own.name, key), anon: !own.name, date: own.updated };
   }
   // Einträge in älteren Wertungs-Versionen derselben Rangliste (Hinweis „Wertung geändert“)
   const older = await env.DB.prepare("SELECT COUNT(*) AS n FROM scores WHERE board = ? AND ver <> ?")
@@ -252,8 +262,13 @@ async function forget(b, env, cors) {
 }
 
 async function admin(cmd, b, env) {
-  const byName = async (name) =>
-    await env.DB.prepare("SELECT key FROM players WHERE lname = ?").bind(String(name || "").toLowerCase()).first();
+  // Name wie in der Liste, auch „Anonym #XXXX“ (dann über den Anfang des Schlüssels)
+  const byName = async (name) => {
+    const n = String(name || "").toLowerCase();
+    const anon = /^anonym #([0-9a-f]{4})$/.exec(n);
+    if (anon) return await env.DB.prepare("SELECT key FROM players WHERE name = '' AND key LIKE ?").bind(anon[1] + "%").first();
+    return await env.DB.prepare("SELECT key FROM players WHERE lname = ?").bind(n).first();
+  };
   switch (cmd) {
     case "boards": {
       const r = await env.DB.prepare(

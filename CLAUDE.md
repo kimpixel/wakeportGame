@@ -214,7 +214,7 @@ Geheime Erfolge (`scripts/achievements.gd`, Liste auf der Startseite Taste „Er
   „Nikolaus-Session“ (Schnee) kommt nur am echten 6. Dezember (dann immer); sonst Datum 6. Dezember + Wetter Schnee von Hand. Test `--scenario=nikolaus`.
 
 Spiel (Competition):
-- Runde **7:30** (Einstellung „Competition: Rundenlänge“), Start nach Countdown. Danach holt der Operator den Fahrer zum Start, dann Startseite mit Ergebnis.
+- Runde **7:30** (Einstellung „Competition: Rundenlänge“), Start nach Countdown. Danach holt der Operator den Fahrer zum Start; man bleibt im Spiel, Ergebnis-Fenster (`main.gd round_panel`, `TaskPanel.show_round`): Punkte und Platz in der Rangliste groß, „Erneut spielen“ (Standard) / „Zurück“ (Startseite). Das HUD zeigt Punkte und 0:00 bis zum Neustart.
 - **2-Mast-Prinzip: niemand muss zurück zum Start.** Seil verloren → kein Sturz, ausgleiten und
   einsinken. Nach Sturz bringt der Operator die Handle auf Höhe des Fahrers; schwimmen (Bauchlage,
   Kraulen, Brett hinten oben), greifen, **Deep-Water-Start** (liegen bleiben bis das Seil spannt,
@@ -225,7 +225,7 @@ Spiel (Competition):
 - **Szenario** (`Weather.SCENARIOS`: Datum, Uhrzeit, Wetter, Extras `mist`/`rainbow`/`trails`; Name auf der Startseite unter
   „Wakeport Raunheim“): Auswahl **SZENARIO direkt im Startseiten-Menü** mit Shuffle-Taste daneben (würfelt sofort, stellt auf Zufällig; Symbol gezeichnet, `_draw_shuffle`) – die wenigsten gehen in die Einstellungen, Einstellung `scenario`,
   Standard „Zufällig“ = nach jedem Spiel neu gewürfelt, sobald die Startseite aufgeht (`main.gd _roll_scenario`, nie dasselbe zweimal;
-  R/Neustart/nächste Challenge würfeln nicht). **Night Session** wird nicht gewürfelt (`pick: false`, schwerer → unfair für die Rangliste), nur gezielt wählbar.
+  R/Neustart/nächste Challenge würfeln nicht). **Night Session** und **Blaue Stunde** werden nicht gewürfelt (`pick: false`; zu dunkel, vor allem im Web/am Handy → schwerer, unfair für die Rangliste), nur gezielt wählbar.
   Wetter/Datum/Uhrzeit von Hand (Einstellungen → Welt) bleiben bis zum Neustart. Vom Nutzer festgelegt: **After Hour Raley Session** (18. Aug.
   19:45 sonnig), **Early Bird Session** (8. Sep. 8:45 Dunst + Bodennebel), **Hochsommer. Was für eine Hitze** (6. Juli 12:00);
   dazu Regen, Nacht, Sonne hinter den Bäumen (Baumschatten halb über der Bahn), Nach dem Schauer (Regenbogen), Blaue Stunde,
@@ -307,7 +307,13 @@ Tricks/Optik:
 - Handle beim Press immer in der vorderen Hand (auch 50-50-Tailpress, obwohl die Pose gespiegelt ist).
 - Nach Sturz/Absaufen/Neustart wird Raley/Überschlag/Press sofort zurückgesetzt.
 - Features haben **Kollisionskörper** aus ihrer Form (`FeaturePart._build_collider`, Ebene `LAYER_COLLIDE`):
-  die Ragdoll prallt ab bzw. bleibt darauf liegen. Fahrphysik nutzt weiter `height_local()`.
+  **massive konvexe Säulen** aus `height_local()` bis 1,5 m unter Wasser (`COLLIDE_BOTTOM`; früher hohles Dreiecksnetz –
+  Ragdoll rutschte durch, fiel unter das Feature, eingeklemmte Knochen zerrissen die Figur), nasses Plastik federt (bounce 0,3).
+  Die Ragdoll prallt ab bzw. bleibt darauf liegen. Fahrphysik nutzt weiter `height_local()`. Physik-Engine **Jolt** (project.godot).
+- **Sturz ins Wasser** (`scripts/ragdoll.gd`): Wasser ist keine Fläche (sah aus wie eine Steinplatte), sondern wirkt je Knochen
+  nach Eintauchtiefe – Auftrieb (Weste `BUOY_TORSO`), Widerstand linear + quadratisch: man klatscht hinein, taucht kurz unter,
+  kommt hoch, prallt nicht ab. Eintauchen = Platscher (`Rider._body_splash`: Spritzer-Kranz, Welle, Ton nach Wucht), schnell
+  durchs Wasser rutschen = Gischt (`_crash_spray`), harter Treffer am Feature = dumpfer Schlag. Test `--ragdoll-at=S,side|top|water`.
 - **Schwimmen nie durch Features**: Weg großzügig herum (`SWIM_MARGIN` 2 m, `FeatureSet.swim_path`,
   Sichtgraph + Dijkstra, alle 0,4 s neu), harte Grenze `push_out` (0,3 m). Hinter einem Feature zu
   stürzen kostet also mehr Schwimmzeit – gewollt. Die Panel-Schwimmzeit rechnet mit dem Umweg.
@@ -382,8 +388,8 @@ Test: `--set=NAME=WERT` (ohne Speichern), `--screen=@einstellungenN` (Reiter N).
 Ranglisten je Challenge (`ch/MODUS/ID`) und Competition (`comp/SEK/TERMINAL/SETUP`, nur 30 km/h, 16 m, kein Freies Fahren, keine eigenen Setups). **Seilzug-Grenze Aus = keine Rangliste** (auch Challenges; Hinweis an allen Schaltern: Einstellung, G, ☰, Hilfe).
 Der Server kennt keine Aufgaben: die **Wertungs-Version** `ver` rechnet das Spiel (Hash der Aufgabe ohne Texte/Medaillen + Features des Setups mit benutzten Bauteilen) –
 ändert sich eine Aufgabe/ein Setup, beginnt deren Rangliste automatisch neu. **Physik oder Punkte geändert, sodass alte Werte nicht vergleichbar sind → `Leaderboard.RULES` erhöhen**
-(alle neu) bzw. `"lb": N` in einer Aufgabe (nur diese). Eintragen nur mit gespeichertem Namen (Startseite → Rangliste, = Einwilligung); echte Einträge nur aus der Web-Hauptversion,
-lokal/PR-Vorschau in Test-Ranglisten (`dev-…`, Name „ dev“); Tests senden nichts außer mit `--lb-url=http://127.0.0.1:8787 --lb-name=X` (lokal `npx wrangler dev --local` in `server/`, Log `RANGLISTE …`). Fenster: Auswahl der Disziplinen im Kopf (Competition 7:30, Challenges je Modus, Competition 10:00/15:00), **nur die mit Einträgen** (Server `/boards`, bei Fehler alle); vorgewählt das gewählte Spiel, sonst die erste. Test-Bild `--screen=@rangliste[N][+]` (Zeile N, + = Liste offen).
+(alle neu) bzw. `"lb": N` in einer Aufgabe (nur diese). Jedes gewertete Ergebnis wird eingetragen, ohne Namen anonym („Anonym #XXXX“ aus dem Schlüssel, Server `displayName`), mit Namen (Startseite → Rangliste) alle Einträge des Geräts unter diesem Namen; Schalter „In der Rangliste erscheinen“ Aus = alles auf dem Server löschen und nichts mehr senden (`Leaderboard.hidden`, [rangliste] hidden); echte Einträge aus der Web-Hauptversion **und vom lokalen Spiel am Desktop** (Nutzer spielt lokal mit eigenem Namen mit und sieht die Online-Daten; unveröffentlichte Wertungs-Änderungen landen dabei in einer neuen Rangliste),
+nur PR-Vorschauen in Test-Ranglisten (`dev-…`, Name „ dev“); Tests senden nichts außer mit `--lb-url=http://127.0.0.1:8787 --lb-name=X` (lokal `npx wrangler dev --local` in `server/`, Log `RANGLISTE …`). Fenster: Auswahl der Disziplinen im Kopf (Competition 7:30, Challenges je Modus, Competition 10:00/15:00), **nur die mit Einträgen** (Server `/boards`, bei Fehler alle); vorgewählt das gewählte Spiel, sonst die erste. Test-Bild `--screen=@rangliste[N][+]` (Zeile N, + = Liste offen).
 Handy im Browser: Name per `prompt()` (LineEdit hat dort keine Bildschirmtastatur).
 - **Ranglisten-Reset immer ausdrücklich nennen** (gilt für jede Änderung, egal von wem): Setzt eine Änderung Ranglisten
   zurück (neue Wertungs-Version: `Leaderboard.RULES` erhöht, `"lb"` in einer Aufgabe, Aufgabe in `Training.MODES` außer
