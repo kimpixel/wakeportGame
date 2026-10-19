@@ -4,7 +4,7 @@ extends CanvasLayer
 ## Warnbereich) und Punkte. Unten rechts klein die Technik-Angaben, unten links die Hilfe.
 
 const HELP := """← / →   lenken   (in der Luft und beim Raley: drehen; auf dem Slider: Boardslide ↔ 50-50 umspringen)
-↑ / ↓   in der Luft: Frontroll / Backroll (beim Invert gleich nach dem Absprung: ↑ S-Bend, ↓ Backroll)     auf dem Slider: Nosepress / Tailpress     im Drift: Drift-Press     Sprung-Start: auf dem Steg ↓ halten, bis das Seil losreißt (Brett längs: Nolli, quer: Raley Start)
+↑ / ↓   in der Luft: Frontroll / Backroll (beim Invert gleich nach dem Absprung: ↑ S-Bend, ↓ Backroll)     auf dem Slider (schon im Anflug): Nosepress / Tailpress     im Drift: Drift-Press     Sprung-Start: auf dem Steg ↓ halten, bis das Seil losreißt (Brett längs: Nolli, quer: Raley Start)
 Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das Brett dreht frei, etwas schneller; quer vom Slider ins Wasser nur mit Drift
 Leertaste halten + loslassen   Absprung (Ollie; voll aufgeladen mit Seilzug über der Marke RALEY und ohne Feature voraus: Invert = Raley – Höhe aus Seilzug + Tempo)
 Start mit Countdown 3 – 2 – 1 – GO (Runde 7:30)     R  zurück zum Steg (−2:00, dann Countdown), in den Spielmodi: neuer Versuch     + / -  Anlagentempo
@@ -16,7 +16,7 @@ Gamepad: Stick/Steuerkreuz lenken, Kreuz oder R2 (analog) Sprung, Kreis Drift, L
 
 const HELP_MOBILE := """Start mit Countdown          ← / → (bzw. Handy neigen mit Lenkung: Gyro)   lenken (auf dem Slider: Tipp bzw. deutlich neigen = Boardslide ↔ 50-50)
 SPRUNG (links) halten + loslassen   Absprung (voll aufgeladen, Seilzug über RALEY: Raley)
-Pfeil ↑ / ↓   in der Luft Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), auf dem Slider Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)
+Pfeil ↑ / ↓   in der Luft Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), auf dem Slider (schon im Anflug) Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)
 DRIFT (links, über SPRUNG)   Kante lösen        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)
 ☰   Menü (pausiert): Einstellungen, Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Szenario würfeln, Seil-Abreißen an/aus (aus: keine Rangliste)"""
 
@@ -66,6 +66,9 @@ var _bar_k := 1.0                 # Maßstab der Leiste
 var _speed: SpeedGauge
 var _font: Font
 var _t := 0.0
+var mini_rank: MiniRank           # kurze Rangliste rechts in der Mitte (Daten von main.gd)
+var left_reserved := 0.0          # Handy: links bis hierher (y) belegt das ☰ unter der Leiste (TouchPad), 0 = frei
+var left_right := 0.0             # … und bis hierher (x); Texte unter der Leiste rücken rechts daneben
 
 
 func _ready() -> void:
@@ -107,6 +110,8 @@ func _ready() -> void:
 
 	_build_recovery()
 	_build_achievement()
+	mini_rank = MiniRank.new()
+	add_child(mini_rank)
 
 	_count = _label(150)
 	_count.anchor_right = 1.0
@@ -526,13 +531,21 @@ func _layout_bar() -> void:
 	var sp: Control = _bar_panels[3]
 	var r := sp.get_global_rect()
 	_score_gain.offset_left = r.get_center().x - vs.x * 0.5 - 90.0
+	if left_right > 0.0:          # Handy: rechts neben das ☰ unter der Leiste
+		_score_gain.offset_left = maxf(_score_gain.offset_left, left_right + 4.0 - vs.x * 0.5)
 	_score_gain.offset_right = _score_gain.offset_left + 180.0
 	_score_gain.offset_top = r.end.y - 4.0 * fk
 	_score_gain.add_theme_font_size_override("font_size", int(22 * fk))
 	var gap := 26.0 * fk if portrait else 0.0              # hochkant: Platz für den Punkte-Zuwachs links
 	_task.offset_top = bottom + 2.0 * fk + gap
+	_task.offset_left = left_right + 4.0 if left_right > 0.0 else 0.0     # Handy: rechts vom ☰ mittig
+	_task.offset_right = -8.0 if left_right > 0.0 else 0.0
+	_task.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART if left_right > 0.0 else TextServer.AUTOWRAP_OFF
 	_task.add_theme_font_size_override("font_size", int(22 * fk))
-	_board.offset_top = bottom + gap + (34.0 * fk if _task.text != "" else 10.0 * fk)
+	_board.offset_left = -300.0 + left_right * 0.5
+	_board.offset_right = 300.0 + left_right * 0.5
+	var task_h := maxf(_task.size.y, 30.0 * fk) if left_right > 0.0 else 32.0 * fk   # umgebrochen: echte Höhe
+	_board.offset_top = (_task.offset_top + task_h) if _task.text != "" else bottom + gap + 10.0 * fk
 	_board.add_theme_font_size_override("font_size", int(16 * fk))
 
 
@@ -564,6 +577,37 @@ func _arrange_bar(portrait: bool) -> void:
 	_top_bar.offset_right = 0.0
 
 
+## Mini-Rangliste rechts in der Mitte: am Handy zwischen ☰ (unter der Leiste) und den Tasten unten rechts,
+## hochkant ohne Namen und klein, damit sie nicht weit ins Bild ragt.
+func _layout_rank() -> void:
+	if not mini_rank.visible:
+		return
+	var vs := get_viewport().get_visible_rect().size
+	var compact := _mobile_help and _portrait
+	if mini_rank.compact != compact:
+		mini_rank.compact = compact
+		mini_rank.refresh()
+	var k := clampf(vs.y / 720.0, 1.0, 3.0)
+	if _mobile_help:
+		k = clampf(minf(vs.x, vs.y) / 500.0, 0.9, 3.0)
+	else:
+		k = minf(k, desktop_ui_max())
+	var top := (info_bottom() if _portrait else bar_bottom()) + 20.0 * k
+	var bottom := vs.y * (0.62 if _mobile_help else 0.85)
+	mini_rank.reset_size()
+	var sz := mini_rank.get_combined_minimum_size()
+	if sz.y * k > bottom - top:
+		k = maxf((bottom - top) / maxf(sz.y, 1.0), 0.5)
+	mini_rank.scale = Vector2(k, k)
+	mini_rank.position = Vector2(vs.x - (6.0 if compact else 12.0) - sz.x * k, clampf(vs.y * 0.5 - sz.y * k * 0.5, top, maxf(top, bottom - sz.y * k)))
+
+
+## Sichtbares Rechteck der HUD-Leiste (Bildschirm-Pixel, mit Maßstab).
+func bar_rect() -> Rect2:
+	var w := _top_bar.size * _bar_k
+	return Rect2(_top_bar.position + _top_bar.pivot_offset * (1.0 - _bar_k), w)
+
+
 ## Unterkante der HUD-Leiste (Bildschirm-Pixel).
 func bar_bottom() -> float:
 	return _top_bar.position.y + _top_bar.size.y * _bar_k
@@ -578,6 +622,7 @@ func info_bottom() -> float:
 func _process(delta: float) -> void:
 	_t += delta
 	_layout_bar()
+	_layout_rank()
 	# Sturz-Panel: groß genug zum Lesen (Handy: größer), aber nie breiter als der Bildschirm
 	if _recovery.visible:
 		var vs := get_viewport().get_visible_rect().size

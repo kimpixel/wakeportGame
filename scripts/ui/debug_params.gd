@@ -29,6 +29,7 @@ const GROUPS := [
 		["rider", "KICK_MAX_VY"], ["rider", "RAMP_LAUNCH", 0.0, 2.0], ["rider", "AIR_KNEES"], ["rider", "LAND_TIME"]]],
 	["Luft", [
 		["rider", "SPIN_RATE"], ["rider", "QUICK_SPIN_RATE"], ["rider", "AIR_ASSIST"], ["rider", "FLIP_RATE"], ["rider", "FLIP_LAND_TOL", 0.0, 1.6],
+		["rider", "PREPRESS_MARGIN", 0.0, 2.5], ["rider", "PREPRESS_TILT", 0.0, 1.0],
 		["rider", "RALEY_TENSION", 0.0, 5400.0], ["rider", "RALEY_LOAD", 0.0, 1.0], ["rider", "RALEY_ROPE", 0.0, 3.0], ["rider", "RALEY_PER_SPEED", 0.0, 0.5], ["rider", "RALEY_MAX_VY", 4.0, 14.0], ["rider", "RALEY_MAX", 0.0, 3.2], ["rider", "INVERT_SPIN_RALEY", 0.3, 0.95], ["rider", "RALEY_STRETCH", 0.1, 0.8], ["rider", "SBEND_CUT", 0.22, 0.72], ["rider", "RALEY_CUT_RATE", 2.0, 30.0], ["rider", "RALEY_SPIN_ANG", 0.0, 2.8]]],
 	["Slider", [
 		["rider", "SLIDE_FRICTION", 0.0, 1.0], ["rider", "PRESS_ANG", 0.0, 1.2], ["rider", "SNAP_RATE"],

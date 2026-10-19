@@ -10,11 +10,14 @@ extends Node
 ##     vergleichbar sind) bzw. "lb" in einer Aufgabe (nur diese eine neu)
 ## Ändert sich etwas davon, beginnt eine neue, leere Rangliste – die alte bleibt auf dem Server.
 ##
-## Eingetragen wird nur mit Namen (= Einwilligung, Startseite → Rangliste). Echte Einträge nur aus der
-## Web-Hauptversion; lokal und in PR-Vorschauen landen sie in eigenen Test-Ranglisten (ver "dev-…"),
-## damit unfertige Änderungen nichts verfälschen. Tests (Kommandozeile) senden nichts, außer mit
+## Jedes gewertete Ergebnis wird eingetragen: ohne Namen anonym („Anonym #XXXX“, keine personenbezogenen Daten),
+## mit Namen (Startseite → Rangliste) unter diesem Namen – auch die früheren anonymen Einträge des Geräts.
+## Schalter „In der Rangliste erscheinen“ aus: alles auf dem Server gelöscht, nichts mehr gesendet. Web-Hauptversion
+## und lokales Spiel am Desktop tragen in die echten Ranglisten ein (lokal mit eigener Geräte-Nummer, eigener Name);
+## nur PR-Vorschauen landen in eigenen Test-Ranglisten (ver "dev-…", Name mit „ dev“). Unveröffentlichte Änderungen
+## mit neuer Wertung landen lokal in einer eigenen (neuen) Rangliste. Tests (Kommandozeile) senden nichts, außer mit
 ## --lb-url=URL [--lb-name=NAME] (lokaler Worker, nichts gespeichert).
-## Gespeichert in user://settings.cfg [rangliste]: id (geheime Geräte-Nummer), name.
+## Gespeichert in user://settings.cfg [rangliste]: id (geheime Geräte-Nummer), name, hidden.
 
 const URL := "https://wakethehack-rangliste.kimpixel.workers.dev"   # Adresse des Workers (siehe server/README.md)
 const HOST := "kimpixel.github.io"
@@ -34,6 +37,7 @@ var url := URL
 var dev := true                  # Test-Ranglisten (lokal, PR-Vorschau)
 var player_id := ""
 var player_name := ""
+var hidden := false              # Schalter „In der Rangliste erscheinen“ aus: nichts senden
 var _test := false
 var _build := ""
 var _fp_cache := {}
@@ -57,7 +61,7 @@ func _ready() -> void:
 		player_id = _new_id()
 	else:
 		_load()
-		dev = not _main_web()
+		dev = OS.has_feature("web") and not _main_web()    # nur PR-Vorschauen; lokal zählt wie die Web-Version
 	var bl: GDScript = preload("res://scripts/ui/branch_label.gd")
 	_build = bl.text() if bl.available() else "lokal"
 
@@ -70,7 +74,24 @@ func has_name() -> bool:
 	return player_name != ""
 
 
-## Web-Hauptversion (nicht lokal, nicht PR-Vorschau)?
+## Ergebnisse werden gesendet (Server da, Schalter „In der Rangliste erscheinen“ an).
+func participating() -> bool:
+	return enabled() and not hidden
+
+
+## Schalter „In der Rangliste erscheinen“. Aus: alles auf dem Server löschen (Name, Einträge), nichts mehr senden.
+func set_hidden(v: bool) -> Dictionary:
+	var r := {"ok": true}
+	if v:
+		r = await forget()
+	if r.get("ok", false):
+		hidden = v
+		_save()
+		name_changed.emit()
+	return r
+
+
+## Web-Hauptversion (im Browser, nicht PR-Vorschau)?
 static func _main_web() -> bool:
 	if not OS.has_feature("web"):
 		return false
@@ -94,6 +115,7 @@ func _load() -> void:
 	cfg.load(GameSettings.FILE)
 	player_id = str(cfg.get_value(SECTION, "id", ""))
 	player_name = str(cfg.get_value(SECTION, "name", ""))
+	hidden = bool(cfg.get_value(SECTION, "hidden", false))
 	if player_id.length() != 32:
 		player_id = _new_id()
 		_save()
@@ -106,6 +128,7 @@ func _save() -> void:
 	cfg.load(GameSettings.FILE)
 	cfg.set_value(SECTION, "id", player_id)
 	cfg.set_value(SECTION, "name", player_name)
+	cfg.set_value(SECTION, "hidden", hidden)
 	cfg.save(GameSettings.FILE)
 
 
@@ -194,6 +217,29 @@ static func format(b: Dictionary, value: float) -> String:
 	return "%d Punkte" % roundi(value)
 
 
+## Wert ganz kurz (Mini-Rangliste im Spiel), z. B. "2,4 m", "46 %", "12.300".
+static func format_short(b: Dictionary, value: float) -> String:
+	var metric: String = b["task"].get("metric", "") if b.has("task") else "points"
+	match metric:
+		"sink", "share":
+			return "%d %%" % roundi(value * 100.0)
+		"height", "dist", "dist_5050", "dist_bs":
+			return ("%.1f m" % value).replace(".", ",")
+		"press", "time":
+			return ("%.1f s" % value).replace(".", ",")
+		"spin":
+			return "%d°" % roundi(value)
+		"points":
+			var s := str(roundi(value))
+			var out := ""
+			for i in s.length():
+				if i > 0 and (s.length() - i) % 3 == 0:
+					out += "."
+				out += s[i]
+			return out
+	return str(roundi(value))
+
+
 static func format_date(ms: float) -> String:
 	var d := Time.get_datetime_dict_from_unix_time(int(ms / 1000.0))
 	return "%02d.%02d.%02d" % [d["day"], d["month"], d["year"] % 100]
@@ -201,15 +247,15 @@ static func format_date(ms: float) -> String:
 
 # ---------------------------------------------------------------- Server
 
-## Ergebnis eintragen (Server behält den Bestwert). {ok, improved, value, rank, total} oder {error}.
-## Ohne Namen bzw. Server: {error, skip: true}.
+## Ergebnis eintragen (Server behält den Bestwert; ohne Namen anonym). {ok, improved, value, rank, total, name}
+## oder {error}. Ohne Server bzw. Schalter „In der Rangliste erscheinen“ aus: {error: "", skip: true}.
 func submit(b: Dictionary, value: float) -> Dictionary:
-	if not enabled() or (_test and not has_name()):
+	if not participating():
 		return {"error": "", "skip": true}
-	if not has_name():
-		return {"error": "Name fehlt", "skip": true}
-	var r := await _post("/score", {"id": player_id, "name": _sent_name(player_name), "board": b["board"],
-		"ver": b["ver"], "value": value, "lower": b["lower"], "build": _build})
+	var body := {"id": player_id, "board": b["board"], "ver": b["ver"], "value": value, "lower": b["lower"], "build": _build}
+	if has_name():
+		body["name"] = _sent_name(player_name)
+	var r := await _post("/score", body)
 	if _test:
 		print("RANGLISTE %s %s: %s" % [b["board"], b["ver"], r])
 	return r
@@ -250,7 +296,7 @@ func set_player_name(n: String) -> Dictionary:
 	return r
 
 
-## Nicht mehr teilnehmen: alle Einträge löschen, Name weg, neue Geräte-Nummer.
+## Alles auf dem Server löschen: alle Einträge, Name weg, neue Geräte-Nummer (über set_hidden(true)).
 func forget() -> Dictionary:
 	var r := {"ok": true}
 	if enabled():

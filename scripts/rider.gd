@@ -20,6 +20,8 @@ signal touched_down(fall: float)  # aus der Luft gelandet (Wasser oder Feature),
 signal restarted                 # Neustart (Steg/Versuch): Sounds stoppen
 signal dock_yanked               # Sprung-Start: Seil reißt einen vom Steg
 signal skipped                   #Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
+signal body_splashed(strength: float)   # Sturz: Körper(teil) klatscht ins Wasser (0..1)
+signal body_hit(strength: float)        # Sturz: Körper prallt hart an ein Feature (0..1)
 ## Für die Spielmodi (Challenge): Landung nach einem Sprung bzw. Ende eines Slides, mit Messwerten
 signal jump_landed(info: Dictionary)   # raley, air_time, half_turns, rolls, popped, points
 signal jumped(info: Dictionary)        # Absprung (Leertaste): raley, tension, speed, load, vy – für Test-Ausgaben
@@ -32,7 +34,8 @@ const SETTLE_TIME := 1.5         # so lange nach dem Sturz treibt man, bevor man
 const SWIM_LOOKAHEAD := 2.5      # m: so weit voraus auf dem Weg peilt der Schwimmer an (runde Bögen)
 const SWIM_TURN := 1.2           # rad/s: so schnell dreht die Schwimmrichtung
 const SWIM_MARGIN := 2.0         # m Abstand beim Schwimmen um Features herum
-static var SWIM_SPEED := 1.1          # Rückenschwimmen mit Brett an den Füßen (m/s)
+const SKIP_SLACK := 0.3           # m Durchhang nach Strg (sofort weiter): Seil spannt kurz nach dem Anfahren
+static var SWIM_SPEED := 1.6          # Schwimmen mit Brett an den Füßen (m/s; nur Tempo, Kraul-Takt bleibt)
 const GRAB_DIST := 1.0
 const AUTO_TURN_START := 20.0     # Autopilot beginnt die Wende so weit vor dem Wendepunkt
 
@@ -131,7 +134,14 @@ static var INVERT_POINTS := 300
 # ↑/↓ in der Luft: Frontroll/Backroll um die Brettlängsachse; auf dem Slider: Nose-/Tailpress
 static var FLIP_RATE := 6.5          # rad/s Überschlag
 static var FLIP_LAND_TOL := 0.7      # rad: so schief darf man nach einem Überschlag landen
-const FLIP_PRESS_MAX := 1.2    # rad: so weit angefangene Rolle wird über einem Slider noch zum Press (zurückgenommen)
+const FLIP_PRESS_MAX := 1.2    # rad: so weit angefangene Rolle wird vor einem Slider noch zum Press (zurückgenommen)
+# Press vormerken: führt der Flug auf einen Slider und reicht die restliche Flugzeit nicht mehr für die Rolle,
+# heißt ↑/↓ in der Luft „gleich pressen“ (keine Rolle, Landung direkt im Press)
+static var PREPRESS_MARGIN := 1.0    # × Zeit für den Rest der Rolle: darunter wird gepresst statt gerollt
+static var PREPRESS_TILT := 0.5      # so weit kippt das Brett schon in der Luft (Anteil vom Press)
+const PREPRESS_LOOK := 2.5     # s: so weit wird die Flugbahn vorausgerechnet
+const PREPRESS_DT := 0.02      # s: Schrittweite der Vorausberechnung
+const PREPRESS_EVERY := 0.1    # s: so oft wird neu gerechnet, solange ↑/↓ gehalten wird
 static var FLIP_POINTS := 300
 static var PRESS_ANG := 0.45         # rad: Brett beim Press gekippt (Fotos: ca. 25°, anderes Ende deutlich in der Luft)
 ## Körperhaltung beim Press kommt aus Blender (blender/nosepress.blend -> tools/export_pose.py)
@@ -258,7 +268,9 @@ var _bs_time := 0.0             # Zeit im Boardslide
 var _slide_dist := 0.0          # gerutschte Meter (gesamt / im Boardslide) – für die Spielmodi
 var _bs_dist := 0.0
 var _flip := 0.0                # Überschlag im Sprung (rad, + = Frontroll)
-var _flip_lock := false         # ↑/↓ war beim Abheben schon gedrückt (z. B. Press vom Slider) -> erst loslassen
+var _flip_lock := false         # Sprung-Start: ↓ vom Gegenhalten am Steg noch gedrückt -> erst loslassen
+var _prepress := false          # ↑/↓ in der Luft = Press vormerken (Flug endet gleich auf einem Slider)
+var _prepress_t := 0.0          # Zeit bis zur nächsten Vorausberechnung
 var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
 var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Oberkörper vor)
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
@@ -336,6 +348,9 @@ var _dspray: CPUParticles3D     # Drift-Press: große Gischt am Brett-Ende im Wa
 var _spray_main: CPUParticles3D # Hauptgischt: von der Kante zur Seilseite, hoch und weit (je nach Kantendruck)
 var _sheet: SpraySheet          # Gischt-Vorhang der Hauptgischt (Wasserwand, siehe SpraySheet)
 var _land_spray: CPUParticles3D # Spritzer-Kranz beim Landen im Wasser
+var _body_sprays: Array[CPUParticles3D] = []   # Sturz: Körper klatscht ins Wasser
+var _body_spray_i := 0
+var _skid_spray: CPUParticles3D # Sturz: Körper rutscht schnell durchs Wasser
 
 
 # ---------------------------------------------------------------- Aufbau
@@ -434,6 +449,24 @@ func _ready() -> void:
 	_land_spray.spread = 55.0
 	_land_spray.gravity = Vector3(0.0, -9.8, 0.0)
 	_land_spray.mesh = drop
+	# Sturz: Körper klatscht ins Wasser (zwei Kränze im Wechsel, Arm und Oberkörper kurz nacheinander)
+	# und Gischt, solange er schnell durchs Wasser rutscht (siehe _body_splash, _crash_spray)
+	for i in 2:
+		var bs := _land_spray.duplicate() as CPUParticles3D
+		bs.amount = 140
+		add_child(bs)
+		Spray.register(bs)
+		_body_sprays.append(bs)
+	_skid_spray = _land_spray.duplicate() as CPUParticles3D
+	_skid_spray.one_shot = false
+	_skid_spray.explosiveness = 0.0
+	_skid_spray.amount = 90
+	_skid_spray.lifetime = 0.7
+	_skid_spray.emission_ring_radius = 0.35
+	_skid_spray.emission_ring_inner_radius = 0.15
+	_skid_spray.spread = 30.0
+	add_child(_skid_spray)
+	Spray.register(_skid_spray)
 	add_child(_land_spray)
 	Spray.register(_land_spray)
 	_dspray.emitting = false
@@ -470,6 +503,8 @@ func reset() -> void:
 	swimming = false
 	_crash_t = 0.0
 	_getup = 1.0
+	if _skid_spray:
+		_skid_spray.emitting = false
 	if _ragdoll:
 		_ragdoll.stop()
 	# Neustart: keine Haltung, kein Sprung und keine Bewegung vom letzten Versuch übernehmen
@@ -814,6 +849,7 @@ func _step_dock_start(delta: float) -> void:
 			vel.y += DOCK_YANK_LIFT * fit * fit
 			_load = 0.0
 			_jump_start = kind
+			_flip_lock = absf(_pitch_in) > 0.1   # ↓ vom Gegenhalten: keine Rolle/kein Invert, bis losgelassen
 			if kind == "raley":
 				_raley = true
 				var side := rope_dir.dot(right())
@@ -939,10 +975,17 @@ func _swim(delta: float) -> void:
 		l.x = 0.0
 		pos = cable.transform * l
 		pos.y = water.height_at(pos.x, pos.z)
-		cable.hold_at(l.z)
+		# Carrier steht schon fast eine Seillänge voraus: das Seil spannt gleich nach dem Anfahren
+		var h := Lake.CABLE_Y - CableSystem.CARRIER_HANG - HANDLE_HEIGHT     # Seilzug rechnet ab Griffhöhe
+		cable.hold_ahead(l.z, maxf(sqrt(maxf(rope_length * rope_length - h * h, 0.0)) - SKIP_SLACK, 0.0))
 		_free_handle = pos
-		skipped.emit()
 		_grab()
+		# direkt in der Wasserstart-Lage (kein Überblenden aus der Schwimmpose); Kamera springt mit (skipped)
+		_grab_from = []
+		_grab_blend = 1.0
+		_swim_from = []
+		_swim_blend = 1.0
+		skipped.emit()
 		return
 	var to_handle := _free_handle - pos
 	to_handle.y = 0.0
@@ -1000,6 +1043,7 @@ func _swim_carrot(from: Vector2, goal: Vector2) -> Vector2:
 
 ## Handle gegriffen: im Wasser sitzend (Deep-Water-Start) wieder ans Seil.
 func _grab() -> void:
+	_skid_spray.emitting = false
 	if _ragdoll:
 		_ragdoll.stop()
 	if _rig and mode == Mode.CRASHED:
@@ -1584,6 +1628,7 @@ func _pop() -> void:
 		vel.y = maxf(up, lift) + POP_ON_RAMP * minf(up, lift)
 	_enter_air()
 	_popped = true
+	_prepress = false                 # abgesprungen: ↑/↓ heißt wieder Rolle (oder Press vormerken, s. _step_air)
 	if fast:
 		_raley = true
 		var side := rope_dir.dot(right())
@@ -1602,6 +1647,7 @@ func _clear_air_pose() -> void:
 	_sbend_pivot = Vector3.INF
 	_invert_ang = 0.0
 	_flip = 0.0
+	_prepress = false
 	_tuck = 0.0
 	_press_vis = 0.0
 	_press_bs_vis = 0.0
@@ -1613,6 +1659,7 @@ func _clear_air_pose() -> void:
 func _enter_air() -> void:
 	_launch_kind = _ground_kind
 	_prev_on_feature = false
+	_on_slider = false          # Landung auf demselben Slider rastet neu ein (sonst dreht die Luft-Drehung zurück)
 	mode = Mode.AIR
 	air_time = 0.0
 	_spin_accum = 0.0
@@ -1623,7 +1670,11 @@ func _enter_air() -> void:
 	_popped = false
 	_catch_part = null
 	_flip = 0.0
-	_flip_lock = absf(_pitch_in) > 0.1
+	_flip_lock = false              # ↑/↓ vom Press beim Abspringen gehalten: gleich Rolle (Sprung-Start sperrt selbst)
+	# ohne Absprung übers Ende des Sliders gerutscht: der Press bleibt (keine Rolle, die nicht mehr fertig würde);
+	# springt man ab, nimmt _pop() das zurück
+	_prepress = absf(_pitch_in) > 0.1 and _ground_kind == "feature"
+	_prepress_t = 0.0
 
 
 func _step_air(delta: float, rope: Vector3) -> void:
@@ -1670,13 +1721,22 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	# Drehung zur nächsten ganzen Umdrehung aus (bzw. zurück, wenn kaum angefangen).
 	if _flip_lock and absf(_pitch_in) <= 0.1:
 		_flip_lock = false
-	# Im Sinkflug knapp über einem Slider (Fangzone) heißt ↑/↓ „gleich pressen“, nicht Überschlag:
-	# eine kaum angefangene Rolle wird zurückgenommen, bis zum Loslassen gibt es keine
-	if absf(_pitch_in) > 0.1 and not _flip_lock and absf(_flip) < FLIP_PRESS_MAX and vel.y < 0.5 \
-			and features and not features.catch_at(pos).is_empty():
-		_flip_lock = true
+	# Press vormerken: endet der Flug gleich auf einem Slider und reicht die Zeit nicht mehr für die
+	# (restliche) Rolle, heißt ↑/↓ „gleich pressen“ – eine kaum angefangene Rolle wird zurückgenommen,
+	# bis zum Loslassen gibt es keine. Fliegt man ins Wasser oder lange genug, bleibt es die Rolle.
+	if absf(_pitch_in) <= 0.1:
+		_prepress = false
+		_prepress_t = 0.0
+	elif not _raley and not _flip_lock and not _prepress and absf(_flip) < FLIP_PRESS_MAX and not autopilot:
+		_prepress_t -= delta
+		if _prepress_t <= 0.0:
+			_prepress_t = PREPRESS_EVERY
+			var t_land := _slider_landing_time(rope.y / MASS - GRAVITY)
+			_prepress = t_land >= 0.0 and t_land < (TAU - FLIP_LAND_TOL - absf(_flip)) / FLIP_RATE * PREPRESS_MARGIN
 	if _raley:
 		pass                                   # Invert: ↑/↓ wählen oben die Variante, kein Überschlag
+	elif _prepress:
+		_flip = move_toward(_flip, 0.0, FLIP_RATE * 1.5 * delta)
 	elif absf(_pitch_in) > 0.1 and not _flip_lock:
 		_flip += _pitch_in * FLIP_RATE * delta
 	elif assist_flip:
@@ -1736,6 +1796,33 @@ func _slope_here() -> float:
 	if h1 < 0.1 and h0 < 0.1:
 		return 0.0
 	return maxf((h0 - h1) / 0.3, 0.0)
+
+
+## Wohin führt der Flug? Wurfbahn ab jetzt mit der jetzigen Steigbeschleunigung ay (Schwerkraft + Seil),
+## waagrecht geradeaus, bis zum Aufsetzen.
+## Zeit bis zur Landung auf einem Slider (Fangzone oder Slide-Fläche), -1 = landet woanders
+## (Wasser, Kicker, Safety, glattes Plastik) oder erst später als PREPRESS_LOOK.
+func _slider_landing_time(ay: float) -> float:
+	if features == null:
+		return -1.0
+	if _catch_part != null:
+		return 0.0                          # gleitet schon aufs Rail
+	var p := pos
+	var v := vel
+	var t := 0.0
+	while t <= PREPRESS_LOOK:
+		if v.y < 0.5 and assist_lock and not features.catch_at(p).is_empty():
+			return t
+		var obstacle := _obstacle_height(p.x, p.z)
+		if v.y <= 0.0 and p.y <= maxf(water.height_at(p.x, p.z, 1.0), obstacle):
+			var part := features.part_at(p.x, p.z)
+			if part and obstacle > p.y - 0.3 and part.is_slide() and not part.on_ramp(p) and not part.is_slick_at(p):
+				return t
+			return -1.0
+		v.y += ay * PREPRESS_DT
+		p += v * PREPRESS_DT
+		t += PREPRESS_DT
+	return -1.0
 
 
 ## Hineingleiten aufs Rail. true = dieses Bild erledigt (gleitet noch oder ist gelandet).
@@ -1876,7 +1963,8 @@ func crash(reason: String) -> void:
 	crash_reason = reason
 	if _ragdoll:
 		# Körper fliegt mit dem bisherigen Schwung weiter (begrenzt), dann bremst das Wasser
-		_ragdoll.start(vel.limit_length(12.0), water.height_at(pos.x, pos.z), pos)
+		_ragdoll.water = water
+		_ragdoll.start(vel.limit_length(12.0))
 	vel.y = 0.0
 	crashed.emit(reason)
 
@@ -1884,6 +1972,7 @@ func crash(reason: String) -> void:
 func _step_crashed(delta: float) -> void:
 	_crash_t += delta
 	_swim(delta)
+	_crash_spray()
 	if mode != Mode.CRASHED:
 		return
 	var k := exp(-1.5 * delta)
@@ -2027,6 +2116,8 @@ func _process(delta: float) -> void:
 		target_crouch = maxf(target_crouch, _tuck)
 		_crouch = maxf(_crouch, _tuck * 0.95)
 	var press_target := _pitch_in if (mode == Mode.WATER and _slide_part != null) else 0.0
+	if mode == Mode.AIR and _prepress:
+		press_target = _pitch_in * PREPRESS_TILT       # vorgemerkter Press: Brett kippt schon im Anflug
 	_press_vis = lerpf(_press_vis, press_target, 1.0 - exp(-delta * 10.0))
 	var bs_target := 1.0 if (mode == Mode.WATER and _slide_part != null and _is_boardslide(_slide_part)) else 0.0
 	_press_bs_vis = lerpf(_press_bs_vis, bs_target, 1.0 - exp(-delta * 10.0))
@@ -2282,6 +2373,8 @@ func _load_model() -> void:
 		return
 	_rig = HumanRig.new(skel)
 	_ragdoll = Ragdoll.new(skel, self)
+	_ragdoll.splashed.connect(_body_splash)
+	_ragdoll.hit_feature.connect(func(_at: Vector3, s: float) -> void: body_hit.emit(s))
 	_body_pivot.visible = false
 	_tint_clothes(_human)
 	# Helm am Kopf-Knochen (die Impact-Weste ist das eng anliegende Oberteil, siehe _tint_clothes)
@@ -2332,8 +2425,6 @@ func _attach_node(bone: String, node: Node3D) -> void:
 ## Knie federn je nach Belastung, Kopf schaut in Fahrtrichtung.
 func _pose_human() -> void:
 	if _ragdoll.active:
-		var c := _ragdoll.center()
-		_ragdoll.follow_water(water.height_at(c.x, c.z), c)
 		_swim_from = []
 		return
 	_human.rotation = Vector3(0.0, _facing() * PI * 0.5, 0.0)
@@ -2438,6 +2529,46 @@ func _land_splash(fall: float, vh: Vector3) -> void:
 	_land_spray.direction = (Vector3.UP * 2.0 + vh * 0.08).normalized()
 	_land_spray.restart()
 	water.impact(at, 0.8 + 2.4 * k)
+
+
+## Sturz: ein Körperteil klatscht ins Wasser. Kranz nach oben, mit dem Schwung nach vorne geworfen,
+## dazu Welle und Platschen (strength 0..1 aus Aufprall und Masse, siehe Ragdoll.step).
+func _body_splash(at: Vector3, strength: float, vh: Vector3) -> void:
+	var p := _body_sprays[_body_spray_i]
+	_body_spray_i = (_body_spray_i + 1) % _body_sprays.size()
+	var k := strength
+	p.global_position = at + Vector3(0.0, 0.02, 0.0)
+	p.initial_velocity_min = 1.0 + 3.0 * k
+	p.initial_velocity_max = 2.5 + 6.5 * k
+	p.scale_amount_min = 0.7 + 0.8 * k
+	p.scale_amount_max = 1.4 + 2.2 * k
+	p.emission_ring_radius = 0.3 + 0.5 * k
+	p.emission_ring_inner_radius = 0.1 + 0.25 * k
+	p.spread = 45.0 + 20.0 * k
+	p.direction = (Vector3.UP * 2.0 + vh * 0.12).normalized()
+	p.restart()
+	water.impact(at, 0.4 + 1.4 * k)        # mehrere Körperteile kurz nacheinander: Wellen addieren sich
+	body_splashed.emit(k)
+
+
+## Sturz: solange der Körper schnell durchs Wasser rutscht, spritzt es vorne weg.
+func _crash_spray() -> void:
+	var on := false
+	if _ragdoll and _ragdoll.active:
+		var c := _ragdoll.center()
+		var wy := water.height_at(c.x, c.z)
+		var v := _ragdoll.velocity()
+		var vh := Vector3(v.x, 0.0, v.z)
+		var k := clampf((vh.length() - 2.0) / 6.0, 0.0, 1.0)
+		on = k > 0.0 and absf(c.y - wy) < 0.35
+		if on:
+			_skid_spray.global_position = Vector3(c.x, wy + 0.02, c.z) + vh.normalized() * 0.3
+			_skid_spray.direction = (Vector3.UP * 1.5 + vh.normalized()).normalized()
+			_skid_spray.initial_velocity_min = 0.6 * vh.length()
+			_skid_spray.initial_velocity_max = 0.9 * vh.length()
+			_skid_spray.scale_amount_min = 0.6 + 0.6 * k
+			_skid_spray.scale_amount_max = 1.2 + 1.6 * k
+	_skid_spray.emitting = on
 
 
 ## Wovon man abspringt (für den Trick-Namen): aus dem Wasser = Ollie, vom Kicker (auch Cheese Wedge,
@@ -2577,6 +2708,8 @@ func _pose_body_with_board(pelvis_world: Vector3, body_up: Vector3, face: Vector
 	_rig.leg("r", skel_inv * foot_back, skel_inv * (knee_pole - left * 0.12))
 	var rb := global_transform.basis.orthonormalized()
 	var board_rel := b * rb.inverse()
+	if goofy:
+		board_rel = board_rel * Basis(rb * Vector3.UP, PI)    # Ruhelage gilt zum ungedrehten Fahrer (wie _pose_legs)
 	for front: bool in [true, false]:
 		var fb := "foot_l" if front else "foot_r"
 		var fw := board_rel * Basis(rb * Vector3.UP, Wakeboard.foot_yaw(front))
@@ -2792,11 +2925,16 @@ static func _load_pose(path: String) -> Array:
 ## Press: Körper in die Blender-Pose überblenden (w 0..1). Die Posen gelten mit dem linken Fuß vorne
 ## (Goofy gespiegelt). Nosepress: nosepress.json; 50-50-Tailpress: tailpress.json; sonst (Boardslide-
 ## Tailpress) die Nosepress gespiegelt (links <-> rechts, Nose <-> Tail).
+## Switch = gespiegelt, nicht gedreht: der andere Fuß führt, also wie die andere Fußstellung
+## (Regular switch = Goofy-Pose); Nose/Tail zählen in Fahrtrichtung.
 ## Liefert die Hand, die die Handle hält (Welt), oder INF ohne Pose.
 var _pose_t := 0.0
 
 func _apply_press_pose(w: float, delta: float) -> Vector3:
-	var pl := _press_local()
+	_press_local()                       # hält _press_lead (switch) aktuell
+	var sw := _press_lead < 0.0
+	var g := goofy != sw                 # rechter Fuß führt: Pose wie Goofy
+	var pl := _press_vis                 # > 0 Nosepress, < 0 Tailpress (in Fahrtrichtung)
 	var path := PRESS_POSE
 	var own_tail := pl < 0.0 and _press_bs_vis < 0.5 and not _load_pose(TAIL_POSE).is_empty()
 	if own_tail:
@@ -2807,7 +2945,7 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	_pose_t += delta
 	var fps: float = _pose_cache.get(path + ":fps", 24.0)
 	var fr: Dictionary = frames[int(_pose_t * fps) % frames.size()]
-	var mirror := goofy if own_tail else (pl < 0.0) != goofy
+	var mirror := g if own_tail else (pl < 0.0) != g
 	var before := _rig.snapshot()
 	var skel := _rig.skeleton
 	# Modellraum (Figur wie in der Vorlage) -> Skelettraum
@@ -2835,7 +2973,8 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	if goofy:
 		bx = bx * Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
 	var p: Vector3 = fr["pelvis"]
-	var pelvis_world := bx * Vector3(p.x * _facing(), p.y, p.z * (-1.0 if pl < 0.0 and not own_tail else 1.0))
+	var zs := (-1.0 if pl < 0.0 and not own_tail else 1.0) * (-1.0 if sw else 1.0)   # switch: entlang des Bretts gespiegelt
+	var pelvis_world := bx * Vector3(p.x * _facing(), p.y, p.z * zs)
 	var pel := _rig.idx("pelvis")
 	var pp := skel.get_bone_parent(pel)
 	var parent_t := skel.get_bone_global_pose(pp) if pp >= 0 else Transform3D.IDENTITY
@@ -2846,7 +2985,7 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	# Handle: im Nosepress in der vorderen Hand der Pose; im 50-50-Tailpress ebenfalls in der vorderen Hand
 	var hold := "hand_r" if mirror else "hand_l"
 	if pl < 0.0 and _press_bs_vis < 0.5:
-		hold = "hand_r" if goofy else "hand_l"
+		hold = "hand_r" if g else "hand_l"
 	return skel.global_transform * skel.get_bone_global_pose(_rig.idx(hold)).origin
 
 
@@ -2928,18 +3067,18 @@ func _pose_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
 	var sh_r := skel * _rig.global_pose("upperarm_r").origin
 	var reach := (_rig.rest_global("upperarm_l").origin.distance_to(_rig.rest_global("lowerarm_l").origin)
 		+ _rig.rest_global("lowerarm_l").origin.distance_to(_rig.rest_global("hand_l").origin)) * ARM_REACH + HumanRig.GRIP_ALONG * 0.8
-	for i in 4:
-		var over := 0.0
-		var pull := Vector3.ZERO
+	# abwechselnd zu beiden Schultern ziehen (stetig): früher nur zur weiter entfernten – liegt der Griff mittig
+	# vor dem Körper (Deep-Water-Start), kippte diese Wahl hin und her und die Handle zitterte um ~9 cm
+	for i in 8:
+		var moved := false
 		for sh: Vector3 in [sh_l, sh_r]:
 			var end := handle_pos - bar_axis * 0.1 if sh.distance_to(handle_pos - bar_axis * 0.1) < sh.distance_to(handle_pos + bar_axis * 0.1) else handle_pos + bar_axis * 0.1
-			var d := sh.distance_to(end)
-			if d - reach > over:
-				over = d - reach
-				pull = (sh - end).normalized()
-		if over <= 0.0:
+			var over := sh.distance_to(end) - reach
+			if over > 0.0005:
+				handle_pos += (sh - end).normalized() * over
+				moved = true
+		if not moved:
 			break
-		handle_pos += pull * over
 	var a := handle_pos - bar_axis * 0.1
 	var b := handle_pos + bar_axis * 0.1
 	# Ellbogen nach unten und leicht nach außen (vom Körper weg)

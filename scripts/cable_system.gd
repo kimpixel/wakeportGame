@@ -180,6 +180,7 @@ func fetch(z: float) -> void:
 
 ## Abkürzung (Leertaste): Handle ist sofort beim Fahrer, Carrier steht auf seiner Höhe.
 func hold_at(z: float) -> void:
+	_resume_dir = 0.0
 	s = clampf(z, turn_b_z, turn_a_z)
 	_prev_s = s
 	v = 0.0
@@ -195,10 +196,25 @@ func finish() -> void:
 		state = State.BRAKE
 
 
+## Abkürzung mit sofortigem Start: Carrier steht schon `ahead` m voraus (Richtung weiter entfernter
+## Wendepunkt), damit das Seil gleich nach dem Anfahren spannt.
+func hold_ahead(z: float, ahead: float) -> void:
+	var d := -1.0 if absf(z - turn_b_z) > absf(z - turn_a_z) else 1.0
+	if finishing:
+		d = 1.0
+	hold_at(z + d * ahead)
+	_resume_dir = d
+
+
+var _resume_dir := 0.0          # von hold_ahead vorgegebene Richtung (sonst aus der Lage)
+
 ## Fahrer hat die Handle: weiter in Richtung des nächstgelegenen Wendepunkts.
 func resume() -> void:
 	# Wasserstart immer zum weiter entfernten Wendepunkt (am Spielende: zum Start)
 	dir = -1.0 if absf(s - turn_b_z) > absf(s - turn_a_z) else 1.0
+	if _resume_dir != 0.0:
+		dir = _resume_dir
+		_resume_dir = 0.0
 	if finishing:
 		dir = 1.0
 	_after_turn = false
@@ -206,6 +222,7 @@ func resume() -> void:
 
 
 func reset() -> void:
+	_resume_dir = 0.0
 	s = start_z
 	_prev_s = s
 	v = 0.0

@@ -35,8 +35,9 @@ Der Server weiß nichts über Aufgaben oder Punkte. Jede Rangliste ist `board` (
 Neue Version = neue, leere Rangliste. Die alten Einträge bleiben in der Datenbank (Hinweis „Wertung
 geändert“ im Spiel), mit `/admin/purge` lassen sie sich löschen.
 
-Echte Einträge kommen nur aus der Web-Hauptversion. Lokal und in PR-Vorschauen schreibt das Spiel in
-Test-Ranglisten (`ver` beginnt mit `dev-`, Name mit „ dev“), unfertige Änderungen verfälschen also nichts.
+Echte Einträge kommen aus der Web-Hauptversion und vom lokalen Spiel am Desktop. Nur PR-Vorschauen schreiben
+in Test-Ranglisten (`ver` beginnt mit `dev-`, Name mit „ dev“). Lokale, noch unveröffentlichte Wertungs-Änderungen
+landen automatisch in einer neuen Rangliste (andere `ver`), die alten bleiben unberührt.
 
 ## Lokal testen
 
@@ -69,5 +70,7 @@ curl -X POST https://…workers.dev/admin/purge  -H "Authorization: Bearer $T" -
 ## Datenschutz
 
 Gespeichert werden nur Name, Bestwerte, Datum, Spielversion und der SHA-256 einer zufälligen Geräte-Nummer.
-Die IP nur gehasht mit Tagessalz für das Rate-Limit (nach 10 Minuten gelöscht). Eingetragen wird erst,
-wenn der Spieler einen Namen speichert. „Nicht mehr teilnehmen“ löscht Spieler und Einträge (`/forget`).
+Die IP nur gehasht mit Tagessalz für das Rate-Limit (nach 10 Minuten gelöscht). Ohne Namen wird anonym
+eingetragen („Anonym #XXXX“ aus dem Schlüssel, keine personenbezogenen Daten). Der Schalter „In der Rangliste
+erscheinen“ auf Aus löscht Spieler und Einträge (`/forget`) und sendet danach nichts mehr. Admin-Befehle nehmen auch
+„Anonym #XXXX“ als Namen.

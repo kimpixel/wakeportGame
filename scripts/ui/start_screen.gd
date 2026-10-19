@@ -81,7 +81,8 @@ var _rank_list: VBoxContainer
 var _rank_info: Label
 var _rank_name: LineEdit
 var _rank_msg: Label
-var _rank_forget: Button
+var _rank_vis: Button             # Schalter „In der Rangliste erscheinen“ (An/Aus)
+var _rank_name_row: HBoxContainer
 var _rank_req := 0                # laufende Abfrage (ältere Antworten verwerfen)
 var _rank_board := {}
 var _cur_mode := Training.COMPETITION
@@ -1057,14 +1058,26 @@ func _build_ranking() -> void:
 	_rank_info = _small("")
 	_rank_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(_rank_info)
+	var vis := HBoxContainer.new()
+	vis.add_theme_constant_override("separation", 8)
+	v.add_child(vis)
+	var vl := _small("IN DER RANGLISTE ERSCHEINEN")
+	vl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	vl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vis.add_child(vl)
+	_rank_vis = _button("An", 18)
+	_rank_vis.custom_minimum_size = Vector2(110, 48)
+	_rank_vis.pressed.connect(_toggle_rank_visible)
+	vis.add_child(_rank_vis)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	v.add_child(row)
+	_rank_name_row = row
 	var nl := _small("DEIN NAME")
 	nl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(nl)
 	_rank_name = LineEdit.new()
-	_rank_name.placeholder_text = "Name für die Rangliste"
+	_rank_name.placeholder_text = "ohne Namen: anonym"
 	_rank_name.max_length = Leaderboard.NAME_MAX
 	_rank_name.custom_minimum_size = Vector2(160, 48)
 	_rank_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1087,14 +1100,20 @@ func _build_ranking() -> void:
 	_rank_msg = _label("", 14, Color(1, 1, 1, 0.55))
 	_rank_msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(_rank_msg)
-	_rank_forget = _button("Nicht mehr teilnehmen (alles löschen)", 16)
-	_rank_forget.pressed.connect(func() -> void:
-		_rank_msg.text = "Wird gelöscht …"
-		var r := await leaderboard.forget()
-		_rank_name.text = ""
-		_update_rank_name(str(r.get("error", "")) if not r.get("ok", false) else "Gelöscht: Name und alle Einträge.")
-		_fill_ranking())
-	v.add_child(_rank_forget)
+
+
+## Schalter „In der Rangliste erscheinen“: Aus löscht alles auf dem Server (Name, Einträge), An sendet wieder.
+func _toggle_rank_visible() -> void:
+	var off := not leaderboard.hidden
+	_rank_msg.text = "Wird gelöscht …" if off else ""
+	var r := await leaderboard.set_hidden(off)
+	if off:
+		_rank_name.text = leaderboard.player_name
+	if not r.get("ok", false):
+		_update_rank_name(str(r.get("error", "Fehler")))
+	else:
+		_update_rank_name("Gelöscht: Name und alle deine Einträge." if off else "")
+	_fill_ranking()
 
 
 ## Hinweis-Leiste (Warnung): Physik und Punkte ändern sich noch laufend, die Rangliste beginnt ab und zu neu
@@ -1313,6 +1332,7 @@ func _ranking_row(e: Dictionary, b: Dictionary) -> Control:
 	h.add_child(_label(Leaderboard.format(b, float(e.get("value", 0.0))), 20, Color.WHITE))
 	var dl := _label(Leaderboard.format_date(float(e.get("date", 0.0))), 14, Color(1, 1, 1, 0.45))
 	dl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	dl.visible = _ui.size.x >= 760.0          # hochkant ohne Datum, sonst wird der Name abgeschnitten
 	h.add_child(dl)
 	return p
 
@@ -1323,24 +1343,30 @@ func _save_rank_name() -> void:
 	if n == leaderboard.player_name:
 		return
 	if n == "":
-		_update_rank_name("Ohne Namen wird nichts eingetragen. Zum Löschen: Nicht mehr teilnehmen.")
+		_update_rank_name("Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles).")
 		_rank_name.text = leaderboard.player_name
 		return
 	_rank_msg.text = "Wird gespeichert …"
 	var r := await leaderboard.set_player_name(n)
 	if r.get("ok", false):
-		_update_rank_name("Gespeichert. Ab jetzt kommen deine Ergebnisse in die Rangliste.")
+		_update_rank_name("Gespeichert. Deine Einträge stehen jetzt unter diesem Namen.")
 		_fill_ranking()
 	else:
 		_update_rank_name(str(r.get("error", "Fehler")))
 
 
-## Hinweis unter dem Namen (Einwilligung) und „Nicht mehr teilnehmen“ nur mit Namen.
+## Schalter und Hinweis unter dem Namen (was gespeichert wird); ohne Teilnahme kein Namensfeld.
 func _update_rank_name(msg: String) -> void:
-	var t := "Mit Namen erscheinen deine Bestwerte öffentlich in der Rangliste. Gespeichert werden nur Name, " \
-		+ "Bestwerte und Datum (dazu eine zufällige Geräte-Nummer, nur als Prüfsumme)."
+	var on := not leaderboard.hidden
+	_rank_vis.text = "An" if on else "Aus"
+	_rank_vis.modulate = Color(1, 1, 1) if on else Color(1, 1, 1, 0.6)
+	_rank_vis.add_theme_color_override("font_color", Hud.ACCENT if on else Color(1, 1, 1, 0.7))
+	_rank_name_row.visible = on
+	var t := "Deine Bestwerte erscheinen öffentlich in der Rangliste – ohne Namen als „Anonym #…“. Gespeichert werden " \
+		+ "nur Name (falls angegeben), Bestwerte und Datum, dazu eine zufällige Geräte-Nummer als Prüfsumme. " \
+		+ "Aus = alles löschen." if on \
+		else "Du erscheinst nicht in der Rangliste, es wird nichts gesendet."
 	_rank_msg.text = (msg + "\n" if msg != "" else "") + t
-	_rank_forget.visible = leaderboard.has_name()
 
 
 func _achievement_row(nr: int, a: Dictionary, date: String) -> Control:
