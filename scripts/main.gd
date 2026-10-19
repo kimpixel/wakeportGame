@@ -1076,6 +1076,7 @@ func _physics_process(delta: float) -> void:
 	_recover(rider, pc, delta)
 
 	_step_session(delta)
+	_step_mini_rank(delta)
 	_elapsed += delta
 	for i in _touch_at.size():
 		var t := _touch_at[i]
@@ -1215,6 +1216,67 @@ func _submit_round(score: int) -> void:
 		_last_result += "   ·   Rangliste: " + str(r["error"])
 	if start_screen.visible:
 		start_screen.set_result(_last_result)
+	_mini_key = ""                       # Mini-Rangliste neu laden (mit dem neuen Eintrag)
+
+
+# ---------------------------------------------------------------- Mini-Rangliste im Spiel
+
+var _mini_key := ""                  # Rangliste in der Mini-Anzeige ("board|ver")
+var _mini_t := 0.0                   # bis zur nächsten Prüfung, ob die Rangliste wechselt
+var _mini_age := 0.0                 # s seit dem letzten Laden (alle MINI_RELOAD neu)
+var _mini_req := 0
+const MINI_RELOAD := 60.0
+
+
+## Welche Rangliste im Spiel gilt: die der Challenge bzw. der Competition (Rundenlänge, Terminal, Setup); {} = keine.
+func _mini_board() -> Dictionary:
+	if start_screen.visible or not leaderboard.enabled():
+		return {}
+	if challenge.active:
+		return leaderboard.challenge_board(challenge.mode_id, challenge.task)
+	var sec := roundi(_game_time)
+	var st: Dictionary = _setups[_setup_idx]
+	if Leaderboard.competition_blocked(settings, sec, st) != "":
+		return {}
+	return leaderboard.competition_board(sec, terminal, st)
+
+
+## Jedes Bild: Competition-Punkte live in die eigene Zeile; jede Sekunde prüfen, ob die Rangliste wechselt,
+## sonst alle MINI_RELOAD s neu laden (andere Fahrer).
+func _step_mini_rank(delta: float) -> void:
+	var mr := hud.mini_rank
+	mr.show_self = leaderboard.participating()
+	var live := NAN
+	if not challenge.active and leaderboard.participating():     # auch vor dem Start: DU mit 0 Punkten
+		live = float(_final_score if _finishing else (rider.score if _session else 0))
+	mr.set_live(live)
+	_mini_age += delta
+	_mini_t -= delta
+	if _mini_t > 0.0:
+		return
+	_mini_t = 1.0
+	var b := _mini_board()
+	if b.is_empty():
+		_mini_key = ""
+		_mini_req += 1
+		mr.clear()
+		return
+	var key := "%s|%s" % [b["board"], b["ver"]]
+	if key == _mini_key and _mini_age < MINI_RELOAD:
+		return
+	_mini_key = key
+	_mini_age = 0.0
+	_mini_req += 1
+	var req := _mini_req
+	var r := await leaderboard.top(b, 50)
+	if req == _mini_req:
+		mr.set_data(b, r)
+
+
+## Nach einem eigenen Eintrag (Challenge): Mini-Rangliste gleich neu laden.
+func refresh_mini_rank() -> void:
+	_mini_key = ""
+	_mini_t = 0.0
 
 
 static func _clock(sec: float) -> String:

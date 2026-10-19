@@ -217,6 +217,29 @@ static func format(b: Dictionary, value: float) -> String:
 	return "%d Punkte" % roundi(value)
 
 
+## Wert ganz kurz (Mini-Rangliste im Spiel), z. B. "2,4 m", "46 %", "12.300".
+static func format_short(b: Dictionary, value: float) -> String:
+	var metric: String = b["task"].get("metric", "") if b.has("task") else "points"
+	match metric:
+		"sink", "share":
+			return "%d %%" % roundi(value * 100.0)
+		"height", "dist", "dist_5050", "dist_bs":
+			return ("%.1f m" % value).replace(".", ",")
+		"press", "time":
+			return ("%.1f s" % value).replace(".", ",")
+		"spin":
+			return "%d°" % roundi(value)
+		"points":
+			var s := str(roundi(value))
+			var out := ""
+			for i in s.length():
+				if i > 0 and (s.length() - i) % 3 == 0:
+					out += "."
+				out += s[i]
+			return out
+	return str(roundi(value))
+
+
 static func format_date(ms: float) -> String:
 	var d := Time.get_datetime_dict_from_unix_time(int(ms / 1000.0))
 	return "%02d.%02d.%02d" % [d["day"], d["month"], d["year"] % 100]

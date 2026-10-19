@@ -235,5 +235,6 @@ func _layout() -> void:
 	# nie in die HUD-Leiste (hochkant zweispaltig und höher), Aufgabenzeile und Brettzustand
 	var hud: Hud = crew.game.hud
 	top = maxf(top, (hud.info_bottom() if vs.x < vs.y else hud.bar_bottom()) + 8.0 * k)
+	top = maxf(top, hud.left_reserved + 8.0 * k)    # Handy: unter das ☰
 	_live_box.scale = Vector2(k, k)
 	_live_box.position = Vector2(MARGIN, top)

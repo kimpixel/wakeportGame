@@ -7,7 +7,7 @@ extends CanvasLayer
 ##  * rechts Pfeil hoch / runter (in der Luft Frontroll/Backroll bzw. beim Invert S-Bend/Backroll, auf dem Slider Nose-/Tailpress, im Drift Drift-Press);
 ##    mit Einstellung „Lenkung: Tasten“ dazu links / rechts = Steuerkreuz (statt Handy neigen)
 ##  * im Wasser nach einem Sturz heißen die Tasten SCHWIMMEN (SPRUNG) und SKIP (DRIFT)
-##  * rechts unter der HUD-Leiste ☰ (nicht in der Leiste)   Menü: Weiter, Einstellungen, Hilfe, Zurück zum Steg, Startseite, Ton, Szenario würfeln
+##  * links oben an der HUD-Leiste ☰ (nie in der Leiste, siehe _place_menu_button)   Menü: Weiter, Einstellungen, Hilfe, Zurück zum Steg, Startseite, Ton, Szenario würfeln
 ## Die Finger verteilt MobileInput: wer eine Taste trifft, drückt sie; alle anderen Finger
 ## springen bzw. starten wie bisher. Stil wie die HUD-Leiste.
 
@@ -48,6 +48,14 @@ class PadButton extends Control:
 			draw_style_box(sb, Rect2(Vector2.ZERO, size))
 		if icon != Vector2.ZERO:
 			_draw_arrow()
+			return
+		if id == "menu":                 # ☰ selbst zeichnen (das Zeichen fehlt in der Web-Schrift)
+			var w := size.x * 0.44
+			var lw := maxf(size.x * 0.075, 2.0)
+			var c := size * 0.5
+			for i in 3:
+				var y := c.y + (i - 1) * size.y * 0.15
+				draw_line(Vector2(c.x - w * 0.5, y), Vector2(c.x + w * 0.5, y), Color.WHITE, lw, true)
 			return
 		var font := get_theme_default_font()
 		var fs := int(font_size * (size.y / 118.0 if round else size.y / 72.0))
@@ -153,7 +161,7 @@ func _layout() -> void:
 		down.position = Vector2(vp.x - m - s, vp.y - m - s)
 	jump.position = Vector2(m, vp.y - m - jump.size.y)
 	drift.position = Vector2(m + (jump.size.x - s) * 0.5, jump.position.y - s * 1.15)   # über SPRUNG
-	menu.size = Vector2(s * 0.62, s * 0.62)
+	menu.size = Vector2(s * 0.8, s * 0.8)
 	_place_menu_button()
 	var w := minf(560.0 * _scale, vp.x - 2.0 * m)
 	var h := 72.0 * _scale
@@ -166,15 +174,19 @@ func _layout() -> void:
 	_menu_box.size = total
 
 
-## ☰ rechts oben, aber unter der HUD-Leiste (die Leiste wächst mit dem Bildschirm, darum jedes Bild).
+## ☰ links direkt unter der HUD-Leiste (nie darin), bündig mit ihrer linken Kante. Jedes Bild, die Leiste wächst mit
+## dem Bildschirm. Was links darunter kommt (Livebild), rückt unter hud.left_reserved; Texte unter der Leiste
+## (Aufgabenzeile, Punkte-Zuwachs) rücken rechts neben hud.left_right.
 func _place_menu_button() -> void:
 	var menu: PadButton = _buttons[3]
-	var vp := get_viewport().get_visible_rect().size
-	var m := 24.0 * _scale
-	var top := m
-	if hud:     # hochkant auch unter Aufgabenzeile und Brettzustand (die gehen über die ganze Breite)
-		top = (hud.info_bottom() if vp.x < vp.y else hud.bar_bottom()) + m * 0.5
-	menu.position = Vector2(vp.x - m - menu.size.x, top)
+	var m := 8.0
+	if hud:
+		var bar := hud.bar_rect()
+		menu.position = Vector2(maxf(m, bar.position.x), bar.end.y + 6.0)
+		hud.left_reserved = menu.position.y + menu.size.y
+		hud.left_right = menu.position.x + menu.size.x
+	else:
+		menu.position = Vector2(m, m)
 
 
 func _process(_delta: float) -> void:

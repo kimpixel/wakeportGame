@@ -838,6 +838,7 @@ func _submit_rank() -> void:
 				Training.format_value(task, float(r["value"]))])
 		if not lb.has_name():
 			_rank_text += "   ·   als %s" % str(r.get("name", "Anonym"))
+		game.refresh_mini_rank()
 	else:
 		_rank_text = "Rangliste: " + str(r.get("error", "Fehler"))
 	if panel.is_open():
