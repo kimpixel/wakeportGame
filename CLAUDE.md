@@ -214,7 +214,7 @@ Geheime Erfolge (`scripts/achievements.gd`, Liste auf der Startseite Taste „Er
   „Nikolaus-Session“ (Schnee) kommt nur am echten 6. Dezember (dann immer); sonst Datum 6. Dezember + Wetter Schnee von Hand. Test `--scenario=nikolaus`.
 
 Spiel (Competition):
-- Runde **7:30** (Einstellung „Competition: Rundenlänge“), Start nach Countdown. Danach holt der Operator den Fahrer zum Start, dann Startseite mit Ergebnis.
+- Runde **7:30** (Einstellung „Competition: Rundenlänge“), Start nach Countdown. Danach holt der Operator den Fahrer zum Start; man bleibt im Spiel, Ergebnis-Fenster (`main.gd round_panel`, `TaskPanel.show_round`): Punkte und Platz in der Rangliste groß, „Erneut spielen“ (Standard) / „Zurück“ (Startseite). Das HUD zeigt Punkte und 0:00 bis zum Neustart.
 - **2-Mast-Prinzip: niemand muss zurück zum Start.** Seil verloren → kein Sturz, ausgleiten und
   einsinken. Nach Sturz bringt der Operator die Handle auf Höhe des Fahrers; schwimmen (Bauchlage,
   Kraulen, Brett hinten oben), greifen, **Deep-Water-Start** (liegen bleiben bis das Seil spannt,
@@ -307,7 +307,13 @@ Tricks/Optik:
 - Handle beim Press immer in der vorderen Hand (auch 50-50-Tailpress, obwohl die Pose gespiegelt ist).
 - Nach Sturz/Absaufen/Neustart wird Raley/Überschlag/Press sofort zurückgesetzt.
 - Features haben **Kollisionskörper** aus ihrer Form (`FeaturePart._build_collider`, Ebene `LAYER_COLLIDE`):
-  die Ragdoll prallt ab bzw. bleibt darauf liegen. Fahrphysik nutzt weiter `height_local()`.
+  **massive konvexe Säulen** aus `height_local()` bis 1,5 m unter Wasser (`COLLIDE_BOTTOM`; früher hohles Dreiecksnetz –
+  Ragdoll rutschte durch, fiel unter das Feature, eingeklemmte Knochen zerrissen die Figur), nasses Plastik federt (bounce 0,3).
+  Die Ragdoll prallt ab bzw. bleibt darauf liegen. Fahrphysik nutzt weiter `height_local()`. Physik-Engine **Jolt** (project.godot).
+- **Sturz ins Wasser** (`scripts/ragdoll.gd`): Wasser ist keine Fläche (sah aus wie eine Steinplatte), sondern wirkt je Knochen
+  nach Eintauchtiefe – Auftrieb (Weste `BUOY_TORSO`), Widerstand linear + quadratisch: man klatscht hinein, taucht kurz unter,
+  kommt hoch, prallt nicht ab. Eintauchen = Platscher (`Rider._body_splash`: Spritzer-Kranz, Welle, Ton nach Wucht), schnell
+  durchs Wasser rutschen = Gischt (`_crash_spray`), harter Treffer am Feature = dumpfer Schlag. Test `--ragdoll-at=S,side|top|water`.
 - **Schwimmen nie durch Features**: Weg großzügig herum (`SWIM_MARGIN` 2 m, `FeatureSet.swim_path`,
   Sichtgraph + Dijkstra, alle 0,4 s neu), harte Grenze `push_out` (0,3 m). Hinter einem Feature zu
   stürzen kostet also mehr Schwimmzeit – gewollt. Die Panel-Schwimmzeit rechnet mit dem Umweg.
