@@ -2640,6 +2640,8 @@ func _pose_body_with_board(pelvis_world: Vector3, body_up: Vector3, face: Vector
 	_rig.leg("r", skel_inv * foot_back, skel_inv * (knee_pole - left * 0.12))
 	var rb := global_transform.basis.orthonormalized()
 	var board_rel := b * rb.inverse()
+	if goofy:
+		board_rel = board_rel * Basis(rb * Vector3.UP, PI)    # Ruhelage gilt zum ungedrehten Fahrer (wie _pose_legs)
 	for front: bool in [true, false]:
 		var fb := "foot_l" if front else "foot_r"
 		var fw := board_rel * Basis(rb * Vector3.UP, Wakeboard.foot_yaw(front))
@@ -2997,18 +2999,18 @@ func _pose_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
 	var sh_r := skel * _rig.global_pose("upperarm_r").origin
 	var reach := (_rig.rest_global("upperarm_l").origin.distance_to(_rig.rest_global("lowerarm_l").origin)
 		+ _rig.rest_global("lowerarm_l").origin.distance_to(_rig.rest_global("hand_l").origin)) * ARM_REACH + HumanRig.GRIP_ALONG * 0.8
-	for i in 4:
-		var over := 0.0
-		var pull := Vector3.ZERO
+	# abwechselnd zu beiden Schultern ziehen (stetig): früher nur zur weiter entfernten – liegt der Griff mittig
+	# vor dem Körper (Deep-Water-Start), kippte diese Wahl hin und her und die Handle zitterte um ~9 cm
+	for i in 8:
+		var moved := false
 		for sh: Vector3 in [sh_l, sh_r]:
 			var end := handle_pos - bar_axis * 0.1 if sh.distance_to(handle_pos - bar_axis * 0.1) < sh.distance_to(handle_pos + bar_axis * 0.1) else handle_pos + bar_axis * 0.1
-			var d := sh.distance_to(end)
-			if d - reach > over:
-				over = d - reach
-				pull = (sh - end).normalized()
-		if over <= 0.0:
+			var over := sh.distance_to(end) - reach
+			if over > 0.0005:
+				handle_pos += (sh - end).normalized() * over
+				moved = true
+		if not moved:
 			break
-		handle_pos += pull * over
 	var a := handle_pos - bar_axis * 0.1
 	var b := handle_pos + bar_axis * 0.1
 	# Ellbogen nach unten und leicht nach außen (vom Körper weg)
