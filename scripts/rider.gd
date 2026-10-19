@@ -1633,6 +1633,7 @@ func _clear_air_pose() -> void:
 func _enter_air() -> void:
 	_launch_kind = _ground_kind
 	_prev_on_feature = false
+	_on_slider = false          # Landung auf demselben Slider rastet neu ein (sonst dreht die Luft-Drehung zurück)
 	mode = Mode.AIR
 	air_time = 0.0
 	_spin_accum = 0.0
