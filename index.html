@@ -143,10 +143,10 @@ body {
 		if (!document.hidden && !allRunning()) listen();
 	});
 })();
-/* Alte Version aus dem Cache? Der Web-Build ersetzt 250-a9c595e und legt build.txt daneben. Weicht die
+/* Alte Version aus dem Cache? Der Web-Build ersetzt 251-71e27be und legt build.txt daneben. Weicht die
    aktuelle Build-Nummer ab, einmal mit ?v=<neu> neu laden (neue Adresse = am Cache vorbei). */
 (function () {
-	var id = '250-a9c595e';
+	var id = '251-71e27be';
 	if (id.indexOf('__') === 0 || !window.fetch) return;
 	fetch('build.txt?t=' + Date.now(), { cache: 'no-store' }).then(function (r) {
 		return r.ok ? r.text() : '';
@@ -179,9 +179,9 @@ body {
 			<div id="status-notice"></div>
 		</div>
 
-		<script src="index.js?v=250-a9c595e"></script>
+		<script src="index.js?v=251-71e27be"></script>
 		<script>
-const GODOT_CONFIG = {"mainPack":"index-250-a9c595e.pck","args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index-250-a9c595e.pck":23713984,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"mainPack":"index-251-71e27be.pck","args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index-251-71e27be.pck":23714256,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
