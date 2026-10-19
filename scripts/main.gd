@@ -30,6 +30,8 @@ extends Node3D
 ##   --sup-at=SEK      Test: ein SUP aus der Seemitte kommt herüber, das rote Boot vertreibt ihn
 ##   --drop-at=S[,x,y,z|,boot]  Test: Fahrer zu dieser Zeit in die Luft setzen (Standard: über den Startsteg, Erfolg "steg";
 ##                     boot = über das rote Boot am Liegeplatz, Erfolg "boot")
+##   --ragdoll-at=S[,side|top|water[,TEMPO]]  Test: Sturz seitlich gegen das nächste Feature, von oben drauf oder ins
+##                     Wasser (Standard side, 9 m/s); Log RAGDOLL (Ausdehnung/EXPLOSION, IM FEATURE), PLATSCH, TREFFER
 ##   --erfolg=ID,…     Test: geheime Erfolge als erreicht zeigen (z. B. --screen=@erfolge --erfolg=fisch)
 ##   --lb-url=URL      Test: Rangliste über diesen Worker (z. B. lokal http://127.0.0.1:8787), --lb-name=NAME
 ##   --dpress=W        Test: Drift-Press fest zeigen (-1 Tailpress … +1 Nosepress), auch ohne Drift
@@ -157,6 +159,10 @@ var _drop_at := -1.0           # Test: Fahrer zu dieser Zeit an _drop_pos in die
 var _drop_pos := Vector3.INF   # Test: wohin (INF = über den Startsteg)
 var _in_boat := false          # Fahrer ist gerade im roten Boot (Erfolg "boot" nur beim Hineinkommen melden)
 var _letgo_at := -1.0          # Test: Seil zu dieser Zeit verlieren
+var _ragdoll_at := -1.0        # Test: Fahrer zu dieser Zeit gegen ein Feature bzw. ins Wasser werfen (Sturz)
+var _ragdoll_kind := "side"    # side = seitlich gegen das nächste Feature, top = von oben drauf, water = ins Wasser
+var _ragdoll_speed := 9.0
+var _ragdoll_t := -1.0         # Test: Zeit seit dem Wurf (Log), -1 = aus
 var _pause_at := -1.0           # Test: zu dieser Zeit pausieren (und Screenshot)
 var _settings_at := -1.0        # Test: zu dieser Zeit die Einstellungen im Spiel öffnen
 var _debug_params_arg := false  # Test: Debug-Overlay gleich offen (--debug-params)
@@ -262,6 +268,12 @@ func _ready() -> void:
 			print("FLUG %s: %.2f s, Höhe %.2f m" % [info["name"], info["air_time"], _peak_y]))
 	rider.crashed.connect(_on_crashed)
 	rider.rope_lost.connect(_on_crashed)
+	rider.body_splashed.connect(func(k: float) -> void:
+		if _test_log:
+			print("PLATSCH %.2f at %s" % [k, rider.pos.snapped(Vector3.ONE * 0.1)]))
+	rider.body_hit.connect(func(k: float) -> void:
+		if _test_log:
+			print("TREFFER %.2f at %s" % [k, rider.pos.snapped(Vector3.ONE * 0.1)]))
 	rider.grabbed.connect(func() -> void:
 		pc.resume()
 		if _test_log:
@@ -1119,6 +1131,10 @@ func _physics_process(delta: float) -> void:
 	if _drop_at > 0.0 and _elapsed >= _drop_at:
 		_drop_at = -1.0
 		_test_drop()
+	if _ragdoll_at > 0.0 and _elapsed >= _ragdoll_at:
+		_ragdoll_at = -1.0
+		_test_ragdoll()
+	_test_ragdoll_log(delta)
 	if _letgo_at > 0.0 and _elapsed >= _letgo_at:
 		_letgo_at = -1.0
 		rider.let_go("Test: Seil verloren")
@@ -1633,6 +1649,75 @@ func _test_drop() -> void:
 	print("DROP ", p)
 
 
+## Test --ragdoll-at=S[,side|top|water[,TEMPO]]: Fahrer an eine Stelle setzen und mit Tempo stürzen lassen –
+## seitlich gegen das nächste Feature, von oben drauf oder aus 2,5 m ins Wasser. Danach Log RAGDOLL (siehe _test_ragdoll_log).
+func _test_ragdoll() -> void:
+	var dir := Vector3(rider.vel.x, 0.0, rider.vel.z)
+	dir = dir.normalized() if dir.length() > 0.5 else Vector3.FORWARD
+	var p := rider.pos
+	var v := dir * _ragdoll_speed
+	if _ragdoll_kind != "water" and features:
+		var best: FeaturePart = null
+		for part in features.parts:
+			if part.collide and (best == null or part.global_position.distance_to(rider.pos) < best.global_position.distance_to(rider.pos)):
+				best = part
+		if best:
+			# höchste Stelle des Teils (Kicker: hinten an der Kante)
+			var top := 0.3
+			var u_top := 0.0
+			for k in 21:
+				var u := lerpf(-best.length * 0.5, best.length * 0.5, k / 20.0)
+				var h := best.height_local(u, 0.0, true)
+				if h > top:
+					top = h
+					u_top = u
+			var c := best.global_position + best.forward_world() * u_top
+			if _ragdoll_kind == "top":
+				# von schräg oben in Längsrichtung auf die Oberseite
+				var ax := best.forward_world()
+				p = c - ax * _ragdoll_speed * 0.25 + Vector3(0.0, top + 0.3, 0.0)
+				v = ax * _ragdoll_speed + Vector3(0.0, -1.0, 0.0)
+			else:
+				# quer gegen die Seitenwand, Becken (ca. 0,9 m über den Füßen) knapp unter der Oberkante
+				var side := best.global_basis.x.normalized()
+				p = c + side * (best.width * 0.5 + 1.2) + Vector3(0.0, maxf(top - 1.0, 0.1), 0.0)
+				v = -side * _ragdoll_speed
+			print("RAGDOLL ZIEL %s (%s) bei %s, Oberkante %.2f" % [best.display_name, best.type, c.snapped(Vector3.ONE * 0.1), top])
+	else:
+		p.y = water.height_at(p.x, p.z) + 2.5
+		v.y = -1.0
+	rider.let_go("Test: Ragdoll")
+	rider.pos = p
+	rider.position = p
+	rider.vel = v
+	rider.mode = Rider.Mode.AIR
+	rider.crash("Teststurz")
+	_ragdoll_t = 0.0
+	print("RAGDOLL START %s v=%s" % [p.snapped(Vector3.ONE * 0.01), v.snapped(Vector3.ONE * 0.1)])
+
+
+## Test: alle 0,25 s Lage der Ragdoll – Ausdehnung (Figur reißt auseinander?), tiefster Knochen,
+## Becken im Feature (durchgefallen?), Tempo.
+func _test_ragdoll_log(delta: float) -> void:
+	if _ragdoll_t < 0.0:
+		return
+	var prev := _ragdoll_t
+	_ragdoll_t += delta
+	var rd: Ragdoll = rider._ragdoll
+	if rd == null or not rd.active or _ragdoll_t > 6.0:
+		print("RAGDOLL ENDE t=%.2f" % _ragdoll_t)
+		_ragdoll_t = -1.0
+		return
+	if floori(_ragdoll_t / 0.25) == floori(prev / 0.25):
+		return
+	var d := rd.diag()
+	var c := rd.center()
+	var fh := features.height_at(c.x, c.z, true) if features else FeaturePart.NONE
+	print("RAGDOLL t=%.2f weit=%.2f%s tief=%.2f becken=%s wasser=%.2f feature=%.2f%s v=%.1f" % [_ragdoll_t, d.x,
+		" EXPLOSION" if d.x > 1.3 else "", d.y, c.snapped(Vector3.ONE * 0.01), water.height_at(c.x, c.z),
+		fh, " IM FEATURE" if fh > FeaturePart.NONE + 1.0 and c.y < fh - 0.15 else "", rd.velocity().length()])
+
+
 ## Test: Fenster unsichtbar im Hintergrund (--bg; automatisch bei --shot und --write-movie, --fg schaltet ab).
 ## Es wird normal gerendert, liegt aber links außerhalb aller Bildschirme und nimmt keinen Fokus –
 ## minimiert ginge nicht (Godot zeichnet dann nicht), headless rendert gar nicht.
@@ -1697,6 +1782,13 @@ func _parse_args() -> void:
 			_letgo_at = arg.substr(11).to_float()
 		elif arg.begins_with("--crash-at="):
 			_crash_at = arg.substr(11).to_float()
+		elif arg.begins_with("--ragdoll-at="):
+			var r := arg.substr(13).split(",")
+			_ragdoll_at = r[0].to_float()
+			if r.size() > 1:
+				_ragdoll_kind = r[1]
+			if r.size() > 2:
+				_ragdoll_speed = r[2].to_float()
 		elif arg.begins_with("--sup-at="):
 			_sup_at = arg.substr(9).to_float()
 		elif arg.begins_with("--drop-at="):

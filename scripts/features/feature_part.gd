@@ -629,27 +629,74 @@ func _ready() -> void:
 		_build_collider()
 
 
-## Kollisionskörper aus der sichtbaren Form (alle Dreiecke): daran prallt die Ragdoll beim
-## Sturz ab bzw. bleibt darauf liegen. Die Fahrphysik nutzt weiter height_local().
+const COLLIDE_BOTTOM := -1.5     # Kollisionskörper reicht so tief: niemand taucht unter einem Feature durch
+const COLLIDE_STEP := 0.4        # m: Zellgröße der Kollisionskörper (dazu Linien auf allen Knicken)
+static var _collide_mat: PhysicsMaterial
+
+
+## Kollisionskörper aus height_local() (Form = Physik): massive, konvexe Säulen von der Oberkante
+## bis tief unters Wasser. Früher ein hohles Dreiecksnetz – schnelle Kapseln der Ragdoll rutschten
+## hindurch und fielen dann innen bzw. unter das Feature, eingeklemmte Knochen rissen die Figur auseinander.
+## Konvexe Körper drücken immer zur nächsten Außenseite. Nasses Plastik: glatt, federt etwas.
 func _build_collider() -> void:
-	var faces := PackedVector3Array()
-	for c in get_children():
-		if c is MeshInstance3D and c != _catch_mesh and (c as MeshInstance3D).mesh:
-			var mi := c as MeshInstance3D
-			for v in mi.mesh.get_faces():
-				faces.append(mi.transform * v)
-	if faces.is_empty():
-		return
-	var shape := ConcavePolygonShape3D.new()
-	shape.set_faces(faces)
-	shape.backface_collision = true
+	if _collide_mat == null:
+		_collide_mat = PhysicsMaterial.new()
+		_collide_mat.friction = 0.35
+		_collide_mat.bounce = 0.3
 	var body := StaticBody3D.new()
 	body.collision_layer = LAYER_COLLIDE
 	body.collision_mask = 0
-	var cs := CollisionShape3D.new()
-	cs.shape = shape
-	body.add_child(cs)
+	body.physics_material_override = _collide_mat
 	add_child(body)
+	var owner_id := body.create_shape_owner(body)
+	if type == "ball":
+		var sphere := SphereShape3D.new()
+		sphere.radius = radius
+		body.shape_owner_add_shape(owner_id, sphere)
+		body.shape_owner_set_transform(owner_id, Transform3D(Basis.IDENTITY, Vector3(0.0, center_y, 0.0)))
+		return
+	var hl := length * 0.5
+	var hw := width * 0.5
+	match type:
+		"pipe":
+			hw = radius * 0.8
+		"rail":
+			hw = radius + 0.04
+	var u_breaks: Array[float] = [-hl + ramp_in, hl - ramp_out]
+	for pt: Array in profile:
+		u_breaks.append(-hl + float(pt[0]))
+	var v_breaks: Array[float] = []
+	if side_ramp > 0.0:
+		v_breaks.append((width * 0.5 - side_ramp) * inner_v)
+	if top_rail > 0.0:
+		v_breaks.append_array([-top_rail, top_rail])
+	var us := _grid_lines(-hl, hl, maxi(ceili(length / COLLIDE_STEP), 1), u_breaks)
+	var h_at := func(u: float, v: float) -> float:
+		var h := height_local(clampf(u, -hl + 0.001, hl - 0.001), clampf(v, -hw + 0.001, hw - 0.001), true)
+		return maxf(h, COLLIDE_BOTTOM)
+	# Quer flach (die meisten Boxen, Kicker, Ledges): eine Säule über die ganze Breite
+	var flat := true
+	for u in us:
+		var h0: float = h_at.call(u, 0.0)
+		for k in 5:
+			if absf(float(h_at.call(u, lerpf(-hw, hw, k / 4.0))) - h0) > 0.02:
+				flat = false
+	var vs := PackedFloat32Array([-hw, hw]) if flat else _grid_lines(-hw, hw, maxi(ceili(hw * 2.0 / 0.25), 2), v_breaks)
+	for i in us.size() - 1:
+		for j in vs.size() - 1:
+			var corners := [Vector2(us[i], vs[j]), Vector2(us[i + 1], vs[j]), Vector2(us[i], vs[j + 1]), Vector2(us[i + 1], vs[j + 1])]
+			var pts := PackedVector3Array()
+			var high := false
+			for c: Vector2 in corners:
+				var h: float = h_at.call(c.x, c.y)
+				high = high or h > ENTRY - 0.2
+				pts.append(Vector3(c.y, h, -c.x))
+				pts.append(Vector3(c.y, COLLIDE_BOTTOM - 0.1, -c.x))
+			if not high:
+				continue
+			var shape := ConvexPolygonShape3D.new()
+			shape.points = pts
+			body.shape_owner_add_shape(owner_id, shape)
 
 
 ## Allgemeine Form: Oberfläche aus height_local() + senkrechte Wände bis unter Wasser.
