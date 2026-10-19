@@ -20,6 +20,8 @@ signal touched_down(fall: float)  # aus der Luft gelandet (Wasser oder Feature),
 signal restarted                 # Neustart (Steg/Versuch): Sounds stoppen
 signal dock_yanked               # Sprung-Start: Seil reißt einen vom Steg
 signal skipped                   #Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
+signal body_splashed(strength: float)   # Sturz: Körper(teil) klatscht ins Wasser (0..1)
+signal body_hit(strength: float)        # Sturz: Körper prallt hart an ein Feature (0..1)
 ## Für die Spielmodi (Challenge): Landung nach einem Sprung bzw. Ende eines Slides, mit Messwerten
 signal jump_landed(info: Dictionary)   # raley, air_time, half_turns, rolls, popped, points
 signal jumped(info: Dictionary)        # Absprung (Leertaste): raley, tension, speed, load, vy – für Test-Ausgaben
@@ -347,6 +349,9 @@ var _dspray: CPUParticles3D     # Drift-Press: große Gischt am Brett-Ende im Wa
 var _spray_main: CPUParticles3D # Hauptgischt: von der Kante zur Seilseite, hoch und weit (je nach Kantendruck)
 var _sheet: SpraySheet          # Gischt-Vorhang der Hauptgischt (Wasserwand, siehe SpraySheet)
 var _land_spray: CPUParticles3D # Spritzer-Kranz beim Landen im Wasser
+var _body_sprays: Array[CPUParticles3D] = []   # Sturz: Körper klatscht ins Wasser
+var _body_spray_i := 0
+var _skid_spray: CPUParticles3D # Sturz: Körper rutscht schnell durchs Wasser
 
 
 # ---------------------------------------------------------------- Aufbau
@@ -445,6 +450,24 @@ func _ready() -> void:
 	_land_spray.spread = 55.0
 	_land_spray.gravity = Vector3(0.0, -9.8, 0.0)
 	_land_spray.mesh = drop
+	# Sturz: Körper klatscht ins Wasser (zwei Kränze im Wechsel, Arm und Oberkörper kurz nacheinander)
+	# und Gischt, solange er schnell durchs Wasser rutscht (siehe _body_splash, _crash_spray)
+	for i in 2:
+		var bs := _land_spray.duplicate() as CPUParticles3D
+		bs.amount = 140
+		add_child(bs)
+		Spray.register(bs)
+		_body_sprays.append(bs)
+	_skid_spray = _land_spray.duplicate() as CPUParticles3D
+	_skid_spray.one_shot = false
+	_skid_spray.explosiveness = 0.0
+	_skid_spray.amount = 90
+	_skid_spray.lifetime = 0.7
+	_skid_spray.emission_ring_radius = 0.35
+	_skid_spray.emission_ring_inner_radius = 0.15
+	_skid_spray.spread = 30.0
+	add_child(_skid_spray)
+	Spray.register(_skid_spray)
 	add_child(_land_spray)
 	Spray.register(_land_spray)
 	_dspray.emitting = false
@@ -481,6 +504,8 @@ func reset() -> void:
 	swimming = false
 	_crash_t = 0.0
 	_getup = 1.0
+	if _skid_spray:
+		_skid_spray.emitting = false
 	if _ragdoll:
 		_ragdoll.stop()
 	# Neustart: keine Haltung, kein Sprung und keine Bewegung vom letzten Versuch übernehmen
@@ -1012,6 +1037,7 @@ func _swim_carrot(from: Vector2, goal: Vector2) -> Vector2:
 
 ## Handle gegriffen: im Wasser sitzend (Deep-Water-Start) wieder ans Seil.
 func _grab() -> void:
+	_skid_spray.emitting = false
 	if _ragdoll:
 		_ragdoll.stop()
 	if _rig and mode == Mode.CRASHED:
@@ -1937,7 +1963,8 @@ func crash(reason: String) -> void:
 	crash_reason = reason
 	if _ragdoll:
 		# Körper fliegt mit dem bisherigen Schwung weiter (begrenzt), dann bremst das Wasser
-		_ragdoll.start(vel.limit_length(12.0), water.height_at(pos.x, pos.z), pos)
+		_ragdoll.water = water
+		_ragdoll.start(vel.limit_length(12.0))
 	vel.y = 0.0
 	crashed.emit(reason)
 
@@ -1945,6 +1972,7 @@ func crash(reason: String) -> void:
 func _step_crashed(delta: float) -> void:
 	_crash_t += delta
 	_swim(delta)
+	_crash_spray()
 	if mode != Mode.CRASHED:
 		return
 	var k := exp(-1.5 * delta)
@@ -2345,6 +2373,8 @@ func _load_model() -> void:
 		return
 	_rig = HumanRig.new(skel)
 	_ragdoll = Ragdoll.new(skel, self)
+	_ragdoll.splashed.connect(_body_splash)
+	_ragdoll.hit_feature.connect(func(_at: Vector3, s: float) -> void: body_hit.emit(s))
 	_body_pivot.visible = false
 	_tint_clothes(_human)
 	# Helm am Kopf-Knochen (die Impact-Weste ist das eng anliegende Oberteil, siehe _tint_clothes)
@@ -2395,8 +2425,6 @@ func _attach_node(bone: String, node: Node3D) -> void:
 ## Knie federn je nach Belastung, Kopf schaut in Fahrtrichtung.
 func _pose_human() -> void:
 	if _ragdoll.active:
-		var c := _ragdoll.center()
-		_ragdoll.follow_water(water.height_at(c.x, c.z), c)
 		_swim_from = []
 		return
 	_human.rotation = Vector3(0.0, _facing() * PI * 0.5, 0.0)
@@ -2501,6 +2529,46 @@ func _land_splash(fall: float, vh: Vector3) -> void:
 	_land_spray.direction = (Vector3.UP * 2.0 + vh * 0.08).normalized()
 	_land_spray.restart()
 	water.impact(at, 0.8 + 2.4 * k)
+
+
+## Sturz: ein Körperteil klatscht ins Wasser. Kranz nach oben, mit dem Schwung nach vorne geworfen,
+## dazu Welle und Platschen (strength 0..1 aus Aufprall und Masse, siehe Ragdoll.step).
+func _body_splash(at: Vector3, strength: float, vh: Vector3) -> void:
+	var p := _body_sprays[_body_spray_i]
+	_body_spray_i = (_body_spray_i + 1) % _body_sprays.size()
+	var k := strength
+	p.global_position = at + Vector3(0.0, 0.02, 0.0)
+	p.initial_velocity_min = 1.0 + 3.0 * k
+	p.initial_velocity_max = 2.5 + 6.5 * k
+	p.scale_amount_min = 0.7 + 0.8 * k
+	p.scale_amount_max = 1.4 + 2.2 * k
+	p.emission_ring_radius = 0.3 + 0.5 * k
+	p.emission_ring_inner_radius = 0.1 + 0.25 * k
+	p.spread = 45.0 + 20.0 * k
+	p.direction = (Vector3.UP * 2.0 + vh * 0.12).normalized()
+	p.restart()
+	water.impact(at, 0.4 + 1.4 * k)        # mehrere Körperteile kurz nacheinander: Wellen addieren sich
+	body_splashed.emit(k)
+
+
+## Sturz: solange der Körper schnell durchs Wasser rutscht, spritzt es vorne weg.
+func _crash_spray() -> void:
+	var on := false
+	if _ragdoll and _ragdoll.active:
+		var c := _ragdoll.center()
+		var wy := water.height_at(c.x, c.z)
+		var v := _ragdoll.velocity()
+		var vh := Vector3(v.x, 0.0, v.z)
+		var k := clampf((vh.length() - 2.0) / 6.0, 0.0, 1.0)
+		on = k > 0.0 and absf(c.y - wy) < 0.35
+		if on:
+			_skid_spray.global_position = Vector3(c.x, wy + 0.02, c.z) + vh.normalized() * 0.3
+			_skid_spray.direction = (Vector3.UP * 1.5 + vh.normalized()).normalized()
+			_skid_spray.initial_velocity_min = 0.6 * vh.length()
+			_skid_spray.initial_velocity_max = 0.9 * vh.length()
+			_skid_spray.scale_amount_min = 0.6 + 0.6 * k
+			_skid_spray.scale_amount_max = 1.2 + 1.6 * k
+	_skid_spray.emitting = on
 
 
 ## Wovon man abspringt (für den Trick-Namen): aus dem Wasser = Ollie, vom Kicker (auch Cheese Wedge,
