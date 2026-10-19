@@ -32,7 +32,8 @@ const SETTLE_TIME := 1.5         # so lange nach dem Sturz treibt man, bevor man
 const SWIM_LOOKAHEAD := 2.5      # m: so weit voraus auf dem Weg peilt der Schwimmer an (runde Bögen)
 const SWIM_TURN := 1.2           # rad/s: so schnell dreht die Schwimmrichtung
 const SWIM_MARGIN := 2.0         # m Abstand beim Schwimmen um Features herum
-static var SWIM_SPEED := 1.1          # Rückenschwimmen mit Brett an den Füßen (m/s)
+const SKIP_SLACK := 0.3           # m Durchhang nach Strg (sofort weiter): Seil spannt kurz nach dem Anfahren
+static var SWIM_SPEED := 1.6          # Schwimmen mit Brett an den Füßen (m/s; nur Tempo, Kraul-Takt bleibt)
 const GRAB_DIST := 1.0
 const AUTO_TURN_START := 20.0     # Autopilot beginnt die Wende so weit vor dem Wendepunkt
 
@@ -951,10 +952,17 @@ func _swim(delta: float) -> void:
 		l.x = 0.0
 		pos = cable.transform * l
 		pos.y = water.height_at(pos.x, pos.z)
-		cable.hold_at(l.z)
+		# Carrier steht schon fast eine Seillänge voraus: das Seil spannt gleich nach dem Anfahren
+		var h := Lake.CABLE_Y - CableSystem.CARRIER_HANG - HANDLE_HEIGHT     # Seilzug rechnet ab Griffhöhe
+		cable.hold_ahead(l.z, maxf(sqrt(maxf(rope_length * rope_length - h * h, 0.0)) - SKIP_SLACK, 0.0))
 		_free_handle = pos
-		skipped.emit()
 		_grab()
+		# direkt in der Wasserstart-Lage (kein Überblenden aus der Schwimmpose); Kamera springt mit (skipped)
+		_grab_from = []
+		_grab_blend = 1.0
+		_swim_from = []
+		_swim_blend = 1.0
+		skipped.emit()
 		return
 	var to_handle := _free_handle - pos
 	to_handle.y = 0.0

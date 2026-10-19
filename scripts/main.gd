@@ -272,7 +272,9 @@ func _ready() -> void:
 		if _turn_active:
 			_turn_sank = true
 		hud.show_trick("Abgesoffen!"))
-	rider.skipped.connect(func() -> void: _penalty(SKIP_PENALTY))
+	rider.skipped.connect(func() -> void:
+		_penalty(SKIP_PENALTY)
+		cam.snap())                      # Kamera springt mit dem Fahrer unters Seil, kein Schwenk
 
 	cam = ChaseCamera.new()
 	cam.far = 6000.0
