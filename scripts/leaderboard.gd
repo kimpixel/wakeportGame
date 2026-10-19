@@ -10,11 +10,13 @@ extends Node
 ##     vergleichbar sind) bzw. "lb" in einer Aufgabe (nur diese eine neu)
 ## Ändert sich etwas davon, beginnt eine neue, leere Rangliste – die alte bleibt auf dem Server.
 ##
-## Eingetragen wird nur mit Namen (= Einwilligung, Startseite → Rangliste). Echte Einträge nur aus der
-## Web-Hauptversion; lokal und in PR-Vorschauen landen sie in eigenen Test-Ranglisten (ver "dev-…"),
+## Jedes gewertete Ergebnis wird eingetragen: ohne Namen anonym („Anonym #XXXX“, keine personenbezogenen Daten),
+## mit Namen (Startseite → Rangliste) unter diesem Namen – auch die früheren anonymen Einträge des Geräts.
+## Schalter „In der Rangliste erscheinen“ aus: alles auf dem Server gelöscht, nichts mehr gesendet. Echte Einträge
+## nur aus der Web-Hauptversion; lokal und in PR-Vorschauen landen sie in eigenen Test-Ranglisten (ver "dev-…"),
 ## damit unfertige Änderungen nichts verfälschen. Tests (Kommandozeile) senden nichts, außer mit
 ## --lb-url=URL [--lb-name=NAME] (lokaler Worker, nichts gespeichert).
-## Gespeichert in user://settings.cfg [rangliste]: id (geheime Geräte-Nummer), name.
+## Gespeichert in user://settings.cfg [rangliste]: id (geheime Geräte-Nummer), name, hidden.
 
 const URL := "https://wakethehack-rangliste.kimpixel.workers.dev"   # Adresse des Workers (siehe server/README.md)
 const HOST := "kimpixel.github.io"
@@ -34,6 +36,7 @@ var url := URL
 var dev := true                  # Test-Ranglisten (lokal, PR-Vorschau)
 var player_id := ""
 var player_name := ""
+var hidden := false              # Schalter „In der Rangliste erscheinen“ aus: nichts senden
 var _test := false
 var _build := ""
 var _fp_cache := {}
@@ -70,6 +73,23 @@ func has_name() -> bool:
 	return player_name != ""
 
 
+## Ergebnisse werden gesendet (Server da, Schalter „In der Rangliste erscheinen“ an).
+func participating() -> bool:
+	return enabled() and not hidden
+
+
+## Schalter „In der Rangliste erscheinen“. Aus: alles auf dem Server löschen (Name, Einträge), nichts mehr senden.
+func set_hidden(v: bool) -> Dictionary:
+	var r := {"ok": true}
+	if v:
+		r = await forget()
+	if r.get("ok", false):
+		hidden = v
+		_save()
+		name_changed.emit()
+	return r
+
+
 ## Web-Hauptversion (nicht lokal, nicht PR-Vorschau)?
 static func _main_web() -> bool:
 	if not OS.has_feature("web"):
@@ -94,6 +114,7 @@ func _load() -> void:
 	cfg.load(GameSettings.FILE)
 	player_id = str(cfg.get_value(SECTION, "id", ""))
 	player_name = str(cfg.get_value(SECTION, "name", ""))
+	hidden = bool(cfg.get_value(SECTION, "hidden", false))
 	if player_id.length() != 32:
 		player_id = _new_id()
 		_save()
@@ -106,6 +127,7 @@ func _save() -> void:
 	cfg.load(GameSettings.FILE)
 	cfg.set_value(SECTION, "id", player_id)
 	cfg.set_value(SECTION, "name", player_name)
+	cfg.set_value(SECTION, "hidden", hidden)
 	cfg.save(GameSettings.FILE)
 
 
@@ -201,15 +223,15 @@ static func format_date(ms: float) -> String:
 
 # ---------------------------------------------------------------- Server
 
-## Ergebnis eintragen (Server behält den Bestwert). {ok, improved, value, rank, total} oder {error}.
-## Ohne Namen bzw. Server: {error, skip: true}.
+## Ergebnis eintragen (Server behält den Bestwert; ohne Namen anonym). {ok, improved, value, rank, total, name}
+## oder {error}. Ohne Server bzw. Schalter „In der Rangliste erscheinen“ aus: {error: "", skip: true}.
 func submit(b: Dictionary, value: float) -> Dictionary:
-	if not enabled() or (_test and not has_name()):
+	if not participating():
 		return {"error": "", "skip": true}
-	if not has_name():
-		return {"error": "Name fehlt", "skip": true}
-	var r := await _post("/score", {"id": player_id, "name": _sent_name(player_name), "board": b["board"],
-		"ver": b["ver"], "value": value, "lower": b["lower"], "build": _build})
+	var body := {"id": player_id, "board": b["board"], "ver": b["ver"], "value": value, "lower": b["lower"], "build": _build}
+	if has_name():
+		body["name"] = _sent_name(player_name)
+	var r := await _post("/score", body)
 	if _test:
 		print("RANGLISTE %s %s: %s" % [b["board"], b["ver"], r])
 	return r
@@ -250,7 +272,7 @@ func set_player_name(n: String) -> Dictionary:
 	return r
 
 
-## Nicht mehr teilnehmen: alle Einträge löschen, Name weg, neue Geräte-Nummer.
+## Alles auf dem Server löschen: alle Einträge, Name weg, neue Geräte-Nummer (über set_hidden(true)).
 func forget() -> Dictionary:
 	var r := {"ok": true}
 	if enabled():
