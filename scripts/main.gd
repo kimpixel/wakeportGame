@@ -86,9 +86,10 @@ var game_mode := Training.COMPETITION
 var _task_idx := 0
 var challenge: Challenge
 var task_panel: TaskPanel
+var round_panel: TaskPanel       # Competition: Ergebnis am Ende der Runde
 var _comp_terminal := ""        # Terminal der Competition (Aufgaben laufen auf Terminal 2)
 var _counting := false          # Countdown läuft (Competition)
-var _round_over := false        # Runde zu Ende, gleich kommt die Startseite: kein neuer Countdown
+var _round_over := false        # Runde zu Ende, Ergebnis-Fenster offen: kein neuer Countdown, HUD zeigt das Ergebnis
 var _mode_arg := ""
 var _go_at := -1.0
 var mode_auto := false           # Test: im Spielmodus fährt der Autopilot (--mode-auto)
@@ -409,7 +410,7 @@ func _ready() -> void:
 	# Pause (Esc): Spiel anhalten, Fenster mit Weiter / Hilfe / Startseite
 	pause_menu = PauseMenu.new()
 	pause_menu.music = music
-	pause_menu.can_pause = func() -> bool: return not start_screen.visible and hud.visible 		and not task_panel.is_open() and not hud._count.visible
+	pause_menu.can_pause = func() -> bool: return not start_screen.visible and hud.visible 		and not task_panel.is_open() and not round_panel.is_open() and not hud._count.visible
 	pause_menu.help_pressed.connect(hud.toggle_help)
 	pause_menu.settings_pressed.connect(_open_settings_ingame.bind("pause"))
 	start_screen.ingame_closed.connect(_close_settings_ingame)
@@ -436,6 +437,15 @@ func _ready() -> void:
 			mobile.release_pad()
 			touch_pad.visible = not open and not start_screen.visible
 	add_child(task_panel)
+	# Competition: Ergebnis am Ende der Runde (im Spiel, gleiches Fenster wie die Challenges)
+	round_panel = TaskPanel.new()
+	round_panel.mobile = mobile.active
+	round_panel.open_changed = task_panel.open_changed
+	round_panel.go_pressed.connect(_play_again)
+	round_panel.home_pressed.connect(func() -> void:
+		round_panel.close()
+		_open_start_screen())
+	add_child(round_panel)
 	challenge = Challenge.new()
 	challenge.game = self
 	challenge.panel = task_panel
@@ -573,6 +583,7 @@ var _autopilot_before := false
 func _open_start_screen() -> void:
 	get_tree().paused = false
 	_round_over = false
+	round_panel.close()
 	_leave_training()
 	_session = false
 	_finishing = false
@@ -634,20 +645,20 @@ func _countdown_start() -> void:
 	_counting = true
 	await Challenge.countdown(hud, get_tree(), false, sfx)
 	_counting = false
-	if not start_screen.visible and not challenge.active and pc.state == CableSystem.State.IDLE 			and rider.mode != Rider.Mode.CRASHED:
+	if not start_screen.visible and not challenge.active and pc.state == CableSystem.State.IDLE 			and rider.mode != Rider.Mode.CRASHED and not _round_over and not _finishing:
 		_start_run()
 		rider.block_jump()
 
 
 ## R / ☰ „Zurück zum Steg“ (Competition): Strafzeit, zurück auf den Steg, dann wieder Countdown.
 func _reset_to_dock() -> void:
-	if _finishing:
-		_end_session()
-		_reset()
-		return
+	if _round_over:
+		return                       # Ergebnis-Fenster offen: dort „Erneut spielen“ / „Zurück“
 	_penalty(RESET_PENALTY)
 	_reset()
-	if not _finishing:
+	if _finishing:                   # Zeit um (auch durch die Strafzeit): Runde ist fertig, kein Countdown
+		_end_session()
+	else:
 		_countdown_start()
 
 
@@ -1187,16 +1198,25 @@ func _end_session() -> void:
 	_session = false
 	_finishing = false
 	_last_result = "Letzte Runde: %d Punkte" % _final_score
-	hud.show_trick("Ende!  %d Punkte" % _final_score)
 	Analytics.count("runde/ende/" + Analytics.score_bucket(_final_score))
+	# man bleibt im Spiel: Ergebnis groß im Fenster, Punkte im HUD bleiben bis zum Neustart stehen
+	var st: Dictionary = _setups[_setup_idx]
+	round_panel.show_round("COMPETITION   ·   %s   ·   %s   ·   %s" % [TERMINAL_NAMES[TERMINALS.find(terminal)],
+		st["name"], _clock(_game_time)], _final_score, "")
 	_submit_round(_final_score)
-	get_tree().create_timer(3.0).timeout.connect(func() -> void:
-		if not start_screen.visible:
-			_open_start_screen())
+
+## Ergebnis-Fenster „Erneut spielen“: Punkte erst jetzt löschen, zurück auf den Steg, Countdown.
+func _play_again() -> void:
+	round_panel.close()
+	_round_over = false
+	_count_start()
+	rider.score = 0
+	_reset()
+	_countdown_start()
 
 
 ## Rangliste: Punkte der Runde eintragen (nur mit Standard-Anlage, siehe Leaderboard.competition_blocked).
-## Platz erscheint unter dem Titel der Startseite.
+## Platz erscheint groß im Ergebnis-Fenster und unter dem Titel der Startseite.
 func _submit_round(score: int) -> void:
 	var sec := roundi(_game_time)
 	var st: Dictionary = _setups[_setup_idx]
@@ -1205,14 +1225,25 @@ func _submit_round(score: int) -> void:
 	var why := Leaderboard.competition_blocked(settings, sec, st)
 	if why != "":
 		_last_result += "   ·   " + why
+		round_panel.set_rank(why)
 		return
+	round_panel.set_rank("Rangliste …")
 	var b := leaderboard.competition_board(sec, terminal, st, TERMINAL_NAMES[TERMINALS.find(terminal)])
 	var r := await leaderboard.submit(b, score)
+	var rank := ""
 	if r.get("ok", false):
 		_last_result = "Letzte Runde: %d Punkte   ·   %s Platz %d von %d" % [score,
 			"Rangliste" if r.get("improved", false) else "Dein Bestwert:", int(r["rank"]), int(r["total"])]
+		rank = "PLATZ %d von %d" % [int(r["rank"]), int(r["total"])]
+		if not r.get("improved", false):
+			rank = "Dein Bestwert: " + rank
 	elif str(r.get("error", "")) != "":
 		_last_result += "   ·   Rangliste: " + str(r["error"])
+		rank = "Rangliste: " + str(r["error"])
+	if _test_log:
+		print("RUNDE RANGLISTE: ", rank)
+	if round_panel.is_open():
+		round_panel.set_rank(rank)
 	if start_screen.visible:
 		start_screen.set_result(_last_result)
 
@@ -1268,11 +1299,11 @@ func _process(_delta: float) -> void:
 		var rp := rider.visual_position()
 		cam.look_at_from_position(rp + rider.global_basis * _closeup, rp + rider.global_basis * _closeup_look)
 	var state := Hud.TimeState.IDLE
-	if _finishing:
+	if _finishing or _round_over:
 		state = Hud.TimeState.OVER
 	elif _session:
 		state = Hud.TimeState.LOW if _time_left < 60.0 and not _free_ride() else Hud.TimeState.RUNNING
-	var time_text := _clock(_time_left if _session else _game_time)
+	var time_text := _clock(_time_left if _session or _round_over else _game_time)
 	if challenge.active:
 		time_text = str(maxi(challenge.attempt, 1))
 		state = Hud.TimeState.RUNNING
@@ -1281,7 +1312,7 @@ func _process(_delta: float) -> void:
 		state = Hud.TimeState.RUNNING
 	hud.time_title = "VERSUCH" if challenge.active else ("MODUS" if _free_ride() else "ZEIT")
 	hud.set_stats(time_text, state,
-		_final_score if _finishing else rider.score, rider.tension_smooth, minf(rider.crash_tension, Rider.CRASH_TENSION))
+		_final_score if _finishing or _round_over else rider.score, rider.tension_smooth, minf(rider.crash_tension, Rider.CRASH_TENSION))
 	hud.set_speed(rider.horizontal_speed() * 3.6)
 	hud.set_debug("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nWenden %d   ·   Kamera: %s%s" % [
 		roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
@@ -1323,7 +1354,7 @@ func _process(_delta: float) -> void:
 		if pc.state == CableSystem.State.IDLE:
 			hud.set_center("")
 			# Competition: steht man auf dem Steg (z. B. nach Bergung), startet der Countdown von selbst
-			if not _round_over and not start_screen.visible and hud.visible and not get_tree().paused:
+			if not _round_over and not _finishing and not start_screen.visible and hud.visible and not get_tree().paused:
 				_countdown_start()
 		elif mobile.active and mobile.use_tilt and not mobile.tilt_available:
 			hud.set_center("Neigungssensor nicht verfügbar –\nBewegungssensoren im Browser erlauben")
@@ -1375,7 +1406,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("start"):
 		if start_screen.visible:
 			return
-		if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED and not _counting and not challenge.active:
+		if pc.state == CableSystem.State.IDLE and rider.mode != Rider.Mode.CRASHED and not _counting and not challenge.active 				and not _round_over:
 			_start_run()
 			rider.block_jump()
 	elif event.is_action_pressed("reset") and challenge.active:
