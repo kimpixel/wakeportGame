@@ -73,7 +73,7 @@ func _ready() -> void:
 	r.jump_landed.connect(_on_landed)
 	r.slide_ended.connect(_on_slide)
 	r.sank.connect(func() -> void:
-		if running and task["kind"] in ["turn", "drift_turn"]:
+		if running and task["kind"] in ["turn", "drift_turn", "dpress"]:
 			_fail("Abgesoffen – kein Wert"))
 	panel.go_pressed.connect(func() -> void: start_attempt())
 	panel.next_pressed.connect(func() -> void: begin(mode_id, task_idx + 1))
@@ -585,14 +585,19 @@ func _track_dpress(r: Rider, delta: float) -> bool:
 				game.hud.show_trick("%s im Drift!  (%d Wechsel)" % ["Nosepress" if dp > 0.0 else "Tailpress", roundi(_press_t)])
 			_press_side = signf(dp)
 	else:
+		# Tail/Nose: Anteil der Wende (Carrier bremst, bis das Seil in der neuen Richtung wieder zieht)
+		# im vollen Press – gleitend, nicht schon einsinkend. Gold = die ganze Wende.
 		var want := 1.0 if task["press"] == "nose" else -1.0
-		if full and signf(dp) == want:
-			_press_t += delta
-			_value = maxf(_value, _press_t)
-		elif _press_t > 0.0:
-			if _press_t >= 0.5:
-				game.hud.show_trick("%s im Drift  %s" % ["Nosepress" if want > 0.0 else "Tailpress", Training.format_value(task, _press_t)])
-			_press_t = 0.0
+		var c0: CableSystem = game.pc
+		if not _seg and c0.laps == _laps0 and c0.state != CableSystem.State.RUN:
+			_seg = true
+		var ok := full and signf(dp) == want and r.sink_level < DRIFT_SINK
+		_press_t = _press_t + delta if ok else 0.0
+		if _seg:
+			_seg_t += delta
+			if ok:
+				_drift_t += delta
+			_value = _drift_t / maxf(_seg_t, 0.01)
 	var c: CableSystem = game.pc
 	if c.laps > _laps0 and c.state == CableSystem.State.RUN and r.tension_smooth > 200.0:
 		if _value > 0.0:
@@ -883,8 +888,10 @@ func _update_hud() -> void:
 			"dpress":
 				if task["press"] == "switch":
 					live = "%d Wechsel   Bester %s" % [roundi(_press_t), Training.format_value(task, _value)]
+				elif _seg:
+					live = "%s   (Press am Stück %.1f s)" % [Training.format_value(task, _value), _press_t]
 				else:
-					live = "Press %s   Bester %s" % [Training.format_value(task, _press_t), Training.format_value(task, _value)]
+					live = "Press am Stück %.1f s" % _press_t
 			"special":
 				var n := _st_next - 1 if not _cur.is_empty() else _st_next
 				if n < task["combo"].size():

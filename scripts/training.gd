@@ -35,6 +35,25 @@ const LEER := "res://setups/training_leer.json"
 const KICKER := "res://setups/training_kicker.json"
 const SLIDER := "res://setups/training_slider.json"
 
+## TEMP: Drift-Nosepress ist abgeschaltet (Rider.DPRESS_NOSE_ON) – diese Challenges stehen solange nicht im
+## Modus Driften. Zum Zurückholen wieder hinter "tailpress" in MODES einfügen.
+const NOSE_TASKS := [
+	{"id": "nosepress", "name": "Nosepress im Drift", "title": "Nosepress im Drift",
+	 "kind": "dpress", "press": "nose", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
+	 "metric": "press_share", "medals": [0.5, 0.8, 0.95],
+	 "goal": "Wie der Tailpress, nur über die Nose: das Brett im Drift erst um 90° quer drehen, dann ins vordere Ende drücken, das Tail steht hoch. Der Winkel zählt von der Querstellung. Gemessen: Anteil der Wende im vollen Nosepress – ohne einzusinken. Gold = die ganze Wende.",
+	 "keys": "Strg halten  driften     ↑ halten  Nosepress     ← / →  Drift-Winkel halten",
+	 "keys_mobile": "DRIFT halten  driften     ▲ halten  Nosepress     Neigen  Winkel halten",
+	 "tip": "Erst quer drehen, dann drücken – mit der Nose vorne stehst du 90° falsch. Je schneller, desto querer darfst du driften. Den Drift nicht loslassen – dann ist der Press sofort vorbei."},
+	{"id": "presswechsel", "name": "Press-Wechsel", "title": "Nose- und Tailpress im Wechsel",
+	 "kind": "dpress", "press": "switch", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
+	 "metric": "switches", "medals": [1.0, 3.0, 5.0],
+	 "goal": "In einem Drift zwischen Nosepress und Tailpress hin und her wechseln. Gemessen: Wechsel in einem Drift (jeder volle Press auf das andere Ende zählt; Drift loslassen fängt neu an).",
+	 "keys": "Strg halten  driften     ↑ / ↓  Nose- / Tailpress",
+	 "keys_mobile": "DRIFT halten  driften     ▲ / ▼  Nose- / Tailpress",
+	 "tip": "Der Press braucht knapp eine Sekunde, bis er ganz drin ist – nicht zu hektisch wechseln."},
+]
+
 const MODES := [
 	{"id": COMPETITION, "name": "Competition",
 	 "text": "Runde auf Zeit: so viele Punkte wie möglich. Terminal, Feature-Setup und Rundenlänge frei wählbar."},
@@ -283,25 +302,11 @@ const MODES := [
 		 "tip": "Mit Drift darf das Brett beim Abgang auch quer stehen. Der Seilzug zieht dich im Drift zur Seilmitte – vorher weit außen auf das Feature fahren."},
 		{"id": "tailpress", "name": "Tailpress im Drift", "title": "Tailpress im Drift",
 		 "kind": "dpress", "press": "tail", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
-		 "metric": "time", "medals": [4.0, 7.0, 9.5],
-		 "goal": "Auf dem Weg zum vorderen Wendepunkt driften und dabei ins Tail drücken: das Brett kippt um das Tail, die Nose steht hoch, die freie Hand streift das Wasser. Du gleitest mit dem ganzen Schwung weiter. Driftest du querer, als es dein Tempo erlaubt (höchstens 86°, nach links wie nach rechts), stürzt du – mit ← / → den Winkel halten. Gemessen: der längste Tailpress am Stück (bis die Wende durch ist).",
+		 "metric": "press_share", "medals": [0.5, 0.8, 0.95],
+		 "goal": "Auf dem Weg zum vorderen Wendepunkt driften und dabei ins Tail drücken: das Brett kippt um das Tail, die Nose steht hoch, die freie Hand streift das Wasser. Du gleitest mit dem ganzen Schwung weiter. Driftest du querer, als es dein Tempo erlaubt (höchstens 86°, nach links wie nach rechts), stürzt du – mit ← / → den Winkel halten. Gemessen: Anteil der Wende im vollen Tailpress (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht) – ohne einzusinken. Gold = die ganze Wende.",
 		 "keys": "Strg halten  driften     ↓ halten  Tailpress     ← / →  Drift-Winkel halten",
 		 "keys_mobile": "DRIFT halten  driften     ▼ halten  Tailpress     Neigen  Winkel halten",
-		 "tip": "Je schneller du bist, desto querer darfst du driften (voller Winkel ab 33 km/h – also vorher rauskanten). Längs zur Fahrtrichtung bremst das Tail am stärksten, je querer du driftest, desto weniger – aber ab 86° reißt es dich um. Wer weit quer (um 60–70°) driftet, kommt mit Schwung durch die Wende. Der Drift-Winkel steht unter dem Seilzug."},
-		{"id": "nosepress", "name": "Nosepress im Drift", "title": "Nosepress im Drift",
-		 "kind": "dpress", "press": "nose", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
-		 "metric": "time", "medals": [4.0, 7.0, 9.5],
-		 "goal": "Wie der Tailpress, nur über die Nose: driften und ins vordere Ende drücken, das Tail steht hoch. Gemessen: der längste Nosepress am Stück (bis die Wende durch ist).",
-		 "keys": "Strg halten  driften     ↑ halten  Nosepress     ← / →  Drift-Winkel halten",
-		 "keys_mobile": "DRIFT halten  driften     ▲ halten  Nosepress     Neigen  Winkel halten",
-		 "tip": "Je schneller, desto querer darfst du driften. Den Drift nicht loslassen – dann ist der Press sofort vorbei."},
-		{"id": "presswechsel", "name": "Press-Wechsel", "title": "Nose- und Tailpress im Wechsel",
-		 "kind": "dpress", "press": "switch", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
-		 "metric": "switches", "medals": [1.0, 3.0, 5.0],
-		 "goal": "In einem Drift zwischen Nosepress und Tailpress hin und her wechseln. Gemessen: Wechsel in einem Drift (jeder volle Press auf das andere Ende zählt; Drift loslassen fängt neu an).",
-		 "keys": "Strg halten  driften     ↑ / ↓  Nose- / Tailpress",
-		 "keys_mobile": "DRIFT halten  driften     ▲ / ▼  Nose- / Tailpress",
-		 "tip": "Der Press braucht knapp eine Sekunde, bis er ganz drin ist – nicht zu hektisch wechseln."},
+		 "tip": "Hart rauskanten, im Drift das Brett erst weit quer drehen (um 75°), dann ins Tail drücken – so bremst nichts. Im goldenen Bereich des Bogens (die letzten 15° vor der Grenze) bremst der Press gar nicht; querer als 86° reißt es dich um. Den Winkel mit ← / → halten, während dich das Seil um den Carrier schwingt."},
 	]},
 	{"id": "transfer", "name": "Transfer", "text": "Von einem Feature auf ein anderes springen.", "tasks": [
 		{"id": "klein", "name": "Klein", "title": "Pyramid auf Pyramid-Rail",
@@ -377,7 +382,7 @@ static func medal_for(task: Dictionary, value: float) -> int:
 ## Messwert so gerundet, wie format_value ihn zeigt – mit diesem Wert wird gewertet (Medaille, Bestwert, Rangliste).
 static func shown(task: Dictionary, value: float) -> float:
 	match task["metric"]:
-		"height", "width", "dist", "dist_5050", "dist_bs", "sink", "share":
+		"height", "width", "dist", "dist_5050", "dist_bs", "sink", "share", "press_share":
 			return snappedf(value, 0.01)
 		"press", "time":
 			return snappedf(value, 0.1)
@@ -393,6 +398,8 @@ static func format_value(task: Dictionary, value: float) -> String:
 			return ("%.2f m" % value).replace(".", ",")   # cm-genau: so wird auch gewertet
 		"press", "time":
 			return ("%.1f s" % value).replace(".", ",")
+		"press_share":
+			return "%d %% im Press" % roundi(value * 100.0)
 		"switches":
 			return "%d Wechsel" % roundi(value)
 		"count":

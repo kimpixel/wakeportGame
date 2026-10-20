@@ -157,15 +157,21 @@ static var CATCH_GLIDE := 5.0         # m/s seitlich in die Slide-Linie gleiten
 static var CATCH_RISE := 3.0          # m/s nach oben auf die Oberkante gleiten
 static var DRIFT_DRAG := 0.7          # Wasserwiderstand im Drift (Anteil): Brett liegt flach, leicht schneller
 static var DRIFT_ROPE_GIVE := 6.0     # 1/s: so schnell fängt das Seil im Drift die Bewegung vom Carrier weg ab (kleiner = weicher)
-static var DRIFT_ROPE_SETTLE := 2.0   # 1/s: im Drift wird die gedehnte Leine so schnell auf Länge gebracht
+static var DRIFT_ROPE_SETTLE := 0.0   # m/s: so schnell schrumpft im Drift der Karussell-Radius zurück auf die Seillänge (0 = nie aktiv reinziehen)
 static var DRIFT_SPIN := 1.2          # im Drift dreht das flache Brett so viel schneller (Anteil; 5 + 5 360er zwischen den roten Bojen)
 # Drift-Press: im Drift auf dem Wasser ↑ = Nosepress, ↓ = Tailpress (Brett kippt weit um das Ende,
 # Oberkörper legt sich nach hinten, die freie Hand streift das Wasser – nach Fotoserie)
-static var DPRESS_SPEED := 9.048      # m/s: ab diesem Tempo ist im Drift-Press der volle Winkel möglich (ca. 33 km/h), darunter anteilig weniger
+static var DPRESS_NOSE_ON := false   # TEMP: Drift-Nosepress abgeschaltet (Nutzerwunsch), nur Tailpress
+static var DPRESS_SPEED := 12.0        # m/s: ab diesem Tempo kommt man im Drift-Press in den Sweet Spot (voller Winkel); darunter nur bis zu seinem Anfang (×3,6 = km/h)
+static var DPRESS_SPEED_BAND := 1.0   # m/s: Übergang unter DPRESS_SPEED, in dem der erlaubte Winkel bis zur Grenze aufgeht
 static var DPRESS_ANG := 0.85         # rad: so steil steht das Brett im vollen Drift-Press (Fotos: ca. 50°)
 static var DPRESS_RISE := 2.5         # 1/s: so schnell baut sich der Drift-Press auf (Bewegung, kein Ruck)
 static var DPRESS_END := 0.68         # m: Drehpunkt am Brett-Ende (Brett 1,49 m)
-static var DPRESS_DRAG := 0.8         # zusätzlicher Wasserwiderstand im vollen Drift-Press (Anteil): man verliert Tempo
+static var DPRESS_DIR_RATE := 10.0     # 1/s: so schnell folgt der Bezug (Fahrtrichtung) des Drift-Winkels – kleiner = ruhiger
+static var DPRESS_CRASH_MIN := 3.0     # m/s: langsamer reißt es einen im Drift-Press nicht mehr um (Seil dreht einen am Ende der Wende herum)
+static var DPRESS_NOSE_REF := PI * 0.5   # Nosepress: Bezug so weit (rad) gegen die Fahrtrichtung versetzt (+90° = Nose nach links; -PI/2 = rechts)
+static var DPRESS_SWEET := 0.8     # Sweet Spot: die letzten so viel vor DPRESS_FALL_ANG (fest, nicht mit dem Tempo) bremst der Drift-Press nicht
+static var DPRESS_DRAG := 2.56         # zusätzlicher Wasserwiderstand im vollen Drift-Press (Anteil): man verliert Tempo
 static var DPRESS_TURN := 0.5         # im Drift-Press dreht das Brett so viel langsamer (Anteil) – zum feinen Justieren
 static var DPRESS_FALL_ANG := 1.501   # rad (86°): Brett im Drift-Press weiter als so quer zur Fahrtrichtung (Drift-Winkel): Sturz
 const SNAP_5050 := deg_to_rad(45.0)   # Einrasten in die nächste Stellung: bis hier 50-50, darüber Boardslide
@@ -203,6 +209,7 @@ var yaw := 0.0
 var attached := true
 var tension := 0.0
 var tension_smooth := 0.0
+var _drift_len := -1.0          # Drift: Radius des Karussells (m), -1 = noch nicht gesetzt
 var _tension_prev := 0.0         # Seilzug vor diesem Schritt (Drift: eigene Berechnung)
 var rope_dir := Vector3.FORWARD
 var autopilot := false
@@ -276,9 +283,14 @@ var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Ob
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
 var _press_bs_vis := 0.0        # 1 = Press im Boardslide (Brett seitlich versetzt, Ende über dem Slider)
 var dpress_angle := 0.0         # Drift-Press: Drift-Winkel zur Fahrtrichtung, links/rechts gleich (rad, 0 … PI/2)
+var _travel_smooth := Vector3.ZERO   # geglättete Fahrtrichtung (Bezug des Drift-Winkels)
+var dpress_drag_now := 0.0      # Drift-Press: gerade wirkende Zusatz-Bremse (Anteil, für die Anzeige)
 var dpress_allowed := 0.0       # Drift-Press: so weit darf er bei diesem Tempo gerade sein (rad)
-var _dpress_vis := 0.0          # sichtbarer Drift-Press (+ Nose, - Tail; Nose = Ende am vorderen Fuß)
+var _dpress_vis := 0.0          # Drift-Press relativ zur Fahrt (+ vorderes Ende, - hinteres; ↓ = immer hinten, auch switch)
+var _dpress_lead := 1.0         # +1 normal (Nose voraus), -1 switch – beim Press-Beginn festgehalten (_update_travel_smooth)
 var test_dpress := INF          # Test: Drift-Press fest auf diesen Wert (--dpress)
+var test_dpress_hold := INF     # Test: im Drift-Press den Drift-Winkel automatisch auf diesem Wert halten (rad, --dpress-hold=GRAD)
+var _dp_log_t := 0.0
 var press_tip := Vector3.ZERO   # Welt: gedrücktes Brett-Ende beim Press (darauf zielt die Kamera)
 var press_body := Vector3.ZERO  # Welt: Becken in der Press-Pose (Kamera)
 var _press_lead := 1.0          # +1: Nose zeigt in Fahrtrichtung, -1: switch (bleibt im Boardslide stehen)
@@ -1079,6 +1091,16 @@ func _read_input(delta: float) -> void:
 		_autopilot_input(delta)
 	else:
 		_steer = Input.get_axis("steer_left", "steer_right")
+		if test_dpress_hold != INF and drifting and (absf(_dpress_vis) > 0.3 or (_release > 0.5 and absf(_pitch_in) > 0.3)):
+			# Test: Winkel halten (Seite bleibt, wie man eingedreht hat), Ausgabe DPRESS …
+			var a := drift_angle_signed()
+			var goal := minf(test_dpress_hold, dpress_allowed - deg_to_rad(4.0))   # nie über den erlaubten Winkel
+			_steer = clampf((a - signf(a if absf(a) > 0.02 else -1.0) * goal) * 6.0, -1.0, 1.0)
+		if test_dpress_hold != INF:
+			_dp_log_t += delta
+			if _dp_log_t > 0.25 and mode == Mode.WATER and (absf(_dpress_vis) > 0.1 or drifting):
+				_dp_log_t = 0.0
+				print("DPRESS lead=%+.0f brett=%+.2f yaw=%.0f ref=%.0f vis=%.2f pin=%.1f %s winkel=%+.0f erlaubt=%.0f bremse=%.2f v=%.1f sink=%.2f T=%.0f press=%.2f drift=%s" % [_dpress_lead, _dpress_board(), rad_to_deg(yaw), rad_to_deg(drift_ref_yaw()), _dpress_vis, _pitch_in, cable.state_text(), rad_to_deg(drift_angle_signed()), rad_to_deg(dpress_allowed), dpress_drag_now, horizontal_speed(), sink_level, tension_smooth, _dpress_vis, drifting])
 		_pitch_in = Input.get_axis("pitch_back", "pitch_front")
 		_edge = 0.0
 		_release = Input.get_action_strength("release")
@@ -1270,8 +1292,13 @@ func _rope_force(delta: float) -> Vector3:
 ## schnalzen), sondern eine feste Länge. Gespannt nimmt sie nur die Bewegung vom Carrier weg; der
 ## Schwung quer dazu bleibt, man pendelt im Bogen um den Carrier. Seilzug = was das Seil dafür abfängt.
 func _drift_rope(delta: float) -> void:
+	# Radius des Karussells: beim Drift-Start die (gedehnte) Länge, danach nie länger; wird nur kürzer,
+	# wenn man von selbst nach innen schwingt (kein aktives Reinziehen – das fraß den Schwung nach außen)
+	if _drift_len < 0.0:
+		_drift_len = maxf(rope_length, _rope_dist)
+	_drift_len = move_toward(maxf(rope_length, minf(_drift_len, maxf(_rope_dist, rope_length))), rope_length, DRIFT_ROPE_SETTLE * delta)
 	var rh := Vector3(rope_dir.x, 0.0, rope_dir.z)
-	if rh.length() < 0.1 or _rope_dist < rope_length:
+	if rh.length() < 0.1 or _rope_dist < _drift_len:
 		tension = 0.0
 		tension_smooth = lerpf(_tension_prev, 0.0, 1.0 - exp(-delta * 12.0))
 		return
@@ -1281,20 +1308,62 @@ func _drift_rope(delta: float) -> void:
 	var take := maxf(away, 0.0) * minf(DRIFT_ROPE_GIVE * delta, 1.0)   # weich abfangen, ohne Rückschlag
 	vel.x += rh.x * take
 	vel.z += rh.z * take
-	# gedehnte Leine langsam auf Länge bringen (ohne Ruck)
-	var stretch := _rope_dist - rope_length
-	pos += rh * stretch * minf(DRIFT_ROPE_SETTLE * delta, 1.0)
+	# weiter als der Radius beim Drift-Start geht es nicht (Seil dehnt sich nicht weiter)
+	if _rope_dist > _drift_len:
+		pos += rh * (_rope_dist - _drift_len) * minf(10.0 * delta, 1.0)
 	tension = MASS * take / delta
 	tension_smooth = lerpf(_tension_prev, tension, 1.0 - exp(-delta * 12.0))
+
+
+## Drift-Winkel mit Vorzeichen (+ = Brett nach links gedreht), für Anzeigen; 0 ohne Fahrt.
+## Bezug im Drift-Press. Tailpress: 0 = Nose zeigt in Fahrtrichtung; Nosepress um DPRESS_NOSE_REF (90°)
+## versetzt: 0 = Brett quer (vorher eindrehen). Ohne Press: Nose oder Tail, was näher liegt.
+func drift_angle_signed() -> float:
+	if horizontal_speed() < 0.5 or _travel_smooth.length() < 0.1:
+		return 0.0
+	return wrapf(yaw - drift_ref_yaw(), -PI, PI)
+
+
+## Bezugsrichtung (Yaw) des Drift-Winkels, siehe drift_angle_signed.
+## Switch (Tail voraus) ist alles spiegelverkehrt: der Bezug dreht um 180° mit.
+func drift_ref_yaw() -> float:
+	var ty := atan2(-_travel_smooth.x, -_travel_smooth.z) if _travel_smooth.length() > 0.1 else yaw
+	var nose := _dpress_vis > 0.05 or (absf(_dpress_vis) <= 0.05 and _pitch_in > 0.3)
+	var tail := _dpress_vis < -0.05 or (absf(_dpress_vis) <= 0.05 and _pitch_in < -0.3)
+	var flip := 0.0 if _dpress_lead > 0.0 else PI
+	if nose:
+		return ty + DPRESS_NOSE_REF + flip
+	if tail:
+		return ty + flip
+	return _aligned_yaw(ty)
+
+
+## Drift-Press am Brett: + Brett-Nose, - Brett-Tail (switch gespiegelt). Für Pose, Kippung und Hände.
+func _dpress_board() -> float:
+	return _dpress_vis * _dpress_lead
 
 
 ## Drift-Winkel: Brett-Längsachse (Nose oder Tail, was näher liegt) gegen die Fahrtrichtung, 0 … PI/2.
 ## Symmetrisch – nach links wie nach rechts gleich (das Seil zieht nach vorne).
 func _drift_angle() -> float:
+	return absf(drift_angle_signed())
+
+
+## Fahrtrichtung als Bezug für den Drift-Winkel, leicht geglättet: zieht das Seil bei wenig Tempo wieder
+## an, knickt die Fahrtrichtung schlagartig – ohne Glätten spränge der Winkel über die Grenze.
+func _update_travel_smooth(delta: float) -> void:
 	var vh := Vector3(vel.x, 0.0, vel.z)
-	if vh.length() < 0.5:
-		return 0.0
-	return absf(wrapf(yaw - _aligned_yaw(atan2(-vh.x, -vh.z)), -PI, PI))
+	if vh.length() < 0.3:
+		return
+	# Normal oder switch? Nur außerhalb des Press neu bestimmen – sonst spränge es beim Querdrehen um
+	if absf(_dpress_vis) < 0.05:
+		var d := vh.normalized().dot(forward())
+		if absf(d) > 0.3:
+			_dpress_lead = 1.0 if d > 0.0 else -1.0
+	if not drifting or _travel_smooth.length() < 0.1:
+		_travel_smooth = vh.normalized()
+		return
+	_travel_smooth = _travel_smooth.lerp(vh.normalized(), 1.0 - exp(-delta * DPRESS_DIR_RATE)).normalized()
 
 
 func _step_water(delta: float, rope: Vector3) -> void:
@@ -1360,13 +1429,22 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	# Drift-Press: weiter Drift (Momentum bleibt), das Brett lässt sich drehen. Das Ende im Wasser
 	# bremst (DPRESS_DRAG) – je weiter das Brett quer zur Fahrtrichtung steht (Drift-Winkel), desto weniger; ab
 	# DPRESS_FALL_ANG reißt es einen um. Man muss also mit ←/→ den Winkel halten.
+	_update_travel_smooth(delta)
 	var dp_hold := smoothstep(0.2, 0.8, absf(_dpress_vis)) if drift else 0.0
 	dpress_angle = _drift_angle() if dp_hold > 0.0 else 0.0
-	dpress_allowed = DPRESS_FALL_ANG * clampf(speed / DPRESS_SPEED, 0.0, 1.0)   # mehr Tempo = mehr Winkel
-	if dp_hold > 0.5 and dpress_angle > dpress_allowed:
+	# Erlaubter Winkel: unter DPRESS_SPEED nur bis zum Anfang des Sweet Spots (man kommt nicht hinein bzw. fällt
+	# heraus = Sturz), ab DPRESS_SPEED bis zur Grenze; dazwischen ein schmaler Übergang
+	var sweet_start := maxf(DPRESS_FALL_ANG - DPRESS_SWEET, 0.0)
+	var band := maxf(DPRESS_SPEED_BAND, 0.01)
+	dpress_allowed = lerpf(sweet_start, DPRESS_FALL_ANG, clampf((speed - (DPRESS_SPEED - band)) / band, 0.0, 1.0))
+	if dp_hold > 0.5 and dpress_angle > dpress_allowed and speed > DPRESS_CRASH_MIN:   # langsam verkantet nichts
 		crash("Drift-Press zu quer gedriftet!")
 		return
-	var dp_drag := DPRESS_DRAG * dp_hold * clampf(1.0 - maxf(dpress_angle, 0.0) / DPRESS_FALL_ANG, 0.0, 1.0)
+	# Sweet Spot: fest die letzten DPRESS_SWEET vor der Grenze DPRESS_FALL_ANG – dort bremst der Press nicht,
+	# darunter linear mehr. Er wandert nicht mit dem Tempo: wer zu langsam ist (erlaubt weniger), kommt nicht hinein.
+	var dp_free := maxf(DPRESS_FALL_ANG - DPRESS_SWEET, 0.0)
+	var dp_drag := DPRESS_DRAG * dp_hold * (clampf(1.0 - dpress_angle / dp_free, 0.0, 1.0) if dp_free > 0.01 else 0.0)
+	dpress_drag_now = dp_drag
 	if drift:
 		var drag := (DRAG_QUAD * speed * speed + DRAG_LIN * speed) * (DRIFT_DRAG + dp_drag)
 		force = -dir_before * drag
@@ -1374,6 +1452,8 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	vel.z += force.z / MASS * delta
 	if drift:
 		_drift_rope(delta)
+	else:
+		_drift_len = -1.0
 	if _brace:
 		vel.x = 0.0                    # Sprung-Start: Fersen gegen den Steg gestemmt
 		vel.z = 0.0
@@ -2121,7 +2201,8 @@ func _process(delta: float) -> void:
 	_press_vis = lerpf(_press_vis, press_target, 1.0 - exp(-delta * 10.0))
 	var bs_target := 1.0 if (mode == Mode.WATER and _slide_part != null and _is_boardslide(_slide_part)) else 0.0
 	_press_bs_vis = lerpf(_press_bs_vis, bs_target, 1.0 - exp(-delta * 10.0))
-	var dp_target := _pitch_in if (mode == Mode.WATER and drifting) else 0.0     # geht immer, das Tempo bestimmt den Winkel
+	var dp_in := _pitch_in if (DPRESS_NOSE_ON or _pitch_in < 0.0) else 0.0   # Nosepress vorerst abgeschaltet
+	var dp_target := dp_in if (mode == Mode.WATER and drifting) else 0.0     # geht immer, das Tempo bestimmt den Winkel
 	_dpress_vis = lerpf(_dpress_vis, dp_target, 1.0 - exp(-delta * DPRESS_RISE))
 	if test_dpress != INF and mode == Mode.WATER:
 		_dpress_vis = test_dpress
@@ -2663,8 +2744,9 @@ func _board_stand_xf(nolli := true) -> Transform3D:
 		xf *= Transform3D(b, pv - b * pv + shift)
 	if absf(_dpress_vis) > 0.001:
 		# Drift-Press: Brett kippt um das Ende im Wasser (lokal -Z = vorderer Fuß, auch bei Goofy)
-		var pv := Vector3(0.0, -0.03, DPRESS_END * signf(-_dpress_vis))
-		var b := Basis(Vector3.RIGHT, -DPRESS_ANG * _dpress_vis)
+		var db := _dpress_board()
+		var pv := Vector3(0.0, -0.03, DPRESS_END * signf(-db))
+		var b := Basis(Vector3.RIGHT, -DPRESS_ANG * db)
 		press_tip = xf * pv
 		xf *= Transform3D(b, pv - b * pv)
 	if nolli and _nolli_vis > 0.001:
@@ -2829,7 +2911,7 @@ func _pose_drift_press() -> void:
 	var rb := _pose_frame().basis.orthonormalized()
 	var up := rb * Vector3.UP
 	var chest := rb * Vector3.RIGHT * _facing()
-	var along := rb * Vector3.BACK * signf(-_dpress_vis)       # zum gedrückten Ende
+	var along := rb * Vector3.BACK * signf(-_dpress_board())       # zum gedrückten Ende
 	var ff := _board_xf * Wakeboard.ankle_local(true)
 	var fb := _board_xf * Wakeboard.ankle_local(false)
 	var low := ff if (ff - fb).dot(along) > 0.0 else fb          # Fuß am gedrückten Ende
@@ -2857,9 +2939,9 @@ func _pose_drift_press_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
 	var skel_inv := skel.affine_inverse()
 	var rb := _pose_frame().basis.orthonormalized()
 	var chest := rb * Vector3.RIGHT * _facing()
-	var along := rb * Vector3.BACK * signf(-_dpress_vis)
+	var along := rb * Vector3.BACK * signf(-_dpress_board())
 	var tail_hand := "l" if goofy else "r"                      # Hand über dem hinteren Fuß
-	var drag := tail_hand if _dpress_vis < 0.0 else ("r" if tail_hand == "l" else "l")
+	var drag := tail_hand if _dpress_board() < 0.0 else ("r" if tail_hand == "l" else "l")
 	var hold := "r" if drag == "l" else "l"
 	var before := _rig.snapshot()
 	var head := skel * _rig.global_pose("head").origin
