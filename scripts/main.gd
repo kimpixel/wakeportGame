@@ -84,6 +84,8 @@ var _free := false              # Freies Fahren: keine Zeit, keine Strafzeit
 var _npc_on := true
 var _grip_on := 1               # Seilzug-Grenze „An“ (GameSettings.GRIP_TENSION), zu der G zurückschaltet
 var _swum := false              # seit dem Sturz schon geschwommen (Panel aus)
+var _down_t := 0.0             # s seit dem Sturz bzw. Seilverlust (Sturz-Panel erst nach RECOVERY_DELAY)
+const RECOVERY_DELAY := 5.0     # s: so lange sieht man erst den Sturz, bevor das Sturz-Panel weich einblendet
 var _msaa_default := Viewport.MSAA_DISABLED
 var _touch_started := false     # dieser Finger hat die Anlage gestartet (kein Sprung)
 # Spielmodi (Training): Competition = Runde auf Zeit, sonst Aufgaben mit Medaillen (Challenge)
@@ -1429,13 +1431,21 @@ func _process(_delta: float) -> void:
 		hud.set_center("")
 	elif rider.attached:
 		_swum = false
+		_down_t = 0.0
 	elif rider.swimming:
 		_swum = true                # wer losschwimmt, braucht das Panel nicht mehr
+	else:
+		# Sturz-Panel erst nach RECOVERY_DELAY – vorher soll man den Sturz sehen; wer schon eine Taste
+		# drückt (schwimmen, Strg, R …), weiß Bescheid und braucht es nicht
+		_down_t += _delta
+		for a: String in ["jump", "swim", "release", "reset", "pitch_front"]:
+			if Input.is_action_pressed(a) and _down_t > 0.3:
+				_swum = true
 	if challenge.active or _counting:
 		pass                        # Spielmodi/Countdown: kein Sturz-Panel, kein Starttext
 	elif not rider.attached:
 		hud.set_center("")
-		if _swum:
+		if _swum or _down_t < RECOVERY_DELAY:
 			hud.show_recovery("", [])
 		elif pc.state == CableSystem.State.HOLD or pc.state == CableSystem.State.FETCH:
 			var title := "STURZ  –  der Operator bringt dir die Handle" if pc.state == CableSystem.State.FETCH 				else "STURZ  –  die Handle liegt bereit"

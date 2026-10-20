@@ -272,6 +272,8 @@ func _fill(mode_name: String, idx: int, count: int, task: Dictionary, best: Arra
 
 func _open() -> void:
 	MenuNav.reset_focus(_dim)                # Fokus auf LOS / NOCHMAL
+	if not _dim.visible:
+		Hud.fade_in(_dim)                     # weich einblenden
 	_dim.visible = true
 	if open_changed.is_valid():
 		open_changed.call(true)

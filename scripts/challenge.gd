@@ -8,7 +8,8 @@ extends Node
 signal home_requested
 
 const SETTLE := 0.7             # s nach Landung/Slide ohne Sturz, bis der Versuch zählt
-const FAIL_DELAY := 1.4         # s nach Sturz, bis das Ergebnis kommt
+const FAIL_DELAY := 1.4         # s nach einem Fehlversuch (verpasst …), bis der nächste Versuch kommt
+const CRASH_WAIT := 1.2         # s nach Sturz/Seilverlust: erst den Sturz sehen, dann neuer Versuch bzw. Ergebnis
 const TIMEOUT := 75.0
 const DRIFT_SINK := 0.15        # Wende im Drift: ab diesem Sinkpegel gleitet man nicht mehr (zählt nicht)
 const SPIN_EACH := 5            # 360er im Drift: so viele je Richtung zählen
@@ -37,6 +38,7 @@ var _was_air := false
 var _done_t := -1.0             # wartet nach Landung/Slide auf "kein Sturz"
 var _fail_t := -1.0
 var _fail_text := ""
+var _crash_t := -1.0            # Restzeit nach dem Sturz (CRASH_WAIT), -1 = kein Sturz
 var _hit := false               # Ziel erreicht (Wert gültig)
 var _count := 0
 var _s_turn := 0.0              # Wendepunkt (Spiel-s) bei Wende/Raley
@@ -233,6 +235,7 @@ func _reset_measure() -> void:
 	_was_air = false
 	_done_t = -1.0
 	_fail_t = -1.0
+	_crash_t = -1.0
 	_hit = false
 	_count = 0
 	_via = false
@@ -297,12 +300,19 @@ func _physics_process(delta: float) -> void:
 			_finish(false)
 		return
 	if r.mode == Rider.Mode.CRASHED or not r.attached:
+		# erst den Sturz zeigen (CRASH_WAIT), dann werten – sonst sieht man ihn gar nicht
+		if _crash_t < 0.0:
+			_crash_t = CRASH_WAIT
+		_crash_t -= delta
+		if _crash_t > 0.0:
+			return
 		if task["kind"] in ["chain", "special", "drift_spin"] and _count > 0:
 			_value = _special_value() if task["kind"] == "special" else _count
 			_hit = true
 			_finish(true)
 			return
-		_fail("Gestürzt – kein Wert" if r.mode == Rider.Mode.CRASHED else "Seil verloren – kein Wert")
+		_fail_text = "Gestürzt – kein Wert" if r.mode == Rider.Mode.CRASHED else "Seil verloren – kein Wert"
+		_finish(false)                         # Wartezeit war schon CRASH_WAIT
 		return
 	var local := c.transform.affine_inverse() * r.pos
 	var s_now := c.mast_a_z - local.z

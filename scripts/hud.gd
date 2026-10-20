@@ -190,6 +190,8 @@ func show_recovery(title: String, rows: Array) -> void:
 		_recovery.visible = false
 		_rec_key = ""
 		return
+	if not _recovery.visible:
+		fade_in(_recovery)                    # weich einblenden
 	_recovery.visible = true
 	# hochkant (Handy): Titel zweizeilig, je Zeile links die Taste, rechts Aktion und darunter die Kosten –
 	# drei Spalten wären ca. 750 px breit und würden unleserlich klein gestaucht
@@ -404,6 +406,13 @@ func set_task(text: String) -> void:
 
 func set_center(text: String) -> void:
 	_center.text = text
+
+
+## Fenster/Panel weich einblenden (auch während das Spiel pausiert).
+static func fade_in(c: CanvasItem, time := 0.35) -> void:
+	c.modulate.a = 0.0
+	var tw := c.create_tween().set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tw.tween_property(c, "modulate:a", 1.0, time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 
 func show_trick(text: String) -> void:

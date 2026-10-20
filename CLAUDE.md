@@ -160,7 +160,7 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
   `target` = Ziel, je per Anzeigename; zählt nur: auf dem Start-Feature fahren, abspringen, aus der Luft aufs Ziel; Klein/Groß/Special messen die Sprunghöhe im Flug Start-Feature → Ziel (`_xfer_h`), Special Press die Press-Sekunden). Nach gewertetem Versuch **1,4 s ausrollen** (`Challenge.OUTRO`), dann Fenster.
   Startseite im Querformat zweispaltig (links Modi, rechts Terminal/Setup bzw. Aufgaben; Handy quer: Start links).
 - Aufgabe setzt Fahrer + Carrier **in voller Fahrt** kurz vor die Stelle (`Rider.place`, `CableSystem.place_running`),
-  jeder Versuch wieder dort (auch Kamera). Sturz/Seil verloren/verpasst: **kein Bergungs- oder Ergebnis-Fenster**,
+  jeder Versuch wieder dort (auch Kamera). Sturz/Seil verloren/verpasst: **kein Bergungs- oder Ergebnis-Fenster** (nach Sturz/Seilverlust erst `Challenge.CRASH_WAIT` 1,2 s den Sturz zeigen),
   sofort neuer Versuch mit Countdown; Fenster nur bei gewertetem Versuch. Immer Terminal 2, 30 km/h, 16 m Seil. Eigene Setups
   `setups/training_*.json` (nicht in index.json): leer (Wenden/Raley), Kicker M+L wie Setup B, Slider-Park
   (rechts Full Pipe, Rail, A-Frame, Pipe; links 100 m Long Rail).
@@ -252,7 +252,7 @@ Steuerung Desktop (Mobil-Code darf Desktop-Eingabe nie beeinflussen, siehe unten
   **Press vormerken** (`Rider._prepress`, `_slider_landing_time`): bei ↑/↓ in der Luft wird die Flugbahn vorausgerechnet (Schwerkraft + Seil, alle `PREPRESS_EVERY` 0,1 s); endet sie auf einem Slider (Fangzone oder Slide-Fläche) und reicht die Zeit nicht mehr für die (restliche) Rolle (`(TAU − FLIP_LAND_TOL − |flip|) / FLIP_RATE × PREPRESS_MARGIN`), gibt es keine Rolle (bis `FLIP_PRESS_MAX` angefangene wird zurückgenommen), das Brett kippt schon in der Luft (`PREPRESS_TILT`), Landung direkt im Press. Sonst Rolle. **Keine Sperre beim Abspringen** vom Slider: ↑/↓ gehalten = gleich Rolle; nur ohne Absprung übers Ende gerutscht bleibt der Press. Sprung-Start sperrt weiter (`_flip_lock`, ↓ vom Gegenhalten).
 - Leertaste: halten + loslassen = Sprung; startet auch die Anlage (dann ohne Sprung). Im Spiel kein Enter (Enter = Start nur in Menüs).
   **Nach Sturz: Leertaste halten = schwimmen, Strg = sofort weiter (−1:00), R = Steg (−2:00)** –
-  angezeigt in einem Panel mit Zeitkosten (`Hud.show_recovery`).
+  angezeigt in einem Panel mit Zeitkosten (`Hud.show_recovery`) – erst nach `RECOVERY_DELAY` 5 s (main.gd, man soll den Sturz sehen) und nur, wenn man bis dahin weder schwimmt noch eine Taste drückt; weich eingeblendet (`Hud.fade_in`, auch das Challenge-Fenster)
 - Strg (zur Not Alt): **Driften** – keine Kante greift: Lenken ändert die Fahrtrichtung nicht, nur der
   Seilzug zieht einen (nicht festnageln, sonst reißt das Seil); das Seil ist im Drift **keine Feder, sondern fest wie beim Kettenkarussell** (`Rider._drift_rope`: fängt nur die Bewegung vom Carrier weg weich ab, `DRIFT_ROPE_GIVE`; Radius = gedehnte Länge beim Drift-Start, wird nie länger und **zieht nie aktiv rein** (`DRIFT_ROPE_SETTLE` 0 – früheres Reinziehen fraß den Schwung nach außen); der Schwung nach außen geht über das Seil in Vorwärtsfahrt über, kein Schnalzen nach vorne), ←/→ drehen nur das Brett, Wasserwiderstand × `DRIFT_DRAG` 0.7 (leicht schneller), Brett dreht im Drift schneller (`DRIFT_SPIN`). Nur Spieler,
   Autopilot/NPC driften wie früher. „Maximaler Grip“ gibt es nicht mehr.
