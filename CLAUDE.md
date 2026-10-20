@@ -309,6 +309,12 @@ Tricks/Optik:
   (`PRESS_BEHIND`; „vorne“ heißt beim Nutzer: in Fahrtrichtung sehen), Blick zwischen Becken (`Rider.press_body`) und gedrücktem Brett-Ende (`Rider.press_tip`); danach weich zurück.
   Der Blickpunkt zieht mit der Fahrgeschwindigkeit mit (sonst hängt er von der Seite sichtbar ca. 1 m hinterher).
 - Handle beim Press immer in der vorderen Hand (auch 50-50-Tailpress, obwohl die Pose gespiegelt ist).
+- **Handle Pass** (Seil geht nie durch den Körper): die Handle bleibt beim Seil, der Körper dreht sich darunter weg
+  (`Rider._process` „Griff, Arme, Seil“, `_pose_arms`). Brust voran gedreht wandert sie vorne herum (beide Hände), Rücken voran
+  hinter dem Rücken: dort hält nur die Hand auf ihrer Seite, in der Rückenmitte Übergabe an die andere. Welche Hand loslässt,
+  folgt aus der Lage (Griffende hinter der Brust auf der fremden Körperseite), vorausschauend nach Drehtempo, zeitlich geglättet
+  (`HPASS_RATE`); Griff und Hände bleiben außerhalb des Rumpfes (`_torso_out`, `TORSO_DEPTH`/`TORSO_WIDTH`). Switch/Goofy
+  spiegeln sich von selbst. Nicht bei Raley, Inverts, Wasserstart.
 - Nach Sturz/Absaufen/Neustart wird Raley/Überschlag/Press sofort zurückgesetzt.
 - Features haben **Kollisionskörper** aus ihrer Form (`FeaturePart._build_collider`, Ebene `LAYER_COLLIDE`):
   **massive konvexe Säulen** aus `height_local()` bis 1,5 m unter Wasser (`COLLIDE_BOTTOM`; früher hohles Dreiecksnetz –

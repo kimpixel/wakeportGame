@@ -192,6 +192,9 @@ static var LOCK_RATE := 8.0          # 1/s: seitliches Wegrutschen wird so schne
 static var LOCK_PULL := 4.0          # 1/s: Zug zur Slide-Spur
 const BOARD_Y := 0.012          # Unterkante Brettmitte über der Fahrerposition
 const ARM_REACH := 0.88         # Griff höchstens so weit weg (Anteil der Armlänge) – Arme leicht gebeugt
+const HPASS_RATE := 16.0        # Handle Pass: so schnell (1/s) bewegt sich eine Hand zum Griff bzw. von ihm weg
+const TORSO_DEPTH := 0.15       # Rumpf als Ellipse um die Wirbelsäule: halbe Tiefe (Brust–Rücken) …
+const TORSO_WIDTH := 0.2        # … und halbe Breite; Hände und Griff bleiben außerhalb
 const BOARD_HALF := 0.35
 # Sprung-Start: auf dem Startsteg ↓ halten = gegen das anfahrende Seil stemmen. Der Seilzug lädt sich
 # bis zur maximalen Seilspannung auf (Anteil der Seilzug-Grenze); ist sie erreicht, reißt das Seil
@@ -349,6 +352,10 @@ var _invert := ""              # Invert aus dem Raley: "" (Raley), "sbend", "bac
 var _raley_cut := false        # Raley-Schwung per ←/→ abgebrochen (schnell zurück, dann drehen)
 var _sbend_pivot := Vector3.INF   # S-Bend: Handle im Raley-Rahmen (_swing_frame), Drehpunkt der Längsdrehung
 var _invert_ang := 0.0         # sichtbarer Drehwinkel des Inverts (S-Bend: Längsachse, Backroll: Rolle)
+var _hpass_free := Vector2.ZERO   # Handle Pass: wie weit linke (x) / rechte (y) Hand vom Griff gelöst ist (zeitlich geglättet)
+var _hpass_on := 0.0              # Handle Pass erlaubt (0 bei Raley, Inverts, Wasserstart)
+var _hpass_yaw := 0.0             # Körper-Gierwinkel im letzten Bild (Drehtempo für die Vorausschau)
+var _hpass_back := 0.0            # Handle hinter dem Rücken (0 vorne/seitlich … 1 Rückenmitte)
 var _auto_t := 0.0
 var _prev_pos := START_POS
 var _prev_yaw := 0.0
@@ -2481,6 +2488,8 @@ func _process(delta: float) -> void:
 	var anchor := cable.get_anchor_visual()
 	var handle_pos: Vector3
 	var to_anchor := Vector3.FORWARD
+	_hpass_on = 0.0
+	_hpass_back = 0.0
 	if attached:
 		var hand := vpos + Vector3(0.0, HANDLE_HEIGHT * (1.0 - minf(_crouch, 1.0) * 0.5), 0.0)
 		to_anchor = (anchor - hand).normalized()
@@ -2488,7 +2497,21 @@ func _process(delta: float) -> void:
 		if _rig:
 			# Realistischer Griff: vor der vorderen Hüfte, Arme fast gestreckt
 			var rb := global_transform.basis.orthonormalized()
-			handle_pos = vpos + rb * Vector3(0.2 * _facing(), 0.86 - 0.34 * minf(_crouch, 1.0), -0.2) + to_anchor * 0.5
+			# Handle Pass: die Handle bleibt beim Seil, der Körper dreht sich darunter weg. psi = Seilrichtung
+			# zur Brust (+90° = Seite des vorderen Fußes, normales Fahren; −90° = switch). Brust voran gedreht
+			# wandert sie vorne herum (beide Hände), mit dem Rücken voran hinter dem Rücken: dort hält sie nur
+			# die Hand auf ihrer Seite, in der Mitte (±180°) wird sie an die andere Hand übergeben
+			var chest_h := Vector3(rb.x.x, 0.0, rb.x.z).normalized() * _facing()
+			var lead := -Vector3(rb.z.x, 0.0, rb.z.z).normalized()
+			var a_h := Vector3(to_anchor.x, 0.0, to_anchor.z)
+			a_h = a_h.normalized() if a_h.length() > 0.01 else lead
+			var psi := atan2(a_h.dot(lead), a_h.dot(chest_h))
+			var back := smoothstep(PI * 0.5, PI, absf(psi))
+			handle_pos = vpos + rb * Vector3(0.0, 0.86 - 0.34 * minf(_crouch, 1.0), 0.0) + chest_h * 0.2 * (1.0 - back) \
+				+ lead * 0.2 * sin(psi) + to_anchor * lerpf(0.5, 0.25, back)
+			# welche Hand loslässt, entscheidet _pose_arms aus der Lage des Griffs zum Rumpf
+			_hpass_on = 1.0
+			_hpass_back = back
 			if _getup < 1.0:
 				handle_pos = _dw_handle.lerp(handle_pos, smoothstep(0.0, 1.0, _getup))
 			if _raley_ang > 0.001:
@@ -2503,6 +2526,10 @@ func _process(delta: float) -> void:
 				# Invert-Backroll: Griff rollt mit dem Körper (vor der vorderen Hüfte, zur Brust)
 				var grip := _pose_frame() * Vector3(0.2 * _facing(), 0.86 - 0.34 * minf(_crouch, 1.0), -0.2) + _raley_chest * 0.2
 				handle_pos = handle_pos.lerp(grip, _invert_w())
+			# Raley, Inverts, Wasserstart: Griff mit beiden Händen vor dem Körper, kein Handle Pass
+			var keep := smoothstep(0.0, 1.0, _getup) * (1.0 - smoothstep(0.0, 0.3, _raley_ang / RALEY_MAX)) * (1.0 - _invert_w())
+			_hpass_on *= keep
+			_hpass_back *= keep
 	else:
 		handle_pos = _free_handle
 		to_anchor = (anchor - handle_pos).normalized()
@@ -3397,29 +3424,98 @@ func _pose_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
 		+ _rig.rest_global("lowerarm_l").origin.distance_to(_rig.rest_global("hand_l").origin)) * ARM_REACH + HumanRig.GRIP_ALONG * 0.8
 	# abwechselnd zu beiden Schultern ziehen (stetig): früher nur zur weiter entfernten – liegt der Griff mittig
 	# vor dem Körper (Deep-Water-Start), kippte diese Wahl hin und her und die Handle zitterte um ~9 cm
+	# Rumpf (Wirbelsäule Becken -> Schultermitte, Brust/Seite aus den Schultern): Griff und Hände bleiben außerhalb
+	var mid_sh := (sh_l + sh_r) * 0.5
+	var pelvis := skel * _rig.global_pose("pelvis").origin
+	var side := (sh_l - sh_r).normalized()                 # zur linken Schulter
+	var chest := side.cross((mid_sh - pelvis).normalized()).normalized()
+	# Handle Pass: eine gelöste Hand begrenzt den Griff nicht (stetig über die Reichweite)
+	var reach_lr := [reach + _hpass_free.x * 1.5, reach + _hpass_free.y * 1.5]
 	for i in 8:
 		var moved := false
-		for sh: Vector3 in [sh_l, sh_r]:
+		for j in 2:
+			var sh: Vector3 = [sh_l, sh_r][j]
 			var end := handle_pos - bar_axis * 0.1 if sh.distance_to(handle_pos - bar_axis * 0.1) < sh.distance_to(handle_pos + bar_axis * 0.1) else handle_pos + bar_axis * 0.1
-			var over := sh.distance_to(end) - reach
+			var over := sh.distance_to(end) - float(reach_lr[j])
 			if over > 0.0005:
 				handle_pos += (sh - end).normalized() * over
 				moved = true
+		var outside := _torso_out(handle_pos, pelvis, mid_sh, chest, side, 0.04)
+		if outside.distance_to(handle_pos) > 0.0005:
+			handle_pos = outside
+			moved = true
 		if not moved:
 			break
 	var a := handle_pos - bar_axis * 0.1
 	var b := handle_pos + bar_axis * 0.1
-	# Ellbogen nach unten und leicht nach außen (vom Körper weg)
-	var mid_sh := (sh_l + sh_r) * 0.5
-	# jede Hand an das Griffende, das näher an ihrer Schulter liegt (sonst überkreuzen die Arme)
-	var front := a if sh_l.distance_to(a) + sh_r.distance_to(b) < sh_l.distance_to(b) + sh_r.distance_to(a) else b
-	var back := b if front == a else a
-	# Hände umschließen den Griff (Faust), Daumen zur Griffmitte
-	_rig.grip("l", skel_inv * front, skel_inv.basis * (handle_pos - front),
-		skel_inv * (sh_l + Vector3.DOWN * 0.6 + (sh_l - mid_sh).normalized() * 0.25))
-	_rig.grip("r", skel_inv * back, skel_inv.basis * (handle_pos - back),
-		skel_inv * (sh_r + Vector3.DOWN * 0.6 + (sh_r - mid_sh).normalized() * 0.25))
+	# jede Hand an das Griffende, das näher an ihrer Schulter liegt (sonst überkreuzen die Arme); stetig: wird es
+	# knapp, rutschen beide Hände zur Mitte statt die Enden zu tauschen (die Hände sprangen sonst)
+	var diff := sh_l.distance_to(b) + sh_r.distance_to(a) - sh_l.distance_to(a) - sh_r.distance_to(b)
+	var s := clampf(diff / 0.06, -1.0, 1.0)
+	var ends := [handle_pos - bar_axis * 0.1 * s, handle_pos + bar_axis * 0.1 * s]
+	# Handle Pass: eine Hand lässt los, wenn ihr Griffende hinter der Brust auf der anderen Körperseite liegt
+	# (dorthin käme sie nur durch den Rumpf) – also hinter dem Rücken auf der fremden Seite. In der Rückenmitte
+	# greift sie wieder zu (Übergabe). Zeitlich geglättet: die Hand bewegt sich hin und weg, statt zu springen
+	# vorausschauend: Lage der Griffenden nach der Zeit, die eine Hand braucht (Körper dreht sich weiter)
+	var dt := maxf(get_process_delta_time(), 0.0001)
+	var yaw_now := global_basis.get_euler().y
+	var turn := -wrapf(yaw_now - _hpass_yaw, -PI, PI) / dt / HPASS_RATE
+	_hpass_yaw = yaw_now
+	var want := Vector2.ZERO
+	for j in 2:
+		var own := side if j == 0 else -side
+		var d: Vector3 = (ends[j] - _spine_at(ends[j], pelvis, mid_sh)).rotated(Vector3.UP, clampf(turn, -1.0, 1.0))
+		want[j] = (1.0 - smoothstep(0.02, 0.16, d.dot(chest))) * (1.0 - smoothstep(-0.14, 0.0, d.dot(own))) * _hpass_on
+	if want.x > 0.5 and want.y > 0.5:             # nie beide los: die näher am Griff hält
+		if want.x < want.y: want.x = 0.0
+		else: want.y = 0.0
+	# zugreifen etwas schneller als loslassen: bei der Übergabe ist die Handle nie in keiner Hand
+	for j in 2:
+		var rate := HPASS_RATE * (1.6 if want[j] < _hpass_free[j] else 1.0)
+		_hpass_free[j] = lerpf(_hpass_free[j], want[j], 1.0 - exp(-dt * rate))
+	# Hände umschließen den Griff (Faust), Daumen zur Griffmitte. Hinter dem Rücken zeigt der Ellbogen
+	# nach außen hinten; eine gelöste Hand geht zur Seite raus (Balance), um den Rumpf herum
+	for j in 2:
+		var sh: Vector3 = [sh_l, sh_r][j]
+		var out := (sh - mid_sh).normalized()
+		var pole := sh + Vector3.DOWN * lerpf(0.6, 0.25, _hpass_back) + out * lerpf(0.25, 0.5, _hpass_back) \
+			- chest * 0.3 * _hpass_back
+		var at: Vector3 = ends[j]
+		var dir := handle_pos - at
+		var f: float = _hpass_free[j]
+		if f > 0.001:
+			var away := sh + out * 0.45 + Vector3.DOWN * 0.4 + chest * 0.15
+			at = at.lerp(away, f)
+			dir = dir.lerp(chest, f)
+			pole = pole.lerp(sh + Vector3.DOWN * 0.5 - chest * 0.2 + out * 0.2, f)
+		at = _torso_out(at, pelvis, mid_sh, chest, side, 0.05)
+		_rig.grip("l" if j == 0 else "r", skel_inv * at, skel_inv.basis * dir, skel_inv * pole)
 	return handle_pos
+
+
+## Punkt der Wirbelsäule (Becken -> Schultermitte) auf Höhe von p.
+static func _spine_at(p: Vector3, pelvis: Vector3, neck: Vector3) -> Vector3:
+	var axis := neck - pelvis
+	return pelvis + axis * clampf((p - pelvis).dot(axis) / axis.length_squared(), 0.0, 1.0)
+
+
+## p aus dem Rumpf schieben (Ellipse um die Wirbelsäule, TORSO_DEPTH/TORSO_WIDTH + Rand), seitlich vom Rücken
+## bzw. der Brust weg – ein Weg quer durch den Körper wird so zu einem Bogen außen herum.
+static func _torso_out(p: Vector3, pelvis: Vector3, neck: Vector3, chest: Vector3, side: Vector3, margin: float) -> Vector3:
+	var axis := neck - pelvis
+	var t := (p - pelvis).dot(axis) / axis.length_squared()
+	if t < -0.15 or t > 1.05:
+		return p                                  # unter dem Becken / über den Schultern: kein Rumpf
+	var d := p - (pelvis + axis * clampf(t, 0.0, 1.0))
+	var x := d.dot(chest)
+	var y := d.dot(side)
+	var e := pow(x / (TORSO_DEPTH + margin), 2.0) + pow(y / (TORSO_WIDTH + margin), 2.0)
+	if e >= 1.0:
+		return p
+	if e < 0.000001:
+		return p + chest * (TORSO_DEPTH + margin)
+	var g := 1.0 / sqrt(e) - 1.0
+	return p + (chest * x + side * y) * g
 
 
 ## Durchhang der Seilkurve Griffmitte -> Carrier: Parabel mit gleicher Bogenlänge wie das (lose) Seil.
