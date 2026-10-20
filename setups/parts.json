@@ -49,6 +49,48 @@
                        { "part": "pipe_half", "s": -3.25, "x": 0.0, "edge": "in",  "ramp_out": 0.0 },
                        { "part": "pipe_half", "s": 3.25,  "x": 0.0, "edge": "out", "ramp_in": 0.0 } ] },
 
+  "stair_pool_6":    { "name": "6-Stair Pool",     "type": "group", "exits": { "left": "_6sp_down_rail", "right": "_6sp_down_ledge" }, "parts": [
+                       { "part": "_pool_ramp",   "s": -7.5, "x": 0.0 },
+                       { "part": "_pool_basin",  "s": 2.5,  "x": 0.0 },
+                       { "part": "_pool_coping", "s": 2.5,  "x": -2.1 },
+                       { "part": "_pool_coping", "s": 2.5,  "x": 2.1 },
+                       { "part": "@left",        "s": 10.0, "x": -1.15, "mirror_x": true },
+                       { "part": "@right",       "s": 10.0, "x": 1.15 } ],
+                       "_info": "UNIT 6-Stair Pool (6SP001, 20 x 4,6 m): Rampe 5 m über die ganze Breite auf den Rand (1,35 m), Becken 15 m mit echtem Wasser (1,1 m, 25 cm unter dem Rand), Rand links/rechts als Ledge (Coping). Am Ende zwei Ausgänge (Add-ons 2,3 m breit, je Treppe innen + Ledge/Rail außen, links gespiegelt); welche, steht in exits bzw. in der Setup-Zeile (exit_left/exit_right). Maße teils aus Renderbildern geschätzt" },
+  "_pool_ramp":      { "name": "Pool Rampe", "article": "die", "type": "ramp", "length": 5.0, "width": 4.6, "height": 1.35, "curve": 1.0 },
+  "_pool_basin":     { "name": "Pool", "article": "den", "type": "pool", "length": 15.0, "width": 3.8, "height": 1.1, "floor": 0.5,
+                       "_info": "Becken: height = Wasserspiegel (echtes Wasser, Water.height_at), floor = Boden (nur Kollision der Ragdoll)" },
+  "_pool_coping":    { "name": "Pool Coping", "article": "das", "type": "block", "length": 15.0, "width": 0.4, "height": 1.35 },
+  "_6sp_stairs":     { "name": "Treppe", "article": "die", "type": "stairs", "length": 4.2, "width": 1.9, "height": 1.1, "steps": 6, "slick": "all",
+                       "_info": "6 Stufen vom Beckenwasser bis zum See; Physik = Linie über die Stufenkanten, nur im Drift befahrbar (glatt wie die Ollie Box), hoch wie runter" },
+  "_6sp_down_ledge":   { "name": "Down Ledge", "type": "group", "pool_exit": true, "parts": [
+                         { "part": "_6sp_stairs", "s": 2.1, "x": -0.2 }, { "part": "_6sp_dl", "s": 5.0, "x": 0.95 } ] },
+  "_6sp_down_rail":    { "name": "Down Rail", "type": "group", "pool_exit": true, "parts": [
+                         { "part": "_6sp_stairs", "s": 2.1, "x": -0.2 }, { "part": "_6sp_dr", "s": 5.0, "x": 0.95 } ] },
+  "_6sp_donkey_rail":  { "name": "Donkey Rail", "type": "group", "pool_exit": true, "parts": [
+                         { "part": "_6sp_stairs", "s": 2.1, "x": -0.2 }, { "part": "_6sp_donkey", "s": 5.0, "x": 0.95 } ] },
+  "_6sp_lth_ledge":    { "name": "Low to High Ledge", "type": "group", "pool_exit": true, "parts": [
+                         { "part": "_6sp_stairs", "s": 2.1, "x": -0.2 }, { "part": "_6sp_lthl", "s": 5.5, "x": 0.95 } ] },
+  "_6sp_lth_rail":     { "name": "Low to High Rail", "type": "group", "pool_exit": true, "parts": [
+                         { "part": "_6sp_stairs", "s": 2.1, "x": -0.2 }, { "part": "_6sp_lthr", "s": 5.5, "x": 0.95 } ] },
+  "_6sp_dk_ledge":     { "name": "Double Kinked Ledge", "type": "group", "pool_exit": true, "parts": [
+                         { "part": "_6sp_stairs", "s": 2.1, "x": -0.2 }, { "part": "_6sp_dkl", "s": 6.0, "x": 0.95 } ] },
+  "_6sp_dk_rail":      { "name": "Double Kinked Rail", "type": "group", "pool_exit": true, "parts": [
+                         { "part": "_6sp_stairs", "s": 2.1, "x": -0.2 }, { "part": "_6sp_dkr", "s": 6.0, "x": 0.95 } ] },
+  "_6sp_fd_ledge":     { "name": "Flat Down Ledge", "type": "group", "pool_exit": true, "parts": [
+                         { "part": "_6sp_stairs", "s": 2.1, "x": -0.2 }, { "part": "_6sp_fdl", "s": 5.5, "x": 0.95 } ] },
+  "_6sp_fd_rail":      { "name": "Flat Down Rail", "type": "group", "pool_exit": true, "parts": [
+                         { "part": "_6sp_stairs", "s": 2.1, "x": -0.2 }, { "part": "_6sp_fdr", "s": 5.5, "x": 0.95 } ] },
+  "_6sp_dl":         { "name": "Down Ledge", "article": "die", "type": "block", "length": 10.0, "width": 0.4, "height": 1.75, "profile": [[0, 1.75], [10, 0.6]], "safety_slope": 0.6, "safety_h": 1.35, "safety_back_slope": 0 },
+  "_6sp_dr":         { "name": "Down Rail", "type": "block", "length": 10.0, "width": 0.4, "height": 1.75, "top_rail": 0.2, "profile": [[0, 1.55], [10, 0.4]], "safety_slope": 0.6, "safety_h": 1.35, "safety_back_slope": 0 },
+  "_6sp_donkey":     { "name": "Donkey Rail", "type": "block", "length": 10.0, "width": 0.4, "height": 1.75, "top_rail": 0.2, "profile": [[0, 1.55], [5, 0.6], [10, 0.6]], "safety_slope": 0.6, "safety_h": 1.35, "safety_back_slope": 0 },
+  "_6sp_lthl":       { "name": "Low to High Ledge", "article": "die", "type": "block", "length": 11.0, "width": 0.4, "height": 2.15, "profile": [[0, 1.75], [1.0, 1.75], [4.2, 2.15], [11, 2.15]], "safety_slope": 0.6, "safety_h": 1.35, "safety_back_slope": 0 },
+  "_6sp_lthr":       { "name": "Low to High Rail", "type": "block", "length": 11.0, "width": 0.4, "height": 2.15, "top_rail": 0.2, "profile": [[0, 1.55], [1.0, 1.55], [4.2, 1.95], [11, 1.95]], "safety_slope": 0.6, "safety_h": 1.35, "safety_back_slope": 0 },
+  "_6sp_dkl":        { "name": "Double Kinked Ledge", "article": "die", "type": "block", "length": 12.0, "width": 0.4, "height": 1.75, "profile": [[0, 1.75], [1.5, 1.75], [4.5, 1.2], [7.0, 1.2], [12, 0.5]], "safety_slope": 0.6, "safety_h": 1.35, "safety_back_slope": 0 },
+  "_6sp_dkr":        { "name": "Double Kinked Rail", "type": "block", "length": 12.0, "width": 0.4, "height": 1.75, "top_rail": 0.2, "profile": [[0, 1.55], [1.5, 1.55], [4.5, 1.0], [7.0, 1.0], [12, 0.3]], "safety_slope": 0.6, "safety_h": 1.35, "safety_back_slope": 0 },
+  "_6sp_fdl":        { "name": "Flat Down Ledge", "article": "die", "type": "block", "length": 11.0, "width": 0.4, "height": 1.75, "profile": [[0, 1.75], [4.2, 1.75], [11, 0.6]], "safety_slope": 0.6, "safety_h": 1.35, "safety_back_slope": 0 },
+  "_6sp_fdr":        { "name": "Flat Down Rail", "type": "block", "length": 11.0, "width": 0.4, "height": 1.75, "top_rail": 0.2, "profile": [[0, 1.55], [4.2, 1.55], [11, 0.4]], "safety_slope": 0.6, "safety_h": 1.35, "safety_back_slope": 0 },
+
   "ball":            { "name": "Ball",              "article": "den", "type": "ball", "radius": 0.5, "center_y": 0.35 },
 
   "bump":            { "name": "Bump", "article": "den",              "type": "bump",  "length": 3.0,  "width": 3.0, "height": 0.6, "top": 1.0, "slick": "top" }

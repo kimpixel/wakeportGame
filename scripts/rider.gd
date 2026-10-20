@@ -1000,7 +1000,10 @@ func _swim(delta: float) -> void:
 		_swim_path = _plan_swim()
 		_replan_t = 0.4
 	var here := Vector2(pos.x, pos.z)
-	while _swim_path.size() > 1 and here.distance_to(_swim_path[0]) < SWIM_LOOKAHEAD * 0.6:
+	# Ecke erst abhaken, wenn der nächste Wegpunkt frei erreichbar ist (sonst schneidet man ein dünnes
+	# Feature, z. B. den Ausgang des Pools, und schwimmt dagegen)
+	while _swim_path.size() > 1 and here.distance_to(_swim_path[0]) < SWIM_LOOKAHEAD * 0.6 \
+			and (features == null or features.swim_clear(here, _swim_path[1])):
 		_swim_path.pop_front()
 	# Wie ein Mensch: nicht Ecke für Ecke anschwimmen, sondern einen Punkt ein Stück voraus auf
 	# dem Weg anpeilen und die Schwimmrichtung nur allmählich drehen -> runde Bögen um Features
@@ -1033,14 +1036,20 @@ func _swim_carrot(from: Vector2, goal: Vector2) -> Vector2:
 	var pts: Array[Vector2] = _swim_path.duplicate()
 	if pts.is_empty():
 		pts.append(goal)
+	var c := p
 	for q in pts:
 		var seg := q - p
 		var l := seg.length()
 		if l >= rest:
-			return p + seg / l * rest
+			c = p + seg / l * rest
+			break
 		rest -= l
 		p = q
-	return p
+		c = p
+	# nicht durch ein Feature hindurch anpeilen: dann den nächsten Wegpunkt selbst
+	if features and pts.size() > 0 and not features.swim_clear(from, c):
+		return pts[0]
+	return c
 
 
 ## Handle gegriffen: im Wasser sitzend (Deep-Water-Start) wieder ans Seil.
@@ -1357,6 +1366,10 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	# Richtung weiter und kann nicht lenken
 	var slick_part := features.part_at(pos.x, pos.z) if (features and on_feature) else null
 	var slick := slick_part != null and slick_part.is_slick_at(pos)
+	# Treppe (6-Stair Pool): nur im Drift (Strg) befahrbar, hoch wie runter – dann glatt wie die Ollie Box
+	if slick_part and slick_part.type == "stairs" and not autopilot and _release <= 0.5:
+		crash("Treppe nur im Drift!")
+		return
 	var dir_before := Vector3(vel.x, 0.0, vel.z).normalized()
 	# Driften (Strg): die Kante ist gelöst – keine Kante greift, also ändert Lenken die Fahrt-
 	# richtung nicht: man rutscht weiter, nur der Seilzug zieht einen (sonst würde das Seil
@@ -2000,6 +2013,8 @@ func _step_crashed(delta: float) -> void:
 		pos.x = c.x
 		pos.z = c.z
 	pos.y = water.height_at(pos.x, pos.z) - 0.25
+	if features and features.pool_zone_at(pos.x, pos.z):
+		pos.y = maxf(pos.y, features.height_at(pos.x, pos.z) - 0.1)   # aus dem Pool über die Treppe hinaus
 
 
 func _check_bounds() -> void:

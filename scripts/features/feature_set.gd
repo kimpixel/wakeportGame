@@ -12,6 +12,7 @@ const USER_INDEX := "user://setups/index.json"
 const OVERRIDES := ["length", "width", "height", "height_end", "ramp_in", "ramp_out", "ramp_curve", "side_ramp", "curve", "radius", "center_y", "color", "name", "body", "inner_v", "article", "body_curve", "profile", "side_curve", "lip", "round_top", "black_top"]
 
 var parts: Array[FeaturePart] = []
+var pools: Array[FeaturePart] = []   # Becken mit echtem Wasser (6-Stair Pool), siehe pool_level
 var setup_name := ""
 var colliders := true          # Kollisionskörper für die Ragdoll (Katalog der Startseite: aus)
 var reflections := false       # Spiegelung der Umgebung auf den nassen Features (nur im Spiel, je Grafikstufe)
@@ -185,6 +186,7 @@ func load_data(setup: Dictionary, terminals: Dictionary, s_offset := {}, label :
 	for part in parts:
 		part.queue_free()
 	parts.clear()
+	pools.clear()
 	if _catalog.is_empty():
 		_catalog = _read_json(PARTS_FILE)
 	setup_name = setup.get("name", label)
@@ -217,12 +219,24 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 		# Gruppe: mehrere Teile, die zusammen ein Feature bilden (z. B. Pyramid Series).
 		# "mirror": negative x der Teile zeigen immer vom Seil weg (z. B. A-Frame Rail außen).
 		# ramp_in/ramp_out der Setup-Zeile gelten für die Teile am Anfang ("edge": "in") bzw. Ende.
+		# Verschachtelt (Ausgang des Pools): alle Teile tragen den Namen des äußeren Moduls.
+		# "mirror_x" spiegelt die Teile seitlich (linker Ausgang). "@left"/"@right" = gewählter Ausgang
+		# (Setup-Zeile exit_left/exit_right, sonst exits des Moduls).
 		var mirror := 1.0
 		if entry.get("mirror", false):
 			mirror = -signf(x if x != 0.0 else -1.0) * (-1.0 if flipped else 1.0)
+		if row.get("mirror_x", false):
+			mirror = -mirror
+		var exits: Dictionary = entry.get("exits", {})
 		for child: Dictionary in entry.get("parts", []):
 			var c := child.duplicate()
-			c["group"] = entry.get("name", id)
+			var slot: String = c.get("part", "")
+			if slot.begins_with("@"):
+				var side := slot.substr(1)
+				c["part"] = row.get("exit_" + side, exits.get(side, ""))
+				if c["part"] == "":
+					continue
+			c["group"] = row.get("group", entry.get("name", id))
 			c["_row"] = row.get("_row", -1)
 			c["x"] = float(c.get("x", 0.0)) * mirror
 			if row.has("ramp_in") and c.get("edge", "") == "in":
@@ -269,6 +283,8 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 		part.x_center = on_cable.x
 	add_child(part)
 	parts.append(part)
+	if part.type == "pool":
+		pools.append(part)
 	if show_hitboxes:
 		part.show_catch_zone(true)
 
@@ -322,6 +338,46 @@ func height_at(x: float, z: float, collision := false) -> float:
 	for part in parts:
 		best = maxf(best, part.height_at(x, z, collision))
 	return best
+
+
+## Wasserspiegel eines Pool-Beckens an (x, z) oder FeaturePart.NONE (dort gilt der See).
+func pool_level(x: float, z: float) -> float:
+	for p in pools:
+		var h := p.pool_level_at(x, z)
+		if h > FeaturePart.NONE:
+			return h
+	return FeaturePart.NONE
+
+
+## Becken oder Treppe eines Pools an (x, z): liefert das Becken, sonst null. Dort schwimmt man nicht
+## ums Feature herum, sondern im Becken zur Treppe und darüber hinaus in den See.
+func pool_zone_at(x: float, z: float) -> FeaturePart:
+	for p in parts:
+		if p.type not in ["pool", "stairs"] or not p.contains(x, z):
+			continue
+		if p.type == "pool":
+			return p
+		for q in pools:
+			if q.row_index == p.row_index and q.cable == p.cable:
+				return q
+	return null
+
+
+## Weg aus dem Becken: [Ende des Beckens, unterhalb der Treppe im See] (x, z).
+func pool_exit(pool: FeaturePart) -> Array[Vector2]:
+	var top := pool.global_transform * Vector3(0.0, 0.0, -(pool.length * 0.5 - 0.3))
+	var bottom := Vector3.ZERO
+	var n := 0
+	for p in parts:
+		if p.type == "stairs" and p.row_index == pool.row_index and p.cable == pool.cable:
+			bottom += p.global_transform * Vector3(0.0, 0.0, -(p.length * 0.5 + 1.0))
+			n += 1
+	if n == 0:
+		bottom = pool.global_transform * Vector3(0.0, 0.0, -(pool.length * 0.5 + 1.0))
+	else:
+		bottom /= n
+	var out: Array[Vector2] = [Vector2(top.x, top.z), Vector2(bottom.x, bottom.z)]
+	return out
 
 
 ## Fangzone eines Sliders an world (nächster Zielpunkt) oder null. Gibt [Teil, Zielpunkt] zurück.
@@ -420,6 +476,16 @@ static func _seg_hits(r: Dictionary, a: Vector2, b: Vector2) -> bool:
 ## Weg zum Schwimmen von from nach to (Welt), großzügig um alle Features herum.
 ## Liefert die Wegpunkte (x, z) ohne den Startpunkt; der letzte ist to.
 func swim_path(from: Vector3, to: Vector3, margin: float) -> Array[Vector2]:
+	# Im Pool: erst zur Treppe und über sie hinaus in den See, von dort weiter wie sonst
+	var pool := pool_zone_at(from.x, from.z)
+	if pool:
+		var way := pool_exit(pool)
+		var pre: Array[Vector2] = way
+		if not pool.contains(from.x, from.z):
+			pre.remove_at(0)                 # schon auf der Treppe
+		var last := pre[pre.size() - 1]
+		pre.append_array(swim_path(Vector3(last.x, 0.0, last.y), to, margin))
+		return pre
 	var a := Vector2(from.x, from.z)
 	var b := Vector2(to.x, to.z)
 	var out: Array[Vector2] = []
@@ -432,6 +498,10 @@ func swim_path(from: Vector3, to: Vector3, margin: float) -> Array[Vector2]:
 		if gp.x < lo.x or gp.x > hi.x or gp.z < lo.y or gp.z > hi.y:
 			continue
 		var r := _rect(part, margin)
+		if _inside(r, b):
+			# Handle liegt im Sicherheitsabstand (z. B. gleich hinter dem Ausgang des Pools): trotzdem
+			# außen herum, nur mit dem harten Mindestabstand – sonst schwimmt man gegen das Feature
+			r = _rect(part, 0.35)
 		if not _inside(r, b):              # Ziel (Handle) liegt nie in einem Hindernis
 			rects.append(r)
 	# Start im Sicherheitsabstand (z. B. hinter einem Feature oder mitten in einem Hack):
@@ -529,8 +599,25 @@ func swim_path(from: Vector3, to: Vector3, margin: float) -> Array[Vector2]:
 	return out
 
 
+## Kann man von a direkt nach b schwimmen (x, z), ohne ein Feature (harter Abstand 0,3 m) zu kreuzen?
+## Becken und Treppe der Pools zählen nicht (dort schwimmt bzw. läuft man), ebenso Teile, in denen a liegt.
+func swim_clear(a: Vector2, b: Vector2) -> bool:
+	for part in parts:
+		if part.type in ["pool", "stairs"]:
+			continue
+		var gp := part.global_position
+		if absf(gp.x - a.x) > 40.0 or absf(gp.z - a.y) > 40.0:
+			continue
+		var r := _rect(part, 0.3)
+		if not _inside(r, a) and _seg_hits(r, a, b):
+			return false
+	return true
+
+
 ## Harte Grenze beim Schwimmen: aus dem Grundriss (plus margin) eines Features herausschieben.
 func push_out(p: Vector3, margin: float) -> Vector3:
+	if pool_zone_at(p.x, p.z):
+		return p                         # im Becken bzw. auf der Treppe: man schwimmt/läuft hinaus
 	var q := Vector2(p.x, p.z)
 	for part in parts:
 		var gp := part.global_position

@@ -231,6 +231,7 @@ func _ready() -> void:
 	_setup_idx = _initial_setup()
 	features.load_setup(_setups[_setup_idx]["file"], {"T1": cable_t1, "T2": cable}, _s_offset())
 	rider.features = features
+	water.features = features
 
 	npc = Rider.new()
 	npc.water = water

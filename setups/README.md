@@ -26,6 +26,7 @@ Bequemer geht es mit dem **Setup-Editor** im Spiel (Startseite): Er speichert ei
 | **Transition Curb** | `transition_curb` (7,3 × 3 m): kurze Auffahrt (0,85 m), dann eine konkave Transition von 0,35 auf 1,1 m (`body_curve`), hinten senkrecht. Oft kombiniert mit einem `cheese_wedge` direkt am hohen Ende als Abfahrt (Wedge-Mitte 5,65 m hinter der Curb-Mitte, gleiche Spur, Gegenrichtung `dir`). Einzeln ist das hohe Ende eine Kante zum Abspringen. Mit `"kicker": true` fährt man die ganze Curb wie einen Kicker (kein Slide, nicht glatt). |
 | **Down Ledge (Rooftop)** | `down_ledge`: lange, schmale Ledge mit Längsprofil (`profile`), 20 m lang: kleine flache Safety vorne auf 0,5 m, steiler hoch auf 1,9 m (Spitze bei 5,5 m), lang abfallend auf 0,8 m, hinten steile Safety bis ins Wasser. |
 | **Ollie Box** | `ollie_box` (8,2 × 2,25 m) und `ollie_box_half`, an beiden Enden kurze Auffahrten; daneben meist die `ollie_ledge` (0,7 m breit, Endstücke als Auffahrt). Maße nach „Feature Setup Terminal 1.png“. |
+| **6-Stair Pool** | `stair_pool_6` (UNIT 6SP001, 20 × 4,6 m, dazu 10–12 m Ausgänge): Rampe (5 m, über die ganze Breite auf 1,35 m, fährt man wie einen Kicker), Becken (15 m) mit **echtem Wasser** 25 cm unter dem Rand – gleiche Farbe, Wellen, Heckwelle und Sturz-Wellen wie der See (`_pool_basin`, Typ `pool`), Rand links und rechts als schmale Ledge (`_pool_coping`). Am Ende zwei **Ausgänge** (Add-ons, je 2,3 m breit: Treppe innen, Ledge oder Rail außen, der linke gespiegelt; der Slider steht 40 cm höher als der Rand und beginnt vorne mit einer steilen Safety ab Randhöhe – `safety_h` –, beim Rail ins Halbrund geschnitten wie beim A-Frame), zusammen eine breite Treppe mit 6 Stufen ins Wasser. Welche Ausgänge, steht in der Zeile (`exit_left`/`exit_right`, links/rechts mit Blick von der Rampe) bzw. in `exits` des Moduls (Standard links Down Rail, rechts Down Ledge wie auf dem Foto von UNIT). Wählbar (im Editor ◀ ▶): Down, Donkey, Low to High, Double Kinked, Flat Down, je als Ledge oder Rail (Profile teils aus Renderbildern geschätzt). Die **Treppe** fährt man nur im **Drift** (Strg), hoch wie runter, dann glatt wie die Ollie Box; ohne Drift = Sturz. Wer im Becken stürzt, schwimmt zur Treppe und läuft über sie hinaus. Ganzer Pool = ein Modul, kein Hack. |
 | **Ball** | `ball`: blauer Gummiball, 1 m Durchmesser, treibt hoch auf dem Wasser. Nur mit einem Sprung zu überwinden – wer dagegen fährt oder darauf landet, stürzt. |
 
 Die Pläne zeigen vor allem die **Positionen**; Größen und Abstände sind dort nicht maßstäblich. Die Maße der Teile kommen deshalb aus dem Katalog.
@@ -44,6 +45,7 @@ Die Pläne zeigen vor allem die **Positionen**; Größen und Abstände sind dort
 | `dir` | `out` = befahrbar Richtung Endmast, `in` = Richtung Startsteg |
 | `yaw` | Zusätzliche Drehung in Grad (optional) |
 | `inner_v` | Nur Transition: Seite der Transition erzwingen (+1/−1), sonst zeigt sie zum Seil |
+| `exit_left` / `exit_right` | Nur Pool: Ausgang links/rechts (Bauteil mit `"pool_exit": true`, z. B. `_6sp_down_ledge`) |
 
 Einzelne Maße kannst du pro Zeile überschreiben, ohne den Katalog zu ändern, z. B. `"height": 1.2` oder `"length": 12`.
 
@@ -57,7 +59,9 @@ Einzelne Maße kannst du pro Zeile überschreiben, ohne den Katalog zu ändern, 
 | `pipe` | Liegendes Rohr | `length`, `radius`, `center_y`, `ramp_in` / `ramp_out` |
 | `bump` | Kleine Pyramide | `length`, `width`, `height`, `top` (Breite der Spitze) |
 | `transition` | Transition Rail: auf der Seilseite eine geschwungene Transition, oben ein schwarzes Rail, hinten eine senkrechte Wand | `length`, `width`, `height`, `ramp_in` / `ramp_out` (schräge Auffahrten an den Enden) |
-| `group` | Mehrere Teile als ein Feature, z. B. die Pyramid Series (A-Frame Rail + Pyramid) | `parts`: Liste mit `part`, `s`, `x` (relativ zur Gruppe) |
+| `pool` | Becken mit echtem Wasser (6-Stair Pool): man fährt auf dem Wasserspiegel `height` wie auf dem See, nur die Ragdoll stößt auf den Boden `floor` | `length`, `width`, `height`, `floor` |
+| `stairs` | Treppe: `steps` Stufen von `height` bis zum See; die Physik liegt auf den Stufenkanten (eine Schräge), nur im Drift befahrbar | `length`, `width`, `height`, `steps` |
+| `group` | Mehrere Teile als ein Feature, z. B. die Pyramid Series (A-Frame Rail + Pyramid). Gruppen dürfen Gruppen enthalten (Ausgänge des Pools); `"@left"`/`"@right"` als `part` = gewählter Ausgang, `mirror_x` spiegelt eine Teilgruppe seitlich | `parts`: Liste mit `part`, `s`, `x` (relativ zur Gruppe) |
 
 Bei `block`, `rail` und `pipe` legt `ramp_curve` die Form der Auffahrten fest: `1` = gerade (A-Frame), `2` = konkav (Transition). Mit `color` (`grey`) färbst du ein Teil grau.
 

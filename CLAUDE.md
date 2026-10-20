@@ -367,6 +367,20 @@ Features/Setups:
   außen ca. 5 cm über, zur Transition nur 1,5 cm (`TR_TUCK`), nur das untere Viertel steckt im Körper (Oberkante 1,58 m). Seitlich von der Transition ohne Sprung aufs Rail: Fahrphysik hat dort eine weiche Auffahrt (`_tr_lip`, ab `TR_LIP` 0,3 m vor dem Transitions-Ende), sonst wäre die Stufe ein Sturz. Setup-Positionen beziehen sich auf die alte Breite 3,2 m (`FeatureSet.TR_REF_WIDTH`):
   breiter wird es nur zur Seilseite, Rail und Rückwand bleiben, wo Nachbarn anschließen. Rampen vorne/hinten gerade, von allen Seiten befahrbar, löst keinen Sturz aus.
   Grafik aus genau seinen Flächen (`FeaturePart._build_transition_body` / `_build_transition_rail`): Rampen als Ebenen bis exakt auf die Schnittkante (von vorne = Querschnitt), Transition läuft unter dem Überstand weiter, Rail-Rohr von der Rampenebene abgeschnitten (verschmilzt mit der Rampe, setzt sich zur Transition mit der Rundung ab); ohne Rampe hinten (1/2) Wand mit Querschnitt.
+- **6-Stair Pool** (UNIT 6SP001, `stair_pool_6`, nur in Utopia T2): Rampe 5 m auf den Rand 1,35 m, Becken 15 × 3,8 m mit **echtem
+  Wasser** auf 1,1 m (Typ `pool`: `Water.height_at` liefert im Becken dessen Spiegel + Grundwellen + eigene Kreiswellen
+  `_pool_points` (Heckwelle, Landung, Sturz nur im Becken), `FeatureSet.pool_level`, `water.features`; Wasserfläche mit dem
+  **See-Shader** (`Water._pool_material`, gleiche Farbe/Effekte; Editor/Vorschau Ersatz `pool_water.gdshader`); Fahren, Landen,
+  Einsinken, Gischt, Ragdoll wie auf dem See; Boden nur als Kollision), Rand = Ledge `_pool_coping`. Slider der Ausgänge
+  **40 cm höher als der Rand** (1,75 m), vorne eine steile Safety ab Randhöhe (`safety_h` 1,35, `safety_slope`), beim Rail schneidet
+  sie ins Halbrund wie beim A-Frame; hinten senkrecht. Am Ende zwei
+  Ausgänge (verschachtelte Gruppen `_6sp_*` mit `"pool_exit"`, `@left`/`@right`, Zeile `exit_left`/`exit_right`, `mirror_x`), je Treppe
+  innen (Typ `stairs`, 6 Stufen, Physik = Linie über die Stufenkanten) + Ledge/Rail außen. **Treppe nur im Drift** (Strg), hoch wie
+  runter, dann glatt wie die Ollie Box; ohne Drift Sturz „Treppe nur im Drift!“ (nur Spieler). Sturz im Becken: schwimmt zur Treppe
+  und darüber hinaus (`pool_zone_at`, `pool_exit`, dort kein `push_out`). Maße teils aus Renderbildern geschätzt (Nutzer festgelegt:
+  Wasser nicht bündig mit dem Rand, Rest unter Wasser, beide Richtungen befahrbar).
+- Schwimmen: liegt die Handle im Sicherheitsabstand eines Features, plant der Weg mit 0,35 m drum herum; Ecken werden erst abgehakt und
+  der Zielpunkt voraus nur angepeilt, wenn der Weg dorthin frei ist (`FeatureSet.swim_clear`) – sonst schwamm man gegen dünne Teile.
 - Positionen kommen aus den Plan-Fotos (`fotos/`); die Pläne sind nicht maßstäblich, Maße aus
   dem Katalog. Beim Nachstellen von Hacks: vorne/hinten und Seiten genau mit dem Foto abgleichen.
 - T1-Steg ist 5 cm höher als T2 (`Lake.DOCK_T1_Y`).

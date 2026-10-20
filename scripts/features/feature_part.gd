@@ -47,12 +47,16 @@ var top_rail := 0.0             # Block: Oberseite als schwarzes Halbrund-Rail (
 var safety_slope := 0.0         # Block: steile, gerade Safety an beiden Enden (Steigung), schneidet oben ins Halbrund
 var safety_back_slope := NAN    # Block: Steigung der Safety hinten (NAN = wie vorne, 0 = keine)
 var safety_back_h := ENTRY      # Block: Höhe, auf der die Safety hinten beginnt (z. B. auf der Box der Port Plaza)
+var safety_h := ENTRY           # Block: Höhe, auf der die Safety vorne beginnt (Ausgänge des Pools: auf dem Beckenrand)
 var lip := ENTRY               # Höhe, auf der Auffahrten beginnen (ENTRY = unter Wasser, > 0 = sichtbare Kante)
 var side_lip := NAN            # dasselbe für die seitliche Auffahrt (NAN = wie lip)
 var side_curve := 2.0          # Form der seitlichen Auffahrt: 1 = gerade Schräge, 2 = konkav
 var round_top := false         # Block: Oberkante quer halbrund (Coping, z. B. Plaza Rail)
 var black_top: Array = []       # Block: Abschnitt [von, bis] (m ab Anfang), dessen Oberseite schwarz ist (Plaza Rail)
 var body_curve := 1.0          # Block: Verlauf height -> height_end (1 = gerade, 2 = konkav wie die Transition Curb)
+var floor_h := 0.5             # Pool: Höhe des Beckenbodens (height = Wasserspiegel)
+var steps := 6                 # Treppe: Anzahl der Stufen (von height bis zum See)
+var water_mesh: MeshInstance3D # Pool: Wasserfläche (im Spiel bekommt sie von Water das Material des Sees)
 var inner_v := 1.0             # +1/-1: in welche lokale v-Richtung das Seil liegt (setzt FeatureSet)
 
 ## Lage auf der Anlage (wird von FeatureSet gesetzt)
@@ -97,10 +101,13 @@ func setup(id: String, p: Dictionary) -> void:
 	safety_slope = p.get("safety_slope", 0.0)
 	safety_back_slope = p.get("safety_back_slope", safety_slope)
 	safety_back_h = p.get("safety_back_h", ENTRY)
+	safety_h = p.get("safety_h", ENTRY)
 	round_top = p.get("round_top", false)
 	black_top = p.get("black_top", [])
 	slick = p.get("slick", "")
 	kicker = p.get("kicker", false)
+	floor_h = p.get("floor", floor_h)
+	steps = int(p.get("steps", steps))
 	if type == "pipe" or type == "ball":
 		width = radius * 2.0
 	if type == "ball":
@@ -403,7 +410,40 @@ func height_local(u: float, v: float, collision := false) -> float:
 			var d := maxf(absf(u) / hl, absf(v) / hw)       # 0 Mitte, 1 Rand
 			var top_r := top / maxf(length, width)
 			return lerpf(ENTRY, height, clampf((1.0 - d) / maxf(1.0 - top_r, 0.01), 0.0, 1.0))
+		"pool":
+			# Becken: gefahren wird auf dem Wasser (Water.height_at kennt den Wasserspiegel), kein Hindernis.
+			# Nur die Ragdoll stößt auf den Boden.
+			if absf(v) > width * 0.5 or not collision:
+				return NONE
+			return floor_h
+		"stairs":
+			# Physik: das Brett liegt auf den Stufenkanten auf – Linie von der obersten Kante (Höhe des
+			# Beckenwassers) bis zur untersten im See. Die Grafik zeigt die Stufen (_stair_h).
+			if absf(v) > width * 0.5:
+				return NONE
+			var d := length / (steps + 1)
+			return lerpf(height, 0.0, clampf((u + hl - d) / (length - d), 0.0, 1.0))
 	return NONE
+
+
+## Treppe: Höhe der Trittfläche (Stufe k von oben, k = 0 auf Höhe des Beckenwassers, k = steps im See).
+func _stair_h(u: float) -> float:
+	var d := length / (steps + 1)
+	var k := clampi(int(floor((u + length * 0.5) / d)), 0, steps)
+	return height - k * height / steps
+
+
+## Liegt (x, z) im Grundriss des Teils?
+func contains(x: float, z: float) -> bool:
+	var l := _inv * Vector3(x, 0.0, z)
+	return absf(l.x) <= width * 0.5 and absf(l.z) <= length * 0.5
+
+
+## Pool: Wasserspiegel im Becken an (x, z), sonst NONE.
+func pool_level_at(x: float, z: float) -> float:
+	if type != "pool" or not contains(x, z):
+		return NONE
+	return height
 
 
 ## Höhe aus dem Längsprofil (lineare Abschnitte zwischen den Stützpunkten).
@@ -444,7 +484,7 @@ func _safety_h(u: float) -> float:
 		if safety_back_slope <= 0.0:
 			return INF
 		return safety_back_h + safety_back_slope * (length * 0.5 - u)
-	return ENTRY + safety_slope * (length * 0.5 + u)
+	return safety_h + safety_slope * (length * 0.5 + u)
 
 
 ## Liegt (u, v) auf der Safety statt auf dem Halbrund-Rail?
@@ -453,6 +493,19 @@ func _on_safety(u: float, v: float) -> bool:
 		return false
 	var rail := _profile_h(u + length * 0.5) + (sqrt(top_rail * top_rail - v * v) if absf(v) < top_rail else 0.0)
 	return _safety_h(u) < rail
+
+
+## Ende der vorderen Safety in der Mitte (lokal u): dort beginnt die Oberseite.
+func _safety_end() -> float:
+	var lo := -length * 0.5
+	var hi := 0.0
+	for _k in 30:
+		var mid := (lo + hi) * 0.5
+		if _on_safety(mid, 0.0):
+			lo = mid
+		else:
+			hi = mid
+	return hi
 
 
 ## Seitliche Auffahrt auf der Seilseite: von der Innenkante (Wasser) konkav hoch auf h.
@@ -611,6 +664,10 @@ func _ready() -> void:
 			_build_heightfield(white, 12, 12)
 		"ramp":
 			_build_heightfield(white, 14, 2)
+		"pool":
+			_build_pool()
+		"stairs":
+			_build_stairs(white)
 		"transition":
 			_build_transition_body(white)
 			_build_transition_rail(_rail_mat())
@@ -649,6 +706,19 @@ func _build_collider() -> void:
 	body.physics_material_override = _collide_mat
 	add_child(body)
 	var owner_id := body.create_shape_owner(body)
+	if type == "pool" or type == "stairs":
+		# Beckenboden bzw. je Stufe ein massiver Block bis tief unters Wasser
+		var n := 1 if type == "pool" else steps + 1
+		var d := length / n
+		for k in n:
+			var top := floor_h if type == "pool" else _stair_h(-length * 0.5 + (k + 0.5) * d)
+			var box := BoxShape3D.new()
+			box.size = Vector3(width, top - COLLIDE_BOTTOM, d)
+			var sid := body.create_shape_owner(body)
+			body.shape_owner_add_shape(sid, box)
+			body.shape_owner_set_transform(sid, Transform3D(Basis.IDENTITY,
+				Vector3(0.0, (top + COLLIDE_BOTTOM) * 0.5, -(-length * 0.5 + (k + 0.5) * d))))
+		return
 	if type == "ball":
 		var sphere := SphereShape3D.new()
 		sphere.radius = radius
@@ -663,6 +733,8 @@ func _build_collider() -> void:
 		"rail":
 			hw = radius + 0.04
 	var u_breaks: Array[float] = [-hl + ramp_in, hl - ramp_out]
+	if safety_slope > 0.0 and top_rail == 0.0:
+		u_breaks.append(_safety_end())          # Kante Safety -> Oberseite scharf
 	for pt: Array in profile:
 		u_breaks.append(-hl + float(pt[0]))
 	var v_breaks: Array[float] = []
@@ -717,6 +789,8 @@ func _build_heightfield(mat: Material, nu: int, nv: int, u_from := -INF, u_to :=
 	if side_ramp > 0.0 or top_rail > 0.0:
 		nv = maxi(nv, int(hw * 2.0 * 6.0))
 	var u_breaks: Array[float] = [-hl + ramp_in, hl - ramp_out]
+	if safety_slope > 0.0 and top_rail == 0.0:
+		u_breaks.append(_safety_end())          # Kante Safety -> Oberseite scharf
 	for pt: Array in profile:
 		u_breaks.append(-hl + float(pt[0]))
 	var v_breaks: Array[float] = []
@@ -1091,6 +1165,90 @@ func _build_transition_body(mat: Material) -> void:
 
 
 ## Gitterlinien von a bis b: n gleichmäßige Schritte plus die Knickstellen (sortiert, ohne Fast-Doppel).
+static var _pool_paint: StandardMaterial3D
+static var _pool_water: ShaderMaterial
+
+
+## Pool: blau gestrichenes Becken (Boden, Innenseiten von Rand, Rampe und Treppe knapp davor) und die
+## Wasserfläche. Die weißen Wände selbst gehören zu Rand, Rampe und Treppe.
+func _build_pool() -> void:
+	if _pool_paint == null:
+		_pool_paint = Util.mat(Color(0.16, 0.42, 0.62), 0.55)
+		Weather.dim_at_night(_pool_paint)
+		_pool_water = ShaderMaterial.new()
+		_pool_water.shader = load("res://shaders/pool_water.gdshader")
+	var hl := length * 0.5
+	var hw := width * 0.5
+	var inset := 0.006
+	var top := height + 0.18                         # Anstrich bis knapp unter die Oberkante des Rands
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_smooth_group(0xFFFFFFFF)
+	_quad(st, Vector3(-hw, floor_h, hl), Vector3(hw, floor_h, hl), Vector3(hw, floor_h, -hl), Vector3(-hw, floor_h, -hl), Vector3.UP)
+	for s: float in [-1.0, 1.0]:
+		var x := s * (hw - inset)
+		_quad(st, Vector3(x, floor_h, hl), Vector3(x, top, hl), Vector3(x, top, -hl), Vector3(x, floor_h, -hl), Vector3(-s, 0, 0))
+	# vorne (Rampe, lokal +z) bis zur Oberkante, hinten (Treppe) bis zum Wasserspiegel
+	var zf := hl - inset
+	_quad(st, Vector3(-hw, floor_h, zf), Vector3(hw, floor_h, zf), Vector3(hw, top, zf), Vector3(-hw, top, zf), Vector3(0, 0, -1))
+	var zb := -hl + inset
+	_quad(st, Vector3(-hw, floor_h, zb), Vector3(hw, floor_h, zb), Vector3(hw, height, zb), Vector3(-hw, height, zb), Vector3(0, 0, 1))
+	st.generate_normals()
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = _pool_paint
+	add_child(mi)
+	# Gitter fein genug für Heckwelle und Aufprallwellen (der See-Shader verschiebt die Punkte)
+	var plane := PlaneMesh.new()
+	plane.size = Vector2(width, length)
+	plane.subdivide_width = int(width / 0.25)
+	plane.subdivide_depth = int(length / 0.25)
+	water_mesh = MeshInstance3D.new()
+	water_mesh.mesh = plane
+	water_mesh.material_override = _pool_water    # Ersatz (Vorschau/Editor ohne See)
+	water_mesh.position.y = height
+	water_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	water_mesh.extra_cull_margin = 1.0
+	add_child(water_mesh)
+
+
+## Treppe: Trittflächen (_stair_h, dunkelgrau wie auf dem Foto), weiße Stirnseiten der Stufen, Seitenwände
+## und Rückwand bis unters Wasser.
+func _build_stairs(mat: ShaderMaterial) -> void:
+	var hl := length * 0.5
+	var hw := width * 0.5
+	var d := length / (steps + 1)
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_smooth_group(0xFFFFFFFF)
+	var tread := SurfaceTool.new()
+	tread.begin(Mesh.PRIMITIVE_TRIANGLES)
+	tread.set_smooth_group(0xFFFFFFFF)
+	for k in steps + 1:
+		var u0 := -hl + k * d
+		var u1 := u0 + d
+		var h := _stair_h(u0 + d * 0.5)
+		var h_next := _stair_h(u1 + d * 0.5) if k < steps else BOTTOM
+		# Trittfläche und Stirnseite nach unten (zur nächsten Stufe bzw. ins Wasser)
+		_quad(tread, Vector3(-hw, h, -u0), Vector3(hw, h, -u0), Vector3(hw, h, -u1), Vector3(-hw, h, -u1), Vector3.UP)
+		_quad(st, Vector3(-hw, h, -u1), Vector3(hw, h, -u1), Vector3(hw, h_next, -u1), Vector3(-hw, h_next, -u1), Vector3(0, 0, -1))
+		for s: float in [-1.0, 1.0]:
+			_quad(st, Vector3(s * hw, h, -u0), Vector3(s * hw, h, -u1), Vector3(s * hw, BOTTOM, -u1), Vector3(s * hw, BOTTOM, -u0), Vector3(s, 0, 0))
+	_quad(st, Vector3(-hw, height, hl), Vector3(hw, height, hl), Vector3(hw, BOTTOM, hl), Vector3(-hw, BOTTOM, hl), Vector3(0, 0, 1))
+	st.generate_normals()
+	var mi := MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = mat
+	add_child(mi)
+	var grey := mat.duplicate() as ShaderMaterial
+	grey.set_shader_parameter("base_color", Color(0.3, 0.32, 0.34))
+	tread.generate_normals()
+	var mt := MeshInstance3D.new()
+	mt.mesh = tread.commit()
+	mt.material_override = grey
+	add_child(mt)
+
+
 func _grid_lines(a: float, b: float, n: int, breaks: Array[float]) -> PackedFloat32Array:
 	var vals: Array[float] = []
 	for i in n + 1:
