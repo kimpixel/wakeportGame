@@ -16,9 +16,6 @@ const DOCK_MAX := Vector2(4.6, -7.4)
 const DOCK_Y := 0.28
 const DOCK_T1_Y := 0.33       # Oberkante des T1-Schwimmstegs (höher gebaut)
 
-static func in_dock(x: float, z: float) -> bool:
-	return x > DOCK_MIN.x and x < DOCK_MAX.x and z > DOCK_MIN.y and z < DOCK_MAX.y
-
 
 ## Ist an dieser Stelle (fahrbares) Wasser? Ufer und Land kommen aus dem echten Geländemodell.
 static func in_lake(x: float, z: float, margin := 0.0) -> bool:

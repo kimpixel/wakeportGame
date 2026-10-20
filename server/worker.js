@@ -12,7 +12,7 @@
 //   /boards  {dev?}                                        alle Ranglisten mit Einträgen (board, ver, n)
 // Admin (Header "Authorization: Bearer <ADMIN_TOKEN>"):
 //   /admin/boards                       alle Ranglisten mit Version und Anzahl
-//   /admin/delete {board, ver?, name}   Eintrag eines Spielers löschen (ohne ver: alle Versionen)
+//   /admin/delete {board, ver?, name}   Eintrag eines Spielers löschen (ohne ver: alle Versionen; „Anonym #XXXX“ nur, wenn eindeutig)
 //   /admin/ban    {name, banned?}       Spieler sperren (Einträge verschwinden aus den Listen)
 //   /admin/limit  {board, min?, max?}   Grenzen für eine Rangliste (beide null = Grenze löschen)
 //   /admin/purge  {board, ver}          ganze Rangliste einer Version löschen
@@ -24,6 +24,7 @@ const BOARD_RE = /^[a-z0-9_\-./]{1,80}$/i;
 const VER_RE = /^[a-z0-9_\-.]{1,40}$/i;
 const RATE_WINDOW = 10 * 60 * 1000;   // ms
 const RATE_MAX = 60;                  // Schreibzugriffe je IP und Fenster
+const RATE_READ_MAX = 300;            // Lesezugriffe (/top, /boards) je IP und Fenster (Mini-Rangliste lädt jede Minute)
 const TOP_MAX = 50;
 // grob: Namen, die nicht in eine öffentliche Liste gehören (Teilwort, klein, ohne Leerzeichen)
 const BAD = ["fick", "fuck", "nazi", "hitler", "hure", "fotze", "nigg", "neger", "wichser", "schwuchtel",
@@ -44,12 +45,13 @@ export default {
     const path = new URL(req.url).pathname.replace(/\/+$/, "");
     try {
       if (path.startsWith("/admin/")) {
-        if (!env.ADMIN_TOKEN || req.headers.get("Authorization") !== "Bearer " + env.ADMIN_TOKEN)
+        if (!env.ADMIN_TOKEN || !(await sameSecret(req.headers.get("Authorization") || "", "Bearer " + env.ADMIN_TOKEN)))
           return json({ error: "kein Zugriff" }, 401, cors);
         return json(await admin(path.slice(7), body, env), 200, cors);
       }
       const now = Date.now();
-      if (path !== "/top" && path !== "/boards" && !(await rateOk(req, env, now)))
+      const read = path === "/top" || path === "/boards";
+      if (!(await rateOk(req, env, now, read)))
         return json({ error: "zu viele Anfragen, bitte später" }, 429, cors);
       switch (path) {
         case "/score": return await score(body, env, now, cors);
@@ -60,7 +62,9 @@ export default {
       }
       return json({ error: "unbekannt" }, 404, cors);
     } catch (e) {
-      return json({ error: "Serverfehler", detail: String(e && e.message || e) }, 500, cors);
+      // Details nur ins Log (npx wrangler tail), nicht an den Aufrufer
+      console.error(path, e && e.stack || e);
+      return json({ error: "Serverfehler" }, 500, cors);
     }
   },
 };
@@ -90,16 +94,27 @@ async function sha256(text) {
   return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+// Vergleich in konstanter Zeit (Admin-Token): beide Seiten gehasht, dann alle Bytes verglichen
+async function sameSecret(a, b) {
+  const enc = new TextEncoder();
+  const [x, y] = await Promise.all([a, b].map((s) => crypto.subtle.digest("SHA-256", enc.encode(s))));
+  const u = new Uint8Array(x), v = new Uint8Array(y);
+  let diff = 0;
+  for (let i = 0; i < u.length; i++) diff |= u[i] ^ v[i];
+  return diff === 0;
+}
+
 async function playerKey(id) {
   if (typeof id !== "string" || !/^[0-9a-f]{32}$/.test(id)) return null;
   return sha256("player:" + id);
 }
 
-// Rate-Limit je IP und 10-Minuten-Fenster; gespeichert wird nur ein Hash (mit Tagessalz).
-async function rateOk(req, env, now) {
+// Rate-Limit je IP und 10-Minuten-Fenster, Lesen und Schreiben getrennt gezählt; gespeichert wird nur ein Hash
+// (mit Tagessalz).
+async function rateOk(req, env, now, read = false) {
   const ip = req.headers.get("CF-Connecting-IP") || "?";
   const day = Math.floor(now / 86400000);
-  const key = await sha256(`${env.RATE_SALT || "wth"}:${day}:${ip}`);
+  const key = await sha256(`${env.RATE_SALT || "wth"}:${day}:${read ? "r:" : ""}${ip}`);
   const row = await env.DB.prepare("SELECT n, until FROM rate WHERE key = ?").bind(key).first();
   if (!row || row.until < now) {
     await env.DB.batch([
@@ -108,7 +123,7 @@ async function rateOk(req, env, now) {
     ]);
     return true;
   }
-  if (row.n >= RATE_MAX) return false;
+  if (row.n >= (read ? RATE_READ_MAX : RATE_MAX)) return false;
   await env.DB.prepare("UPDATE rate SET n = n + 1 WHERE key = ?").bind(key).run();
   return true;
 }
@@ -135,7 +150,7 @@ async function upsertPlayer(env, key, rawName, now) {
   const p = await env.DB.prepare("SELECT name, banned FROM players WHERE key = ?").bind(key).first();
   if (p && p.banned) return { error: "gesperrt", status: 403 };
   if (rawName === undefined || rawName === null || rawName === "") {
-    if (!p) await env.DB.prepare("INSERT INTO players (key, name, lname, created) VALUES (?, '', ?, ?)")
+    if (!p) await env.DB.prepare("INSERT OR IGNORE INTO players (key, name, lname, created) VALUES (?, '', ?, ?)")
       .bind(key, "~" + key, now).run();
     return { key, name: displayName(p ? p.name : "", key) };
   }
@@ -144,9 +159,15 @@ async function upsertPlayer(env, key, rawName, now) {
   if (p && p.name === name) return { key, name };
   const taken = await env.DB.prepare("SELECT key FROM players WHERE lname = ?").bind(name.toLowerCase()).first();
   if (taken && taken.key !== key) return { error: "Name schon vergeben", status: 409 };
-  if (p) await env.DB.prepare("UPDATE players SET name = ?, lname = ? WHERE key = ?").bind(name, name.toLowerCase(), key).run();
-  else await env.DB.prepare("INSERT INTO players (key, name, lname, created) VALUES (?, ?, ?, ?)")
-    .bind(key, name, name.toLowerCase(), now).run();
+  try {
+    if (p) await env.DB.prepare("UPDATE players SET name = ?, lname = ? WHERE key = ?").bind(name, name.toLowerCase(), key).run();
+    else await env.DB.prepare("INSERT INTO players (key, name, lname, created) VALUES (?, ?, ?, ?)")
+      .bind(key, name, name.toLowerCase(), now).run();
+  } catch (e) {
+    // zwei gleichzeitig mit demselben Namen: der eindeutige Index (players_lname) lässt nur einen durch
+    if (/UNIQUE/i.test(String(e && e.message))) return { error: "Name schon vergeben", status: 409 };
+    throw e;
+  }
   return { key, name };
 }
 
@@ -154,6 +175,14 @@ function boardArgs(b) {
   if (typeof b.board !== "string" || !BOARD_RE.test(b.board)) return null;
   if (typeof b.ver !== "string" || !VER_RE.test(b.ver)) return null;
   return { board: b.board, ver: b.ver, lower: b.lower ? 1 : 0 };
+}
+
+// "kleiner ist besser" legt der erste Eintrag einer Rangliste fest; danach zählt nicht mehr, was der Aufrufer schickt
+// (sonst ließen sich in einer Liste Einträge mit verschiedener Sortierung mischen).
+async function fixLower(env, a) {
+  const row = await env.DB.prepare("SELECT lower FROM scores WHERE board = ? AND ver = ? LIMIT 1").bind(a.board, a.ver).first();
+  if (row) a.lower = row.lower ? 1 : 0;
+  return a;
 }
 
 // Platz eines Werts (1 = bester); bei Gleichstand zählt, wer ihn früher hatte.
@@ -180,6 +209,7 @@ async function score(b, env, now, cors) {
   const key = await playerKey(b.id);
   const value = Number(b.value);
   if (!a || !key || !Number.isFinite(value) || Math.abs(value) > 1e7) return json({ error: "ungültig" }, 400, cors);
+  await fixLower(env, a);
   const lim = await env.DB.prepare("SELECT min, max FROM limits WHERE board = ?").bind(a.board).first();
   if (lim && ((lim.min !== null && value < lim.min) || (lim.max !== null && value > lim.max)))
     return json({ error: "Wert außerhalb der Grenzen" }, 422, cors);
@@ -203,6 +233,7 @@ async function score(b, env, now, cors) {
 async function top(b, env) {
   const a = boardArgs(b);
   if (!a) return { error: "ungültig" };
+  await fixLower(env, a);
   const n = Math.max(1, Math.min(TOP_MAX, Number(b.n) || 10));
   const key = await playerKey(b.id);
   const order = a.lower ? "ASC" : "DESC";
@@ -266,7 +297,11 @@ async function admin(cmd, b, env) {
   const byName = async (name) => {
     const n = String(name || "").toLowerCase();
     const anon = /^anonym #([0-9a-f]{4})$/.exec(n);
-    if (anon) return await env.DB.prepare("SELECT key FROM players WHERE name = '' AND key LIKE ?").bind(anon[1] + "%").first();
+    if (anon) {
+      // 4 Zeichen sind nicht eindeutig: bei mehreren Treffern lieber nichts tun als den Falschen treffen
+      const r = await env.DB.prepare("SELECT key FROM players WHERE name = '' AND key LIKE ? LIMIT 2").bind(anon[1] + "%").all();
+      return r.results.length === 1 ? r.results[0] : (r.results.length ? { ambiguous: true } : null);
+    }
     return await env.DB.prepare("SELECT key FROM players WHERE lname = ?").bind(n).first();
   };
   switch (cmd) {
@@ -280,6 +315,7 @@ async function admin(cmd, b, env) {
     case "delete": {
       const p = await byName(b.name);
       if (!p) return { error: "Spieler unbekannt" };
+      if (p.ambiguous) return { error: "Anonym-Kürzel passt auf mehrere Spieler" };
       const q = b.ver
         ? env.DB.prepare("DELETE FROM scores WHERE board = ? AND ver = ? AND player = ?").bind(b.board, b.ver, p.key)
         : env.DB.prepare("DELETE FROM scores WHERE board = ? AND player = ?").bind(b.board, p.key);
@@ -289,6 +325,7 @@ async function admin(cmd, b, env) {
     case "ban": {
       const p = await byName(b.name);
       if (!p) return { error: "Spieler unbekannt" };
+      if (p.ambiguous) return { error: "Anonym-Kürzel passt auf mehrere Spieler" };
       await env.DB.prepare("UPDATE players SET banned = ? WHERE key = ?").bind(b.banned === false ? 0 : 1, p.key).run();
       return { ok: true };
     }

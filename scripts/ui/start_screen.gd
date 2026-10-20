@@ -623,10 +623,6 @@ func open_settings_ingame() -> void:
 	_show_popup(_settings)
 
 
-func settings_open_ingame() -> bool:
-	return _ingame
-
-
 func _popup_open() -> bool:
 	return _dim.visible
 
