@@ -8,7 +8,7 @@ extends CanvasLayer
 ## Gruppen: [Name, [[Skript, Parameter, min, max], …]]. min/max weglassen = automatisch (0 … 3 × Standard).
 const GROUPS := [
 	["Drift-Press", [
-		["rider", "DPRESS_SPEED", 0.0, 12.0], ["rider", "DPRESS_SIDE", -1.0, 1.0], ["rider", "DPRESS_WRONG", 0.0, 0.8], ["rider", "DPRESS_DRAG", 0.0, 4.0], ["rider", "DPRESS_FALL_ANG", 0.2, 1.57], ["rider", "DPRESS_TURN", 0.05, 2.0],
+		["rider", "DPRESS_SPEED", 0.0, 30.0], ["rider", "DPRESS_SPEED_BAND", 0.0, 5.0], ["rider", "DPRESS_DRAG", 0.0, 8.0], ["rider", "DPRESS_SWEET", 0.0, 0.8], ["rider", "DPRESS_NOSE_REF", -3.15, 3.15], ["rider", "DPRESS_DIR_RATE", 1.0, 40.0], ["rider", "DPRESS_CRASH_MIN", 0.0, 8.0], ["rider", "DPRESS_FALL_ANG", 0.2, 1.57], ["rider", "DPRESS_TURN", 0.05, 2.0],
 		["rider", "DPRESS_RISE", 0.2, 10.0], ["rider", "DPRESS_ANG", 0.0, 1.6], ["rider", "DPRESS_END"],
 		["challenge", "DPRESS_FULL", 0.0, 1.0]]],
 	["Wasserwand", [["sheet", "WALL_BASE", 0.0, 3.0], ["sheet", "WALL_SPEED_MIN", 0.0, 10.0], ["sheet", "WALL_SPEED_MAX", 0.0, 14.0],
@@ -115,9 +115,8 @@ func _ready() -> void:
 	_live = Label.new()
 	_live.add_theme_font_size_override("font_size", FONT - 1)
 	_live.add_theme_color_override("font_color", Color(1, 1, 1, 0.75))
-	_live.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_live.clip_text = true                     # eine Zeile, feste Breite: der Inhalt springt nicht
 	_live.custom_minimum_size.x = W - 12
-	box.add_child(_live)
 
 	var notes := _read_comments()
 	for g: Array in GROUPS:
@@ -129,6 +128,8 @@ func _ready() -> void:
 		_pages.append(list)
 		for e: Array in g[1]:
 			_add_row(list, e, notes)
+	box.add_child(HSeparator.new())
+	box.add_child(_live)                        # Live-Werte unten (oben würde der Kopf springen)
 	pick.item_selected.connect(func(i: int) -> void:
 		for k in _pages.size():
 			_pages[k].visible = k == i
@@ -280,6 +281,6 @@ func _process(_delta: float) -> void:
 		return
 	if _live.text.ends_with("kopiert") and Engine.get_process_frames() % 180 != 0:
 		return
-	_live.text = "%.1f km/h   Seilzug %d N   %s   D-Press %+.2f   Sink %.2f   Gischt %.2f" % [
+	_live.text = "%5.1f km/h  Seil %5d N  %s  Press %+.2f  Sink %.2f  Gischt %.2f" % [
 		rider.horizontal_speed() * 3.6, roundi(rider.tension_smooth),
-		"DRIFT" if rider.drifting else "–", rider.drift_press(), rider.sink_level, rider.spray_strength]
+		"DRIFT" if rider.drifting else "  –  ", rider.drift_press(), rider.sink_level, rider.spray_strength]

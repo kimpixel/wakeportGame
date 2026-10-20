@@ -33,7 +33,8 @@ extends Node3D
 ##   --ragdoll-at=S[,side|top|water[,TEMPO]]  Test: Sturz seitlich gegen das nächste Feature, von oben drauf oder ins
 ##                     Wasser (Standard side, 9 m/s); Log RAGDOLL (Ausdehnung/EXPLOSION, IM FEATURE), PLATSCH, TREFFER
 ##   --erfolg=ID,…     Test: geheime Erfolge als erreicht zeigen (z. B. --screen=@erfolge --erfolg=fisch)
-##   --lb-url=URL      Test: Rangliste über diesen Worker (z. B. lokal http://127.0.0.1:8787), --lb-name=NAME
+##   --lb-url=URL      Test: Rangliste über diesen Worker (z. B. lokal http://127.0.0.1:8787), --lb-name=NAME, --lb-id=32HEX
+##   --dpress-hold=GRAD Test: im Drift-Press den Drift-Winkel automatisch halten, Ausgabe DPRESS …
 ##   --dpress=W        Test: Drift-Press fest zeigen (-1 Tailpress … +1 Nosepress), auch ohne Drift
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
@@ -67,6 +68,7 @@ var cam: ChaseCamera
 var hud: Hud
 var mobile: MobileInput
 var pause_menu: PauseMenu
+var drift_debug: DriftDebug     # Balance-Bogen im Drift-Press, F3: Winkel-Linien am Brett
 var debug_params: DebugParams   # F4, nur lokal (null in der Web-Version)
 var touch_pad: TouchPad         # nur am Handy
 var _setups: Array = []          # aus setups/index.json
@@ -172,6 +174,7 @@ var _music_args := PackedStringArray()   # Test: --music=DATEI[,DATEI]
 var _hold: Array = []           # Test: [Aktion, von, bis] (--hold)
 var _jump_at := -1.0           # Test: zu dieser Zeit abspringen
 var _peak_y := 0.0             # Test-Ausgabe: größte Höhe des laufenden Sprungs
+var _test_dpress_hold := INF  # Test: Drift-Winkel im Press automatisch halten (--dpress-hold=GRAD)
 var _test_dpress := INF       # Test: Drift-Press fest (--dpress)
 var _test_pitch := 0.0         # Test: ↑/↓ in der Luft
 var _touch_at: Array[float] = []   # Test: Finger auf den Bildschirm
@@ -212,9 +215,14 @@ func _ready() -> void:
 	rider = Rider.new()
 	rider.test_pitch = _test_pitch
 	rider.test_dpress = _test_dpress
+	rider.test_dpress_hold = _test_dpress_hold
 	rider.water = water
 	rider.cable = cable
 	add_child(rider)
+	# Drift-Anzeigen: Balance-Bogen im Drift-Press, mit F3 Winkel-Linien am Brett
+	drift_debug = DriftDebug.new()
+	drift_debug.rider = rider
+	add_child(drift_debug)
 	water.follow = rider
 
 	# Hindernisse beider Terminals aus den Setup-Dateien (modular, siehe setups/)
@@ -493,6 +501,7 @@ func _ready() -> void:
 	settings.changed.connect(_apply_setting)
 	if _hitbox_arg:
 		features.show_hitboxes = true
+		drift_debug.show_lines = true
 	for a: String in _set_args:
 		var kv := a.split("=", true, 1)
 		if kv.size() == 2 and settings.values.has(kv[0]):
@@ -1304,7 +1313,8 @@ func _step_mini_rank(delta: float) -> void:
 	mr.show_self = leaderboard.participating()
 	var live := NAN
 	if not challenge.active and leaderboard.participating():     # auch vor dem Start: DU mit 0 Punkten
-		live = float(_final_score if _finishing else (rider.score if _session else 0))
+		# nach dem Ende bleibt der Endstand stehen (wie im HUD), bis „Erneut spielen“ die Punkte löscht
+		live = float(_final_score if _finishing or _round_over else (rider.score if _session else 0))
 	mr.set_live(live)
 	_mini_age += delta
 	_mini_t -= delta
@@ -1517,6 +1527,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_toggle_rope_rip()
 	elif event.is_action_pressed("hitbox"):
 		features.show_hitboxes = not features.show_hitboxes
+		drift_debug.show_lines = features.show_hitboxes
 		hud.show_trick("Hitboxen " + ("an" if features.show_hitboxes else "aus"))
 	elif event.is_action_pressed("help"):
 		hud.toggle_help()
@@ -1825,6 +1836,8 @@ func _parse_args() -> void:
 				var a := h.split("@")
 				var tt := a[1].split("-")
 				_hold.append([a[0], tt[0].to_float(), tt[1].to_float()])
+		elif arg.begins_with("--dpress-hold="):
+			_test_dpress_hold = deg_to_rad(arg.substr(14).to_float())
 		elif arg.begins_with("--dpress="):
 			_test_dpress = arg.substr(9).to_float()
 		elif arg.begins_with("--pitch="):

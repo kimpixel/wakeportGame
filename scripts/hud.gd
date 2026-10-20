@@ -10,7 +10,7 @@ Leertaste halten + loslassen   Absprung (Ollie; voll aufgeladen mit Seilzug übe
 Start mit Countdown 3 – 2 – 1 – GO (Runde 7:30)     R  zurück zum Steg (−2:00, dann Countdown), in den Spielmodi: neuer Versuch     + / -  Anlagentempo
 Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−1:00)     R = Steg (−2:00)
 C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause     O  Einstellungen
-Z  Szenario würfeln     P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus (aus: keine Rangliste)     H  Hilfe ein/aus     F3  Hitboxen (Debug)     F4  Parameter (Debug, nur lokal)
+Z  Szenario würfeln     P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus (aus: keine Rangliste)     H  Hilfe ein/aus     F3  Hitboxen + Drift-Winkel (Debug)     F4  Parameter (Debug, nur lokal)
 Tab  Startseite (Terminal, Feature-Setup, Einstellungen)     Menüs: Tab / Pfeile wählen, Leertaste drücken, Enter Start, Esc zurück
 Gamepad: Stick/Steuerkreuz lenken, Kreuz oder R2 (analog) Sprung, Kreis Drift, L1/R1 Tempo (in der Luft: schnelle 180), rechter Stick umsehen (R3 halten: Zoom), Touchpad Steg, Share Szenario würfeln, PS Pause, Options Einstellungen"""
 
@@ -686,7 +686,9 @@ class SpeedGauge extends Control:
 		draw_rect(Rect2(0, top, w, h), Color(1, 1, 1, 0.12))
 		var fill := clampf(_kmh / MAX_KMH, 0.0, 1.0) * w
 		draw_rect(Rect2(0, top, fill, h), ACCENT)
-		for m: Array in [["PRESS MAX", Rider.DPRESS_SPEED * 3.6]]:
+		for m: Array in [["SWEET", Rider.DPRESS_SPEED * 3.6]]:
+			if float(m[1]) <= 0.0:
+				continue                       # 0 = immer voller Winkel: keine Marke
 			var x := clampf(float(m[1]) / MAX_KMH, 0.0, 1.0) * w
 			var on := _kmh >= float(m[1])
 			var c := Color(1.0, 0.85, 0.2) if on else Color(1, 1, 1, 0.45)

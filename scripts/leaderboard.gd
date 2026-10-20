@@ -59,6 +59,9 @@ func _ready() -> void:
 			elif a.begins_with("--lb-name="):
 				player_name = a.substr(10)
 		player_id = _new_id()
+		for a in args:
+			if a.begins_with("--lb-id=") and a.length() == 8 + 32:
+				player_id = a.substr(8)              # Test: feste Geräte-Nummer (eigener Eintrag sichtbar)
 	else:
 		_load()
 		dev = OS.has_feature("web") and not _main_web()    # nur PR-Vorschauen; lokal zählt wie die Web-Version
