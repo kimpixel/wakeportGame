@@ -50,6 +50,7 @@
     {"part": "ball", "s": 95, "x": 0.6},
     {"part": "bump", "s": 96, "x": 5.5},
     {"part": "kicker_s", "s": 100, "x": 5.5, "dir": "out"},
+    {"part": "stair_pool_6", "s": 99.5, "x": 11.5, "dir": "out", "exit_left": "_6sp_donkey_rail", "exit_right": "_6sp_dk_ledge"},
     {"part": "kicker_s", "s": 103, "x": -9.5, "dir": "in"},
     {"part": "transition_curb", "s": 110, "x": 5, "dir": "out"},
     {"part": "pipe_half", "s": 110, "x": 7.5, "dir": "out"},

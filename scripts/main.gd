@@ -404,6 +404,12 @@ func _ready() -> void:
 	ambient.insect_eaten.connect(func() -> void:
 		hud.show_trick("Igitt – Insekt verschluckt!")
 		_unlock_achievement("insekt"))
+	rider.pool_trick.connect(func(info: Dictionary) -> void:
+		if _test_log:
+			print("POOL %s" % info))
+	rider.pool_bomb.connect(func() -> void:
+		hud.show_trick("Arschbombe!")
+		_unlock_achievement("arschbombe"))
 	rider.landed_on_dock.connect(func() -> void:
 		hud.show_trick("Steg-Landung!")
 		_unlock_achievement("steg"))

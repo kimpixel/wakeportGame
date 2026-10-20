@@ -363,6 +363,23 @@ func pool_zone_at(x: float, z: float) -> FeaturePart:
 	return null
 
 
+## Becken des Pools, zu dem dieses Teil gehört (Rampe, Rand, Treppe, Ausgang), sonst null.
+func pool_of(part: FeaturePart) -> FeaturePart:
+	for q in pools:
+		if q.row_index == part.row_index and q.cable == part.cable:
+			return q
+	return null
+
+
+## Ende der Treppe in Längsrichtung des Beckens (lokal u des Beckens): wer dahinter landet, ist über die Treppe gesprungen.
+func pool_stairs_end(pool: FeaturePart) -> float:
+	var u := pool.length * 0.5
+	for p in parts:
+		if p.type == "stairs" and p.row_index == pool.row_index and p.cable == pool.cable:
+			u = maxf(u, pool.to_uv(p.global_transform * Vector3(0.0, 0.0, -p.length * 0.5)).x)
+	return u
+
+
 ## Weg aus dem Becken: [Ende des Beckens, unterhalb der Treppe im See] (x, z).
 func pool_exit(pool: FeaturePart) -> Array[Vector2]:
 	var top := pool.global_transform * Vector3(0.0, 0.0, -(pool.length * 0.5 - 0.3))

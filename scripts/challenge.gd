@@ -66,12 +66,16 @@ var _water_t := 0.0             # s auf dem Wasser ohne Drift seit dem Feature
 var _drift_from := Vector3.INF  # Beginn des laufenden Drifts nach einem Feature
 var _press_t := 0.0             # dpress: Dauer des laufenden Drift-Press
 var _press_side := 0.0          # dpress switch: zuletzt voll gedrücktes Ende (+1 Nose, -1 Tail, 0 keins)
+# Pool
+var _pool_pts := 0.0            # pool special: Punkte der Pool-Tricks in diesem Versuch
+var _pool_seen := {}            # pool special: schon geschaffte Pool-Tricks (id)
 
 
 func _ready() -> void:
 	var r: Rider = game.rider
 	r.jump_landed.connect(_on_landed)
 	r.slide_ended.connect(_on_slide)
+	r.pool_trick.connect(_on_pool)
 	r.sank.connect(func() -> void:
 		if running and task["kind"] in ["turn", "drift_turn"]:
 			_fail("Abgesoffen – kein Wert"))
@@ -254,6 +258,8 @@ func _reset_measure() -> void:
 	_drift_from = Vector3.INF
 	_press_t = 0.0
 	_press_side = 0.0
+	_pool_pts = 0.0
+	_pool_seen = {}
 	if task["kind"] == "special":
 		var groups := {}
 		for p: FeaturePart in game.features.parts:
@@ -376,6 +382,12 @@ func _physics_process(delta: float) -> void:
 				else:
 					_fail("Kein Drift nach einem Feature – kein Wert")
 				return
+		"pool":
+			if r.mode == Rider.Mode.AIR:
+				_max_y = maxf(_max_y, r.pos.y)
+			if not _hit and _done_t < 0.0 and _past(s_now, float(task["end_s"]) + _off):
+				_fail(str(task.get("miss", "Verpasst")) + " – kein Wert")
+				return
 		"dock":
 			if r.mode == Rider.Mode.AIR:
 				_max_y = maxf(_max_y, r.pos.y)
@@ -401,7 +413,8 @@ func _physics_process(delta: float) -> void:
 				_fail("Kein Raley – mehr Seilzug: weit raus, dann hart zur Mitte kanten (Marke RALEY)")
 				return
 	if _done_t >= 0.0:
-		if r.mode == Rider.Mode.WATER and r.pos.y < 0.15:
+		# wieder ruhig auf dem Wasser – auch im Becken des Pools
+		if r.mode == Rider.Mode.WATER and (r.pos.y < 0.15 or game.water.pool_level(r.pos.x, r.pos.z) > FeaturePart.NONE):
 			_done_t -= delta
 		if _done_t < 0.0:
 			_finish(true)
@@ -736,6 +749,26 @@ static func combo_text(req: Dictionary) -> String:
 	return " – ".join(parts)
 
 
+## Pool-Trick (Rider.pool_trick): genau dieser Trick misst den Wert; "special" = alle aus "need" in einem
+## Versuch, Wert = Punkte aller Pool-Tricks (mit Kombination).
+func _on_pool(info: Dictionary) -> void:
+	if not running or _fail_t >= 0.0 or task["kind"] != "pool":
+		return
+	if task["trick"] == "special":
+		_pool_seen[info["id"]] = true
+		_pool_pts += float(info["points"])
+		_value = _pool_pts
+		if (task["need"] as Array).all(func(k: String) -> bool: return _pool_seen.has(k)):
+			_hit = true
+			_done_t = SETTLE
+		return
+	if info["id"] != task["trick"] or _hit:
+		return
+	_value = float(info.get(task["metric"], 0.0))
+	_hit = true
+	_done_t = SETTLE
+
+
 func _on_slide(info: Dictionary) -> void:
 	if not running or _fail_t >= 0.0:
 		return
@@ -863,6 +896,13 @@ func _update_hud() -> void:
 		match task["kind"]:
 			"turn":
 				live = Training.format_value(task, _value)
+			"pool":
+				if task["trick"] == "special":
+					live = "%d Punkte" % roundi(_pool_pts)
+				elif task["metric"] == "height" and (game.rider.mode == Rider.Mode.AIR or _hit):
+					live = "Höhe " + Training.format_value(task, _value if _hit else _max_y)
+				elif _hit:
+					live = Training.format_value(task, _value)
 			"kick", "raley", "dock":
 				if task["metric"] == "height" and (game.rider.mode == Rider.Mode.AIR or _hit):
 					live = "Höhe " + Training.format_value(task, _max_y)

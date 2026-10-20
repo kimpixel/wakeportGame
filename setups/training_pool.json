@@ -1,0 +1,10 @@
+{
+  "name": "Challenge Pool",
+  "_info": "Challenge-Modus Pool (Terminal 2): rechts Pool A (Down Rail / Down Ledge, alle Pool-Challenges) und dahinter Pool B (Donkey Rail / Low to High Ledge), links Pool C (Double Kinked Rail außen / Flat Down Ledge innen) für die Ausgangs-Serie.",
+  "T2": [
+    {"part": "stair_pool_6", "s": 65, "x": 4.2, "dir": "out"},
+    {"part": "stair_pool_6", "s": 120, "x": 4.2, "dir": "out", "exit_left": "_6sp_donkey_rail", "exit_right": "_6sp_lth_ledge"},
+    {"part": "stair_pool_6", "s": 65, "x": -4.2, "dir": "out", "exit_left": "_6sp_dk_rail", "exit_right": "_6sp_fd_ledge"}
+  ],
+  "T1": []
+}

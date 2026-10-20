@@ -155,7 +155,7 @@ Spielmodi (`scripts/training.gd` Daten, `scripts/challenge.gd` Ablauf, `scripts/
   nie „Training“/„Aufgabe“ schreiben; im Code heißen sie weiter Training/Task): **Wenden, Kicker, Slider, Invert Training**, je
   mehrere Aufgaben (leicht → schwer), jede misst einen Wert → **Bronze/Silber/Gold** (Schwellen in `Training.MODES`,
   vom Nutzer fein justiert). Bestwerte in user://settings.cfg [medaillen]; **Tests speichern nichts**.
-- Modi: Wenden, Kicker, Slider, **Invert Training** (id `raley`; je Aufgabe genau ein Trick: `trick` = Name wie im Spiel, `rank` = Zusätze; anderer Trick = fehlgeschlagen, mehr = „Junge mach mal langsam!“; Versuch endet spätestens, wenn die Anlage zur nächsten Wende bremst; Raley zweimal: Höhe (Gold 5 m) und Weite, Messwert `width` = waagrecht Absprung → Landung (Gold 26 m); `"lb": 1` = Ranglisten und eigene Bestwerte neu, Schlüssel `MODUS.ID@lbN`), **Sprung-Start** (Nolli, Raley Start vom Steg), **Driften**, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
+- Modi: Wenden, Kicker, Slider, **Pool** (am 6-Stair Pool, siehe Features/Setups), **Invert Training** (id `raley`; je Aufgabe genau ein Trick: `trick` = Name wie im Spiel, `rank` = Zusätze; anderer Trick = fehlgeschlagen, mehr = „Junge mach mal langsam!“; Versuch endet spätestens, wenn die Anlage zur nächsten Wende bremst; Raley zweimal: Höhe (Gold 5 m) und Weite, Messwert `width` = waagrecht Absprung → Landung (Gold 26 m); `"lb": 1` = Ranglisten und eigene Bestwerte neu, Schlüssel `MODUS.ID@lbN`), **Sprung-Start** (Nolli, Raley Start vom Steg), **Driften**, **Transfer** (auf echten Setups, `terminal`/`setup` je Aufgabe, `via` = Start-Feature,
   `target` = Ziel, je per Anzeigename; zählt nur: auf dem Start-Feature fahren, abspringen, aus der Luft aufs Ziel; Klein/Groß/Special messen die Sprunghöhe im Flug Start-Feature → Ziel (`_xfer_h`), Special Press die Press-Sekunden). Nach gewertetem Versuch **1,4 s ausrollen** (`Challenge.OUTRO`), dann Fenster.
   Startseite im Querformat zweispaltig (links Modi, rechts Terminal/Setup bzw. Aufgaben; Handy quer: Start links).
 - Aufgabe setzt Fahrer + Carrier **in voller Fahrt** kurz vor die Stelle (`Rider.place`, `CableSystem.place_running`),
@@ -208,6 +208,8 @@ Geheime Erfolge (`scripts/achievements.gd`, Liste auf der Startseite Taste „Er
   **Keine Tier-Ärgern-Erfolge** (Nutzerwunsch: nichts Tierquälerisches, lieber was Süßes; Schwäne weichen aus).
 - **Zugvogel** (`zugvogel`): Raley-Absprung, während der Kranichzug über dem See ist (`Wildlife.cranes_overhead`, Okt./Nov., Feb./März).
 - **Badegast** (`badegast`): Hitzetag, Luftmatratze nass spritzen wie beim SUP; ein „Schläfer“ treibt ab und zu bis x = −13,5 an die Bahn.
+- **Arschbombe** (`arschbombe`, 12. und letzter Platz): aus der Luft gestürzt und ins Becken des 6-Stair Pools geklatscht (`Rider.pool_bomb`:
+  Sturz im Flug, erster Platscher im Becken). Test `--erfolg=arschbombe`.
 - **Blitzableiter** (`blitz`): Szenario „Gewitter – YOLO“ (nie gewürfelt): Blitze alle 3–9 s, 22 % knapp neben dem Fahrer, Volltreffer 1,5 %
   (frühestens 90 s nach Start/letztem Treffer) = Sturz „Vom Blitz getroffen!“ (`Storm`, Licht `Weather.flash`, Donner `Sfx.thunder` synthetisch).
 - **Ho ho ho!** (`nikolaus`): am 6. Dezember im Schnee eine Wende schaffen (`Weather.is_nikolaus`, in `_track_turn`). Das Szenario
@@ -367,7 +369,7 @@ Features/Setups:
   außen ca. 5 cm über, zur Transition nur 1,5 cm (`TR_TUCK`), nur das untere Viertel steckt im Körper (Oberkante 1,58 m). Seitlich von der Transition ohne Sprung aufs Rail: Fahrphysik hat dort eine weiche Auffahrt (`_tr_lip`, ab `TR_LIP` 0,3 m vor dem Transitions-Ende), sonst wäre die Stufe ein Sturz. Setup-Positionen beziehen sich auf die alte Breite 3,2 m (`FeatureSet.TR_REF_WIDTH`):
   breiter wird es nur zur Seilseite, Rail und Rückwand bleiben, wo Nachbarn anschließen. Rampen vorne/hinten gerade, von allen Seiten befahrbar, löst keinen Sturz aus.
   Grafik aus genau seinen Flächen (`FeaturePart._build_transition_body` / `_build_transition_rail`): Rampen als Ebenen bis exakt auf die Schnittkante (von vorne = Querschnitt), Transition läuft unter dem Überstand weiter, Rail-Rohr von der Rampenebene abgeschnitten (verschmilzt mit der Rampe, setzt sich zur Transition mit der Rundung ab); ohne Rampe hinten (1/2) Wand mit Querschnitt.
-- **6-Stair Pool** (UNIT 6SP001, `stair_pool_6`, nur in Utopia T2): Rampe 5 m auf den Rand 1,35 m, Becken 15 × 3,8 m mit **echtem
+- **6-Stair Pool** (UNIT 6SP001, `stair_pool_6`, Utopia, Pool Party, Challenge Pool): Rampe 5 m auf den Rand 1,35 m, Becken 15 × 3,8 m mit **echtem
   Wasser** auf 1,1 m (Typ `pool`: `Water.height_at` liefert im Becken dessen Spiegel + Grundwellen + eigene Kreiswellen
   `_pool_points` (Heckwelle, Landung, Sturz nur im Becken), `FeatureSet.pool_level`, `water.features`; Wasserfläche mit dem
   **See-Shader** (`Water._pool_material`, gleiche Farbe/Effekte; Editor/Vorschau Ersatz `pool_water.gdshader`); Fahren, Landen,
@@ -379,6 +381,14 @@ Features/Setups:
   runter, dann glatt wie die Ollie Box; ohne Drift Sturz „Treppe nur im Drift!“ (nur Spieler). Sturz im Becken: schwimmt zur Treppe
   und darüber hinaus (`pool_zone_at`, `pool_exit`, dort kein `push_out`). Maße teils aus Renderbildern geschätzt (Nutzer festgelegt:
   Wasser nicht bündig mit dem Rand, Rest unter Wasser, beide Richtungen befahrbar).
+- **Pool-Tricks** (`Rider._pool_jump`, `_track_stairs`, Konstanten `POOL_*`/`STAIR_*`/`COPING_LINK_*`, Signal `pool_trick` mit id/name/points/
+  height/width/speed/dist): Pool Drop +100, Pool Gap +400 (Landung hinter dem Becken; bei 30 km/h kaum zu schaffen), Stair Gap +200
+  (Landung hinter der Treppe, `FeatureSet.pool_stairs_end`), Stair Drift 150 / Stair Climb 250 (beim Verlassen der Treppe auf der
+  anderen Seite), Pool Coping to … +150 (Ausgang beginnt bis `COPING_LINK_GAP` 1,5 s nach dem Rand-Slide). Alle in der Kombination.
+- Pools stehen in **Utopia** (T2 s 87,3 rechts; T1 s 99,5 x 11,5 mit Donkey Rail / Double Kinked Ledge), im Setup **Pool Party** (T2 zwei,
+  einer zum Steg mit Double Kinked Rail / Flat Down Ledge; T1 einer mit Low to High Rail / Flat Down Ledge) und im Challenge-Setup
+  `training_pool.json` (Pool A rechts s 65, Pool B rechts s 120, Pool C links s 65). Challenge-Modus **Pool** (`kind: "pool"`, `trick`
+  = gemessener Pool-Trick, `special` mit `need` = Punkte; Messwert `speed` in km/h), dazu Ausgangs-Serie als `kind: "slide"`.
 - Schwimmen: liegt die Handle im Sicherheitsabstand eines Features, plant der Weg mit 0,35 m drum herum; Ecken werden erst abgehakt und
   der Zielpunkt voraus nur angepeilt, wenn der Weg dorthin frei ist (`FeatureSet.swim_clear`) – sonst schwamm man gegen dünne Teile.
 - Positionen kommen aus den Plan-Fotos (`fotos/`); die Pläne sind nicht maßstäblich, Maße aus

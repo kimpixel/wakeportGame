@@ -25,6 +25,8 @@ signal body_hit(strength: float)        # Sturz: Körper prallt hart an ein Feat
 ## Für die Spielmodi (Challenge): Landung nach einem Sprung bzw. Ende eines Slides, mit Messwerten
 signal jump_landed(info: Dictionary)   # raley, air_time, half_turns, rolls, popped, points
 signal jumped(info: Dictionary)        # Absprung (Leertaste): raley, tension, speed, load, vy – für Test-Ausgaben
+signal pool_trick(info: Dictionary)    # 6-Stair Pool: id drop/gap/stair_gap/stair_down/stair_up/coping_link, name, points, height, width, speed, dist
+signal pool_bomb                         # aus der Luft ins Becken gestürzt (geheimer Erfolg „Arschbombe“)
 signal slide_ended(info: Dictionary)   # part, time, dist, dist_5050, dist_bs, switches, press, press_nose, press_tail, bs_share
 
 ## Bergung nach Sturz/Seilverlust (2-Mast-Anlage: niemand muss zurück zum Start):
@@ -187,6 +189,14 @@ const BOARD_HALF := 0.35
 static var DOCK_BRACE_MAX := 0.9
 static var DOCK_YANK_LIFT := 2.6      # m/s zusätzliche Steiggeschwindigkeit bei voller Ladung
 const DOCK_YANK_POINTS := 100
+# 6-Stair Pool: Bonus für die Tricks am Pool (zur Flugzeit/Drehung dazu bzw. eigener Trick, zählen in der Kombination)
+const POOL_DROP_POINTS := 100      # über die Rampe ins Becken
+const POOL_GAP_POINTS := 400       # über das ganze Becken (Landung hinter dem Becken)
+const STAIR_GAP_POINTS := 200      # aus dem Becken über die Treppe in den See
+const STAIR_DRIFT_POINTS := 150    # Treppe im Drift hinunter
+const STAIR_CLIMB_POINTS := 250    # Treppe im Drift hinauf ins Becken
+const COPING_LINK_POINTS := 150    # vom Beckenrand ohne Absetzen auf den Ausgang
+const COPING_LINK_GAP := 1.5       # s: so lange darf man zwischen Rand und Ausgang (Safety) unterwegs sein
 const DOCK_QUER := deg_to_rad(45.0)   # Brett mehr als so weit quer zum Seil: Raley Start statt Nolli
 static var NOLLI_ANG := 1.05         # rad: Nolli – Brett kippt um die Nose, Tail hoch (Fotos: ca. 60°)
 const NOLLI_PELVIS := 0.35      # so viel vom Anheben der Brettmitte macht das Becken mit (Rest: Knie ran)
@@ -322,6 +332,17 @@ var _free_handle := Vector3.ZERO
 var _rope_dist := 0.0
 var _slide_time := 0.0
 var _combo := 0                  # Tricks in der laufenden Kombination
+var _clock := 0.0                 # s Fahrzeit (für kurze Zeitfenster, z. B. Coping -> Ausgang)
+var _ground_feat: FeaturePart     # Teil unter dem Brett (zuletzt auf dem Wasser bzw. Feature)
+var _launch_feat: FeaturePart     # Pool: Absprung von diesem Teil (Rampe)
+var _launch_pool: FeaturePart     # Pool: Absprung aus dem Wasser dieses Beckens
+var _launch_pos := Vector3.ZERO
+var _air_top := 0.0               # höchster Punkt des laufenden Sprungs
+var _stairs_part: FeaturePart     # Treppe, auf der man gerade driftet
+var _stairs_from := ""            # dort draufgekommen: "top" (aus dem Becken) / "bottom" (aus dem See)
+var _last_slide := {}             # zuletzt gewerteter Slide: part, dist, t (Coping -> Ausgang)
+var _crash_air := false           # Sturz aus der Luft (für die Arschbombe)
+var _bombed := false
 var _combo_t := 0.0             # Restzeit bis die Kombination verfällt
 var _slide_part: FeaturePart
 var _line: FeaturePart          # Feature, das der Autopilot gerade anfährt
@@ -515,6 +536,7 @@ func reset() -> void:
 	sink_level = 0.0
 	_sink_vis = 0.0
 	_combo = 0
+	_pool_reset()
 	_popped = false
 	_flip_lock = false
 	_jump_held = false
@@ -800,6 +822,7 @@ func _board_surface() -> float:
 # ---------------------------------------------------------------- Physik
 
 func step(delta: float) -> void:
+	_clock += delta
 	_prev_pos = pos
 	_prev_yaw = yaw
 	_read_input(delta)
@@ -1316,6 +1339,7 @@ func _drift_angle() -> float:
 
 func _step_water(delta: float, rope: Vector3) -> void:
 	_ground_kind = _launch_surface()     # worauf man fährt: beim Abheben ist man oft schon über die Kante hinaus
+	_ground_feat = features.part_at(pos.x, pos.z) if (features and pos.y > 0.05) else null
 	var f := forward()
 	var r := right()
 	var vh := Vector3(vel.x, 0.0, vel.z)
@@ -1370,6 +1394,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	if slick_part and slick_part.type == "stairs" and not autopilot and _release <= 0.5:
 		crash("Treppe nur im Drift!")
 		return
+	_track_stairs(slick_part)
 	var dir_before := Vector3(vel.x, 0.0, vel.z).normalized()
 	# Driften (Strg): die Kante ist gelöst – keine Kante greift, also ändert Lenken die Fahrt-
 	# richtung nicht: man rutscht weiter, nur der Seilzug zieht einen (sonst würde das Seil
@@ -1560,7 +1585,16 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 		var bs_share := clampf(_bs_time / maxf(_slide_time, 0.01), 0.0, 1.0)
 		var pts := (SLIDE_BASE + _slide_time * SLIDE_PER_S + BOARDSLIDE_BONUS * bs_share + press \
 			+ SWITCH_BONUS * switches) * float(SLIDE_FACTOR.get(_slide_part.type, 1.0))
-		_score_trick(trick + " – " + _slide_part.display_name, int(pts))
+		# Pool: vom Beckenrand über die Safety ohne Absetzen auf den Ausgang
+		var prev: FeaturePart = _last_slide["part"] if not _last_slide.is_empty() and is_instance_valid(_last_slide["part"]) else null
+		var link := prev != null and prev.part_id == "_pool_coping" and _slide_part.part_id.begins_with("_6sp_") \
+			and prev.row_index == _slide_part.row_index and prev.cable == _slide_part.cable \
+			and _clock - _slide_time - float(_last_slide["t"]) < COPING_LINK_GAP
+		var where := ("Pool Coping to " if link else "") + _slide_part.display_name
+		var scored := _score_trick(trick + " – " + where, int(pts) + (COPING_LINK_POINTS if link else 0))
+		if link:
+			pool_trick.emit({"id": "coping_link", "name": where, "points": scored, "dist": float(_last_slide["dist"]) + _slide_dist})
+		_last_slide = {"part": _slide_part, "dist": _slide_dist, "t": _clock}
 		slide_ended.emit({"part": _slide_part, "time": _slide_time, "dist": _slide_dist,
 			"dist_bs": _bs_dist, "dist_5050": _slide_dist - _bs_dist, "switches": switches,
 			"press": maxf(_press_nose_t, _press_tail_t), "press_nose": _press_nose_t,
@@ -1578,7 +1612,7 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 ## Punkte von außen vergeben (z. B. für eine saubere Wende) – löst auch den Jubel aus.
 ## Trick werten: innerhalb einer Kombination (nächster Trick, bevor COMBO_WINDOW abläuft)
 ## zählt jeder Trick mehrfach – der 2. doppelt, der 3. dreifach …
-func _score_trick(trick_name: String, base: int) -> void:
+func _score_trick(trick_name: String, base: int) -> int:
 	_combo += 1
 	_combo_t = COMBO_WINDOW
 	var pts := roundi(base * _combo * trick_bonus)
@@ -1586,6 +1620,62 @@ func _score_trick(trick_name: String, base: int) -> void:
 		trick_name += "   Combo x%d" % _combo
 	score += pts
 	trick_landed.emit(trick_name, pts)
+	return pts
+
+
+# ---------------------------------------------------------------- 6-Stair Pool
+
+func _pool_reset() -> void:
+	_launch_feat = null
+	_launch_pool = null
+	_stairs_part = null
+	_stairs_from = ""
+	_last_slide = {}
+
+
+## Treppe im Drift: von oben (Becken) nach unten (See) = Stair Drift, von unten ins Becken = Stair Climb.
+## Gewertet beim Verlassen der Treppe auf der anderen Seite.
+func _track_stairs(sp: FeaturePart) -> void:
+	if sp and sp.type == "stairs":
+		if _stairs_part == null:
+			_stairs_part = sp
+			_stairs_from = "top" if sp.to_uv(pos).x < 0.0 else "bottom"
+		return
+	if _stairs_part == null or not is_instance_valid(_stairs_part):
+		_stairs_part = null
+		return
+	var in_pool := water.pool_level(pos.x, pos.z) > FeaturePart.NONE
+	var to := "top" if in_pool else ("bottom" if _stairs_part.to_uv(pos).x > 0.0 else "")
+	var from := _stairs_from
+	_stairs_part = null
+	_stairs_from = ""
+	if to == "" or to == from:
+		return
+	var up := to == "top"
+	var trick := "Stair Climb" if up else "Stair Drift"
+	var pts := _score_trick(trick, STAIR_CLIMB_POINTS if up else STAIR_DRIFT_POINTS)
+	pool_trick.emit({"id": "stair_up" if up else "stair_down", "name": trick, "points": pts, "speed": horizontal_speed() * 3.6})
+
+
+## Sprung am Pool: "drop" (von der Rampe ins Becken), "gap" (von der Rampe über das ganze Becken),
+## "stair_gap" (aus dem Becken über die Treppe in den See) oder "".
+func _pool_jump(on_feature: bool) -> String:
+	if features == null:
+		return ""
+	if _launch_feat and is_instance_valid(_launch_feat) and _launch_feat.part_id == "_pool_ramp":
+		var pool := features.pool_of(_launch_feat)
+		if pool == null:
+			return ""
+		if pool.contains(pos.x, pos.z):
+			return "drop"
+		var uv := pool.to_uv(pos)
+		if uv.x > pool.length * 0.5 and absf(uv.y) < pool.width * 0.5 + 0.6:
+			return "gap"
+		return ""
+	if _launch_pool and is_instance_valid(_launch_pool) and not on_feature and not _launch_pool.contains(pos.x, pos.z):
+		if _launch_pool.to_uv(pos).x > features.pool_stairs_end(_launch_pool):
+			return "stair_gap"
+	return ""
 
 
 ## Die Kombination läuft nur ab, während man normal im Wasser fährt (nicht in der Luft / auf dem Feature).
@@ -1679,6 +1769,11 @@ func _clear_air_pose() -> void:
 
 func _enter_air() -> void:
 	_launch_kind = _ground_kind
+	_launch_feat = _ground_feat
+	_launch_pool = features.pool_zone_at(pos.x, pos.z) if (features and water.pool_level(pos.x, pos.z) > FeaturePart.NONE) else null
+	_launch_pos = pos
+	_air_top = pos.y
+	_stairs_part = null                # von der Treppe abgesprungen: zählt nicht als Stair Drift
 	_prev_on_feature = false
 	_on_slider = false          # Landung auf demselben Slider rastet neu ein (sonst dreht die Luft-Drehung zurück)
 	mode = Mode.AIR
@@ -1705,6 +1800,7 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	var old_obstacle := _obstacle_height(pos.x, pos.z, true)
 	pos += vel * delta
 	air_time += delta
+	_air_top = maxf(_air_top, pos.y)
 
 	var old_yaw := yaw
 	# Invert: ↑/↓ ganz am Anfang wählen S-Bend/Backroll (kein Überschlag); drehen erst, wenn fast fertig
@@ -1916,7 +2012,10 @@ func _land(surf: float) -> void:
 	_flip = 0.0
 	var jump_start := _jump_start
 	_jump_start = ""
-	if air_time > 0.5 or half_turns > 0 or rolls > 0 or jump_start != "":
+	var pool_id := _pool_jump(on_feature)
+	_launch_feat = null
+	_launch_pool = null
+	if air_time > 0.5 or half_turns > 0 or rolls > 0 or jump_start != "" or pool_id != "":
 		# Name aus den Teilen, z. B. "Raley 360", "Backroll", "Double Frontroll 180"
 		var parts: Array[String] = []
 		var pts := int(air_time * AIR_PER_S) + half_turns * SPIN_PER_180 + rolls * FLIP_POINTS
@@ -1953,6 +2052,9 @@ func _land(surf: float) -> void:
 			parts.append(("Double " if rolls == 2 else ("%dx " % rolls if rolls > 2 else "")) + roll)
 		if half_turns > 0 and not spin_named:
 			parts.append(str(half_turns * 180))
+		if pool_id != "":
+			parts.append({"drop": "Pool Drop", "gap": "Pool Gap", "stair_gap": "Stair Gap"}[pool_id])
+			pts += {"drop": POOL_DROP_POINTS, "gap": POOL_GAP_POINTS, "stair_gap": STAIR_GAP_POINTS}[pool_id]
 		if parts.is_empty():
 			match _launch_kind:
 				"kicker":
@@ -1963,7 +2065,10 @@ func _land(surf: float) -> void:
 					parts.append("Ollie" if _popped else "Air")
 		if jump_start != "":
 			pts += DOCK_YANK_POINTS
-		_score_trick(" ".join(parts), pts)
+		var scored := _score_trick(" ".join(parts), pts)
+		if pool_id != "":
+			pool_trick.emit({"id": pool_id, "name": " ".join(parts), "points": scored, "height": _air_top,
+				"width": Vector2(pos.x - _launch_pos.x, pos.z - _launch_pos.z).length(), "half_turns": half_turns})
 		jump_landed.emit({"raley": _raley, "invert": _invert, "air_time": air_time, "half_turns": half_turns,
 			"rolls": rolls, "popped": _popped, "points": pts, "start": jump_start, "name": " ".join(parts)})
 
@@ -1971,6 +2076,9 @@ func _land(surf: float) -> void:
 func crash(reason: String) -> void:
 	if mode == Mode.CRASHED:
 		return
+	_crash_air = mode == Mode.AIR
+	_bombed = false
+	_pool_reset()
 	_clear_air_pose()
 	mode = Mode.CRASHED
 	_crash_t = 0.0
@@ -2571,6 +2679,9 @@ func _body_splash(at: Vector3, strength: float, vh: Vector3) -> void:
 	p.direction = (Vector3.UP * 2.0 + vh * 0.12).normalized()
 	p.restart()
 	water.impact(at, 0.4 + 1.4 * k)        # mehrere Körperteile kurz nacheinander: Wellen addieren sich
+	if _crash_air and not _bombed and water.pool_level(at.x, at.z) > FeaturePart.NONE:
+		_bombed = true
+		pool_bomb.emit()                     # aus der Luft ins Becken: Arschbombe
 	body_splashed.emit(k)
 
 
