@@ -9,6 +9,7 @@
     { "id": "d",           "name": "Setup D (Datum ?)",      "file": "res://setups/setup_d.json" },
     { "id": "e",           "name": "Setup E (Datum ?)",      "file": "res://setups/setup_e.json" },
     { "id": "pool-party",  "name": "Pool Party",             "file": "res://setups/setup_pool_party.json" },
-    { "id": "utopia",      "name": "Utopia",                 "file": "res://setups/setup_utopia.json" }
+    { "id": "utopia",      "name": "Utopia",                 "file": "res://setups/setup_utopia.json" },
+    { "id": "raildorado",  "name": "Raildorado",             "file": "res://setups/setup_raildorado.json" }
   ]
 }

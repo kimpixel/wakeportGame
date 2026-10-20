@@ -398,10 +398,13 @@ func pool_exit(pool: FeaturePart) -> Array[Vector2]:
 
 
 ## Fangzone eines Sliders an world (nächster Zielpunkt) oder null. Gibt [Teil, Zielpunkt] zurück.
-func catch_at(world: Vector3) -> Array:
+## skip: dieses Modul nicht fangen (Rail to Rail: der Slider, von dem man seitlich abgesprungen ist).
+func catch_at(world: Vector3, skip: FeaturePart = null) -> Array:
 	var best: Array = []
 	var best_d := INF
 	for part in parts:
+		if skip != null and part.same_module(skip):
+			continue
 		var t := part.catch_target(world)
 		if t != Vector3.INF:
 			var d := Vector2(t.x - world.x, t.z - world.z).length() + absf(t.y - world.y) * 0.5

@@ -7,9 +7,10 @@ extends RefCounted
 ##
 ## Felder einer Aufgabe:
 ##   id, name (kurz, Liste), title, goal, keys / keys_mobile (Steuerung), tip
-##   kind     turn | kick | slide | chain | raley | special | drift_spin | drift_turn | drift_after | dpress | dock | pool
+##   kind     turn | kick | slide | chain | raley | special | drift_spin | drift_turn | drift_after | dpress | dock | pool | r2r
 ##   trick    pool: gemessener Pool-Trick (Rider.pool_trick: drop, gap, stair_gap, stair_down, stair_up, coping_link)
 ##            oder "special" (alle aus need in einem Versuch, Wert = Punkte); miss = Text, wenn verpasst
+##   chain    r2r: so viele Slider hintereinander, jeder per Transfer (seitlicher Hop) vom vorigen; Messwert auf dem letzten
 ##   press    dpress: "tail" / "nose" (längster Press am Stück) oder "switch" (Wechsel in einem Drift)
 ##   jump     dock: verlangter Sprung-Start "nolli" (Brett längs) oder "raley" (quer); start {dock: true} = auf dem Steg
 ##   setup    Setup-Datei (Terminal 2)
@@ -37,6 +38,7 @@ const LEER := "res://setups/training_leer.json"
 const KICKER := "res://setups/training_kicker.json"
 const SLIDER := "res://setups/training_slider.json"
 const POOL := "res://setups/training_pool.json"
+const RAIL := "res://setups/training_rail.json"
 
 ## TEMP: Drift-Nosepress ist abgeschaltet (Rider.DPRESS_NOSE_ON) – diese Challenges stehen solange nicht im
 ## Modus Driften. Zum Zurückholen wieder hinter "tailpress" in MODES einfügen.
@@ -452,6 +454,24 @@ const MODES := [
 		 "keys": "← / →  lenken     Leertaste  Absprung",
 		 "keys_mobile": "Neigen  lenken     SPRUNG  Absprung",
 		 "tip": "Die innere Seite liegt nah am Seil – das Seil zieht kaum quer, dafür ist die Spur schmal."},
+	]},
+	# Rail to Rail: vom Slider seitlich auf den Nachbar-Slider springen (auf dem Slider Sprung laden, dabei
+	# ←/→ = Seite). "chain" = so viele Slider hintereinander, jeder per Transfer vom vorigen; gemessen auf dem letzten.
+	{"id": "r2r", "name": "Rail to Rail", "text": "Auf dem Slider seitlich auf den Nachbarn hinüberspringen.", "tasks": [
+		{"id": "pipe2", "name": "Pipe to Pipe", "title": "Pipe to Pipe",
+		 "kind": "r2r", "chain": 2, "setup": RAIL, "start": {"s": 30.0, "x": 7.0, "dir": 1}, "end_s": 85.0,
+		 "metric": "dist", "medals": [5.0, 9.0, 12.0],
+		 "goal": "Rechts stehen zwei Pipes nebeneinander (0,8 m Lücke). Über die Auffahrt auf die äußere, kurze Pipe, dann seitlich auf die innere, lange Pipe hinüberspringen. Gemessen: gerutschte Meter auf der zweiten Pipe – je früher der Transfer, desto mehr.",
+		 "keys": "Auf der Pipe Leertaste halten, dabei ← (Seite), Leertaste loslassen = Hop",
+		 "keys_mobile": "Auf der Pipe SPRUNG halten, dabei ← (Seite), SPRUNG loslassen = Hop",
+		 "tip": "Schon auf der Auffahrt laden, auf der Pipe ← dazu und loslassen. Die Hop-Hilfe zielt auf die Mitte der Nachbar-Pipe. In der Luft dreht ←/→ erst wieder, wenn du es einmal losgelassen hast."},
+		{"id": "pipe3", "name": "Pipe to Pipe to Pipe", "title": "Pipe to Pipe to Pipe",
+		 "kind": "r2r", "chain": 3, "setup": RAIL, "start": {"s": 30.0, "x": -8.0, "dir": 1}, "end_s": 90.0,
+		 "metric": "dist", "medals": [4.0, 8.0, 11.0],
+		 "goal": "Links stehen drei Pipes versetzt nebeneinander wie eine Treppe zur Seilmitte. Auf die erste, dann zweimal hinüber: Pipe 1 → Pipe 2 → Pipe 3. Gemessen: gerutschte Meter auf der dritten Pipe.",
+		 "keys": "Auf der Pipe Leertaste halten, dabei → (Seite), Leertaste loslassen = Hop – auf Pipe 2 gleich nochmal",
+		 "keys_mobile": "Auf der Pipe SPRUNG halten, dabei → (Seite), SPRUNG loslassen = Hop – auf Pipe 2 gleich nochmal",
+		 "tip": "Pipe 2 ist kurz: sofort nach der Landung wieder laden. Ein kurzer Druck reicht für den Hop – voll aufladen muss man nicht."},
 	]},
 ]
 

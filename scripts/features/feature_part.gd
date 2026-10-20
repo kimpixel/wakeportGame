@@ -138,6 +138,26 @@ func catch_v() -> float:
 	return -inner_v * (width * 0.5 - TR_FLAT * 0.5) if type == "transition" else 0.0
 
 
+## Gehört o zum selben Modul (dasselbe Teil oder ein Teil desselben Moduls, z. B. die zwei Hälften einer Full Pipe)?
+func same_module(o: FeaturePart) -> bool:
+	return o == self or (group_name != "" and o.group_name == group_name and o.row_index == row_index and o.cable == cable)
+
+
+## Rail to Rail: Punkt auf der Slide-Linie (Welt, Oberkante) auf Höhe von world entlang des Sliders,
+## egal wie weit seitlich; INF, wenn world vor/hinter dem Slider liegt oder dort nicht gefangen wird.
+func line_point(world: Vector3) -> Vector3:
+	if not can_catch():
+		return Vector3.INF
+	var u := -(_inv * world).z
+	if absf(u) > length * 0.5:
+		return Vector3.INF
+	var v0 := catch_v()
+	var top := height_local(u, v0)
+	if top < CATCH_MIN_TOP:
+		return Vector3.INF
+	return global_transform * Vector3(v0, top, -u)
+
+
 ## Liegt world (nur x/z) über dem Slider oder knapp daneben (margin m)? Höhe egal.
 func over_slider(world: Vector3, margin: float) -> bool:
 	if not is_slide():

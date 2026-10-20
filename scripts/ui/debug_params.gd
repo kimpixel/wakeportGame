@@ -34,10 +34,10 @@ const GROUPS := [
 	["Slider", [
 		["rider", "SLIDE_FRICTION", 0.0, 1.0], ["rider", "PRESS_ANG", 0.0, 1.2], ["rider", "SNAP_RATE"],
 		["rider", "SLIDE_TURN"], ["rider", "LOCK_RATE"], ["rider", "LOCK_PULL"], ["rider", "CATCH_GLIDE"],
-		["rider", "CATCH_RISE"]]],
+		["rider", "CATCH_RISE"], ["rider", "HOP_SPEED", 0.0, 4.0], ["rider", "HOP_MAX", 0.5, 6.0], ["rider", "HOP_RANGE", 0.5, 5.0], ["rider", "HOP_LEAN", 0.0, 1.2], ["rider", "HOP_LEAN_LOAD", 0.0, 0.8]]],
 	["Sprung-Start", [["rider", "DOCK_BRACE_MAX", 0.1, 1.0], ["rider", "DOCK_YANK_LIFT"], ["rider", "NOLLI_ANG", 0.0, 1.6]]],
 	["Punkte", [
-		["rider", "SLIDE_BASE"], ["rider", "SLIDE_PER_S"], ["rider", "BOARDSLIDE_BONUS"], ["rider", "PRESS_BONUS"],
+		["rider", "SLIDE_BASE"], ["rider", "SLIDE_PER_S"], ["rider", "BOARDSLIDE_BONUS"], ["rider", "PRESS_BONUS"], ["rider", "TRANSFER_BONUS"],
 		["rider", "SWITCH_BONUS"], ["rider", "AIR_PER_S"], ["rider", "RALEY_POINTS"], ["rider", "INVERT_POINTS"], ["rider", "FLIP_POINTS"],
 		["rider", "COMBO_WINDOW"]]],
 	["Features", [["feature", "WET_DARK", 0.0, 1.0], ["feature", "WET_FRESNEL", 0.0, 1.0], ["feature", "WET_ROUGH", 0.0, 0.5],

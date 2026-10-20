@@ -37,6 +37,7 @@ extends Node3D
 ##   --dpress-hold=GRAD Test: im Drift-Press den Drift-Winkel automatisch halten, Ausgabe DPRESS …
 ##   --dpress=W        Test: Drift-Press fest zeigen (-1 Tailpress … +1 Nosepress), auch ohne Drift
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
+##   --hop=±1[,N]      Test (mit --autotest): Autopilot springt auf jedem Slider gleich seitlich ab (Rail to Rail, +1 rechts; höchstens N-mal je Versuch)
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
 ##   --pause-at=SEK    Test: zu dieser Zeit pausieren (mit --shot: Bild der Pause)
 ##   --settings-at=SEK Test: zu dieser Zeit pausieren und die Einstellungen im Spiel öffnen (mit --shot: Bild davon)
@@ -122,6 +123,8 @@ var _plane_near := -1
 var _plane_land := -1
 var _load_arg := NAN
 var _passive_arg := false       # Test: Fahrer ohne Autopilot, ohne Eingaben
+var _hop_arg := 0.0             # Test: Autopilot springt auf jedem Slider seitlich ab (--hop=±1[,N], Rail to Rail)
+var _hop_n := 99
 var _weather_arg := ""
 var _scenario_arg := ""
 var _hour_arg := NAN
@@ -517,6 +520,8 @@ func _ready() -> void:
 
 	if _test_log:
 		rider.autopilot = not _passive_arg
+		rider.test_hop = _hop_arg
+		rider.test_hops = _hop_n
 		rider.auto_lane = _lane_arg
 		if _game_time != GAME_TIME:
 			_start_run()
@@ -1922,6 +1927,10 @@ func _parse_args() -> void:
 				_plane_land = 0 if pa[2] == "start" else 1
 		elif arg.begins_with("--load="):
 			_load_arg = arg.substr(7).to_float()
+		elif arg.begins_with("--hop="):
+			var ha := arg.substr(6).split(",")
+			_hop_arg = ha[0].to_float()
+			_hop_n = ha[1].to_int() if ha.size() > 1 else 99
 		elif arg == "--passive":
 			_passive_arg = true
 		elif arg == "--no-screen":

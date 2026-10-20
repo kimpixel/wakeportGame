@@ -157,6 +157,13 @@ static var _pose_cache := {}
 static var PRESS_BONUS := 100.0
 static var CATCH_GLIDE := 5.0         # m/s seitlich in die Slide-Linie gleiten
 static var CATCH_RISE := 3.0          # m/s nach oben auf die Oberkante gleiten
+# Rail to Rail: auf dem Slider beim Laden ←/→ = seitlich abspringen (Hop) statt umspringen
+static var HOP_SPEED := 1.2           # m/s seitlich, wenn auf der Seite kein Nachbar-Slider steht
+static var HOP_MAX := 3.5             # m/s höchstens (Hop-Hilfe zielt auf die Linie des Nachbarn)
+static var HOP_RANGE := 2.8           # m: so weit (Achse zu Achse) sucht der Hop einen Nachbar-Slider
+static var HOP_LEAN := 0.55           # rad: so weit lehnt sich der Fahrer im Hop zur Seite (zur Landung wieder aufrecht)
+static var HOP_LEAN_LOAD := 0.2       # rad: beim Laden auf dem Slider schon zur gewählten Seite
+static var TRANSFER_BONUS := 100.0    # Punkte für den Slide nach einem Transfer (Slider -> Slider)
 static var DRIFT_DRAG := 0.7          # Wasserwiderstand im Drift (Anteil): Brett liegt flach, leicht schneller
 static var DRIFT_ROPE_GIVE := 6.0     # 1/s: so schnell fängt das Seil im Drift die Bewegung vom Carrier weg ab (kleiner = weicher)
 static var DRIFT_ROPE_SETTLE := 0.0   # m/s: so schnell schrumpft im Drift der Karussell-Radius zurück auf die Seillänge (0 = nie aktiv reinziehen)
@@ -274,6 +281,16 @@ var _jump_block := false        # Sprungtaste startete gerade die Anlage -> zäh
 var test_pitch := 0.0           # Test: ↑/↓ in der Luft bzw. auf dem Slider halten (auch mit Autopilot)
 var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), ↓ = -1
 var _catch_part: FeaturePart     # gleitet gerade in diese Slider-Fangzone
+var _hop_side := 0.0            # Rail to Rail: beim Laden gewählte Seite (+1 rechts, -1 links in Fahrtrichtung)
+var _hop_from: FeaturePart      # seitlich von diesem Slider abgesprungen (seine Fangzone zählt in diesem Flug nicht)
+var _hop_dir := Vector3.ZERO    # Rail to Rail: Richtung des Hops (Welt, waagrecht) – der Fahrer lehnt sich dorthin
+var _hop_steer_lock := false    # ←/→ vom Hop noch gedrückt: dreht in der Luft erst nach dem Loslassen
+var _hop_landed := false        # aus dem Hop direkt auf einem anderen Slider gelandet
+var _slide_hop := false         # laufender Slide begann mit einem Transfer
+var test_hop := 0.0             # Test (--hop=±1): Autopilot springt auf jedem Slider gleich seitlich ab (+1 rechts)
+var test_hops := 99             # Test: so viele Hops je Versuch (--hop=±1,N)
+var _test_hop_part: FeaturePart
+var _test_hop_n := 0
 var _on_slider := false         # Brett steht gerade auf einem Slider (Einrasten erledigt)
 var _prev_on_feature := false   # im letzten Schritt noch auf dem Feature (Abgang ins Wasser erkennen)
 var drifting := false            # Fahrer driftet gerade auf dem Wasser (Spielmodus Driften)
@@ -568,6 +585,13 @@ func reset() -> void:
 	_slide_part = null
 	_on_slider = false
 	_catch_part = null
+	_hop_side = 0.0
+	_hop_from = null
+	_hop_dir = Vector3.ZERO
+	_hop_landed = false
+	_slide_hop = false
+	_test_hop_part = null
+	_test_hop_n = 0
 	restarted.emit()
 
 
@@ -630,6 +654,17 @@ func _lane_input(lane: float, outward_only: bool) -> void:
 	_steer = clampf(-diff * 2.5, -1.0, 1.0)
 	_edge = 0.5
 	_release = 1.0 if tension_smooth < 30.0 and horizontal_speed() > 3.0 and pos.y < 0.15 else 0.0
+
+
+## Test (--hop): auf jedem neuen Slider kurz laden und seitlich abspringen (Rail to Rail).
+func _test_hop_input(delta: float) -> void:
+	if is_sliding() and _slide_part != _test_hop_part and _npc_charge <= 0.0 and _slide_time > 0.1 and _test_hop_n < test_hops:
+		_test_hop_part = _slide_part
+		_test_hop_n += 1
+		_npc_charge = 0.2
+	if _npc_charge > 0.0 and is_sliding():
+		_npc_charge -= delta
+		_hop_side = test_hop
 
 
 ## Wende wie ein guter Fahrer: sobald das Seil locker wird, außen um die weiße Boje
@@ -1156,10 +1191,14 @@ func _read_input(delta: float) -> void:
 				_load = minf(_load + delta / 0.5, 1.0)
 			else:
 				_load = _trig_load                     # nur R2: so tief wie gedrückt (höchster Wert)
+			# Rail to Rail: auf dem Slider wählt ←/→ beim Laden die Seite für den Hop (kein Umspringen)
+			if is_sliding() and not autopilot and absf(_steer) > 0.5:
+				_hop_side = signf(_steer)
 	else:
 		if _jump_held and mode == Mode.WATER and _load > 0.0:
 			_pop()
 		_load = 0.0
+		_hop_side = 0.0
 	_jump_held = held
 	# Gamepad L1/R1 in der Luft: schnelle halbe Drehung (links/rechts), wird in _step_air ausgeführt
 	if mode != Mode.AIR or autopilot:
@@ -1173,6 +1212,8 @@ func _read_input(delta: float) -> void:
 
 func _autopilot_input(delta: float) -> void:
 	_auto_t += delta
+	if test_hop != 0.0:
+		_test_hop_input(delta)
 	var speed := horizontal_speed()
 	var rope_yaw := atan2(-rope_dir.x, -rope_dir.z)
 	var side := 1.0 if fmod(_auto_t, 9.0) < 4.5 else -1.0
@@ -1601,7 +1642,7 @@ func _slide_orient(rail: FeaturePart, delta: float) -> void:
 		var b1: float = base[1]
 		_snap_yaw = b0 if absf(wrapf(yaw - b0, -PI, PI)) <= absf(wrapf(yaw - b1, -PI, PI)) else b1
 		_snap_yaw = yaw + wrapf(_snap_yaw - yaw, -PI, PI)
-	elif not autopilot:
+	elif not autopilot and not _jump_held:   # beim Laden wählt ←/→ den Hop (Rail to Rail)
 		if _steer_armed and absf(_steer) > 0.5:
 			_snap_yaw -= signf(_steer) * PI * 0.5      # eine Vierteldrehung weiter
 			_steer_armed = false
@@ -1620,6 +1661,11 @@ func _is_boardslide(rail: FeaturePart) -> bool:
 func _track_slide(delta: float, on_feature: bool) -> void:
 	var part := features.part_at(pos.x, pos.z) if (features and on_feature) else null
 	if part and part.is_slide() and not part.on_ramp(pos):     # Safety/Auffahrt zählt nicht als Slide
+		if _slide_part and not part.same_module(_slide_part):
+			_finish_slide()                    # direkt auf einen anderen Slider (Transfer): eigener Slide
+		if _slide_time == 0.0:
+			_slide_hop = _hop_landed           # Slide beginnt: kam man per Hop von einem anderen Slider?
+			_hop_landed = false
 		_slide_time += delta
 		_slide_part = part
 		# Stellungen in der Reihenfolge merken (Boardslide / 50-50), Boardslide-Zeit zählen
@@ -1640,6 +1686,11 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 		elif _pitch_in < -0.3:
 			_press_tail_t += delta
 		return
+	_finish_slide()
+
+
+## Slide zu Ende (Abgang oder direkt auf den nächsten Slider): Name und Punkte vergeben, Werte melden.
+func _finish_slide() -> void:
 	if _slide_part and _slide_time > 0.3:
 		if _slide_seq.is_empty():
 			_slide_seq.append("50-50")
@@ -1657,6 +1708,9 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 		var bs_share := clampf(_bs_time / maxf(_slide_time, 0.01), 0.0, 1.0)
 		var pts := (SLIDE_BASE + _slide_time * SLIDE_PER_S + BOARDSLIDE_BONUS * bs_share + press \
 			+ SWITCH_BONUS * switches) * float(SLIDE_FACTOR.get(_slide_part.type, 1.0))
+		if _slide_hop:
+			trick = "Transfer " + trick         # Rail to Rail: vom Nachbar-Slider herübergesprungen
+			pts += TRANSFER_BONUS
 		# Pool: vom Beckenrand über die Safety ohne Absetzen auf den Ausgang
 		var prev: FeaturePart = _last_slide["part"] if not _last_slide.is_empty() and is_instance_valid(_last_slide["part"]) else null
 		var link := prev != null and prev.part_id == "_pool_coping" and _slide_part.part_id.begins_with("_6sp_") \
@@ -1670,7 +1724,7 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 		slide_ended.emit({"part": _slide_part, "time": _slide_time, "dist": _slide_dist,
 			"dist_bs": _bs_dist, "dist_5050": _slide_dist - _bs_dist, "switches": switches,
 			"press": maxf(_press_nose_t, _press_tail_t), "press_nose": _press_nose_t,
-			"press_tail": _press_tail_t, "bs_share": bs_share})
+			"press_tail": _press_tail_t, "bs_share": bs_share, "transfer": _slide_hop})
 	_slide_seq.clear()
 	_bs_time = 0.0
 	_slide_dist = 0.0
@@ -1679,6 +1733,7 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 	_press_nose_t = 0.0
 	_press_tail_t = 0.0
 	_slide_part = null
+	_slide_hop = false
 
 
 ## Punkte von außen vergeben (z. B. für eine saubere Wende) – löst auch den Jubel aus.
@@ -1812,6 +1867,8 @@ func _pop() -> void:
 	_enter_air()
 	_popped = true
 	_prepress = false                 # abgesprungen: ↑/↓ heißt wieder Rolle (oder Press vormerken, s. _step_air)
+	if _hop_side != 0.0 and _slide_part != null and (not autopilot or test_hop != 0.0) and not fast:
+		_hop(_hop_side)
 	if fast:
 		_raley = true
 		var side := rope_dir.dot(right())
@@ -1839,6 +1896,45 @@ func _clear_air_pose() -> void:
 	_nolli_vis = 0.0
 
 
+## Rail to Rail: seitlicher Absprung vom Slider (←/→ beim Laden). Steht auf dieser Seite ein Nachbar-Slider,
+## wird die Seitwärtsgeschwindigkeit so gewählt, dass man bei der Landung auf seiner Linie ankommt
+## (Hop-Hilfe wie das Einloggen); sonst ein kleiner Hop. Die Fangzone des eigenen Sliders zählt in diesem Flug nicht.
+func _hop(side: float) -> void:
+	var vh := Vector3(vel.x, 0.0, vel.z)
+	var travel := vh.normalized() if vh.length() > 0.5 else forward()
+	var dir := travel.cross(Vector3.UP) * side          # rechts bzw. links in Fahrtrichtung
+	var v := HOP_SPEED
+	var target := _hop_target(_slide_part, travel, dir)
+	if target != Vector3.INF:
+		var d := (target - pos).dot(dir)
+		var t := (vel.y + sqrt(maxf(vel.y * vel.y + 2.0 * GRAVITY * (pos.y - target.y), 0.0))) / GRAVITY
+		v = clampf(d / maxf(t, 0.2), HOP_SPEED * 0.5, HOP_MAX)
+	vel += dir * v
+	_hop_dir = dir
+	_hop_from = _slide_part
+	_hop_steer_lock = true
+
+
+## Nächster Slider auf der Hop-Seite (Punkt auf seiner Slide-Linie etwa dort, wo man herunterkommt), sonst INF.
+func _hop_target(from: FeaturePart, travel: Vector3, dir: Vector3) -> Vector3:
+	if features == null:
+		return Vector3.INF
+	var ahead := pos + travel * horizontal_speed() * 0.45
+	var best := Vector3.INF
+	var best_d := HOP_RANGE
+	for p: FeaturePart in features.parts:
+		if not p.can_catch() or (from != null and p.same_module(from)):
+			continue
+		var q := p.line_point(ahead)
+		if q == Vector3.INF:
+			continue
+		var d := (q - pos).dot(dir)
+		if d > 0.3 and d < best_d and absf((q - ahead).dot(travel)) < 1.0:
+			best_d = d
+			best = q
+	return best
+
+
 func _enter_air() -> void:
 	_launch_kind = _ground_kind
 	_launch_feat = _ground_feat
@@ -1857,6 +1953,9 @@ func _enter_air() -> void:
 	_sbend_pivot = Vector3.INF
 	_popped = false
 	_catch_part = null
+	_hop_from = null
+	_hop_dir = Vector3.ZERO
+	_hop_steer_lock = false
 	_flip = 0.0
 	_flip_lock = false              # ↑/↓ vom Press beim Abspringen gehalten: gleich Rolle (Sprung-Start sperrt selbst)
 	# ohne Absprung übers Ende des Sliders gerutscht: der Press bleibt (keine Rolle, die nicht mehr fertig würde);
@@ -1889,6 +1988,10 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	var spin_from := INVERT_SPIN_BACK if _invert == "backroll" else INVERT_SPIN_RALEY
 	var upright := _raley_ang < RALEY_SPIN_ANG and (_invert != "sbend" or _invert_ang > TAU - 0.3)   # S-Bend erst ganz herumgedreht
 	var can_spin := not _raley or phase >= spin_from or (_raley_cut and upright)
+	if _hop_steer_lock and absf(_steer) < 0.3:
+		_hop_steer_lock = false             # ←/→ vom Hop losgelassen: ab jetzt dreht es wieder
+	if _hop_steer_lock:
+		can_spin = false
 	if _quick_spin != 0.0 and can_spin:
 		# L1/R1: halbe Drehung am Stück; beim Invert nur normales Drehtempo (313 bleibt schwer)
 		var rate := SPIN_RATE if _raley else QUICK_SPIN_RATE
@@ -2000,7 +2103,7 @@ func _slider_landing_time(ay: float) -> float:
 	var v := vel
 	var t := 0.0
 	while t <= PREPRESS_LOOK:
-		if v.y < 0.5 and assist_lock and not features.catch_at(p).is_empty():
+		if v.y < 0.5 and assist_lock and not features.catch_at(p, _hop_from).is_empty():
 			return t
 		var obstacle := _obstacle_height(p.x, p.z)
 		if v.y <= 0.0 and p.y <= maxf(water.height_at(p.x, p.z, 1.0), obstacle):
@@ -2021,7 +2124,7 @@ func _catch_glide(delta: float) -> bool:
 	if _catch_part == null:
 		if vel.y > 0.5:                 # im Steigflug noch nicht fangen
 			return false
-		var hit := features.catch_at(pos)
+		var hit := features.catch_at(pos, _hop_from)
 		if hit.is_empty():
 			return false
 		_catch_part = hit[0]
@@ -2063,6 +2166,12 @@ func _land(surf: float) -> void:
 	if absf(wrapf(_flip, -PI, PI)) > FLIP_LAND_TOL:
 		crash("Überschlag nicht geschafft!")
 		return
+	# Rail to Rail: aus dem Hop direkt auf einen anderen Slider = Transfer
+	_hop_landed = _hop_from != null and landed_on != null and landed_on.is_slide() and not landed_on.on_ramp(pos) \
+		and not landed_on.same_module(_hop_from)
+	_hop_from = null
+	_hop_dir = Vector3.ZERO
+	_hop_steer_lock = false
 	if air_time > 0.25 and not on_feature:
 		_land_splash(-vel.y, Vector3(vel.x, 0.0, vel.z))
 	if air_time > 0.25:
@@ -2268,6 +2377,17 @@ func _process(delta: float) -> void:
 						# Nolli: das Seil reißt -> Oberkörper nach vorne Richtung Griff
 						target_pitch = -0.6 * _nolli_lead
 						target_crouch = 0.6
+	# Rail to Rail: zur Hop-Seite lehnen statt seitlich zu schweben – beim Laden schon etwas, im Absprung
+	# kräftig (Körper und Brett kippen mit), ab der Flugmitte wieder aufrecht zur Landung
+	var hop_lean := Vector3.ZERO
+	if mode == Mode.WATER and _hop_side != 0.0 and is_sliding():
+		var vh := Vector3(vel.x, 0.0, vel.z)
+		var tr := vh.normalized() if vh.length() > 0.5 else forward()
+		hop_lean = tr.cross(Vector3.UP) * _hop_side * HOP_LEAN_LOAD
+	elif mode == Mode.AIR and _hop_dir != Vector3.ZERO:
+		hop_lean = _hop_dir * HOP_LEAN * (1.0 - smoothstep(0.3, 0.8, _air_phase()))
+	target_roll -= hop_lean.dot(right())          # + Roll = nach links
+	target_pitch -= hop_lean.dot(forward())       # - Pitch = nach vorne
 	# Nolli: beim Riss kippt das Brett um die Nose (Tail hoch), in der Luft wird es wieder flach
 	var nolli_target := 0.0
 	if _yanked and _yank_kind == "nolli":

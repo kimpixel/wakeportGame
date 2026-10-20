@@ -1,0 +1,12 @@
+{
+  "name": "Training: Rail to Rail",
+  "_info": "Spielmodus Rail to Rail: rechts (Blick zum Endmast) zwei Pipes nebeneinander (Pipe to Pipe, 0,8 m Lücke, außen kurz, innen lang), links eine Pipe-Treppe aus drei versetzten Pipes (Pipe to Pipe to Pipe). Man springt jeweils zur Seilmitte hinüber. Alles Richtung Endmast. Nicht in index.json.",
+  "T2": [
+    { "part": "pipe_half", "s": 52.0, "x": 7.0,  "dir": "out", "body": 8.0,  "name": "Pipe außen" },
+    { "part": "pipe_half", "s": 60.0, "x": 5.0,  "dir": "out", "body": 20.0, "name": "Pipe innen" },
+    { "part": "pipe_half", "s": 52.0, "x": -8.0, "dir": "out", "body": 8.0,  "name": "Pipe 1" },
+    { "part": "pipe_half", "s": 58.0, "x": -6.0, "dir": "out", "body": 8.0,  "name": "Pipe 2" },
+    { "part": "pipe_half", "s": 70.0, "x": -4.0, "dir": "out", "body": 20.0, "name": "Pipe 3" }
+  ],
+  "T1": []
+}

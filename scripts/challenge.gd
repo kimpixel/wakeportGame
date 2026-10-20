@@ -353,6 +353,15 @@ func _physics_process(delta: float) -> void:
 				else:
 					_fail("Slider verpasst – kein Wert")
 				return
+		"r2r":
+			# Kette gerissen: nach einem Slider ins Wasser statt per Hop auf den nächsten
+			var on_feat := r.pos.y > 0.05 and game.features.part_at(r.pos.x, r.pos.z) != null
+			if _count > 0 and not _hit and r.mode == Rider.Mode.WATER and r.pos.y < 0.15 and not on_feat:
+				_fail("Ins Wasser – Transfer verpasst, kein Wert")
+				return
+			if _past(s_now, float(task["end_s"]) + _off) and _done_t < 0.0:
+				_fail("Pipe verpasst – kein Wert")
+				return
 		"special":
 			_track_special(r)
 			var all_done := _cur.is_empty() and not _stations.is_empty() and _st_next >= _stations.size()
@@ -784,6 +793,15 @@ func _on_slide(info: Dictionary) -> void:
 			_cur["phase"] = "out"
 			_cur["out_air"] = _since_air < 0.3 and game.rider.mode != Rider.Mode.AIR    # vom Slider abgesprungen, eben gelandet
 		return
+	if task["kind"] == "r2r":
+		# Rail to Rail: Slider zählen, die per Transfer aneinanderhängen (der erste darf kurz sein)
+		var xfer: bool = info.get("transfer", false)
+		_count = maxi(_count, 1) + 1 if xfer else 1
+		if _count >= int(task["chain"]):
+			_value = float(info.get(task["metric"], 0.0))
+			_hit = true
+			_done_t = SETTLE
+		return
 	if not _in_target(p):
 		return
 	if task.has("via") and not _via_ok:
@@ -915,6 +933,8 @@ func _update_hud() -> void:
 					live = "Weite " + Training.format_value(task, _value if _hit else _jump_dist())
 			"chain":
 				live = Training.format_value(task, _count)
+			"r2r":
+				live = "Slider %d / %d" % [mini(_count + (1 if game.rider.is_sliding() and not _hit else 0), int(task["chain"])), int(task["chain"])]
 			"slide":
 				if task["metric"] == "height" and (_via_air or _target_started):
 					live = "Höhe " + Training.format_value(task, _xfer_h if _target_started else _max_y)
