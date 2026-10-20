@@ -33,7 +33,7 @@ extends Node3D
 ##   --ragdoll-at=S[,side|top|water[,TEMPO]]  Test: Sturz seitlich gegen das nächste Feature, von oben drauf oder ins
 ##                     Wasser (Standard side, 9 m/s); Log RAGDOLL (Ausdehnung/EXPLOSION, IM FEATURE), PLATSCH, TREFFER
 ##   --erfolg=ID,…     Test: geheime Erfolge als erreicht zeigen (z. B. --screen=@erfolge --erfolg=fisch)
-##   --lb-url=URL      Test: Rangliste über diesen Worker (z. B. lokal http://127.0.0.1:8787), --lb-name=NAME
+##   --lb-url=URL      Test: Rangliste über diesen Worker (z. B. lokal http://127.0.0.1:8787), --lb-name=NAME, --lb-id=32HEX
 ##   --dpress=W        Test: Drift-Press fest zeigen (-1 Tailpress … +1 Nosepress), auch ohne Drift
 ##   --passive         Test (mit --autotest): Fahrer ohne Autopilot und ohne Eingaben
 ##   --no-screen       ohne Startbildschirm direkt ins Spiel
@@ -1297,7 +1297,8 @@ func _step_mini_rank(delta: float) -> void:
 	mr.show_self = leaderboard.participating()
 	var live := NAN
 	if not challenge.active and leaderboard.participating():     # auch vor dem Start: DU mit 0 Punkten
-		live = float(_final_score if _finishing else (rider.score if _session else 0))
+		# nach dem Ende bleibt der Endstand stehen (wie im HUD), bis „Erneut spielen“ die Punkte löscht
+		live = float(_final_score if _finishing or _round_over else (rider.score if _session else 0))
 	mr.set_live(live)
 	_mini_age += delta
 	_mini_t -= delta
