@@ -26,6 +26,7 @@ var _medal_labels: Array[Label] = []
 var _go: Button
 var _mgrid: GridContainer        # Medaillen-Schwellen (hochkant untereinander)
 var _next: Button
+var _home: Button
 var _font: Font
 
 
@@ -128,9 +129,9 @@ func _ready() -> void:
 	_next = _button("Nächste Challenge", false)
 	_next.pressed.connect(func() -> void: next_pressed.emit())
 	brow.add_child(_next)
-	var home := _button("Startseite", false)
-	home.pressed.connect(func() -> void: home_pressed.emit())
-	brow.add_child(home)
+	_home = _button("Startseite", false)
+	_home.pressed.connect(func() -> void: home_pressed.emit())
+	brow.add_child(_home)
 	get_viewport().size_changed.connect(_layout)
 	MenuNav.add_scope(_dim, 20, _go)
 
@@ -202,6 +203,29 @@ func show_result(mode_name: String, idx: int, count: int, task: Dictionary, best
 	_open()
 
 
+## Competition: Ende der Runde (eigene Instanz in main.gd). Punkte groß, darunter groß der Platz in der
+## Rangliste (kommt per set_rank nach); Knöpfe „Erneut spielen“ (Standard) und „Zurück“ (Startseite).
+func show_round(head: String, score: int, rank: String) -> void:
+	_head.text = head
+	_title.text = "RUNDE BEENDET"
+	_result_row.visible = true
+	_result_medal.visible = false
+	_result.text = "%d Punkte" % score
+	_result.add_theme_font_size_override("font_size", 72)
+	_result.add_theme_color_override("font_color", Color.WHITE)
+	_result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_rank.add_theme_font_size_override("font_size", 34)
+	_rank.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_text.visible = false
+	_mgrid.visible = false
+	_next.visible = false
+	_set_photos([])
+	_go.text = "ERNEUT SPIELEN" + ("" if mobile else "  (Leertaste)")
+	_home.text = "Zurück"
+	set_rank(rank)
+	_open()
+
+
 ## Zeile mit dem Platz in der Rangliste ("" = ausblenden); kommt nach, sobald der Server antwortet.
 func set_rank(text: String) -> void:
 	_rank.text = text
@@ -248,6 +272,8 @@ func _fill(mode_name: String, idx: int, count: int, task: Dictionary, best: Arra
 
 func _open() -> void:
 	MenuNav.reset_focus(_dim)                # Fokus auf LOS / NOCHMAL
+	if not _dim.visible:
+		Hud.fade_in(_dim)                     # weich einblenden
 	_dim.visible = true
 	if open_changed.is_valid():
 		open_changed.call(true)

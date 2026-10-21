@@ -12,12 +12,13 @@ signal touch_up
 const MAX_TILT := 25.0        # Grad Neigung für vollen Lenkausschlag (Standard)
 var max_tilt := MAX_TILT      # einstellbar (Neigungs-Empfindlichkeit)
 var invert := false           # Neigung umkehren
-var use_tilt := true:         # false: Lenkung über das Steuerkreuz (TouchPad), Neigung ignorieren
+var use_tilt := false:        # true: Lenkung Gyro; false: Steuerkreuz (TouchPad), Sensor aus
 	set(on):
 		use_tilt = on
 		if not on and _pressed != "":
 			Input.action_release(_pressed)
 			_pressed = ""
+		_sync_tilt()
 const DEADZONE := 3.0         # Grad um die Mitte ohne Wirkung
 
 var active := false
@@ -37,31 +38,38 @@ var ui_mode := false:
 				_touches = 0
 var _on_pad := {}             # Finger-Index -> gedrückte PadButton
 
-# Läuft im Browser: hört auf deviceorientation (auf iOS erst nach Erlaubnis, die beim ersten
-# Antippen erfragt wird – das muss direkt im Touch-Ereignis passieren) und liefert die Neigung
-# um die Bildschirm-Normale in Grad (rechts herunter = positiv).
+# Läuft im Browser: hört auf deviceorientation und liefert die Neigung um die Bildschirm-Normale
+# in Grad (rechts herunter = positiv). Nur wenn Lenkung Gyro eingestellt ist (`wpTiltOn(true)`):
+# vorher kein Sensor und keine Erlaubnis-Abfrage. Auf iOS wird die Erlaubnis beim nächsten
+# Antippen erfragt – das muss direkt im Touch-Ereignis passieren.
 const JS := """
 (function () {
 	if (window.wpRoll) return;
 	var o = {beta: 0, gamma: 0, ok: false};
+	var want = false, listening = false, asking = false, asked = false;
 	function onOri(e) {
 		if (e.beta === null || e.gamma === null) return;
 		o.beta = e.beta; o.gamma = e.gamma; o.ok = true;
 	}
-	function listen() { window.addEventListener('deviceorientation', onOri); }
+	function listen() {
+		if (listening) return;
+		listening = true;
+		window.addEventListener('deviceorientation', onOri);
+	}
 	var needsPermission = typeof DeviceOrientationEvent !== 'undefined'
 		&& typeof DeviceOrientationEvent.requestPermission === 'function';
-	if (needsPermission) {
-		var ask = function () {
-			window.removeEventListener('touchend', ask, true);
-			DeviceOrientationEvent.requestPermission()
-				.then(function (r) { if (r === 'granted') listen(); })
-				.catch(function () {});
-		};
-		window.addEventListener('touchend', ask, true);
-	} else {
-		listen();
+	function ask() {
+		if (!want || asking || asked) return;
+		asking = true;
+		DeviceOrientationEvent.requestPermission()
+			.then(function (r) { asking = false; asked = true; if (r === 'granted') listen(); })
+			.catch(function () { asking = false; });   // z. B. nicht als Geste erkannt: beim nächsten Tippen nochmal
 	}
+	if (needsPermission) window.addEventListener('touchend', ask, true);
+	window.wpTiltOn = function (on) {
+		want = on;
+		if (on && !needsPermission) listen();
+	};
 	window.wpRoll = function () {
 		if (!o.ok) return null;
 		var d = Math.PI / 180, b = o.beta * d, g = o.gamma * d;
@@ -101,6 +109,13 @@ func _ready() -> void:
 	Input.emulate_mouse_from_touch = false
 	if OS.has_feature("web"):
 		JavaScriptBridge.eval(JS, true)
+		_sync_tilt()
+
+
+## Sensor (und auf iOS die Erlaubnis-Abfrage) nur einschalten, wenn mit Gyro gelenkt wird.
+func _sync_tilt() -> void:
+	if active and OS.has_feature("web"):
+		JavaScriptBridge.eval("window.wpTiltOn && window.wpTiltOn(%s)" % ("true" if use_tilt else "false"), true)
 
 
 func _input(event: InputEvent) -> void:

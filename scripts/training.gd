@@ -7,13 +7,16 @@ extends RefCounted
 ##
 ## Felder einer Aufgabe:
 ##   id, name (kurz, Liste), title, goal, keys / keys_mobile (Steuerung), tip
-##   kind     turn | kick | slide | chain | raley | special | drift_spin | drift_turn | drift_after | dpress | dock
+##   kind     turn | kick | slide | chain | raley | special | drift_spin | drift_turn | drift_after | dpress | dock | pool | r2r
+##   trick    pool: gemessener Pool-Trick (Rider.pool_trick: drop, gap, stair_gap, stair_down, stair_up, coping_link)
+##            oder "special" (alle aus need in einem Versuch, Wert = Punkte); miss = Text, wenn verpasst
+##   chain    r2r: so viele Slider hintereinander, jeder per Transfer (seitlicher Hop) vom vorigen; Messwert auf dem letzten
 ##   press    dpress: "tail" / "nose" (längster Press am Stück) oder "switch" (Wechsel in einem Drift)
 ##   jump     dock: verlangter Sprung-Start "nolli" (Brett längs) oder "raley" (quer); start {dock: true} = auf dem Steg
 ##   setup    Setup-Datei (Terminal 2)
 ##   start    {s, x, dir}: s = Abstand vom Startmast wie in den Setup-Dateien (ohne Verschiebung),
 ##            dir +1 = Richtung Endmast, -1 = Richtung Startsteg. Wende: {turn: "a"|"b", before, x}
-##   metric   Messwert: sink, height, width (Weite eines Sprungs), dist, dist_5050, dist_bs, switches, press, time (s auf dem Slider), count, spin, points,
+##   metric   Messwert: sink, height, width (Weite eines Sprungs), speed (km/h), dist, dist_5050, dist_bs, switches, press, time (s auf dem Slider), count, spin, points,
 ##            spins (360er im Drift), share (Anteil der Wende im Drift)
 ##   medals   Schwellen [Bronze, Silber, Gold]; lower = true: kleiner ist besser
 ##   target   kick/slide: {s0, s1, side} – Features mit Mitte in diesem Bereich (Setup-Koordinaten),
@@ -34,6 +37,27 @@ const ROPE := 16.0              # m Seillänge in allen Aufgaben
 const LEER := "res://setups/training_leer.json"
 const KICKER := "res://setups/training_kicker.json"
 const SLIDER := "res://setups/training_slider.json"
+const POOL := "res://setups/training_pool.json"
+const RAIL := "res://setups/training_rail.json"
+
+## TEMP: Drift-Nosepress ist abgeschaltet (Rider.DPRESS_NOSE_ON) – diese Challenges stehen solange nicht im
+## Modus Driften. Zum Zurückholen wieder hinter "tailpress" in MODES einfügen.
+const NOSE_TASKS := [
+	{"id": "nosepress", "name": "Nosepress im Drift", "title": "Nosepress im Drift",
+	 "kind": "dpress", "press": "nose", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
+	 "metric": "press_share", "medals": [0.5, 0.8, 0.95],
+	 "goal": "Wie der Tailpress, nur über die Nose: das Brett im Drift erst um 90° quer drehen, dann ins vordere Ende drücken, das Tail steht hoch. Der Winkel zählt von der Querstellung. Gemessen: Anteil der Wende im vollen Nosepress – ohne einzusinken. Gold = die ganze Wende.",
+	 "keys": "Strg halten  driften     ↑ halten  Nosepress     ← / →  Drift-Winkel halten",
+	 "keys_mobile": "DRIFT halten  driften     ▲ halten  Nosepress     Neigen  Winkel halten",
+	 "tip": "Erst quer drehen, dann drücken – mit der Nose vorne stehst du 90° falsch. Je schneller, desto querer darfst du driften. Den Drift nicht loslassen – dann ist der Press sofort vorbei."},
+	{"id": "presswechsel", "name": "Press-Wechsel", "title": "Nose- und Tailpress im Wechsel",
+	 "kind": "dpress", "press": "switch", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
+	 "metric": "switches", "medals": [1.0, 3.0, 5.0],
+	 "goal": "In einem Drift zwischen Nosepress und Tailpress hin und her wechseln. Gemessen: Wechsel in einem Drift (jeder volle Press auf das andere Ende zählt; Drift loslassen fängt neu an).",
+	 "keys": "Strg halten  driften     ↑ / ↓  Nose- / Tailpress",
+	 "keys_mobile": "DRIFT halten  driften     ▲ / ▼  Nose- / Tailpress",
+	 "tip": "Der Press braucht knapp eine Sekunde, bis er ganz drin ist – nicht zu hektisch wechseln."},
+]
 
 const MODES := [
 	{"id": COMPETITION, "name": "Competition",
@@ -283,25 +307,11 @@ const MODES := [
 		 "tip": "Mit Drift darf das Brett beim Abgang auch quer stehen. Der Seilzug zieht dich im Drift zur Seilmitte – vorher weit außen auf das Feature fahren."},
 		{"id": "tailpress", "name": "Tailpress im Drift", "title": "Tailpress im Drift",
 		 "kind": "dpress", "press": "tail", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
-		 "metric": "time", "medals": [4.0, 7.0, 9.5],
-		 "goal": "Auf dem Weg zum vorderen Wendepunkt driften und dabei ins Tail drücken: das Brett kippt um das Tail, die Nose steht hoch, die freie Hand streift das Wasser. Du gleitest mit dem ganzen Schwung weiter. Driftest du querer, als es dein Tempo erlaubt (höchstens 86°), oder zur falschen Seite, stürzt du – mit ← / → den Winkel halten. Gemessen: der längste Tailpress am Stück (bis die Wende durch ist).",
+		 "metric": "press_share", "medals": [0.5, 0.8, 0.95],
+		 "goal": "Auf dem Weg zum vorderen Wendepunkt driften und dabei ins Tail drücken: das Brett kippt um das Tail, die Nose steht hoch, die freie Hand streift das Wasser. Du gleitest mit dem ganzen Schwung weiter. Driftest du querer, als es dein Tempo erlaubt (höchstens 86°, nach links wie nach rechts), stürzt du – mit ← / → den Winkel halten. Gemessen: Anteil der Wende im vollen Tailpress (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht) – ohne einzusinken. Gold = die ganze Wende.",
 		 "keys": "Strg halten  driften     ↓ halten  Tailpress     ← / →  Drift-Winkel halten",
 		 "keys_mobile": "DRIFT halten  driften     ▼ halten  Tailpress     Neigen  Winkel halten",
-		 "tip": "Je schneller du bist, desto querer darfst du driften (voller Winkel ab 33 km/h – also vorher rauskanten). Längs zur Fahrtrichtung bremst das Tail am stärksten, je querer du driftest, desto weniger – aber ab 86° reißt es dich um. Wer weit quer (um 60–70°) driftet, kommt mit Schwung durch die Wende. Der Drift-Winkel steht unter dem Seilzug."},
-		{"id": "nosepress", "name": "Nosepress im Drift", "title": "Nosepress im Drift",
-		 "kind": "dpress", "press": "nose", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
-		 "metric": "time", "medals": [4.0, 7.0, 9.5],
-		 "goal": "Wie der Tailpress, nur über die Nose: driften und ins vordere Ende drücken, das Tail steht hoch. Gemessen: der längste Nosepress am Stück (bis die Wende durch ist).",
-		 "keys": "Strg halten  driften     ↑ halten  Nosepress     ← / →  Drift-Winkel halten",
-		 "keys_mobile": "DRIFT halten  driften     ▲ halten  Nosepress     Neigen  Winkel halten",
-		 "tip": "Je schneller, desto querer darfst du driften – der Nosepress dreht spiegelverkehrt zur anderen Seite. Den Drift nicht loslassen – dann ist der Press sofort vorbei."},
-		{"id": "presswechsel", "name": "Press-Wechsel", "title": "Nose- und Tailpress im Wechsel",
-		 "kind": "dpress", "press": "switch", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
-		 "metric": "switches", "medals": [1.0, 3.0, 5.0],
-		 "goal": "In einem Drift zwischen Nosepress und Tailpress hin und her wechseln. Gemessen: Wechsel in einem Drift (jeder volle Press auf das andere Ende zählt; Drift loslassen fängt neu an).",
-		 "keys": "Strg halten  driften     ↑ / ↓  Nose- / Tailpress",
-		 "keys_mobile": "DRIFT halten  driften     ▲ / ▼  Nose- / Tailpress",
-		 "tip": "Der Press braucht knapp eine Sekunde, bis er ganz drin ist – nicht zu hektisch wechseln."},
+		 "tip": "Hart rauskanten, im Drift das Brett erst weit quer drehen (um 75°), dann ins Tail drücken – so bremst nichts. Im goldenen Bereich des Bogens (die letzten 15° vor der Grenze) bremst der Press gar nicht; querer als 86° reißt es dich um. Den Winkel mit ← / → halten, während dich das Seil um den Carrier schwingt."},
 	]},
 	{"id": "transfer", "name": "Transfer", "text": "Von einem Feature auf ein anderes springen.", "tasks": [
 		{"id": "klein", "name": "Klein", "title": "Pyramid auf Pyramid-Rail",
@@ -345,6 +355,124 @@ const MODES := [
 		 "keys_mobile": "Auf der Ledge ▲ halten (Nosepress)",
 		 "tip": "Erst sauber auf der Ledge landen, dann ↑ drücken – beim Abgang loslassen."},
 	]},
+	# Pool: Challenges am 6-Stair Pool (Terminal 2, eigenes Setup mit drei Pools). Pool A rechts (x 4,2):
+	# Rampe ab s 55, Becken bis 75, Treppe bis 79, Ausgänge bis 85. Pool B dahinter (ab s 110), Pool C links.
+	{"id": "pool", "name": "Pool", "text": "Der 6-Stair Pool: rein ins Becken, die Treppe im Drift, auf den Rand und die Ausgänge.", "tasks": [
+		{"id": "drop", "name": "Pool Drop", "title": "Pool Drop – Höhe",
+		 "kind": "pool", "trick": "drop", "setup": POOL, "start": {"s": 25.0, "x": 4.2, "dir": 1}, "end_s": 90.0,
+		 "miss": "Nicht über die Rampe ins Becken",
+		 "metric": "height", "medals": [1.9, 2.3, 2.6],
+		 "goal": "Fahr über die Rampe des Pools und spring ins Becken. Gemessen: höchster Punkt über dem See.",
+		 "keys": "← / →  lenken     Leertaste halten + an der Kante loslassen  Absprung",
+		 "keys_mobile": "Neigen  lenken     SPRUNG halten + an der Kante loslassen  Absprung",
+		 "tip": "Mittig auf die Rampe zielen, voll aufladen und genau an der Kante loslassen. Nicht zu weit springen – hinter dem Becken kommt die Treppe."},
+		{"id": "drop_weit", "name": "Pool Drop – Weite", "title": "Pool Drop – Weite",
+		 "kind": "pool", "trick": "drop", "setup": POOL, "start": {"s": 25.0, "x": 4.2, "dir": 1}, "end_s": 90.0,
+		 "miss": "Nicht über die Rampe ins Becken",
+		 "metric": "width", "medals": [5.5, 7.5, 8.5],
+		 "goal": "Wie eben, aber so weit wie möglich ins Becken. Gemessen: Weite vom Absprung bis zur Landung im Becken.",
+		 "keys": "Leertaste halten + an der Kante loslassen",
+		 "keys_mobile": "SPRUNG halten + an der Kante loslassen",
+		 "tip": "Mit vollem Tempo und voller Ladung – das Becken ist 15 m lang, die Landung muss im Wasser sein."},
+		{"id": "stair_down", "name": "Treppe runter", "title": "Die Treppe im Drift hinunter",
+		 "kind": "pool", "trick": "stair_down", "setup": POOL, "start": {"s": 25.0, "x": 4.2, "dir": 1}, "end_s": 95.0,
+		 "miss": "Nicht über die Treppe",
+		 "metric": "speed", "medals": [35.0, 38.0, 40.0],
+		 "goal": "Rein ins Becken, durchfahren und die Treppe am Ende im Drift hinunter in den See. Gemessen: Tempo unten.",
+		 "keys": "Strg (Drift) halten, bevor das Brett die Treppe erreicht",
+		 "keys_mobile": "DRIFT halten, bevor das Brett die Treppe erreicht",
+		 "tip": "Ohne Drift ist die Treppe ein Sturz. Gerade auf die Treppe zielen – die Stufen sind glatt, lenken geht dort nicht."},
+		{"id": "stair_up", "name": "Treppe hoch", "title": "Die Treppe im Drift hinauf",
+		 "kind": "pool", "trick": "stair_up", "setup": POOL, "start": {"s": 100.0, "x": 4.2, "dir": -1}, "end_s": 60.0,
+		 "miss": "Nicht über die Treppe ins Becken",
+		 "metric": "speed", "medals": [8.0, 13.0, 18.0],
+		 "goal": "Von hinten zwischen den Ausgängen auf die Treppe zu und im Drift hinauf ins Becken. Gemessen: Tempo oben.",
+		 "keys": "Strg (Drift) halten, bevor das Brett die Treppe erreicht",
+		 "keys_mobile": "DRIFT halten, bevor das Brett die Treppe erreicht",
+		 "tip": "Hinauf braucht Schwung: mit vollem Tempo und gespanntem Seil kommen. Im Becken vor der Rampe abspringen, sonst fährt man gegen die Wand."},
+		{"id": "coping", "name": "Coping", "title": "Auf dem Rand sliden",
+		 "kind": "slide", "setup": POOL, "start": {"s": 25.0, "x": 6.3, "dir": 1}, "end_s": 95.0,
+		 "target": {"name": "Pool Coping"},
+		 "metric": "dist", "medals": [8.0, 11.0, 13.5],
+		 "goal": "Fahr außen über die Rampe direkt auf den Rand des Beckens (Coping) und rutsch so weit wie möglich. Gemessen: Meter auf dem Rand.",
+		 "keys": "← / →  lenken (auf dem Rand: Boardslide / 50-50)",
+		 "keys_mobile": "Neigen  lenken (auf dem Rand deutlich neigen: Boardslide / 50-50)",
+		 "tip": "Die Spur genau auf den Rand legen (ganz rechts auf der Rampe). Der Rand ist nur 40 cm breit – das Einloggen hilft."},
+		{"id": "coping_link", "name": "Coping to Ledge", "title": "Rand und Ausgang in einem Zug",
+		 "kind": "pool", "trick": "coping_link", "setup": POOL, "start": {"s": 25.0, "x": 6.3, "dir": 1}, "end_s": 95.0,
+		 "miss": "Nicht vom Rand auf den Ausgang",
+		 "metric": "dist", "medals": [12.0, 17.0, 21.5],
+		 "goal": "Auf dem Rand sliden und am Ende über die Safety ohne Absetzen auf die Down Ledge. Gemessen: Meter auf Rand und Ledge zusammen.",
+		 "keys": "← / →  lenken     Leertaste  Absprung",
+		 "keys_mobile": "Neigen  lenken     SPRUNG  Absprung",
+		 "tip": "Die Safety am Anfang der Ledge wirft dich ein Stück hoch – gerade bleiben, dann landest du wieder auf der Ledge."},
+		{"id": "stair_gap", "name": "Stair Gap", "title": "Über die Treppe springen",
+		 "kind": "pool", "trick": "stair_gap", "setup": POOL, "start": {"s": 25.0, "x": 4.2, "dir": 1}, "end_s": 95.0,
+		 "miss": "Kein Sprung aus dem Becken über die Treppe",
+		 "metric": "width", "medals": [6.0, 8.5, 10.5],
+		 "goal": "Im Becken Anlauf nehmen und am Ende über die ganze Treppe in den See springen. Gemessen: Weite des Sprungs.",
+		 "keys": "Leertaste halten + am Ende des Beckens loslassen",
+		 "keys_mobile": "SPRUNG halten + am Ende des Beckens loslassen",
+		 "tip": "Erst kurz vor der Treppe loslassen. Landest du auf den Stufen, brauchst du Drift."},
+		{"id": "special", "name": "Pool Special", "title": "Pool Special",
+		 "kind": "pool", "trick": "special", "need": ["drop", "stair_down"], "setup": POOL, "start": {"s": 25.0, "x": 4.2, "dir": 1}, "end_s": 95.0,
+		 "miss": "Pool Drop und Treppe im Drift nicht geschafft",
+		 "metric": "points", "medals": [420.0, 470.0, 520.0],
+		 "goal": "Die Pool-Linie in einem Zug: Pool Drop (gern mit Drehung) und dann die Treppe im Drift hinunter – als Kombination. Gemessen: Punkte der Pool-Tricks.",
+		 "keys": "Leertaste  Absprung an der Rampe     ← / →  in der Luft drehen     Strg  Drift auf der Treppe",
+		 "keys_mobile": "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe",
+		 "tip": "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."},
+		{"id": "donkey", "name": "Donkey Rail", "title": "Ausgang: Donkey Rail",
+		 "kind": "slide", "setup": POOL, "start": {"s": 88.0, "x": 2.2, "dir": 1}, "end_s": 145.0,
+		 "target": {"name": "Donkey Rail"},
+		 "metric": "dist", "medals": [4.0, 7.0, 9.0],
+		 "goal": "Pool B (hinten rechts): links über die Rampe auf den Rand und über die Safety auf das Donkey Rail. Gemessen: Meter auf dem Rail.",
+		 "keys": "← / →  lenken     Leertaste  Absprung",
+		 "keys_mobile": "Neigen  lenken     SPRUNG  Absprung",
+		 "tip": "Erst runter, dann flach: auf dem flachen Stück bremst es nicht mehr, dort ruhig bleiben."},
+		{"id": "lth", "name": "Low to High Ledge", "title": "Ausgang: Low to High Ledge",
+		 "kind": "slide", "setup": POOL, "start": {"s": 88.0, "x": 6.3, "dir": 1}, "end_s": 145.0,
+		 "target": {"name": "Low to High Ledge"},
+		 "metric": "dist", "medals": [5.0, 8.0, 10.5],
+		 "goal": "Pool B: rechts auf den Rand und auf die Low to High Ledge – sie steigt noch an. Gemessen: Meter auf der Ledge.",
+		 "keys": "← / →  lenken     Leertaste  Absprung",
+		 "keys_mobile": "Neigen  lenken     SPRUNG  Absprung",
+		 "tip": "Bergauf kostet Tempo: mit gespanntem Seil auf den Rand kommen. Hinten ist sie 2 m hoch – gerade abspringen."},
+		{"id": "dk_rail", "name": "Double Kinked Rail", "title": "Ausgang: Double Kinked Rail",
+		 "kind": "slide", "setup": POOL, "start": {"s": 25.0, "x": -6.3, "dir": 1}, "end_s": 95.0,
+		 "target": {"name": "Double Kinked Rail"},
+		 "metric": "dist", "medals": [6.0, 9.0, 11.0],
+		 "goal": "Pool C (links): außen über die Rampe auf den Rand und auf das Double Kinked Rail mit zwei Knicken. Gemessen: Meter auf dem Rail.",
+		 "keys": "← / →  lenken     Leertaste  Absprung",
+		 "keys_mobile": "Neigen  lenken     SPRUNG  Absprung",
+		 "tip": "Außen zieht das Seil dich zur Mitte – auf dem Rand nicht gegenlenken, das Einloggen hält die Spur."},
+		{"id": "fd_ledge", "name": "Flat Down Ledge", "title": "Ausgang: Flat Down Ledge",
+		 "kind": "slide", "setup": POOL, "start": {"s": 25.0, "x": -2.2, "dir": 1}, "end_s": 95.0,
+		 "target": {"name": "Flat Down Ledge"},
+		 "metric": "dist", "medals": [5.0, 8.0, 10.0],
+		 "goal": "Pool C: innen (zum Seil hin) auf den Rand und auf die Flat Down Ledge – erst flach, dann abwärts. Gemessen: Meter auf der Ledge.",
+		 "keys": "← / →  lenken     Leertaste  Absprung",
+		 "keys_mobile": "Neigen  lenken     SPRUNG  Absprung",
+		 "tip": "Die innere Seite liegt nah am Seil – das Seil zieht kaum quer, dafür ist die Spur schmal."},
+	]},
+	# Rail to Rail: vom Slider seitlich auf den Nachbar-Slider springen (auf dem Slider Sprung laden, dabei
+	# ←/→ = Seite). "chain" = so viele Slider hintereinander, jeder per Transfer vom vorigen; gemessen auf dem letzten.
+	{"id": "r2r", "name": "Rail to Rail", "text": "Auf dem Slider seitlich auf den Nachbarn hinüberspringen.", "tasks": [
+		{"id": "pipe2", "name": "Pipe to Pipe", "title": "Pipe to Pipe",
+		 "kind": "r2r", "chain": 2, "setup": RAIL, "start": {"s": 30.0, "x": 7.0, "dir": 1}, "end_s": 85.0,
+		 "metric": "dist", "medals": [5.0, 9.0, 12.0],
+		 "goal": "Rechts stehen zwei Pipes nebeneinander (0,8 m Lücke). Über die Auffahrt auf die äußere, kurze Pipe, dann seitlich auf die innere, lange Pipe hinüberspringen. Gemessen: gerutschte Meter auf der zweiten Pipe – je früher der Transfer, desto mehr.",
+		 "keys": "Auf der Pipe Leertaste halten, dabei ← (Seite), Leertaste loslassen = Hop",
+		 "keys_mobile": "Auf der Pipe SPRUNG halten, dabei ← (Seite), SPRUNG loslassen = Hop",
+		 "tip": "Schon auf der Auffahrt laden, auf der Pipe ← dazu und loslassen. Die Hop-Hilfe zielt auf die Mitte der Nachbar-Pipe. In der Luft dreht ←/→ erst wieder, wenn du es einmal losgelassen hast."},
+		{"id": "pipe3", "name": "Pipe to Pipe to Pipe", "title": "Pipe to Pipe to Pipe",
+		 "kind": "r2r", "chain": 3, "setup": RAIL, "start": {"s": 30.0, "x": -8.0, "dir": 1}, "end_s": 90.0,
+		 "metric": "dist", "medals": [4.0, 8.0, 11.0],
+		 "goal": "Links stehen drei Pipes versetzt nebeneinander wie eine Treppe zur Seilmitte. Auf die erste, dann zweimal hinüber: Pipe 1 → Pipe 2 → Pipe 3. Gemessen: gerutschte Meter auf der dritten Pipe.",
+		 "keys": "Auf der Pipe Leertaste halten, dabei → (Seite), Leertaste loslassen = Hop – auf Pipe 2 gleich nochmal",
+		 "keys_mobile": "Auf der Pipe SPRUNG halten, dabei → (Seite), SPRUNG loslassen = Hop – auf Pipe 2 gleich nochmal",
+		 "tip": "Pipe 2 ist kurz: sofort nach der Landung wieder laden. Ein kurzer Druck reicht für den Hop – voll aufladen muss man nicht."},
+	]},
 ]
 
 const SECTION := "medaillen"
@@ -377,9 +505,9 @@ static func medal_for(task: Dictionary, value: float) -> int:
 ## Messwert so gerundet, wie format_value ihn zeigt – mit diesem Wert wird gewertet (Medaille, Bestwert, Rangliste).
 static func shown(task: Dictionary, value: float) -> float:
 	match task["metric"]:
-		"height", "width", "dist", "dist_5050", "dist_bs", "sink", "share":
+		"height", "width", "dist", "dist_5050", "dist_bs", "sink", "share", "press_share":
 			return snappedf(value, 0.01)
-		"press", "time":
+		"press", "time", "speed":
 			return snappedf(value, 0.1)
 	return roundf(value)
 
@@ -393,6 +521,10 @@ static func format_value(task: Dictionary, value: float) -> String:
 			return ("%.2f m" % value).replace(".", ",")   # cm-genau: so wird auch gewertet
 		"press", "time":
 			return ("%.1f s" % value).replace(".", ",")
+		"speed":
+			return ("%.1f km/h" % value).replace(".", ",")
+		"press_share":
+			return "%d %% im Press" % roundi(value * 100.0)
 		"switches":
 			return "%d Wechsel" % roundi(value)
 		"count":

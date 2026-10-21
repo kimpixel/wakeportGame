@@ -24,7 +24,8 @@ const PRESETS := [
 ## Szenarien: day = Tag im Jahr (2026), hour = deutsche Uhrzeit, preset = Wetter-id; Extras überschreiben
 ## das Wetter (cloud, rain, haze, mist = Bodennebel, rainbow, trails = Kondensstreifen, hot = Hitzetag: viele Badegäste).
 ## only = "MM-TT": nur an diesem echten Kalendertag im Würfel (dann immer), sonst nicht in der Liste.
-## pick = false: nicht gewürfelt (Nacht ist schwerer – unfair für die Rangliste), nur gezielt wählbar.
+## pick = false: nicht gewürfelt (Nacht und Blaue Stunde sind zu dunkel, vor allem im Web/am Handy – schwerer, unfair
+## für die Rangliste), nur gezielt wählbar.
 const SCENARIOS := [
 	{"id": "afterhour", "name": "After Hour Raley Session", "day": 230, "hour": 19.75, "preset": "sonnig"},
 	{"id": "earlybird", "name": "Early Bird Session", "day": 251, "hour": 8.75, "preset": "dunst", "mist": 1.0,
@@ -36,7 +37,7 @@ const SCENARIOS := [
 	{"id": "baumschatten", "name": "Sonne hinter den Bäumen", "day": 265, "hour": 18.9, "preset": "sonnig"},
 	{"id": "regenbogen", "name": "Nach dem Schauer", "day": 200, "hour": 19.25, "preset": "schauer",
 		"rain": 0.15, "rainbow": 1.0},
-	{"id": "blauestunde", "name": "Blaue Stunde", "day": 172, "hour": 21.9, "preset": "sonnig"},
+	{"id": "blauestunde", "name": "Blaue Stunde", "day": 172, "hour": 21.9, "preset": "sonnig", "pick": false},
 	{"id": "oktober", "name": "Goldener Oktober", "day": 285, "hour": 16.25, "preset": "heiter", "haze": 0.15},
 	{"id": "kondens", "name": "Chemtrails, oder Kondensstreifen? ;-)", "day": 160, "hour": 15.0, "preset": "sonnig",
 		"trails": 1.0},

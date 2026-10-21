@@ -44,15 +44,23 @@ var _next := 0
 var _emit_timers := {}   # pro Fahrer ein eigener Takt
 var _boat_points := PackedVector4Array()
 var _boat_next := 0
+## Pool-Becken (6-Stair Pool): eigene Kreiswellen (Heckwelle, Landung, Sturz im Becken), nur dort sichtbar und
+## wirksam; das Wasser im Becken nutzt denselben Shader wie der See (_pool_material).
+var _pool_points := PackedVector4Array()
+var _pool_next := 0
+var _no_boat := PackedVector4Array()
 var _boat_timer := 0.0
 const PATCH_SIZE := 160.0          # feines Gitter rund um den Fahrer
 const LAKE_RECT := Rect2(-490.0, -635.0, 595.0, 720.0)   # ganzer See in Spielkoordinaten
 
 ## Dem folgt das feine Wassergitter (normalerweise der Fahrer).
 var follow: Node3D
+## Features (für das Wasser in den Pool-Becken, FeatureSet.pool_level)
+var features: FeatureSet
 
 var _material: ShaderMaterial
 var _coarse_material: ShaderMaterial
+var _pool_material: ShaderMaterial
 var _patch: MeshInstance3D
 var _cell := 0.5
 
@@ -62,8 +70,13 @@ func _ready() -> void:
 	for i in WAKE_COUNT:
 		_points[i] = Vector4(0.0, 0.0, -1000.0, 0.0)
 	_boat_points.resize(BOAT_COUNT)
+	_no_boat.resize(BOAT_COUNT)
 	for i in BOAT_COUNT:
 		_boat_points[i] = Vector4(0.0, 0.0, -1000.0, 0.0)
+		_no_boat[i] = Vector4(0.0, 0.0, -1000.0, 0.0)
+	_pool_points.resize(WAKE_COUNT)
+	for i in WAKE_COUNT:
+		_pool_points[i] = Vector4(0.0, 0.0, -1000.0, 0.0)
 
 	var compat := RenderingServer.get_current_rendering_method() == "gl_compatibility"
 	for k: String in FX_KEYS:
@@ -75,6 +88,8 @@ func _ready() -> void:
 	_coarse_material = _make_material(compat)
 	_coarse_material.set_shader_parameter("use_wake", false)
 	_coarse_material.set_shader_parameter("hole_half", PATCH_SIZE * 0.5 - 1.0)
+	_pool_material = _make_material(compat)
+	_pool_material.set_shader_parameter("boat_points", _no_boat)
 	set_color(1)
 
 	# Feines Gitter (Wellen + Heckwelle), folgt dem Fahrer in ganzen Gitterschritten.
@@ -144,7 +159,7 @@ func set_color(idx: int) -> void:
 	else:
 		deep = Color(0.02, 0.11, 0.2) if compat else Color(0.03, 0.13, 0.24)
 		shallow = Color(0.08, 0.22, 0.34) if compat else Color(0.1, 0.26, 0.4)
-	for m: ShaderMaterial in [_material, _coarse_material]:
+	for m: ShaderMaterial in [_material, _coarse_material, _pool_material]:
 		m.set_shader_parameter("deep_color", deep)
 		m.set_shader_parameter("shallow_color", shallow)
 
@@ -157,7 +172,7 @@ func set_fx(key: String, on: bool) -> void:
 		sharp = on
 	var depth: bool = fx["clear"]
 	var sh: Shader = DEPTH_SHADER if depth else FLAT_SHADER
-	for m: ShaderMaterial in [_material, _coarse_material]:
+	for m: ShaderMaterial in [_material, _coarse_material, _pool_material]:
 		if m.shader != sh:
 			m.shader = sh
 		for k: String in FX_KEYS:
@@ -171,6 +186,15 @@ func step(delta: float) -> void:
 ## Wird vom Fahrer jeden Physikschritt aufgerufen, solange das Brett im Wasser ist.
 ## Aufprall (Landung): eine einzelne, starke Kreiswelle an dieser Stelle.
 func impact(pos: Vector3, strength: float) -> void:
+	_add_point(pos, strength)
+
+
+## Neue Kreiswelle: im Pool-Becken in dessen eigene Liste, sonst in die des Sees.
+func _add_point(pos: Vector3, strength: float) -> void:
+	if pool_level(pos.x, pos.z) > FeaturePart.NONE:
+		_pool_points[_pool_next] = Vector4(pos.x, pos.z, sim_time, strength)
+		_pool_next = (_pool_next + 1) % WAKE_COUNT
+		return
 	_points[_next] = Vector4(pos.x, pos.z, sim_time, strength)
 	_next = (_next + 1) % WAKE_COUNT
 
@@ -181,8 +205,7 @@ func emit_wake(pos: Vector3, strength: float, delta: float, emitter := 0) -> voi
 	if t > 0.0:
 		return
 	_emit_timers[emitter] = WAKE_INTERVAL
-	_points[_next] = Vector4(pos.x, pos.z, sim_time, strength)
-	_next = (_next + 1) % WAKE_COUNT
+	_add_point(pos, strength)
 
 
 ## Bootswelle: jeden Physikschritt vom fahrenden Boot (Heck). Stärke aus dem Bootstempo: langsam klein,
@@ -202,6 +225,7 @@ func emit_boat_wake(pos: Vector3, speed: float, delta: float) -> void:
 func clear_wake() -> void:
 	for i in WAKE_COUNT:
 		_points[i] = Vector4(0.0, 0.0, -1000.0, 0.0)
+		_pool_points[i] = Vector4(0.0, 0.0, -1000.0, 0.0)
 	for i in BOAT_COUNT:
 		_boat_points[i] = Vector4(0.0, 0.0, -1000.0, 0.0)
 
@@ -209,14 +233,11 @@ func clear_wake() -> void:
 ## Wasserhöhe an (x, z). min_age blendet ganz frische Wellen aus
 ## (damit der Fahrer nicht von seiner eigenen Bugwelle geschoben wird).
 func height_at(x: float, z: float, min_age := 0.0) -> float:
-	var h := ambient(x, z, sim_time)
-	for p: Vector4 in _points:
-		var age := sim_time - p.z
-		if age < min_age or age > WAKE_LIFE:
-			continue
-		var dx := x - p.x
-		var dz := z - p.y
-		h += ring(sqrt(dx * dx + dz * dz), age, p.w)
+	var pl := pool_level(x, z)
+	if pl > FeaturePart.NONE:
+		# im Pool: eigener Wasserspiegel mit denselben Grundwellen und den Kreiswellen aus dem Becken
+		return pl + ambient(x, z, sim_time) + _rings(_pool_points, x, z, min_age)
+	var h := ambient(x, z, sim_time) + _rings(_points, x, z, min_age)
 	for p: Vector4 in _boat_points:
 		var age := sim_time - p.z
 		if age < 0.0 or age > BOAT_LIFE:
@@ -225,6 +246,24 @@ func height_at(x: float, z: float, min_age := 0.0) -> float:
 		var dz := z - p.y
 		h += boat_ring(sqrt(dx * dx + dz * dz), age, p.w)
 	return h
+
+
+## Summe der Kreiswellen (Heckwelle, Aufprall) an (x, z).
+func _rings(points: PackedVector4Array, x: float, z: float, min_age: float) -> float:
+	var h := 0.0
+	for p: Vector4 in points:
+		var age := sim_time - p.z
+		if age < min_age or age > WAKE_LIFE:
+			continue
+		var dx := x - p.x
+		var dz := z - p.y
+		h += ring(sqrt(dx * dx + dz * dz), age, p.w)
+	return h
+
+
+## Wasserspiegel eines Pool-Beckens (6-Stair Pool) an (x, z) oder FeaturePart.NONE (dort gilt der See).
+func pool_level(x: float, z: float) -> float:
+	return features.pool_level(x, z) if features and not features.pools.is_empty() else FeaturePart.NONE
 
 
 static func ambient(x: float, z: float, t: float) -> float:
@@ -260,14 +299,19 @@ func _process(_delta: float) -> void:
 		var step := _cell * 2.0
 		_patch.position = Vector3(roundf(c.x / step) * step, 0.0, roundf(c.z / step) * step)
 	var hole := Vector2(_patch.position.x, _patch.position.z)
-	for m: ShaderMaterial in [_material, _coarse_material]:
+	for m: ShaderMaterial in [_material, _coarse_material, _pool_material]:
 		m.set_shader_parameter("sim_time", sim_time)
 		m.set_shader_parameter("hole_center", hole)
 	_material.set_shader_parameter("wake_points", _points)
 	_material.set_shader_parameter("boat_points", _boat_points)
+	_pool_material.set_shader_parameter("wake_points", _pool_points)
+	if features:
+		for p in features.pools:
+			if p.water_mesh and p.water_mesh.material_override != _pool_material:
+				p.water_mesh.material_override = _pool_material   # Wasser im Becken wie der See
 	if sun:
 		var to_sun := sun.global_transform.basis.z.normalized()
-		for m: ShaderMaterial in [_material, _coarse_material]:
+		for m: ShaderMaterial in [_material, _coarse_material, _pool_material]:
 			m.set_shader_parameter("sun_dir", to_sun)
 			m.set_shader_parameter("sun_color", sun.light_color)
 			m.set_shader_parameter("sun_energy", sun.light_energy if sun.visible else 0.0)

@@ -86,6 +86,10 @@ func _point(s: Array, f: float, age: float) -> Vector3:
 	# nur die Grundwellen (billig): die volle Höhe mit allen Heckwellen-Ringen je Punkt und Bild
 	# machte das Spiel am Handy sehr langsam
 	var wy := Water.ambient(p.x, p.z, water.sim_time) if water else 0.0
+	if water:
+		var pl := water.pool_level(p.x, p.z)
+		if pl > FeaturePart.NONE:
+			wy += pl                                          # im Pool: dessen Wasserspiegel
 	p.y = maxf(p.y, wy + 0.02)
 	return p
 

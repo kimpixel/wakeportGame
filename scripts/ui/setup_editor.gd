@@ -1123,6 +1123,12 @@ func _mirror_sel() -> void:
 			_set_yaw(r, -float(r["yaw"]))
 		if r.has("inner_v"):
 			r["inner_v"] = -float(r["inner_v"])
+		var exits: Dictionary = _catalog.get(r.get("part", ""), {}).get("exits", {})
+		if not exits.is_empty():
+			# Pool: Ausgänge tauschen die Seite
+			var l: String = r.get("exit_left", exits.get("left", ""))
+			r["exit_left"] = r.get("exit_right", exits.get("right", ""))
+			r["exit_right"] = l
 	_rebuild()
 
 
@@ -1208,6 +1214,17 @@ func _sync_selection() -> void:
 				var val: String = d[0]
 				b.pressed.connect(func() -> void: _set_value("dir", val))
 				row.add_child(b)
+		# Pool: Ausgang links/rechts wählbar (Add-ons mit "pool_exit")
+		var exits: Dictionary = _catalog.get(id, {}).get("exits", {})
+		if not exits.is_empty():
+			var ids: Array[String] = []
+			for k: String in _catalog:
+				if _catalog[k] is Dictionary and _catalog[k].get("pool_exit", false):
+					ids.append(k)
+			for side: Array in [["left", "AUSGANG LINKS (Blick von der Rampe)"], ["right", "AUSGANG RECHTS (Blick von der Rampe)"]]:
+				var key: String = "exit_" + side[0]
+				_choice_row(side[1], ids, str(r.get(key, exits.get(side[0], ""))),
+					func(v: String) -> void: _set_value(key, v))
 		for k: Array in [["ramp_in", "AUFFAHRT VORNE (m, 0 = ab)"], ["ramp_out", "AUFFAHRT HINTEN (m, 0 = ab)"]]:
 			var def := _ramp_default(id, k[0])
 			if not is_nan(def):
@@ -1273,6 +1290,28 @@ func _num_row(title: String, value: float, step: float, lo: float, hi: float, ap
 	row.add_child(minus)
 	row.add_child(sb)
 	row.add_child(plus)
+
+
+## Auswahl aus Bauteilen (ids) mit ◀ / ▶, in der Mitte der Name.
+func _choice_row(title: String, ids: Array[String], current: String, apply: Callable) -> void:
+	_sel_box.add_child(host._small(title))
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	_sel_box.add_child(row)
+	var idx := maxi(ids.find(current), 0)
+	var prev := host._button("◀", 22)
+	prev.custom_minimum_size.x = 52
+	var mid := host._button(_part_name(ids[idx]), 18)
+	mid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	mid.custom_minimum_size.y = 48
+	var next := host._button("▶", 22)
+	next.custom_minimum_size.x = 52
+	prev.pressed.connect(func() -> void: apply.call(ids[(idx - 1 + ids.size()) % ids.size()]))
+	next.pressed.connect(func() -> void: apply.call(ids[(idx + 1) % ids.size()]))
+	mid.pressed.connect(func() -> void: apply.call(ids[(idx + 1) % ids.size()]))
+	row.add_child(prev)
+	row.add_child(mid)
+	row.add_child(next)
 
 
 ## Standardwert einer Auffahrt (NAN = Teil hat keine einstellbare Auffahrt).
@@ -1811,7 +1850,11 @@ func _part_info(id: String) -> String:
 	if e.get("type", "") == "group":
 		var names: Array[String] = []
 		for c: Dictionary in e.get("parts", []):
-			names.append(_part_name(c.get("part", "")))
+			var nm := _part_name(c.get("part", ""))
+			if not str(c.get("part", "")).begins_with("@") and nm not in names:
+				names.append(nm)
+		if e.has("exits"):
+			names.append("2 Ausgänge (wählbar)")
 		return "Modul: " + " + ".join(names)
 	var h := float(e.get("height", 0.0))
 	for pt: Array in e.get("profile", []):

@@ -75,13 +75,22 @@ var _achieve_list: VBoxContainer
 var _achieve_count: Label
 var leaderboard: Leaderboard      # Online-Rangliste (von main.gd gesetzt, vor build)
 var _rank_pop: PanelContainer     # Rangliste der gewählten Challenge bzw. Competition
-var _rank_select: SelectBox      # alle Disziplinen: Competition je Rundenlänge/Terminal/Setup, alle Challenges
-var _rank_entries: Array = []     # je Zeile der Auswahl {mode, task} bzw. {sec, terminal, setup}; Überschrift = {}
+var _mini: MiniRank               # kurze Rangliste zur Auswahl rechts unten (nur wenn Platz ist)
+var _mini_room := false
+var _mini_req := 0
+var _rank_kind: SelectBox        # Rangliste, Stufe 1: Competition / Challenge
+var _rank_group: SelectBox       # Stufe 2: Rundenlänge (Competition) bzw. Modus (Challenge)
+var _rank_select: SelectBox      # Stufe 3: Disziplin (Terminal · Setup bzw. Challenge)
+var _rank_all: Array = []         # alle Disziplinen mit Einträgen: {kind, gkey, glabel, label, e}
+var _rank_kinds: Array = []       # je Zeile von _rank_kind die Art ("comp"/"ch")
+var _rank_groups: Array = []      # je Zeile von _rank_group der Gruppen-Schlüssel
+var _rank_entries: Array = []     # je Zeile von _rank_select {mode, task} bzw. {sec, terminal, setup}
 var _rank_list: VBoxContainer
 var _rank_info: Label
 var _rank_name: LineEdit
 var _rank_msg: Label
-var _rank_forget: Button
+var _rank_vis: Button             # Schalter „In der Rangliste erscheinen“ (An/Aus)
+var _rank_name_row: HBoxContainer
 var _rank_req := 0                # laufende Abfrage (ältere Antworten verwerfen)
 var _rank_board := {}
 var _cur_mode := Training.COMPETITION
@@ -165,6 +174,12 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	# Menü
 	_menu = _panel()
 	_ui.add_child(_menu)
+	# kurze Rangliste zur gewählten Disziplin rechts unten (nur wenn neben dem Menü Platz ist)
+	_mini = MiniRank.new()
+	_ui.add_child(_mini)
+	settings.changed.connect(func(k: String) -> void:
+		if k in ["mode", "speed", "rope", "grip"]:
+			_refresh_mini())
 	var mv := VBoxContainer.new()
 	mv.add_theme_constant_override("separation", 10)
 	_menu.add_child(mv)
@@ -347,6 +362,7 @@ func refresh_mode(mode_id: String, task_idx: int) -> void:
 			line += "\nBestwert: " + Training.format_value(t, best[1])
 		_task_info.text = line
 	_layout()
+	_refresh_mini()
 
 
 ## Auswahl der Feature-Setups (neu füllen, z. B. nach Speichern im Setup-Editor).
@@ -550,6 +566,7 @@ func _layout() -> void:
 		_menu.position = Vector2(m, size.y - m - h)
 	else:
 		_menu.position = Vector2(m, maxf(size.y - m - h, 110.0))
+	_place_mini(size, m)
 	_dim.position = Vector2.ZERO
 	_dim.size = size
 	for p: PanelContainer in [_settings, _browser, _detail, _achieve, _rank_pop]:
@@ -557,10 +574,58 @@ func _layout() -> void:
 	_editor.layout(size, _k)
 
 
+## Mini-Rangliste rechts unten, bündig mit der Unterkante des Menüs – nur wenn rechts daneben Platz ist
+## (das Menü wird dafür nie kleiner; hochkant am Handy also nie).
+func _place_mini(size: Vector2, m: float) -> void:
+	if _mini == null:
+		return
+	_mini.reset_size()
+	var sz := _mini.get_combined_minimum_size()
+	var free_x := size.x - m - (_menu.position.x + _menu.size.x) - 24.0
+	_mini_room = _menu.visible and not _ingame and free_x >= sz.x and size.y - 2.0 * m >= sz.y
+	_mini.modulate.a = 1.0 if _mini_room else 0.0
+	_mini.position = Vector2(size.x - m - sz.x, _menu.position.y + _menu.size.y - sz.y)
+
+
+## Mini-Rangliste zur Auswahl auf der Startseite (Competition: Rundenlänge, Terminal, Setup; Challenge) laden,
+## bzw. den Hinweis, warum dort keine Rangliste gilt.
+func _refresh_mini() -> void:
+	if _mini == null or leaderboard == null or not leaderboard.enabled():
+		return
+	var b := {}
+	var why: Array
+	if _cur_mode == Training.COMPETITION:
+		var list := FeatureSet.list_setups()
+		var st: Dictionary = list[clampi(_setup_idx, 0, list.size() - 1)]
+		var sec := int(settings.get_v("mode"))
+		why = leaderboard.why_not(settings, false, sec, st)
+		if why[0] == "":
+			b = leaderboard.competition_board(sec, _terminal, st, _terminal_name(_terminal))
+	else:
+		var tasks := Training.tasks(_cur_mode)
+		if tasks.is_empty():
+			return
+		why = leaderboard.why_not(settings, true)
+		if why[0] == "":
+			b = leaderboard.challenge_board(_cur_mode, tasks[clampi(_cur_task, 0, tasks.size() - 1)])
+	_mini_req += 1
+	var req := _mini_req
+	if b.is_empty():
+		_mini.set_blocked(why)
+	else:
+		_mini.show_self = leaderboard.participating()
+		var r := await leaderboard.top(b, 50)
+		if req != _mini_req:
+			return
+		_mini.set_data(b, r)
+	_place_mini(_ui.size, 20.0)
+
+
 func _fit_popup(p: PanelContainer, size: Vector2) -> void:
 	var w := minf(size.x - 32.0, 760.0)
 	var h := minf(size.y - 32.0, 640.0)
-	if p == _rank_pop and size.x < size.y:      # Rangliste hochkant: ganze Höhe, damit die Liste Platz hat
+	if p == _rank_pop:                          # Rangliste: ganzer Bildschirm (Rand 16), damit die Liste Platz hat
+		w = size.x - 32.0
 		h = size.y - 32.0
 	p.custom_minimum_size = Vector2(w, 0)
 	p.size = Vector2(w, h)
@@ -582,8 +647,14 @@ func _popup_frame(title: String) -> Array:
 	var l := _label(title, 28, SEL)
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(l)
-	var x := _button("✕", 24)
+	var x := _button("", 24)
 	x.custom_minimum_size = Vector2(56, 52)
+	# Kreuz selbst zeichnen: das Zeichen ✕ fehlt in der Web-Schrift (Taste war im Browser leer)
+	x.draw.connect(func() -> void:
+		var c := x.size * 0.5
+		var r := minf(x.size.x, x.size.y) * 0.2
+		for d: Vector2 in [Vector2(1, 1), Vector2(1, -1)]:
+			x.draw_line(c - d * r, c + d * r, Color.WHITE, 3.0, true))
 	x.set_meta("nav_close", true)                # Fokus beim Öffnen nicht aufs Schließen
 	MenuNav.add_scope(p, 10)
 	x.pressed.connect(_close_popups)
@@ -1037,14 +1108,26 @@ func _build_ranking() -> void:
 	var f := _popup_frame("RANGLISTE")
 	_rank_pop = f[0]
 	var v: VBoxContainer = f[1]
-	var title: Label = f[2]
-	title.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	var head := title.get_parent()
-	(head as HBoxContainer).add_theme_constant_override("separation", 12)
+	# Auswahl in Stufen unter dem Titel: Art (Competition/Challenge), dann Rundenlänge bzw. Modus, dann Disziplin
+	var sel := VBoxContainer.new()
+	sel.add_theme_constant_override("separation", 6)
+	v.add_child(sel)
+	var row1 := HBoxContainer.new()
+	row1.add_theme_constant_override("separation", 6)
+	sel.add_child(row1)
+	_rank_kind = _select(18)
+	_rank_kind.item_selected.connect(func(_i: int) -> void:
+		_fill_rank_groups("")
+		_fill_ranking())
+	row1.add_child(_rank_kind)
+	_rank_group = _select(18)
+	_rank_group.item_selected.connect(func(_i: int) -> void:
+		_fill_rank_items(-1)
+		_fill_ranking())
+	row1.add_child(_rank_group)
 	_rank_select = _select(18)
 	_rank_select.item_selected.connect(func(_i: int) -> void: _fill_ranking())
-	head.add_child(_rank_select)
-	head.move_child(_rank_select, 1)
+	sel.add_child(_rank_select)
 	v.add_child(_rank_warning())
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -1057,14 +1140,26 @@ func _build_ranking() -> void:
 	_rank_info = _small("")
 	_rank_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(_rank_info)
+	var vis := HBoxContainer.new()
+	vis.add_theme_constant_override("separation", 8)
+	v.add_child(vis)
+	var vl := _small("IN DER RANGLISTE ERSCHEINEN")
+	vl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	vl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vis.add_child(vl)
+	_rank_vis = _button("An", 18)
+	_rank_vis.custom_minimum_size = Vector2(110, 48)
+	_rank_vis.pressed.connect(_toggle_rank_visible)
+	vis.add_child(_rank_vis)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	v.add_child(row)
+	_rank_name_row = row
 	var nl := _small("DEIN NAME")
 	nl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(nl)
 	_rank_name = LineEdit.new()
-	_rank_name.placeholder_text = "Name für die Rangliste"
+	_rank_name.placeholder_text = "ohne Namen: anonym"
 	_rank_name.max_length = Leaderboard.NAME_MAX
 	_rank_name.custom_minimum_size = Vector2(160, 48)
 	_rank_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1087,14 +1182,20 @@ func _build_ranking() -> void:
 	_rank_msg = _label("", 14, Color(1, 1, 1, 0.55))
 	_rank_msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(_rank_msg)
-	_rank_forget = _button("Nicht mehr teilnehmen (alles löschen)", 16)
-	_rank_forget.pressed.connect(func() -> void:
-		_rank_msg.text = "Wird gelöscht …"
-		var r := await leaderboard.forget()
-		_rank_name.text = ""
-		_update_rank_name(str(r.get("error", "")) if not r.get("ok", false) else "Gelöscht: Name und alle Einträge.")
-		_fill_ranking())
-	v.add_child(_rank_forget)
+
+
+## Schalter „In der Rangliste erscheinen“: Aus löscht alles auf dem Server (Name, Einträge), An sendet wieder.
+func _toggle_rank_visible() -> void:
+	var off := not leaderboard.hidden
+	_rank_msg.text = "Wird gelöscht …" if off else ""
+	var r := await leaderboard.set_hidden(off)
+	if off:
+		_rank_name.text = leaderboard.player_name
+	if not r.get("ok", false):
+		_update_rank_name(str(r.get("error", "Fehler")))
+	else:
+		_update_rank_name("Gelöscht: Name und alle deine Einträge." if off else "")
+	_fill_ranking()
 
 
 ## Hinweis-Leiste (Warnung): Physik und Punkte ändern sich noch laufend, die Rangliste beginnt ab und zu neu
@@ -1135,7 +1236,8 @@ func _open_ranking() -> void:
 	_update_rank_name("")
 	_rank_req += 1
 	var req := _rank_req
-	_rank_select.clear()
+	for s: SelectBox in [_rank_kind, _rank_group, _rank_select]:
+		s.clear()
 	_rank_entries.clear()
 	for c in _rank_list.get_children():
 		c.queue_free()
@@ -1148,52 +1250,35 @@ func _open_ranking() -> void:
 	_fill_ranking()
 
 
-## Auswahl der Disziplinen füllen: Competition 7:30, die Challenges je Modus, dann Competition 10:00 und 15:00
-## (eigene Setups haben keine Rangliste). filled: {"board|ver": Anzahl} vom Server – nur Disziplinen mit
-## Einträgen erscheinen; null (Server nicht erreichbar/alt) = alle. Vorgewählt: das gewählte Spiel, sonst die erste.
+## Auswahl der Disziplinen in drei Stufen füllen: Art (Competition / Challenge), Rundenlänge bzw. Modus, Disziplin
+## (Terminal · Setup bzw. Challenge; eigene Setups haben keine Rangliste). filled: {"board|ver": Anzahl} vom Server –
+## nur Disziplinen mit Einträgen erscheinen; null (Server nicht erreichbar/alt) = alle. Vorgewählt: das gewählte
+## Spiel, sonst das erste.
 func _fill_rank_select(filled: Variant) -> void:
-	_rank_select.clear()
-	_rank_entries.clear()
+	_rank_all.clear()
 	var setups: Array = FeatureSet.list_setups().filter(func(e: Dictionary) -> bool: return not e.get("user", false))
 	var terms: Array = ["T2", "T1"]                 # Terminal 2 zuerst (dort fährt man meist)
 	var lengths: Array = []
 	for m: Array in GameSettings.MODES:
 		if int(m[0]) > 0:
 			lengths.append(int(m[0]))
-	# Gruppen: [Überschrift, [[Zeile, Eintrag], …]]
-	var comp_group := func(sec: int) -> Array:
-		var rows: Array = []
+	for sec: int in lengths:
 		for t: String in terms:
 			for st: Dictionary in setups:
-				rows.append(["%s · %s · %s" % [_terminal_name(t), str(st.get("name", st["id"])).get_slice(" (", 0),
-					_clock_text(sec)], {"sec": sec, "terminal": t, "setup": st}])
-		return ["COMPETITION · RUNDE %s" % _clock_text(sec), rows]
-	var groups: Array = [comp_group.call(lengths[0])]
+				_rank_all.append({"kind": "comp", "gkey": str(sec), "glabel": "Runde " + _clock_text(sec),
+					"label": "%s · %s" % [_terminal_name(t), str(st.get("name", st["id"])).get_slice(" (", 0)],
+					"e": {"sec": sec, "terminal": t, "setup": st}})
 	for m: Dictionary in Training.MODES:
 		var tasks: Array = m.get("tasks", [])
-		if tasks.is_empty():
-			continue
-		var rows: Array = []
 		for i in tasks.size():
-			rows.append([tasks[i]["title"], {"mode": m["id"], "task": i}])
-		groups.append([str(m["name"]).to_upper(), rows])
-	for sec: int in lengths.slice(1):
-		groups.append(comp_group.call(sec))
-	for g: Array in groups:
-		var rows: Array = g[1]
-		if filled is Dictionary:
-			rows = rows.filter(func(r: Array) -> bool:
-				var b: Dictionary = _entry_board(r[1])[0]
-				return (filled as Dictionary).has("%s|%s" % [b["board"], b["ver"]]))
-		if rows.is_empty():
-			continue
-		_rank_select.add_header(g[0])
-		_rank_entries.append({})
-		for r: Array in rows:
-			_rank_select.add_item(r[0])
-			_rank_entries.append(r[1])
-	# Vorwahl
-	var want := -1
+			_rank_all.append({"kind": "ch", "gkey": m["id"], "glabel": m["name"], "label": tasks[i]["title"],
+				"e": {"mode": m["id"], "task": i}})
+	if filled is Dictionary:
+		_rank_all = _rank_all.filter(func(r: Dictionary) -> bool:
+			var b: Dictionary = _entry_board(r["e"])[0]
+			return (filled as Dictionary).has("%s|%s" % [b["board"], b["ver"]]))
+	# Vorwahl: das gewählte Spiel
+	var want: Dictionary = {}
 	var setup_id: String = ""
 	var all := FeatureSet.list_setups()
 	if _setup_idx >= 0 and _setup_idx < all.size():
@@ -1201,22 +1286,64 @@ func _fill_rank_select(filled: Variant) -> void:
 	var sec_now := int(settings.get_v("mode"))
 	if sec_now <= 0:
 		sec_now = lengths[0]                        # Freies Fahren: Liste der normalen Runde
-	for i in _rank_entries.size():
-		var e: Dictionary = _rank_entries[i]
+	for r: Dictionary in _rank_all:
+		var e: Dictionary = r["e"]
 		if _cur_mode == Training.COMPETITION:
-			if e.get("sec", 0) == sec_now and e.get("terminal", "") == _terminal \
-					and e["setup"].get("id", "") == setup_id:
-				want = i
+			if e.get("sec", 0) == sec_now and e.get("terminal", "") == _terminal and e["setup"].get("id", "") == setup_id:
+				want = r
 				break
 		elif e.get("mode", "") == _cur_mode and e.get("task", -1) == _cur_task:
-			want = i
+			want = r
 			break
-	if want < 0:
-		want = 1 if _rank_entries.size() > 1 else -1    # erste Disziplin (Zeile 0 ist eine Überschrift)
-	if want >= 0:
-		_rank_select.select(want)
-	else:
-		_rank_select.text = "Noch keine Einträge"
+	if want.is_empty() and not _rank_all.is_empty():
+		var kind := "comp" if _cur_mode == Training.COMPETITION else "ch"
+		var same := _rank_all.filter(func(r: Dictionary) -> bool: return r["kind"] == kind)
+		want = same[0] if not same.is_empty() else _rank_all[0]
+	_rank_kind.clear()
+	_rank_kinds.clear()
+	for k: String in ["comp", "ch"]:
+		if _rank_all.any(func(r: Dictionary) -> bool: return r["kind"] == k):
+			_rank_kind.add_item("Competition" if k == "comp" else "Challenge")
+			_rank_kinds.append(k)
+	if _rank_kinds.is_empty():
+		_rank_kind.text = "Noch keine Einträge"
+		_rank_group.clear()
+		_rank_select.clear()
+		_rank_entries.clear()
+		return
+	_rank_kind.select(maxi(_rank_kinds.find(want.get("kind", "")), 0))
+	_fill_rank_groups(want.get("gkey", ""), want)
+
+
+## Stufe 2 (Rundenlänge bzw. Modus) zur gewählten Art; gkey bzw. want = Vorwahl.
+func _fill_rank_groups(gkey: String, want := {}) -> void:
+	var kind: String = _rank_kinds[clampi(_rank_kind.selected, 0, _rank_kinds.size() - 1)]
+	_rank_group.clear()
+	_rank_groups.clear()
+	for r: Dictionary in _rank_all:
+		if r["kind"] == kind and not r["gkey"] in _rank_groups:
+			_rank_groups.append(r["gkey"])
+			_rank_group.add_item(r["glabel"])
+	_rank_group.select(maxi(_rank_groups.find(gkey), 0))
+	_fill_rank_items(_rank_all.find(want) if not want.is_empty() else -1)
+
+
+## Stufe 3 (Disziplin) zur gewählten Gruppe; want_idx = Index in _rank_all für die Vorwahl.
+func _fill_rank_items(want_idx: int) -> void:
+	var kind: String = _rank_kinds[clampi(_rank_kind.selected, 0, _rank_kinds.size() - 1)]
+	var gkey: String = _rank_groups[clampi(_rank_group.selected, 0, _rank_groups.size() - 1)] if not _rank_groups.is_empty() else ""
+	_rank_select.clear()
+	_rank_entries.clear()
+	var sel := 0
+	for i in _rank_all.size():
+		var r: Dictionary = _rank_all[i]
+		if r["kind"] == kind and r["gkey"] == gkey:
+			if i == want_idx:
+				sel = _rank_entries.size()
+			_rank_select.add_item(r["label"])
+			_rank_entries.append(r["e"])
+	if not _rank_entries.is_empty():
+		_rank_select.select(sel)
 
 
 func _terminal_name(t: String) -> String:
@@ -1313,6 +1440,7 @@ func _ranking_row(e: Dictionary, b: Dictionary) -> Control:
 	h.add_child(_label(Leaderboard.format(b, float(e.get("value", 0.0))), 20, Color.WHITE))
 	var dl := _label(Leaderboard.format_date(float(e.get("date", 0.0))), 14, Color(1, 1, 1, 0.45))
 	dl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	dl.visible = _ui.size.x >= 760.0          # hochkant ohne Datum, sonst wird der Name abgeschnitten
 	h.add_child(dl)
 	return p
 
@@ -1323,24 +1451,30 @@ func _save_rank_name() -> void:
 	if n == leaderboard.player_name:
 		return
 	if n == "":
-		_update_rank_name("Ohne Namen wird nichts eingetragen. Zum Löschen: Nicht mehr teilnehmen.")
+		_update_rank_name("Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles).")
 		_rank_name.text = leaderboard.player_name
 		return
 	_rank_msg.text = "Wird gespeichert …"
 	var r := await leaderboard.set_player_name(n)
 	if r.get("ok", false):
-		_update_rank_name("Gespeichert. Ab jetzt kommen deine Ergebnisse in die Rangliste.")
+		_update_rank_name("Gespeichert. Deine Einträge stehen jetzt unter diesem Namen.")
 		_fill_ranking()
 	else:
 		_update_rank_name(str(r.get("error", "Fehler")))
 
 
-## Hinweis unter dem Namen (Einwilligung) und „Nicht mehr teilnehmen“ nur mit Namen.
+## Schalter und Hinweis unter dem Namen (was gespeichert wird); ohne Teilnahme kein Namensfeld.
 func _update_rank_name(msg: String) -> void:
-	var t := "Mit Namen erscheinen deine Bestwerte öffentlich in der Rangliste. Gespeichert werden nur Name, " \
-		+ "Bestwerte und Datum (dazu eine zufällige Geräte-Nummer, nur als Prüfsumme)."
+	var on := not leaderboard.hidden
+	_rank_vis.text = "An" if on else "Aus"
+	_rank_vis.modulate = Color(1, 1, 1) if on else Color(1, 1, 1, 0.6)
+	_rank_vis.add_theme_color_override("font_color", Hud.ACCENT if on else Color(1, 1, 1, 0.7))
+	_rank_name_row.visible = on
+	var t := "Deine Bestwerte erscheinen öffentlich in der Rangliste – ohne Namen als „Anonym #…“. Gespeichert werden " \
+		+ "nur Name (falls angegeben), Bestwerte und Datum, dazu eine zufällige Geräte-Nummer als Prüfsumme. " \
+		+ "Aus = alles löschen." if on \
+		else "Du erscheinst nicht in der Rangliste, es wird nichts gesendet."
 	_rank_msg.text = (msg + "\n" if msg != "" else "") + t
-	_rank_forget.visible = leaderboard.has_name()
 
 
 func _achievement_row(nr: int, a: Dictionary, date: String) -> Control:
@@ -1481,6 +1615,7 @@ func refresh(terminal: String, setup_idx: int, _focus_idx := -1) -> void:
 		_focus = _focus_goal
 		_radius = _radius_goal
 	_layout()
+	_refresh_mini()
 
 
 ## Startseite wird sichtbar: Hintergrundkamera übernimmt.

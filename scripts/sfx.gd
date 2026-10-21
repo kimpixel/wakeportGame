@@ -22,6 +22,7 @@ const NEG_DELAY := 0.4      # s nach dem Sturz, dann ruft der Steuermann
 const HIT_DIR := "res://assets/sounds/feature_hit"      # Brett trifft ein Feature (Aufnahmen)
 const LANDING_DIR := "res://assets/sounds/landing"      # Brett landet auf dem Wasser (Aufnahmen)
 const COUNT_DIR := "res://assets/sounds/countdown"     # Countdown-Ansage (englisch): three, two, one, go
+const TIMEOUT_SOUND := "res://assets/sounds/timeout/timeout.wav"   # Competition: Zeit um (Aufnahme)
 
 var rider: Rider
 var people: Array[Dictionary] = []   # aus Beach: Leute im Startblock
@@ -35,6 +36,7 @@ var _negs: Array[AudioStream] = []       # aufgenommene Rufe beim Sturz
 var _hits: Array[AudioStream] = []
 var _landings: Array[AudioStream] = []
 var _impact: AudioStreamPlayer
+var _body: AudioStreamPlayer       # Sturz: Körper klatscht ins Wasser
 var _prev_sliding := false
 var _woo: AudioStreamWAV
 var _whoosh: AudioStreamWAV
@@ -104,6 +106,7 @@ func _ready() -> void:
 	set_people(people)
 	_fx = _player(-4.0)
 	_impact = _player(-2.0)
+	_body = _player(-4.0)
 	_water = _player(-80.0)
 	_water.stream = _make_water_loop()
 	_grind = _player(-80.0)
@@ -116,9 +119,15 @@ func _ready() -> void:
 
 	rider.trick_landed.connect(_on_trick)
 	rider.restarted.connect(stop_all)
+	# Platschen erst, wenn der Körper wirklich ins Wasser klatscht (Ragdoll), je nach Wucht;
+	# am Feature ein dumpfer Schlag
+	rider.body_splashed.connect(func(k: float) -> void:
+		_body.volume_db = lerpf(-18.0, -1.0, k)
+		_play(_body, _crash if k > 0.3 else _splash, randf_range(0.92, 1.08) * lerpf(1.25, 0.95, k))
+		_buzz(int(lerpf(40.0, 250.0, k))))
+	rider.body_hit.connect(func(k: float) -> void:
+		_hit(_hits, _thud, k))
 	rider.crashed.connect(func(_r: String) -> void:
-		_play(_fx, _crash, 1.0)
-		_buzz(250)
 		var gen := _gen
 		get_tree().create_timer(NEG_DELAY, false).timeout.connect(func() -> void:
 			if gen == _gen:
@@ -135,6 +144,7 @@ func stop_all() -> void:
 	_gen += 1
 	_fx.stop()
 	_impact.stop()
+	_body.stop()
 	for v in _voices:
 		v.stop()
 	_water.volume_db = -80.0
@@ -203,6 +213,19 @@ func say_count(text: String) -> void:
 		_count_player.stream = a
 		_count_player.play()
 		Music.duck(a.get_length() + 0.3)
+
+
+## Competition: Zeit um – Signal über die ganze Anlage (eigener Player, läuft auch nach Neustart/Pause weiter).
+var _timeout_player: AudioStreamPlayer
+
+func time_up() -> void:
+	if _timeout_player == null:
+		_timeout_player = _player(linear_to_db(0.7))   # 30 % leiser als die Aufnahme
+		_timeout_player.process_mode = Node.PROCESS_MODE_ALWAYS
+		_timeout_player.stream = load(TIMEOUT_SOUND) as AudioStream
+	if _timeout_player.stream:
+		_timeout_player.play()
+		Music.duck(_timeout_player.stream.get_length() + 0.3)
 
 
 var _thunder: Array[AudioStreamWAV] = []

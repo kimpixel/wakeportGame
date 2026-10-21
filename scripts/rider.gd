@@ -20,9 +20,13 @@ signal touched_down(fall: float)  # aus der Luft gelandet (Wasser oder Feature),
 signal restarted                 # Neustart (Steg/Versuch): Sounds stoppen
 signal dock_yanked               # Sprung-Start: Seil reißt einen vom Steg
 signal skipped                   #Abkürzung (Leertaste): Handle sofort da – kostet Strafzeit
+signal body_splashed(strength: float)   # Sturz: Körper(teil) klatscht ins Wasser (0..1)
+signal body_hit(strength: float)        # Sturz: Körper prallt hart an ein Feature (0..1)
 ## Für die Spielmodi (Challenge): Landung nach einem Sprung bzw. Ende eines Slides, mit Messwerten
 signal jump_landed(info: Dictionary)   # raley, air_time, half_turns, rolls, popped, points
 signal jumped(info: Dictionary)        # Absprung (Leertaste): raley, tension, speed, load, vy – für Test-Ausgaben
+signal pool_trick(info: Dictionary)    # 6-Stair Pool: id drop/gap/stair_gap/stair_down/stair_up/coping_link, name, points, height, width, speed, dist
+signal pool_bomb                         # aus der Luft ins Becken gestürzt (geheimer Erfolg „Arschbombe“)
 signal slide_ended(info: Dictionary)   # part, time, dist, dist_5050, dist_bs, switches, press, press_nose, press_tail, bs_share
 
 ## Bergung nach Sturz/Seilverlust (2-Mast-Anlage: niemand muss zurück zum Start):
@@ -32,7 +36,8 @@ const SETTLE_TIME := 1.5         # so lange nach dem Sturz treibt man, bevor man
 const SWIM_LOOKAHEAD := 2.5      # m: so weit voraus auf dem Weg peilt der Schwimmer an (runde Bögen)
 const SWIM_TURN := 1.2           # rad/s: so schnell dreht die Schwimmrichtung
 const SWIM_MARGIN := 2.0         # m Abstand beim Schwimmen um Features herum
-static var SWIM_SPEED := 1.1          # Rückenschwimmen mit Brett an den Füßen (m/s)
+const SKIP_SLACK := 0.3           # m Durchhang nach Strg (sofort weiter): Seil spannt kurz nach dem Anfahren
+static var SWIM_SPEED := 1.6          # Schwimmen mit Brett an den Füßen (m/s; nur Tempo, Kraul-Takt bleibt)
 const GRAB_DIST := 1.0
 const AUTO_TURN_START := 20.0     # Autopilot beginnt die Wende so weit vor dem Wendepunkt
 
@@ -131,7 +136,14 @@ static var INVERT_POINTS := 300
 # ↑/↓ in der Luft: Frontroll/Backroll um die Brettlängsachse; auf dem Slider: Nose-/Tailpress
 static var FLIP_RATE := 6.5          # rad/s Überschlag
 static var FLIP_LAND_TOL := 0.7      # rad: so schief darf man nach einem Überschlag landen
-const FLIP_PRESS_MAX := 1.2    # rad: so weit angefangene Rolle wird über einem Slider noch zum Press (zurückgenommen)
+const FLIP_PRESS_MAX := 1.2    # rad: so weit angefangene Rolle wird vor einem Slider noch zum Press (zurückgenommen)
+# Press vormerken: führt der Flug auf einen Slider und reicht die restliche Flugzeit nicht mehr für die Rolle,
+# heißt ↑/↓ in der Luft „gleich pressen“ (keine Rolle, Landung direkt im Press)
+static var PREPRESS_MARGIN := 1.0    # × Zeit für den Rest der Rolle: darunter wird gepresst statt gerollt
+static var PREPRESS_TILT := 0.5      # so weit kippt das Brett schon in der Luft (Anteil vom Press)
+const PREPRESS_LOOK := 2.5     # s: so weit wird die Flugbahn vorausgerechnet
+const PREPRESS_DT := 0.02      # s: Schrittweite der Vorausberechnung
+const PREPRESS_EVERY := 0.1    # s: so oft wird neu gerechnet, solange ↑/↓ gehalten wird
 static var FLIP_POINTS := 300
 static var PRESS_ANG := 0.45         # rad: Brett beim Press gekippt (Fotos: ca. 25°, anderes Ende deutlich in der Luft)
 ## Körperhaltung beim Press kommt aus Blender (blender/nosepress.blend -> tools/export_pose.py)
@@ -145,19 +157,30 @@ static var _pose_cache := {}
 static var PRESS_BONUS := 100.0
 static var CATCH_GLIDE := 5.0         # m/s seitlich in die Slide-Linie gleiten
 static var CATCH_RISE := 3.0          # m/s nach oben auf die Oberkante gleiten
+# Rail to Rail: auf dem Slider beim Laden ←/→ = seitlich abspringen (Hop) statt umspringen
+static var HOP_SPEED := 1.2           # m/s seitlich, wenn auf der Seite kein Nachbar-Slider steht
+static var HOP_MAX := 3.5             # m/s höchstens (Hop-Hilfe zielt auf die Linie des Nachbarn)
+static var HOP_RANGE := 2.8           # m: so weit (Achse zu Achse) sucht der Hop einen Nachbar-Slider
+static var HOP_LEAN := 0.55           # rad: so weit lehnt sich der Fahrer im Hop zur Seite (zur Landung wieder aufrecht)
+static var HOP_LEAN_LOAD := 0.2       # rad: beim Laden auf dem Slider schon zur gewählten Seite
+static var TRANSFER_BONUS := 100.0    # Punkte für den Slide nach einem Transfer (Slider -> Slider)
 static var DRIFT_DRAG := 0.7          # Wasserwiderstand im Drift (Anteil): Brett liegt flach, leicht schneller
 static var DRIFT_ROPE_GIVE := 6.0     # 1/s: so schnell fängt das Seil im Drift die Bewegung vom Carrier weg ab (kleiner = weicher)
-static var DRIFT_ROPE_SETTLE := 2.0   # 1/s: im Drift wird die gedehnte Leine so schnell auf Länge gebracht
+static var DRIFT_ROPE_SETTLE := 0.0   # m/s: so schnell schrumpft im Drift der Karussell-Radius zurück auf die Seillänge (0 = nie aktiv reinziehen)
 static var DRIFT_SPIN := 1.2          # im Drift dreht das flache Brett so viel schneller (Anteil; 5 + 5 360er zwischen den roten Bojen)
 # Drift-Press: im Drift auf dem Wasser ↑ = Nosepress, ↓ = Tailpress (Brett kippt weit um das Ende,
 # Oberkörper legt sich nach hinten, die freie Hand streift das Wasser – nach Fotoserie)
-static var DPRESS_SPEED := 9.048      # m/s: ab diesem Tempo ist im Drift-Press der volle Winkel möglich (ca. 33 km/h), darunter anteilig weniger
-static var DPRESS_WRONG := deg_to_rad(10.0)   # so weit darf das Brett im Press zur falschen Seite stehen (Toleranz)
-static var DPRESS_SIDE := -1           # Seite des Tailpress-Winkels (+1 / -1); Nosepress spiegelverkehrt
+static var DPRESS_NOSE_ON := false   # TEMP: Drift-Nosepress abgeschaltet (Nutzerwunsch), nur Tailpress
+static var DPRESS_SPEED := 12.0        # m/s: ab diesem Tempo kommt man im Drift-Press in den Sweet Spot (voller Winkel); darunter nur bis zu seinem Anfang (×3,6 = km/h)
+static var DPRESS_SPEED_BAND := 1.0   # m/s: Übergang unter DPRESS_SPEED, in dem der erlaubte Winkel bis zur Grenze aufgeht
 static var DPRESS_ANG := 0.85         # rad: so steil steht das Brett im vollen Drift-Press (Fotos: ca. 50°)
 static var DPRESS_RISE := 2.5         # 1/s: so schnell baut sich der Drift-Press auf (Bewegung, kein Ruck)
 static var DPRESS_END := 0.68         # m: Drehpunkt am Brett-Ende (Brett 1,49 m)
-static var DPRESS_DRAG := 0.8         # zusätzlicher Wasserwiderstand im vollen Drift-Press (Anteil): man verliert Tempo
+static var DPRESS_DIR_RATE := 10.0     # 1/s: so schnell folgt der Bezug (Fahrtrichtung) des Drift-Winkels – kleiner = ruhiger
+static var DPRESS_CRASH_MIN := 3.0     # m/s: langsamer reißt es einen im Drift-Press nicht mehr um (Seil dreht einen am Ende der Wende herum)
+static var DPRESS_NOSE_REF := PI * 0.5   # Nosepress: Bezug so weit (rad) gegen die Fahrtrichtung versetzt (+90° = Nose nach links; -PI/2 = rechts)
+static var DPRESS_SWEET := 0.8     # Sweet Spot: die letzten so viel vor DPRESS_FALL_ANG (fest, nicht mit dem Tempo) bremst der Drift-Press nicht
+static var DPRESS_DRAG := 2.56         # zusätzlicher Wasserwiderstand im vollen Drift-Press (Anteil): man verliert Tempo
 static var DPRESS_TURN := 0.5         # im Drift-Press dreht das Brett so viel langsamer (Anteil) – zum feinen Justieren
 static var DPRESS_FALL_ANG := 1.501   # rad (86°): Brett im Drift-Press weiter als so quer zur Fahrtrichtung (Drift-Winkel): Sturz
 const SNAP_5050 := deg_to_rad(45.0)   # Einrasten in die nächste Stellung: bis hier 50-50, darüber Boardslide
@@ -177,6 +200,14 @@ const BOARD_HALF := 0.35
 static var DOCK_BRACE_MAX := 0.9
 static var DOCK_YANK_LIFT := 2.6      # m/s zusätzliche Steiggeschwindigkeit bei voller Ladung
 const DOCK_YANK_POINTS := 100
+# 6-Stair Pool: Bonus für die Tricks am Pool (zur Flugzeit/Drehung dazu bzw. eigener Trick, zählen in der Kombination)
+const POOL_DROP_POINTS := 100      # über die Rampe ins Becken
+const POOL_GAP_POINTS := 400       # über das ganze Becken (Landung hinter dem Becken)
+const STAIR_GAP_POINTS := 200      # aus dem Becken über die Treppe in den See
+const STAIR_DRIFT_POINTS := 150    # Treppe im Drift hinunter
+const STAIR_CLIMB_POINTS := 250    # Treppe im Drift hinauf ins Becken
+const COPING_LINK_POINTS := 150    # vom Beckenrand ohne Absetzen auf den Ausgang
+const COPING_LINK_GAP := 1.5       # s: so lange darf man zwischen Rand und Ausgang (Safety) unterwegs sein
 const DOCK_QUER := deg_to_rad(45.0)   # Brett mehr als so weit quer zum Seil: Raley Start statt Nolli
 static var NOLLI_ANG := 1.05         # rad: Nolli – Brett kippt um die Nose, Tail hoch (Fotos: ca. 60°)
 const NOLLI_PELVIS := 0.35      # so viel vom Anheben der Brettmitte macht das Becken mit (Rest: Knie ran)
@@ -195,6 +226,7 @@ var yaw := 0.0
 var attached := true
 var tension := 0.0
 var tension_smooth := 0.0
+var _drift_len := -1.0          # Drift: Radius des Karussells (m), -1 = noch nicht gesetzt
 var _tension_prev := 0.0         # Seilzug vor diesem Schritt (Drift: eigene Berechnung)
 var rope_dir := Vector3.FORWARD
 var autopilot := false
@@ -249,6 +281,16 @@ var _jump_block := false        # Sprungtaste startete gerade die Anlage -> zäh
 var test_pitch := 0.0           # Test: ↑/↓ in der Luft bzw. auf dem Slider halten (auch mit Autopilot)
 var _pitch_in := 0.0            # ↑ = +1 (Frontroll / Nosepress / schwimmen), ↓ = -1
 var _catch_part: FeaturePart     # gleitet gerade in diese Slider-Fangzone
+var _hop_side := 0.0            # Rail to Rail: beim Laden gewählte Seite (+1 rechts, -1 links in Fahrtrichtung)
+var _hop_from: FeaturePart      # seitlich von diesem Slider abgesprungen (seine Fangzone zählt in diesem Flug nicht)
+var _hop_dir := Vector3.ZERO    # Rail to Rail: Richtung des Hops (Welt, waagrecht) – der Fahrer lehnt sich dorthin
+var _hop_steer_lock := false    # ←/→ vom Hop noch gedrückt: dreht in der Luft erst nach dem Loslassen
+var _hop_landed := false        # aus dem Hop direkt auf einem anderen Slider gelandet
+var _slide_hop := false         # laufender Slide begann mit einem Transfer
+var test_hop := 0.0             # Test (--hop=±1): Autopilot springt auf jedem Slider gleich seitlich ab (+1 rechts)
+var test_hops := 99             # Test: so viele Hops je Versuch (--hop=±1,N)
+var _test_hop_part: FeaturePart
+var _test_hop_n := 0
 var _on_slider := false         # Brett steht gerade auf einem Slider (Einrasten erledigt)
 var _prev_on_feature := false   # im letzten Schritt noch auf dem Feature (Abgang ins Wasser erkennen)
 var drifting := false            # Fahrer driftet gerade auf dem Wasser (Spielmodus Driften)
@@ -260,15 +302,22 @@ var _bs_time := 0.0             # Zeit im Boardslide
 var _slide_dist := 0.0          # gerutschte Meter (gesamt / im Boardslide) – für die Spielmodi
 var _bs_dist := 0.0
 var _flip := 0.0                # Überschlag im Sprung (rad, + = Frontroll)
-var _flip_lock := false         # ↑/↓ war beim Abheben schon gedrückt (z. B. Press vom Slider) -> erst loslassen
+var _flip_lock := false         # Sprung-Start: ↓ vom Gegenhalten am Steg noch gedrückt -> erst loslassen
+var _prepress := false          # ↑/↓ in der Luft = Press vormerken (Flug endet gleich auf einem Slider)
+var _prepress_t := 0.0          # Zeit bis zur nächsten Vorausberechnung
 var _popped := false            # Sprung selbst abgesprungen (Ollie) statt vom Kicker
 var _tuck := 0.0                # Frontroll: zusammengerollt (Knie zur Brust, Oberkörper vor)
 var _press_vis := 0.0           # sichtbarer Press auf dem Slider (+ Nose, - Tail)
 var _press_bs_vis := 0.0        # 1 = Press im Boardslide (Brett seitlich versetzt, Ende über dem Slider)
-var dpress_angle := 0.0         # Drift-Press: Drift-Winkel zur Fahrtrichtung, zur erlaubten Seite positiv (rad)
+var dpress_angle := 0.0         # Drift-Press: Drift-Winkel zur Fahrtrichtung, links/rechts gleich (rad, 0 … PI/2)
+var _travel_smooth := Vector3.ZERO   # geglättete Fahrtrichtung (Bezug des Drift-Winkels)
+var dpress_drag_now := 0.0      # Drift-Press: gerade wirkende Zusatz-Bremse (Anteil, für die Anzeige)
 var dpress_allowed := 0.0       # Drift-Press: so weit darf er bei diesem Tempo gerade sein (rad)
-var _dpress_vis := 0.0          # sichtbarer Drift-Press (+ Nose, - Tail; Nose = Ende am vorderen Fuß)
+var _dpress_vis := 0.0          # Drift-Press relativ zur Fahrt (+ vorderes Ende, - hinteres; ↓ = immer hinten, auch switch)
+var _dpress_lead := 1.0         # +1 normal (Nose voraus), -1 switch – beim Press-Beginn festgehalten (_update_travel_smooth)
 var test_dpress := INF          # Test: Drift-Press fest auf diesen Wert (--dpress)
+var test_dpress_hold := INF     # Test: im Drift-Press den Drift-Winkel automatisch auf diesem Wert halten (rad, --dpress-hold=GRAD)
+var _dp_log_t := 0.0
 var press_tip := Vector3.ZERO   # Welt: gedrücktes Brett-Ende beim Press (darauf zielt die Kamera)
 var press_body := Vector3.ZERO  # Welt: Becken in der Press-Pose (Kamera)
 var _press_lead := 1.0          # +1: Nose zeigt in Fahrtrichtung, -1: switch (bleibt im Boardslide stehen)
@@ -310,6 +359,17 @@ var _free_handle := Vector3.ZERO
 var _rope_dist := 0.0
 var _slide_time := 0.0
 var _combo := 0                  # Tricks in der laufenden Kombination
+var _clock := 0.0                 # s Fahrzeit (für kurze Zeitfenster, z. B. Coping -> Ausgang)
+var _ground_feat: FeaturePart     # Teil unter dem Brett (zuletzt auf dem Wasser bzw. Feature)
+var _launch_feat: FeaturePart     # Pool: Absprung von diesem Teil (Rampe)
+var _launch_pool: FeaturePart     # Pool: Absprung aus dem Wasser dieses Beckens
+var _launch_pos := Vector3.ZERO
+var _air_top := 0.0               # höchster Punkt des laufenden Sprungs
+var _stairs_part: FeaturePart     # Treppe, auf der man gerade driftet
+var _stairs_from := ""            # dort draufgekommen: "top" (aus dem Becken) / "bottom" (aus dem See)
+var _last_slide := {}             # zuletzt gewerteter Slide: part, dist, t (Coping -> Ausgang)
+var _crash_air := false           # Sturz aus der Luft (für die Arschbombe)
+var _bombed := false
 var _combo_t := 0.0             # Restzeit bis die Kombination verfällt
 var _slide_part: FeaturePart
 var _line: FeaturePart          # Feature, das der Autopilot gerade anfährt
@@ -338,6 +398,9 @@ var _dspray: CPUParticles3D     # Drift-Press: große Gischt am Brett-Ende im Wa
 var _spray_main: CPUParticles3D # Hauptgischt: von der Kante zur Seilseite, hoch und weit (je nach Kantendruck)
 var _sheet: SpraySheet          # Gischt-Vorhang der Hauptgischt (Wasserwand, siehe SpraySheet)
 var _land_spray: CPUParticles3D # Spritzer-Kranz beim Landen im Wasser
+var _body_sprays: Array[CPUParticles3D] = []   # Sturz: Körper klatscht ins Wasser
+var _body_spray_i := 0
+var _skid_spray: CPUParticles3D # Sturz: Körper rutscht schnell durchs Wasser
 
 
 # ---------------------------------------------------------------- Aufbau
@@ -436,6 +499,24 @@ func _ready() -> void:
 	_land_spray.spread = 55.0
 	_land_spray.gravity = Vector3(0.0, -9.8, 0.0)
 	_land_spray.mesh = drop
+	# Sturz: Körper klatscht ins Wasser (zwei Kränze im Wechsel, Arm und Oberkörper kurz nacheinander)
+	# und Gischt, solange er schnell durchs Wasser rutscht (siehe _body_splash, _crash_spray)
+	for i in 2:
+		var bs := _land_spray.duplicate() as CPUParticles3D
+		bs.amount = 140
+		add_child(bs)
+		Spray.register(bs)
+		_body_sprays.append(bs)
+	_skid_spray = _land_spray.duplicate() as CPUParticles3D
+	_skid_spray.one_shot = false
+	_skid_spray.explosiveness = 0.0
+	_skid_spray.amount = 90
+	_skid_spray.lifetime = 0.7
+	_skid_spray.emission_ring_radius = 0.35
+	_skid_spray.emission_ring_inner_radius = 0.15
+	_skid_spray.spread = 30.0
+	add_child(_skid_spray)
+	Spray.register(_skid_spray)
 	add_child(_land_spray)
 	Spray.register(_land_spray)
 	_dspray.emitting = false
@@ -472,6 +553,8 @@ func reset() -> void:
 	swimming = false
 	_crash_t = 0.0
 	_getup = 1.0
+	if _skid_spray:
+		_skid_spray.emitting = false
 	if _ragdoll:
 		_ragdoll.stop()
 	# Neustart: keine Haltung, kein Sprung und keine Bewegung vom letzten Versuch übernehmen
@@ -480,6 +563,7 @@ func reset() -> void:
 	sink_level = 0.0
 	_sink_vis = 0.0
 	_combo = 0
+	_pool_reset()
 	_popped = false
 	_flip_lock = false
 	_jump_held = false
@@ -501,6 +585,13 @@ func reset() -> void:
 	_slide_part = null
 	_on_slider = false
 	_catch_part = null
+	_hop_side = 0.0
+	_hop_from = null
+	_hop_dir = Vector3.ZERO
+	_hop_landed = false
+	_slide_hop = false
+	_test_hop_part = null
+	_test_hop_n = 0
 	restarted.emit()
 
 
@@ -563,6 +654,17 @@ func _lane_input(lane: float, outward_only: bool) -> void:
 	_steer = clampf(-diff * 2.5, -1.0, 1.0)
 	_edge = 0.5
 	_release = 1.0 if tension_smooth < 30.0 and horizontal_speed() > 3.0 and pos.y < 0.15 else 0.0
+
+
+## Test (--hop): auf jedem neuen Slider kurz laden und seitlich abspringen (Rail to Rail).
+func _test_hop_input(delta: float) -> void:
+	if is_sliding() and _slide_part != _test_hop_part and _npc_charge <= 0.0 and _slide_time > 0.1 and _test_hop_n < test_hops:
+		_test_hop_part = _slide_part
+		_test_hop_n += 1
+		_npc_charge = 0.2
+	if _npc_charge > 0.0 and is_sliding():
+		_npc_charge -= delta
+		_hop_side = test_hop
 
 
 ## Wende wie ein guter Fahrer: sobald das Seil locker wird, außen um die weiße Boje
@@ -765,6 +867,7 @@ func _board_surface() -> float:
 # ---------------------------------------------------------------- Physik
 
 func step(delta: float) -> void:
+	_clock += delta
 	_prev_pos = pos
 	_prev_yaw = yaw
 	_read_input(delta)
@@ -816,6 +919,7 @@ func _step_dock_start(delta: float) -> void:
 			vel.y += DOCK_YANK_LIFT * fit * fit
 			_load = 0.0
 			_jump_start = kind
+			_flip_lock = absf(_pitch_in) > 0.1   # ↓ vom Gegenhalten: keine Rolle/kein Invert, bis losgelassen
 			if kind == "raley":
 				_raley = true
 				var side := rope_dir.dot(right())
@@ -941,10 +1045,17 @@ func _swim(delta: float) -> void:
 		l.x = 0.0
 		pos = cable.transform * l
 		pos.y = water.height_at(pos.x, pos.z)
-		cable.hold_at(l.z)
+		# Carrier steht schon fast eine Seillänge voraus: das Seil spannt gleich nach dem Anfahren
+		var h := Lake.CABLE_Y - CableSystem.CARRIER_HANG - HANDLE_HEIGHT     # Seilzug rechnet ab Griffhöhe
+		cable.hold_ahead(l.z, maxf(sqrt(maxf(rope_length * rope_length - h * h, 0.0)) - SKIP_SLACK, 0.0))
 		_free_handle = pos
-		skipped.emit()
 		_grab()
+		# direkt in der Wasserstart-Lage (kein Überblenden aus der Schwimmpose); Kamera springt mit (skipped)
+		_grab_from = []
+		_grab_blend = 1.0
+		_swim_from = []
+		_swim_blend = 1.0
+		skipped.emit()
 		return
 	var to_handle := _free_handle - pos
 	to_handle.y = 0.0
@@ -957,7 +1068,10 @@ func _swim(delta: float) -> void:
 		_swim_path = _plan_swim()
 		_replan_t = 0.4
 	var here := Vector2(pos.x, pos.z)
-	while _swim_path.size() > 1 and here.distance_to(_swim_path[0]) < SWIM_LOOKAHEAD * 0.6:
+	# Ecke erst abhaken, wenn der nächste Wegpunkt frei erreichbar ist (sonst schneidet man ein dünnes
+	# Feature, z. B. den Ausgang des Pools, und schwimmt dagegen)
+	while _swim_path.size() > 1 and here.distance_to(_swim_path[0]) < SWIM_LOOKAHEAD * 0.6 \
+			and (features == null or features.swim_clear(here, _swim_path[1])):
 		_swim_path.pop_front()
 	# Wie ein Mensch: nicht Ecke für Ecke anschwimmen, sondern einen Punkt ein Stück voraus auf
 	# dem Weg anpeilen und die Schwimmrichtung nur allmählich drehen -> runde Bögen um Features
@@ -990,18 +1104,25 @@ func _swim_carrot(from: Vector2, goal: Vector2) -> Vector2:
 	var pts: Array[Vector2] = _swim_path.duplicate()
 	if pts.is_empty():
 		pts.append(goal)
+	var c := p
 	for q in pts:
 		var seg := q - p
 		var l := seg.length()
 		if l >= rest:
-			return p + seg / l * rest
+			c = p + seg / l * rest
+			break
 		rest -= l
 		p = q
-	return p
+		c = p
+	# nicht durch ein Feature hindurch anpeilen: dann den nächsten Wegpunkt selbst
+	if features and pts.size() > 0 and not features.swim_clear(from, c):
+		return pts[0]
+	return c
 
 
 ## Handle gegriffen: im Wasser sitzend (Deep-Water-Start) wieder ans Seil.
 func _grab() -> void:
+	_skid_spray.emitting = false
 	if _ragdoll:
 		_ragdoll.stop()
 	if _rig and mode == Mode.CRASHED:
@@ -1037,6 +1158,16 @@ func _read_input(delta: float) -> void:
 		_autopilot_input(delta)
 	else:
 		_steer = Input.get_axis("steer_left", "steer_right")
+		if test_dpress_hold != INF and drifting and (absf(_dpress_vis) > 0.3 or (_release > 0.5 and absf(_pitch_in) > 0.3)):
+			# Test: Winkel halten (Seite bleibt, wie man eingedreht hat), Ausgabe DPRESS …
+			var a := drift_angle_signed()
+			var goal := minf(test_dpress_hold, dpress_allowed - deg_to_rad(4.0))   # nie über den erlaubten Winkel
+			_steer = clampf((a - signf(a if absf(a) > 0.02 else -1.0) * goal) * 6.0, -1.0, 1.0)
+		if test_dpress_hold != INF:
+			_dp_log_t += delta
+			if _dp_log_t > 0.25 and mode == Mode.WATER and (absf(_dpress_vis) > 0.1 or drifting):
+				_dp_log_t = 0.0
+				print("DPRESS lead=%+.0f brett=%+.2f yaw=%.0f ref=%.0f vis=%.2f pin=%.1f %s winkel=%+.0f erlaubt=%.0f bremse=%.2f v=%.1f sink=%.2f T=%.0f press=%.2f drift=%s" % [_dpress_lead, _dpress_board(), rad_to_deg(yaw), rad_to_deg(drift_ref_yaw()), _dpress_vis, _pitch_in, cable.state_text(), rad_to_deg(drift_angle_signed()), rad_to_deg(dpress_allowed), dpress_drag_now, horizontal_speed(), sink_level, tension_smooth, _dpress_vis, drifting])
 		_pitch_in = Input.get_axis("pitch_back", "pitch_front")
 		_edge = 0.0
 		_release = Input.get_action_strength("release")
@@ -1060,10 +1191,14 @@ func _read_input(delta: float) -> void:
 				_load = minf(_load + delta / 0.5, 1.0)
 			else:
 				_load = _trig_load                     # nur R2: so tief wie gedrückt (höchster Wert)
+			# Rail to Rail: auf dem Slider wählt ←/→ beim Laden die Seite für den Hop (kein Umspringen)
+			if is_sliding() and not autopilot and absf(_steer) > 0.5:
+				_hop_side = signf(_steer)
 	else:
 		if _jump_held and mode == Mode.WATER and _load > 0.0:
 			_pop()
 		_load = 0.0
+		_hop_side = 0.0
 	_jump_held = held
 	# Gamepad L1/R1 in der Luft: schnelle halbe Drehung (links/rechts), wird in _step_air ausgeführt
 	if mode != Mode.AIR or autopilot:
@@ -1077,6 +1212,8 @@ func _read_input(delta: float) -> void:
 
 func _autopilot_input(delta: float) -> void:
 	_auto_t += delta
+	if test_hop != 0.0:
+		_test_hop_input(delta)
 	var speed := horizontal_speed()
 	var rope_yaw := atan2(-rope_dir.x, -rope_dir.z)
 	var side := 1.0 if fmod(_auto_t, 9.0) < 4.5 else -1.0
@@ -1228,8 +1365,13 @@ func _rope_force(delta: float) -> Vector3:
 ## schnalzen), sondern eine feste Länge. Gespannt nimmt sie nur die Bewegung vom Carrier weg; der
 ## Schwung quer dazu bleibt, man pendelt im Bogen um den Carrier. Seilzug = was das Seil dafür abfängt.
 func _drift_rope(delta: float) -> void:
+	# Radius des Karussells: beim Drift-Start die (gedehnte) Länge, danach nie länger; wird nur kürzer,
+	# wenn man von selbst nach innen schwingt (kein aktives Reinziehen – das fraß den Schwung nach außen)
+	if _drift_len < 0.0:
+		_drift_len = maxf(rope_length, _rope_dist)
+	_drift_len = move_toward(maxf(rope_length, minf(_drift_len, maxf(_rope_dist, rope_length))), rope_length, DRIFT_ROPE_SETTLE * delta)
 	var rh := Vector3(rope_dir.x, 0.0, rope_dir.z)
-	if rh.length() < 0.1 or _rope_dist < rope_length:
+	if rh.length() < 0.1 or _rope_dist < _drift_len:
 		tension = 0.0
 		tension_smooth = lerpf(_tension_prev, 0.0, 1.0 - exp(-delta * 12.0))
 		return
@@ -1239,30 +1381,67 @@ func _drift_rope(delta: float) -> void:
 	var take := maxf(away, 0.0) * minf(DRIFT_ROPE_GIVE * delta, 1.0)   # weich abfangen, ohne Rückschlag
 	vel.x += rh.x * take
 	vel.z += rh.z * take
-	# gedehnte Leine langsam auf Länge bringen (ohne Ruck)
-	var stretch := _rope_dist - rope_length
-	pos += rh * stretch * minf(DRIFT_ROPE_SETTLE * delta, 1.0)
+	# weiter als der Radius beim Drift-Start geht es nicht (Seil dehnt sich nicht weiter)
+	if _rope_dist > _drift_len:
+		pos += rh * (_rope_dist - _drift_len) * minf(10.0 * delta, 1.0)
 	tension = MASS * take / delta
 	tension_smooth = lerpf(_tension_prev, tension, 1.0 - exp(-delta * 12.0))
 
 
-## Drift-Winkel mit Vorzeichen: Brett-Längsachse gegen die Fahrtrichtung, zur erlaubten Seite des
-## Press positiv (Tailpress zur einen, Nosepress spiegelverkehrt zur anderen Seite; Goofy gespiegelt).
-## Fährt man switch (Tail voraus), tauschen Nose und Tail – die Seite dreht mit.
-func _drift_angle() -> float:
-	var vh := Vector3(vel.x, 0.0, vel.z)
-	if vh.length() < 0.5:
+## Drift-Winkel mit Vorzeichen (+ = Brett nach links gedreht), für Anzeigen; 0 ohne Fahrt.
+## Bezug im Drift-Press. Tailpress: 0 = Nose zeigt in Fahrtrichtung; Nosepress um DPRESS_NOSE_REF (90°)
+## versetzt: 0 = Brett quer (vorher eindrehen). Ohne Press: Nose oder Tail, was näher liegt.
+func drift_angle_signed() -> float:
+	if horizontal_speed() < 0.5 or _travel_smooth.length() < 0.1:
 		return 0.0
-	var a := wrapf(yaw - atan2(-vh.x, -vh.z), -PI, PI)
-	var side := (-1.0 if DPRESS_SIDE < 0 else 1.0) * _facing() * (1.0 if _dpress_vis < 0.0 else -1.0)
-	if absf(a) > PI * 0.5:
-		a = wrapf(a - PI, -PI, PI)
-		side = -side
-	return a * side
+	return wrapf(yaw - drift_ref_yaw(), -PI, PI)
+
+
+## Bezugsrichtung (Yaw) des Drift-Winkels, siehe drift_angle_signed.
+## Switch (Tail voraus) ist alles spiegelverkehrt: der Bezug dreht um 180° mit.
+func drift_ref_yaw() -> float:
+	var ty := atan2(-_travel_smooth.x, -_travel_smooth.z) if _travel_smooth.length() > 0.1 else yaw
+	var nose := _dpress_vis > 0.05 or (absf(_dpress_vis) <= 0.05 and _pitch_in > 0.3)
+	var tail := _dpress_vis < -0.05 or (absf(_dpress_vis) <= 0.05 and _pitch_in < -0.3)
+	var flip := 0.0 if _dpress_lead > 0.0 else PI
+	if nose:
+		return ty + DPRESS_NOSE_REF + flip
+	if tail:
+		return ty + flip
+	return _aligned_yaw(ty)
+
+
+## Drift-Press am Brett: + Brett-Nose, - Brett-Tail (switch gespiegelt). Für Pose, Kippung und Hände.
+func _dpress_board() -> float:
+	return _dpress_vis * _dpress_lead
+
+
+## Drift-Winkel: Brett-Längsachse (Nose oder Tail, was näher liegt) gegen die Fahrtrichtung, 0 … PI/2.
+## Symmetrisch – nach links wie nach rechts gleich (das Seil zieht nach vorne).
+func _drift_angle() -> float:
+	return absf(drift_angle_signed())
+
+
+## Fahrtrichtung als Bezug für den Drift-Winkel, leicht geglättet: zieht das Seil bei wenig Tempo wieder
+## an, knickt die Fahrtrichtung schlagartig – ohne Glätten spränge der Winkel über die Grenze.
+func _update_travel_smooth(delta: float) -> void:
+	var vh := Vector3(vel.x, 0.0, vel.z)
+	if vh.length() < 0.3:
+		return
+	# Normal oder switch? Nur außerhalb des Press neu bestimmen – sonst spränge es beim Querdrehen um
+	if absf(_dpress_vis) < 0.05:
+		var d := vh.normalized().dot(forward())
+		if absf(d) > 0.3:
+			_dpress_lead = 1.0 if d > 0.0 else -1.0
+	if not drifting or _travel_smooth.length() < 0.1:
+		_travel_smooth = vh.normalized()
+		return
+	_travel_smooth = _travel_smooth.lerp(vh.normalized(), 1.0 - exp(-delta * DPRESS_DIR_RATE)).normalized()
 
 
 func _step_water(delta: float, rope: Vector3) -> void:
 	_ground_kind = _launch_surface()     # worauf man fährt: beim Abheben ist man oft schon über die Kante hinaus
+	_ground_feat = features.part_at(pos.x, pos.z) if (features and pos.y > 0.05) else null
 	var f := forward()
 	var r := right()
 	var vh := Vector3(vel.x, 0.0, vel.z)
@@ -1313,6 +1492,11 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	# Richtung weiter und kann nicht lenken
 	var slick_part := features.part_at(pos.x, pos.z) if (features and on_feature) else null
 	var slick := slick_part != null and slick_part.is_slick_at(pos)
+	# Treppe (6-Stair Pool): nur im Drift (Strg) befahrbar, hoch wie runter – dann glatt wie die Ollie Box
+	if slick_part and slick_part.type == "stairs" and not autopilot and _release <= 0.5:
+		crash("Treppe nur im Drift!")
+		return
+	_track_stairs(slick_part)
 	var dir_before := Vector3(vel.x, 0.0, vel.z).normalized()
 	# Driften (Strg): die Kante ist gelöst – keine Kante greift, also ändert Lenken die Fahrt-
 	# richtung nicht: man rutscht weiter, nur der Seilzug zieht einen (sonst würde das Seil
@@ -1324,13 +1508,22 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	# Drift-Press: weiter Drift (Momentum bleibt), das Brett lässt sich drehen. Das Ende im Wasser
 	# bremst (DPRESS_DRAG) – je weiter das Brett quer zur Fahrtrichtung steht (Drift-Winkel), desto weniger; ab
 	# DPRESS_FALL_ANG reißt es einen um. Man muss also mit ←/→ den Winkel halten.
+	_update_travel_smooth(delta)
 	var dp_hold := smoothstep(0.2, 0.8, absf(_dpress_vis)) if drift else 0.0
 	dpress_angle = _drift_angle() if dp_hold > 0.0 else 0.0
-	dpress_allowed = DPRESS_FALL_ANG * clampf(speed / DPRESS_SPEED, 0.0, 1.0)   # mehr Tempo = mehr Winkel
-	if dp_hold > 0.5 and (dpress_angle > dpress_allowed or dpress_angle < -DPRESS_WRONG):
-		crash("Drift-Press zu quer gedriftet!" if dpress_angle > 0.0 else "Drift-Press zur falschen Seite!")
+	# Erlaubter Winkel: unter DPRESS_SPEED nur bis zum Anfang des Sweet Spots (man kommt nicht hinein bzw. fällt
+	# heraus = Sturz), ab DPRESS_SPEED bis zur Grenze; dazwischen ein schmaler Übergang
+	var sweet_start := maxf(DPRESS_FALL_ANG - DPRESS_SWEET, 0.0)
+	var band := maxf(DPRESS_SPEED_BAND, 0.01)
+	dpress_allowed = lerpf(sweet_start, DPRESS_FALL_ANG, clampf((speed - (DPRESS_SPEED - band)) / band, 0.0, 1.0))
+	if dp_hold > 0.5 and dpress_angle > dpress_allowed and speed > DPRESS_CRASH_MIN:   # langsam verkantet nichts
+		crash("Drift-Press zu quer gedriftet!")
 		return
-	var dp_drag := DPRESS_DRAG * dp_hold * clampf(1.0 - maxf(dpress_angle, 0.0) / DPRESS_FALL_ANG, 0.0, 1.0)
+	# Sweet Spot: fest die letzten DPRESS_SWEET vor der Grenze DPRESS_FALL_ANG – dort bremst der Press nicht,
+	# darunter linear mehr. Er wandert nicht mit dem Tempo: wer zu langsam ist (erlaubt weniger), kommt nicht hinein.
+	var dp_free := maxf(DPRESS_FALL_ANG - DPRESS_SWEET, 0.0)
+	var dp_drag := DPRESS_DRAG * dp_hold * (clampf(1.0 - dpress_angle / dp_free, 0.0, 1.0) if dp_free > 0.01 else 0.0)
+	dpress_drag_now = dp_drag
 	if drift:
 		var drag := (DRAG_QUAD * speed * speed + DRAG_LIN * speed) * (DRIFT_DRAG + dp_drag)
 		force = -dir_before * drag
@@ -1338,6 +1531,8 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	vel.z += force.z / MASS * delta
 	if drift:
 		_drift_rope(delta)
+	else:
+		_drift_len = -1.0
 	if _brace:
 		vel.x = 0.0                    # Sprung-Start: Fersen gegen den Steg gestemmt
 		vel.z = 0.0
@@ -1447,7 +1642,7 @@ func _slide_orient(rail: FeaturePart, delta: float) -> void:
 		var b1: float = base[1]
 		_snap_yaw = b0 if absf(wrapf(yaw - b0, -PI, PI)) <= absf(wrapf(yaw - b1, -PI, PI)) else b1
 		_snap_yaw = yaw + wrapf(_snap_yaw - yaw, -PI, PI)
-	elif not autopilot:
+	elif not autopilot and not _jump_held:   # beim Laden wählt ←/→ den Hop (Rail to Rail)
 		if _steer_armed and absf(_steer) > 0.5:
 			_snap_yaw -= signf(_steer) * PI * 0.5      # eine Vierteldrehung weiter
 			_steer_armed = false
@@ -1466,6 +1661,11 @@ func _is_boardslide(rail: FeaturePart) -> bool:
 func _track_slide(delta: float, on_feature: bool) -> void:
 	var part := features.part_at(pos.x, pos.z) if (features and on_feature) else null
 	if part and part.is_slide() and not part.on_ramp(pos):     # Safety/Auffahrt zählt nicht als Slide
+		if _slide_part and not part.same_module(_slide_part):
+			_finish_slide()                    # direkt auf einen anderen Slider (Transfer): eigener Slide
+		if _slide_time == 0.0:
+			_slide_hop = _hop_landed           # Slide beginnt: kam man per Hop von einem anderen Slider?
+			_hop_landed = false
 		_slide_time += delta
 		_slide_part = part
 		# Stellungen in der Reihenfolge merken (Boardslide / 50-50), Boardslide-Zeit zählen
@@ -1486,6 +1686,11 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 		elif _pitch_in < -0.3:
 			_press_tail_t += delta
 		return
+	_finish_slide()
+
+
+## Slide zu Ende (Abgang oder direkt auf den nächsten Slider): Name und Punkte vergeben, Werte melden.
+func _finish_slide() -> void:
 	if _slide_part and _slide_time > 0.3:
 		if _slide_seq.is_empty():
 			_slide_seq.append("50-50")
@@ -1503,11 +1708,23 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 		var bs_share := clampf(_bs_time / maxf(_slide_time, 0.01), 0.0, 1.0)
 		var pts := (SLIDE_BASE + _slide_time * SLIDE_PER_S + BOARDSLIDE_BONUS * bs_share + press \
 			+ SWITCH_BONUS * switches) * float(SLIDE_FACTOR.get(_slide_part.type, 1.0))
-		_score_trick(trick + " – " + _slide_part.display_name, int(pts))
+		if _slide_hop:
+			trick = "Transfer " + trick         # Rail to Rail: vom Nachbar-Slider herübergesprungen
+			pts += TRANSFER_BONUS
+		# Pool: vom Beckenrand über die Safety ohne Absetzen auf den Ausgang
+		var prev: FeaturePart = _last_slide["part"] if not _last_slide.is_empty() and is_instance_valid(_last_slide["part"]) else null
+		var link := prev != null and prev.part_id == "_pool_coping" and _slide_part.part_id.begins_with("_6sp_") \
+			and prev.row_index == _slide_part.row_index and prev.cable == _slide_part.cable \
+			and _clock - _slide_time - float(_last_slide["t"]) < COPING_LINK_GAP
+		var where := ("Pool Coping to " if link else "") + _slide_part.display_name
+		var scored := _score_trick(trick + " – " + where, int(pts) + (COPING_LINK_POINTS if link else 0))
+		if link:
+			pool_trick.emit({"id": "coping_link", "name": where, "points": scored, "dist": float(_last_slide["dist"]) + _slide_dist})
+		_last_slide = {"part": _slide_part, "dist": _slide_dist, "t": _clock}
 		slide_ended.emit({"part": _slide_part, "time": _slide_time, "dist": _slide_dist,
 			"dist_bs": _bs_dist, "dist_5050": _slide_dist - _bs_dist, "switches": switches,
 			"press": maxf(_press_nose_t, _press_tail_t), "press_nose": _press_nose_t,
-			"press_tail": _press_tail_t, "bs_share": bs_share})
+			"press_tail": _press_tail_t, "bs_share": bs_share, "transfer": _slide_hop})
 	_slide_seq.clear()
 	_bs_time = 0.0
 	_slide_dist = 0.0
@@ -1516,12 +1733,13 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 	_press_nose_t = 0.0
 	_press_tail_t = 0.0
 	_slide_part = null
+	_slide_hop = false
 
 
 ## Punkte von außen vergeben (z. B. für eine saubere Wende) – löst auch den Jubel aus.
 ## Trick werten: innerhalb einer Kombination (nächster Trick, bevor COMBO_WINDOW abläuft)
 ## zählt jeder Trick mehrfach – der 2. doppelt, der 3. dreifach …
-func _score_trick(trick_name: String, base: int) -> void:
+func _score_trick(trick_name: String, base: int) -> int:
 	_combo += 1
 	_combo_t = COMBO_WINDOW
 	var pts := roundi(base * _combo * trick_bonus)
@@ -1529,6 +1747,62 @@ func _score_trick(trick_name: String, base: int) -> void:
 		trick_name += "   Combo x%d" % _combo
 	score += pts
 	trick_landed.emit(trick_name, pts)
+	return pts
+
+
+# ---------------------------------------------------------------- 6-Stair Pool
+
+func _pool_reset() -> void:
+	_launch_feat = null
+	_launch_pool = null
+	_stairs_part = null
+	_stairs_from = ""
+	_last_slide = {}
+
+
+## Treppe im Drift: von oben (Becken) nach unten (See) = Stair Drift, von unten ins Becken = Stair Climb.
+## Gewertet beim Verlassen der Treppe auf der anderen Seite.
+func _track_stairs(sp: FeaturePart) -> void:
+	if sp and sp.type == "stairs":
+		if _stairs_part == null:
+			_stairs_part = sp
+			_stairs_from = "top" if sp.to_uv(pos).x < 0.0 else "bottom"
+		return
+	if _stairs_part == null or not is_instance_valid(_stairs_part):
+		_stairs_part = null
+		return
+	var in_pool := water.pool_level(pos.x, pos.z) > FeaturePart.NONE
+	var to := "top" if in_pool else ("bottom" if _stairs_part.to_uv(pos).x > 0.0 else "")
+	var from := _stairs_from
+	_stairs_part = null
+	_stairs_from = ""
+	if to == "" or to == from:
+		return
+	var up := to == "top"
+	var trick := "Stair Climb" if up else "Stair Drift"
+	var pts := _score_trick(trick, STAIR_CLIMB_POINTS if up else STAIR_DRIFT_POINTS)
+	pool_trick.emit({"id": "stair_up" if up else "stair_down", "name": trick, "points": pts, "speed": horizontal_speed() * 3.6})
+
+
+## Sprung am Pool: "drop" (von der Rampe ins Becken), "gap" (von der Rampe über das ganze Becken),
+## "stair_gap" (aus dem Becken über die Treppe in den See) oder "".
+func _pool_jump(on_feature: bool) -> String:
+	if features == null:
+		return ""
+	if _launch_feat and is_instance_valid(_launch_feat) and _launch_feat.part_id == "_pool_ramp":
+		var pool := features.pool_of(_launch_feat)
+		if pool == null:
+			return ""
+		if pool.contains(pos.x, pos.z):
+			return "drop"
+		var uv := pool.to_uv(pos)
+		if uv.x > pool.length * 0.5 and absf(uv.y) < pool.width * 0.5 + 0.6:
+			return "gap"
+		return ""
+	if _launch_pool and is_instance_valid(_launch_pool) and not on_feature and not _launch_pool.contains(pos.x, pos.z):
+		if _launch_pool.to_uv(pos).x > features.pool_stairs_end(_launch_pool):
+			return "stair_gap"
+	return ""
 
 
 ## Die Kombination läuft nur ab, während man normal im Wasser fährt (nicht in der Luft / auf dem Feature).
@@ -1592,6 +1866,9 @@ func _pop() -> void:
 		vel.y = maxf(up, lift) + POP_ON_RAMP * minf(up, lift)
 	_enter_air()
 	_popped = true
+	_prepress = false                 # abgesprungen: ↑/↓ heißt wieder Rolle (oder Press vormerken, s. _step_air)
+	if _hop_side != 0.0 and _slide_part != null and (not autopilot or test_hop != 0.0) and not fast:
+		_hop(_hop_side)
 	if fast:
 		_raley = true
 		var side := rope_dir.dot(right())
@@ -1610,6 +1887,7 @@ func _clear_air_pose() -> void:
 	_sbend_pivot = Vector3.INF
 	_invert_ang = 0.0
 	_flip = 0.0
+	_prepress = false
 	_tuck = 0.0
 	_press_vis = 0.0
 	_press_bs_vis = 0.0
@@ -1618,9 +1896,54 @@ func _clear_air_pose() -> void:
 	_nolli_vis = 0.0
 
 
+## Rail to Rail: seitlicher Absprung vom Slider (←/→ beim Laden). Steht auf dieser Seite ein Nachbar-Slider,
+## wird die Seitwärtsgeschwindigkeit so gewählt, dass man bei der Landung auf seiner Linie ankommt
+## (Hop-Hilfe wie das Einloggen); sonst ein kleiner Hop. Die Fangzone des eigenen Sliders zählt in diesem Flug nicht.
+func _hop(side: float) -> void:
+	var vh := Vector3(vel.x, 0.0, vel.z)
+	var travel := vh.normalized() if vh.length() > 0.5 else forward()
+	var dir := travel.cross(Vector3.UP) * side          # rechts bzw. links in Fahrtrichtung
+	var v := HOP_SPEED
+	var target := _hop_target(_slide_part, travel, dir)
+	if target != Vector3.INF:
+		var d := (target - pos).dot(dir)
+		var t := (vel.y + sqrt(maxf(vel.y * vel.y + 2.0 * GRAVITY * (pos.y - target.y), 0.0))) / GRAVITY
+		v = clampf(d / maxf(t, 0.2), HOP_SPEED * 0.5, HOP_MAX)
+	vel += dir * v
+	_hop_dir = dir
+	_hop_from = _slide_part
+	_hop_steer_lock = true
+
+
+## Nächster Slider auf der Hop-Seite (Punkt auf seiner Slide-Linie etwa dort, wo man herunterkommt), sonst INF.
+func _hop_target(from: FeaturePart, travel: Vector3, dir: Vector3) -> Vector3:
+	if features == null:
+		return Vector3.INF
+	var ahead := pos + travel * horizontal_speed() * 0.45
+	var best := Vector3.INF
+	var best_d := HOP_RANGE
+	for p: FeaturePart in features.parts:
+		if not p.can_catch() or (from != null and p.same_module(from)):
+			continue
+		var q := p.line_point(ahead)
+		if q == Vector3.INF:
+			continue
+		var d := (q - pos).dot(dir)
+		if d > 0.3 and d < best_d and absf((q - ahead).dot(travel)) < 1.0:
+			best_d = d
+			best = q
+	return best
+
+
 func _enter_air() -> void:
 	_launch_kind = _ground_kind
+	_launch_feat = _ground_feat
+	_launch_pool = features.pool_zone_at(pos.x, pos.z) if (features and water.pool_level(pos.x, pos.z) > FeaturePart.NONE) else null
+	_launch_pos = pos
+	_air_top = pos.y
+	_stairs_part = null                # von der Treppe abgesprungen: zählt nicht als Stair Drift
 	_prev_on_feature = false
+	_on_slider = false          # Landung auf demselben Slider rastet neu ein (sonst dreht die Luft-Drehung zurück)
 	mode = Mode.AIR
 	air_time = 0.0
 	_spin_accum = 0.0
@@ -1630,8 +1953,15 @@ func _enter_air() -> void:
 	_sbend_pivot = Vector3.INF
 	_popped = false
 	_catch_part = null
+	_hop_from = null
+	_hop_dir = Vector3.ZERO
+	_hop_steer_lock = false
 	_flip = 0.0
-	_flip_lock = absf(_pitch_in) > 0.1
+	_flip_lock = false              # ↑/↓ vom Press beim Abspringen gehalten: gleich Rolle (Sprung-Start sperrt selbst)
+	# ohne Absprung übers Ende des Sliders gerutscht: der Press bleibt (keine Rolle, die nicht mehr fertig würde);
+	# springt man ab, nimmt _pop() das zurück
+	_prepress = absf(_pitch_in) > 0.1 and _ground_kind == "feature"
+	_prepress_t = 0.0
 
 
 func _step_air(delta: float, rope: Vector3) -> void:
@@ -1641,6 +1971,7 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	var old_obstacle := _obstacle_height(pos.x, pos.z, true)
 	pos += vel * delta
 	air_time += delta
+	_air_top = maxf(_air_top, pos.y)
 
 	var old_yaw := yaw
 	# Invert: ↑/↓ ganz am Anfang wählen S-Bend/Backroll (kein Überschlag); drehen erst, wenn fast fertig
@@ -1657,6 +1988,10 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	var spin_from := INVERT_SPIN_BACK if _invert == "backroll" else INVERT_SPIN_RALEY
 	var upright := _raley_ang < RALEY_SPIN_ANG and (_invert != "sbend" or _invert_ang > TAU - 0.3)   # S-Bend erst ganz herumgedreht
 	var can_spin := not _raley or phase >= spin_from or (_raley_cut and upright)
+	if _hop_steer_lock and absf(_steer) < 0.3:
+		_hop_steer_lock = false             # ←/→ vom Hop losgelassen: ab jetzt dreht es wieder
+	if _hop_steer_lock:
+		can_spin = false
 	if _quick_spin != 0.0 and can_spin:
 		# L1/R1: halbe Drehung am Stück; beim Invert nur normales Drehtempo (313 bleibt schwer)
 		var rate := SPIN_RATE if _raley else QUICK_SPIN_RATE
@@ -1678,13 +2013,22 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	# Drehung zur nächsten ganzen Umdrehung aus (bzw. zurück, wenn kaum angefangen).
 	if _flip_lock and absf(_pitch_in) <= 0.1:
 		_flip_lock = false
-	# Im Sinkflug knapp über einem Slider (Fangzone) heißt ↑/↓ „gleich pressen“, nicht Überschlag:
-	# eine kaum angefangene Rolle wird zurückgenommen, bis zum Loslassen gibt es keine
-	if absf(_pitch_in) > 0.1 and not _flip_lock and absf(_flip) < FLIP_PRESS_MAX and vel.y < 0.5 \
-			and features and not features.catch_at(pos).is_empty():
-		_flip_lock = true
+	# Press vormerken: endet der Flug gleich auf einem Slider und reicht die Zeit nicht mehr für die
+	# (restliche) Rolle, heißt ↑/↓ „gleich pressen“ – eine kaum angefangene Rolle wird zurückgenommen,
+	# bis zum Loslassen gibt es keine. Fliegt man ins Wasser oder lange genug, bleibt es die Rolle.
+	if absf(_pitch_in) <= 0.1:
+		_prepress = false
+		_prepress_t = 0.0
+	elif not _raley and not _flip_lock and not _prepress and absf(_flip) < FLIP_PRESS_MAX and not autopilot:
+		_prepress_t -= delta
+		if _prepress_t <= 0.0:
+			_prepress_t = PREPRESS_EVERY
+			var t_land := _slider_landing_time(rope.y / MASS - GRAVITY)
+			_prepress = t_land >= 0.0 and t_land < (TAU - FLIP_LAND_TOL - absf(_flip)) / FLIP_RATE * PREPRESS_MARGIN
 	if _raley:
 		pass                                   # Invert: ↑/↓ wählen oben die Variante, kein Überschlag
+	elif _prepress:
+		_flip = move_toward(_flip, 0.0, FLIP_RATE * 1.5 * delta)
 	elif absf(_pitch_in) > 0.1 and not _flip_lock:
 		_flip += _pitch_in * FLIP_RATE * delta
 	elif assist_flip:
@@ -1746,6 +2090,33 @@ func _slope_here() -> float:
 	return maxf((h0 - h1) / 0.3, 0.0)
 
 
+## Wohin führt der Flug? Wurfbahn ab jetzt mit der jetzigen Steigbeschleunigung ay (Schwerkraft + Seil),
+## waagrecht geradeaus, bis zum Aufsetzen.
+## Zeit bis zur Landung auf einem Slider (Fangzone oder Slide-Fläche), -1 = landet woanders
+## (Wasser, Kicker, Safety, glattes Plastik) oder erst später als PREPRESS_LOOK.
+func _slider_landing_time(ay: float) -> float:
+	if features == null:
+		return -1.0
+	if _catch_part != null:
+		return 0.0                          # gleitet schon aufs Rail
+	var p := pos
+	var v := vel
+	var t := 0.0
+	while t <= PREPRESS_LOOK:
+		if v.y < 0.5 and assist_lock and not features.catch_at(p, _hop_from).is_empty():
+			return t
+		var obstacle := _obstacle_height(p.x, p.z)
+		if v.y <= 0.0 and p.y <= maxf(water.height_at(p.x, p.z, 1.0), obstacle):
+			var part := features.part_at(p.x, p.z)
+			if part and obstacle > p.y - 0.3 and part.is_slide() and not part.on_ramp(p) and not part.is_slick_at(p):
+				return t
+			return -1.0
+		v.y += ay * PREPRESS_DT
+		p += v * PREPRESS_DT
+		t += PREPRESS_DT
+	return -1.0
+
+
 ## Hineingleiten aufs Rail. true = dieses Bild erledigt (gleitet noch oder ist gelandet).
 func _catch_glide(delta: float) -> bool:
 	if features == null or not assist_lock:
@@ -1753,7 +2124,7 @@ func _catch_glide(delta: float) -> bool:
 	if _catch_part == null:
 		if vel.y > 0.5:                 # im Steigflug noch nicht fangen
 			return false
-		var hit := features.catch_at(pos)
+		var hit := features.catch_at(pos, _hop_from)
 		if hit.is_empty():
 			return false
 		_catch_part = hit[0]
@@ -1795,6 +2166,12 @@ func _land(surf: float) -> void:
 	if absf(wrapf(_flip, -PI, PI)) > FLIP_LAND_TOL:
 		crash("Überschlag nicht geschafft!")
 		return
+	# Rail to Rail: aus dem Hop direkt auf einen anderen Slider = Transfer
+	_hop_landed = _hop_from != null and landed_on != null and landed_on.is_slide() and not landed_on.on_ramp(pos) \
+		and not landed_on.same_module(_hop_from)
+	_hop_from = null
+	_hop_dir = Vector3.ZERO
+	_hop_steer_lock = false
 	if air_time > 0.25 and not on_feature:
 		_land_splash(-vel.y, Vector3(vel.x, 0.0, vel.z))
 	if air_time > 0.25:
@@ -1816,7 +2193,10 @@ func _land(surf: float) -> void:
 	_flip = 0.0
 	var jump_start := _jump_start
 	_jump_start = ""
-	if air_time > 0.5 or half_turns > 0 or rolls > 0 or jump_start != "":
+	var pool_id := _pool_jump(on_feature)
+	_launch_feat = null
+	_launch_pool = null
+	if air_time > 0.5 or half_turns > 0 or rolls > 0 or jump_start != "" or pool_id != "":
 		# Name aus den Teilen, z. B. "Raley 360", "Backroll", "Double Frontroll 180"
 		var parts: Array[String] = []
 		var pts := int(air_time * AIR_PER_S) + half_turns * SPIN_PER_180 + rolls * FLIP_POINTS
@@ -1853,6 +2233,9 @@ func _land(surf: float) -> void:
 			parts.append(("Double " if rolls == 2 else ("%dx " % rolls if rolls > 2 else "")) + roll)
 		if half_turns > 0 and not spin_named:
 			parts.append(str(half_turns * 180))
+		if pool_id != "":
+			parts.append({"drop": "Pool Drop", "gap": "Pool Gap", "stair_gap": "Stair Gap"}[pool_id])
+			pts += {"drop": POOL_DROP_POINTS, "gap": POOL_GAP_POINTS, "stair_gap": STAIR_GAP_POINTS}[pool_id]
 		if parts.is_empty():
 			match _launch_kind:
 				"kicker":
@@ -1863,7 +2246,10 @@ func _land(surf: float) -> void:
 					parts.append("Ollie" if _popped else "Air")
 		if jump_start != "":
 			pts += DOCK_YANK_POINTS
-		_score_trick(" ".join(parts), pts)
+		var scored := _score_trick(" ".join(parts), pts)
+		if pool_id != "":
+			pool_trick.emit({"id": pool_id, "name": " ".join(parts), "points": scored, "height": _air_top,
+				"width": Vector2(pos.x - _launch_pos.x, pos.z - _launch_pos.z).length(), "half_turns": half_turns})
 		jump_landed.emit({"raley": _raley, "invert": _invert, "air_time": air_time, "half_turns": half_turns,
 			"rolls": rolls, "popped": _popped, "points": pts, "start": jump_start, "name": " ".join(parts)})
 
@@ -1871,6 +2257,9 @@ func _land(surf: float) -> void:
 func crash(reason: String) -> void:
 	if mode == Mode.CRASHED:
 		return
+	_crash_air = mode == Mode.AIR
+	_bombed = false
+	_pool_reset()
 	_clear_air_pose()
 	mode = Mode.CRASHED
 	_crash_t = 0.0
@@ -1884,7 +2273,8 @@ func crash(reason: String) -> void:
 	crash_reason = reason
 	if _ragdoll:
 		# Körper fliegt mit dem bisherigen Schwung weiter (begrenzt), dann bremst das Wasser
-		_ragdoll.start(vel.limit_length(12.0), water.height_at(pos.x, pos.z), pos)
+		_ragdoll.water = water
+		_ragdoll.start(vel.limit_length(12.0))
 	vel.y = 0.0
 	crashed.emit(reason)
 
@@ -1892,6 +2282,7 @@ func crash(reason: String) -> void:
 func _step_crashed(delta: float) -> void:
 	_crash_t += delta
 	_swim(delta)
+	_crash_spray()
 	if mode != Mode.CRASHED:
 		return
 	var k := exp(-1.5 * delta)
@@ -1911,6 +2302,8 @@ func _step_crashed(delta: float) -> void:
 		pos.x = c.x
 		pos.z = c.z
 	pos.y = water.height_at(pos.x, pos.z) - 0.25
+	if features and features.pool_zone_at(pos.x, pos.z):
+		pos.y = maxf(pos.y, features.height_at(pos.x, pos.z) - 0.1)   # aus dem Pool über die Treppe hinaus
 
 
 func _check_bounds() -> void:
@@ -1984,6 +2377,17 @@ func _process(delta: float) -> void:
 						# Nolli: das Seil reißt -> Oberkörper nach vorne Richtung Griff
 						target_pitch = -0.6 * _nolli_lead
 						target_crouch = 0.6
+	# Rail to Rail: zur Hop-Seite lehnen statt seitlich zu schweben – beim Laden schon etwas, im Absprung
+	# kräftig (Körper und Brett kippen mit), ab der Flugmitte wieder aufrecht zur Landung
+	var hop_lean := Vector3.ZERO
+	if mode == Mode.WATER and _hop_side != 0.0 and is_sliding():
+		var vh := Vector3(vel.x, 0.0, vel.z)
+		var tr := vh.normalized() if vh.length() > 0.5 else forward()
+		hop_lean = tr.cross(Vector3.UP) * _hop_side * HOP_LEAN_LOAD
+	elif mode == Mode.AIR and _hop_dir != Vector3.ZERO:
+		hop_lean = _hop_dir * HOP_LEAN * (1.0 - smoothstep(0.3, 0.8, _air_phase()))
+	target_roll -= hop_lean.dot(right())          # + Roll = nach links
+	target_pitch -= hop_lean.dot(forward())       # - Pitch = nach vorne
 	# Nolli: beim Riss kippt das Brett um die Nose (Tail hoch), in der Luft wird es wieder flach
 	var nolli_target := 0.0
 	if _yanked and _yank_kind == "nolli":
@@ -2035,10 +2439,13 @@ func _process(delta: float) -> void:
 		target_crouch = maxf(target_crouch, _tuck)
 		_crouch = maxf(_crouch, _tuck * 0.95)
 	var press_target := _pitch_in if (mode == Mode.WATER and _slide_part != null) else 0.0
+	if mode == Mode.AIR and _prepress:
+		press_target = _pitch_in * PREPRESS_TILT       # vorgemerkter Press: Brett kippt schon im Anflug
 	_press_vis = lerpf(_press_vis, press_target, 1.0 - exp(-delta * 10.0))
 	var bs_target := 1.0 if (mode == Mode.WATER and _slide_part != null and _is_boardslide(_slide_part)) else 0.0
 	_press_bs_vis = lerpf(_press_bs_vis, bs_target, 1.0 - exp(-delta * 10.0))
-	var dp_target := _pitch_in if (mode == Mode.WATER and drifting) else 0.0     # geht immer, das Tempo bestimmt den Winkel
+	var dp_in := _pitch_in if (DPRESS_NOSE_ON or _pitch_in < 0.0) else 0.0   # Nosepress vorerst abgeschaltet
+	var dp_target := dp_in if (mode == Mode.WATER and drifting) else 0.0     # geht immer, das Tempo bestimmt den Winkel
 	_dpress_vis = lerpf(_dpress_vis, dp_target, 1.0 - exp(-delta * DPRESS_RISE))
 	if test_dpress != INF and mode == Mode.WATER:
 		_dpress_vis = test_dpress
@@ -2266,7 +2673,7 @@ func board_state_text() -> String:
 	if mode != Mode.WATER:
 		return ""
 	if absf(_dpress_vis) > 0.3 and drifting:
-		return "%s – Drift-Winkel %d°  (erlaubt %d° bis %d°)" % ["NOSEPRESS" if _dpress_vis > 0.0 else "TAILPRESS", roundi(rad_to_deg(dpress_angle)), -roundi(rad_to_deg(DPRESS_WRONG)), roundi(rad_to_deg(dpress_allowed))]
+		return "%s – Drift-Winkel %d°  (erlaubt bis %d°)" % ["NOSEPRESS" if _dpress_vis > 0.0 else "TAILPRESS", roundi(rad_to_deg(dpress_angle)), roundi(rad_to_deg(dpress_allowed))]
 	if _release > 0.3:
 		return "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)" % absf(slip)
 	return ""
@@ -2290,6 +2697,8 @@ func _load_model() -> void:
 		return
 	_rig = HumanRig.new(skel)
 	_ragdoll = Ragdoll.new(skel, self)
+	_ragdoll.splashed.connect(_body_splash)
+	_ragdoll.hit_feature.connect(func(_at: Vector3, s: float) -> void: body_hit.emit(s))
 	_body_pivot.visible = false
 	_tint_clothes(_human)
 	# Helm am Kopf-Knochen (die Impact-Weste ist das eng anliegende Oberteil, siehe _tint_clothes)
@@ -2340,8 +2749,6 @@ func _attach_node(bone: String, node: Node3D) -> void:
 ## Knie federn je nach Belastung, Kopf schaut in Fahrtrichtung.
 func _pose_human() -> void:
 	if _ragdoll.active:
-		var c := _ragdoll.center()
-		_ragdoll.follow_water(water.height_at(c.x, c.z), c)
 		_swim_from = []
 		return
 	_human.rotation = Vector3(0.0, _facing() * PI * 0.5, 0.0)
@@ -2448,6 +2855,49 @@ func _land_splash(fall: float, vh: Vector3) -> void:
 	water.impact(at, 0.8 + 2.4 * k)
 
 
+## Sturz: ein Körperteil klatscht ins Wasser. Kranz nach oben, mit dem Schwung nach vorne geworfen,
+## dazu Welle und Platschen (strength 0..1 aus Aufprall und Masse, siehe Ragdoll.step).
+func _body_splash(at: Vector3, strength: float, vh: Vector3) -> void:
+	var p := _body_sprays[_body_spray_i]
+	_body_spray_i = (_body_spray_i + 1) % _body_sprays.size()
+	var k := strength
+	p.global_position = at + Vector3(0.0, 0.02, 0.0)
+	p.initial_velocity_min = 1.0 + 3.0 * k
+	p.initial_velocity_max = 2.5 + 6.5 * k
+	p.scale_amount_min = 0.7 + 0.8 * k
+	p.scale_amount_max = 1.4 + 2.2 * k
+	p.emission_ring_radius = 0.3 + 0.5 * k
+	p.emission_ring_inner_radius = 0.1 + 0.25 * k
+	p.spread = 45.0 + 20.0 * k
+	p.direction = (Vector3.UP * 2.0 + vh * 0.12).normalized()
+	p.restart()
+	water.impact(at, 0.4 + 1.4 * k)        # mehrere Körperteile kurz nacheinander: Wellen addieren sich
+	if _crash_air and not _bombed and water.pool_level(at.x, at.z) > FeaturePart.NONE:
+		_bombed = true
+		pool_bomb.emit()                     # aus der Luft ins Becken: Arschbombe
+	body_splashed.emit(k)
+
+
+## Sturz: solange der Körper schnell durchs Wasser rutscht, spritzt es vorne weg.
+func _crash_spray() -> void:
+	var on := false
+	if _ragdoll and _ragdoll.active:
+		var c := _ragdoll.center()
+		var wy := water.height_at(c.x, c.z)
+		var v := _ragdoll.velocity()
+		var vh := Vector3(v.x, 0.0, v.z)
+		var k := clampf((vh.length() - 2.0) / 6.0, 0.0, 1.0)
+		on = k > 0.0 and absf(c.y - wy) < 0.35
+		if on:
+			_skid_spray.global_position = Vector3(c.x, wy + 0.02, c.z) + vh.normalized() * 0.3
+			_skid_spray.direction = (Vector3.UP * 1.5 + vh.normalized()).normalized()
+			_skid_spray.initial_velocity_min = 0.6 * vh.length()
+			_skid_spray.initial_velocity_max = 0.9 * vh.length()
+			_skid_spray.scale_amount_min = 0.6 + 0.6 * k
+			_skid_spray.scale_amount_max = 1.2 + 1.6 * k
+	_skid_spray.emitting = on
+
+
 ## Wovon man abspringt (für den Trick-Namen): aus dem Wasser = Ollie, vom Kicker (auch Cheese Wedge,
 ## Bump-Seite, Transition Curb) oder von einer Safety/Auffahrt; sonst von einem Slider o. Ä.
 func _launch_surface() -> String:
@@ -2540,8 +2990,9 @@ func _board_stand_xf(nolli := true) -> Transform3D:
 		xf *= Transform3D(b, pv - b * pv + shift)
 	if absf(_dpress_vis) > 0.001:
 		# Drift-Press: Brett kippt um das Ende im Wasser (lokal -Z = vorderer Fuß, auch bei Goofy)
-		var pv := Vector3(0.0, -0.03, DPRESS_END * signf(-_dpress_vis))
-		var b := Basis(Vector3.RIGHT, -DPRESS_ANG * _dpress_vis)
+		var db := _dpress_board()
+		var pv := Vector3(0.0, -0.03, DPRESS_END * signf(-db))
+		var b := Basis(Vector3.RIGHT, -DPRESS_ANG * db)
 		press_tip = xf * pv
 		xf *= Transform3D(b, pv - b * pv)
 	if nolli and _nolli_vis > 0.001:
@@ -2585,6 +3036,8 @@ func _pose_body_with_board(pelvis_world: Vector3, body_up: Vector3, face: Vector
 	_rig.leg("r", skel_inv * foot_back, skel_inv * (knee_pole - left * 0.12))
 	var rb := global_transform.basis.orthonormalized()
 	var board_rel := b * rb.inverse()
+	if goofy:
+		board_rel = board_rel * Basis(rb * Vector3.UP, PI)    # Ruhelage gilt zum ungedrehten Fahrer (wie _pose_legs)
 	for front: bool in [true, false]:
 		var fb := "foot_l" if front else "foot_r"
 		var fw := board_rel * Basis(rb * Vector3.UP, Wakeboard.foot_yaw(front))
@@ -2704,7 +3157,7 @@ func _pose_drift_press() -> void:
 	var rb := _pose_frame().basis.orthonormalized()
 	var up := rb * Vector3.UP
 	var chest := rb * Vector3.RIGHT * _facing()
-	var along := rb * Vector3.BACK * signf(-_dpress_vis)       # zum gedrückten Ende
+	var along := rb * Vector3.BACK * signf(-_dpress_board())       # zum gedrückten Ende
 	var ff := _board_xf * Wakeboard.ankle_local(true)
 	var fb := _board_xf * Wakeboard.ankle_local(false)
 	var low := ff if (ff - fb).dot(along) > 0.0 else fb          # Fuß am gedrückten Ende
@@ -2732,9 +3185,9 @@ func _pose_drift_press_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
 	var skel_inv := skel.affine_inverse()
 	var rb := _pose_frame().basis.orthonormalized()
 	var chest := rb * Vector3.RIGHT * _facing()
-	var along := rb * Vector3.BACK * signf(-_dpress_vis)
+	var along := rb * Vector3.BACK * signf(-_dpress_board())
 	var tail_hand := "l" if goofy else "r"                      # Hand über dem hinteren Fuß
-	var drag := tail_hand if _dpress_vis < 0.0 else ("r" if tail_hand == "l" else "l")
+	var drag := tail_hand if _dpress_board() < 0.0 else ("r" if tail_hand == "l" else "l")
 	var hold := "r" if drag == "l" else "l"
 	var before := _rig.snapshot()
 	var head := skel * _rig.global_pose("head").origin
@@ -2800,11 +3253,16 @@ static func _load_pose(path: String) -> Array:
 ## Press: Körper in die Blender-Pose überblenden (w 0..1). Die Posen gelten mit dem linken Fuß vorne
 ## (Goofy gespiegelt). Nosepress: nosepress.json; 50-50-Tailpress: tailpress.json; sonst (Boardslide-
 ## Tailpress) die Nosepress gespiegelt (links <-> rechts, Nose <-> Tail).
+## Switch = gespiegelt, nicht gedreht: der andere Fuß führt, also wie die andere Fußstellung
+## (Regular switch = Goofy-Pose); Nose/Tail zählen in Fahrtrichtung.
 ## Liefert die Hand, die die Handle hält (Welt), oder INF ohne Pose.
 var _pose_t := 0.0
 
 func _apply_press_pose(w: float, delta: float) -> Vector3:
-	var pl := _press_local()
+	_press_local()                       # hält _press_lead (switch) aktuell
+	var sw := _press_lead < 0.0
+	var g := goofy != sw                 # rechter Fuß führt: Pose wie Goofy
+	var pl := _press_vis                 # > 0 Nosepress, < 0 Tailpress (in Fahrtrichtung)
 	var path := PRESS_POSE
 	var own_tail := pl < 0.0 and _press_bs_vis < 0.5 and not _load_pose(TAIL_POSE).is_empty()
 	if own_tail:
@@ -2815,7 +3273,7 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	_pose_t += delta
 	var fps: float = _pose_cache.get(path + ":fps", 24.0)
 	var fr: Dictionary = frames[int(_pose_t * fps) % frames.size()]
-	var mirror := goofy if own_tail else (pl < 0.0) != goofy
+	var mirror := g if own_tail else (pl < 0.0) != g
 	var before := _rig.snapshot()
 	var skel := _rig.skeleton
 	# Modellraum (Figur wie in der Vorlage) -> Skelettraum
@@ -2843,7 +3301,8 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	if goofy:
 		bx = bx * Transform3D(Basis(Vector3.UP, PI), Vector3.ZERO)
 	var p: Vector3 = fr["pelvis"]
-	var pelvis_world := bx * Vector3(p.x * _facing(), p.y, p.z * (-1.0 if pl < 0.0 and not own_tail else 1.0))
+	var zs := (-1.0 if pl < 0.0 and not own_tail else 1.0) * (-1.0 if sw else 1.0)   # switch: entlang des Bretts gespiegelt
+	var pelvis_world := bx * Vector3(p.x * _facing(), p.y, p.z * zs)
 	var pel := _rig.idx("pelvis")
 	var pp := skel.get_bone_parent(pel)
 	var parent_t := skel.get_bone_global_pose(pp) if pp >= 0 else Transform3D.IDENTITY
@@ -2854,7 +3313,7 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	# Handle: im Nosepress in der vorderen Hand der Pose; im 50-50-Tailpress ebenfalls in der vorderen Hand
 	var hold := "hand_r" if mirror else "hand_l"
 	if pl < 0.0 and _press_bs_vis < 0.5:
-		hold = "hand_r" if goofy else "hand_l"
+		hold = "hand_r" if g else "hand_l"
 	return skel.global_transform * skel.get_bone_global_pose(_rig.idx(hold)).origin
 
 
@@ -2936,18 +3395,18 @@ func _pose_arms(handle_pos: Vector3, bar_axis: Vector3) -> Vector3:
 	var sh_r := skel * _rig.global_pose("upperarm_r").origin
 	var reach := (_rig.rest_global("upperarm_l").origin.distance_to(_rig.rest_global("lowerarm_l").origin)
 		+ _rig.rest_global("lowerarm_l").origin.distance_to(_rig.rest_global("hand_l").origin)) * ARM_REACH + HumanRig.GRIP_ALONG * 0.8
-	for i in 4:
-		var over := 0.0
-		var pull := Vector3.ZERO
+	# abwechselnd zu beiden Schultern ziehen (stetig): früher nur zur weiter entfernten – liegt der Griff mittig
+	# vor dem Körper (Deep-Water-Start), kippte diese Wahl hin und her und die Handle zitterte um ~9 cm
+	for i in 8:
+		var moved := false
 		for sh: Vector3 in [sh_l, sh_r]:
 			var end := handle_pos - bar_axis * 0.1 if sh.distance_to(handle_pos - bar_axis * 0.1) < sh.distance_to(handle_pos + bar_axis * 0.1) else handle_pos + bar_axis * 0.1
-			var d := sh.distance_to(end)
-			if d - reach > over:
-				over = d - reach
-				pull = (sh - end).normalized()
-		if over <= 0.0:
+			var over := sh.distance_to(end) - reach
+			if over > 0.0005:
+				handle_pos += (sh - end).normalized() * over
+				moved = true
+		if not moved:
 			break
-		handle_pos += pull * over
 	var a := handle_pos - bar_axis * 0.1
 	var b := handle_pos + bar_axis * 0.1
 	# Ellbogen nach unten und leicht nach außen (vom Körper weg)

@@ -8,7 +8,8 @@ extends Node
 signal home_requested
 
 const SETTLE := 0.7             # s nach Landung/Slide ohne Sturz, bis der Versuch zählt
-const FAIL_DELAY := 1.4         # s nach Sturz, bis das Ergebnis kommt
+const FAIL_DELAY := 1.4         # s nach einem Fehlversuch (verpasst …), bis der nächste Versuch kommt
+const CRASH_WAIT := 1.2         # s nach Sturz/Seilverlust: erst den Sturz sehen, dann neuer Versuch bzw. Ergebnis
 const TIMEOUT := 75.0
 const DRIFT_SINK := 0.15        # Wende im Drift: ab diesem Sinkpegel gleitet man nicht mehr (zählt nicht)
 const SPIN_EACH := 5            # 360er im Drift: so viele je Richtung zählen
@@ -37,6 +38,7 @@ var _was_air := false
 var _done_t := -1.0             # wartet nach Landung/Slide auf "kein Sturz"
 var _fail_t := -1.0
 var _fail_text := ""
+var _crash_t := -1.0            # Restzeit nach dem Sturz (CRASH_WAIT), -1 = kein Sturz
 var _hit := false               # Ziel erreicht (Wert gültig)
 var _count := 0
 var _s_turn := 0.0              # Wendepunkt (Spiel-s) bei Wende/Raley
@@ -66,14 +68,18 @@ var _water_t := 0.0             # s auf dem Wasser ohne Drift seit dem Feature
 var _drift_from := Vector3.INF  # Beginn des laufenden Drifts nach einem Feature
 var _press_t := 0.0             # dpress: Dauer des laufenden Drift-Press
 var _press_side := 0.0          # dpress switch: zuletzt voll gedrücktes Ende (+1 Nose, -1 Tail, 0 keins)
+# Pool
+var _pool_pts := 0.0            # pool special: Punkte der Pool-Tricks in diesem Versuch
+var _pool_seen := {}            # pool special: schon geschaffte Pool-Tricks (id)
 
 
 func _ready() -> void:
 	var r: Rider = game.rider
 	r.jump_landed.connect(_on_landed)
 	r.slide_ended.connect(_on_slide)
+	r.pool_trick.connect(_on_pool)
 	r.sank.connect(func() -> void:
-		if running and task["kind"] in ["turn", "drift_turn"]:
+		if running and task["kind"] in ["turn", "drift_turn", "dpress"]:
 			_fail("Abgesoffen – kein Wert"))
 	panel.go_pressed.connect(func() -> void: start_attempt())
 	panel.next_pressed.connect(func() -> void: begin(mode_id, task_idx + 1))
@@ -125,6 +131,7 @@ func stop() -> void:
 ## Neuer Versuch: Fahrer an den Start der Aufgabe, Countdown, los.
 func start_attempt() -> void:
 	panel.close()
+	game.hud.mini_rank.clear_record()
 	attempt += 1
 	running = false
 	await _place_and_freeze()
@@ -229,6 +236,7 @@ func _reset_measure() -> void:
 	_was_air = false
 	_done_t = -1.0
 	_fail_t = -1.0
+	_crash_t = -1.0
 	_hit = false
 	_count = 0
 	_via = false
@@ -254,6 +262,8 @@ func _reset_measure() -> void:
 	_drift_from = Vector3.INF
 	_press_t = 0.0
 	_press_side = 0.0
+	_pool_pts = 0.0
+	_pool_seen = {}
 	if task["kind"] == "special":
 		var groups := {}
 		for p: FeaturePart in game.features.parts:
@@ -291,12 +301,19 @@ func _physics_process(delta: float) -> void:
 			_finish(false)
 		return
 	if r.mode == Rider.Mode.CRASHED or not r.attached:
+		# erst den Sturz zeigen (CRASH_WAIT), dann werten – sonst sieht man ihn gar nicht
+		if _crash_t < 0.0:
+			_crash_t = CRASH_WAIT
+		_crash_t -= delta
+		if _crash_t > 0.0:
+			return
 		if task["kind"] in ["chain", "special", "drift_spin"] and _count > 0:
 			_value = _special_value() if task["kind"] == "special" else _count
 			_hit = true
 			_finish(true)
 			return
-		_fail("Gestürzt – kein Wert" if r.mode == Rider.Mode.CRASHED else "Seil verloren – kein Wert")
+		_fail_text = "Gestürzt – kein Wert" if r.mode == Rider.Mode.CRASHED else "Seil verloren – kein Wert"
+		_finish(false)                         # Wartezeit war schon CRASH_WAIT
 		return
 	var local := c.transform.affine_inverse() * r.pos
 	var s_now := c.mast_a_z - local.z
@@ -347,6 +364,15 @@ func _physics_process(delta: float) -> void:
 				else:
 					_fail("Slider verpasst – kein Wert")
 				return
+		"r2r":
+			# Kette gerissen: nach einem Slider ins Wasser statt per Hop auf den nächsten
+			var on_feat := r.pos.y > 0.05 and game.features.part_at(r.pos.x, r.pos.z) != null
+			if _count > 0 and not _hit and r.mode == Rider.Mode.WATER and r.pos.y < 0.15 and not on_feat:
+				_fail("Ins Wasser – Transfer verpasst, kein Wert")
+				return
+			if _past(s_now, float(task["end_s"]) + _off) and _done_t < 0.0:
+				_fail("Pipe verpasst – kein Wert")
+				return
 		"special":
 			_track_special(r)
 			var all_done := _cur.is_empty() and not _stations.is_empty() and _st_next >= _stations.size()
@@ -376,6 +402,12 @@ func _physics_process(delta: float) -> void:
 				else:
 					_fail("Kein Drift nach einem Feature – kein Wert")
 				return
+		"pool":
+			if r.mode == Rider.Mode.AIR:
+				_max_y = maxf(_max_y, r.pos.y)
+			if not _hit and _done_t < 0.0 and _past(s_now, float(task["end_s"]) + _off):
+				_fail(str(task.get("miss", "Verpasst")) + " – kein Wert")
+				return
 		"dock":
 			if r.mode == Rider.Mode.AIR:
 				_max_y = maxf(_max_y, r.pos.y)
@@ -401,7 +433,8 @@ func _physics_process(delta: float) -> void:
 				_fail("Kein Raley – mehr Seilzug: weit raus, dann hart zur Mitte kanten (Marke RALEY)")
 				return
 	if _done_t >= 0.0:
-		if r.mode == Rider.Mode.WATER and r.pos.y < 0.15:
+		# wieder ruhig auf dem Wasser – auch im Becken des Pools
+		if r.mode == Rider.Mode.WATER and (r.pos.y < 0.15 or game.water.pool_level(r.pos.x, r.pos.z) > FeaturePart.NONE):
 			_done_t -= delta
 		if _done_t < 0.0:
 			_finish(true)
@@ -585,14 +618,19 @@ func _track_dpress(r: Rider, delta: float) -> bool:
 				game.hud.show_trick("%s im Drift!  (%d Wechsel)" % ["Nosepress" if dp > 0.0 else "Tailpress", roundi(_press_t)])
 			_press_side = signf(dp)
 	else:
+		# Tail/Nose: Anteil der Wende (Carrier bremst, bis das Seil in der neuen Richtung wieder zieht)
+		# im vollen Press – gleitend, nicht schon einsinkend. Gold = die ganze Wende.
 		var want := 1.0 if task["press"] == "nose" else -1.0
-		if full and signf(dp) == want:
-			_press_t += delta
-			_value = maxf(_value, _press_t)
-		elif _press_t > 0.0:
-			if _press_t >= 0.5:
-				game.hud.show_trick("%s im Drift  %s" % ["Nosepress" if want > 0.0 else "Tailpress", Training.format_value(task, _press_t)])
-			_press_t = 0.0
+		var c0: CableSystem = game.pc
+		if not _seg and c0.laps == _laps0 and c0.state != CableSystem.State.RUN:
+			_seg = true
+		var ok := full and signf(dp) == want and r.sink_level < DRIFT_SINK
+		_press_t = _press_t + delta if ok else 0.0
+		if _seg:
+			_seg_t += delta
+			if ok:
+				_drift_t += delta
+			_value = _drift_t / maxf(_seg_t, 0.01)
 	var c: CableSystem = game.pc
 	if c.laps > _laps0 and c.state == CableSystem.State.RUN and r.tension_smooth > 200.0:
 		if _value > 0.0:
@@ -736,6 +774,26 @@ static func combo_text(req: Dictionary) -> String:
 	return " – ".join(parts)
 
 
+## Pool-Trick (Rider.pool_trick): genau dieser Trick misst den Wert; "special" = alle aus "need" in einem
+## Versuch, Wert = Punkte aller Pool-Tricks (mit Kombination).
+func _on_pool(info: Dictionary) -> void:
+	if not running or _fail_t >= 0.0 or task["kind"] != "pool":
+		return
+	if task["trick"] == "special":
+		_pool_seen[info["id"]] = true
+		_pool_pts += float(info["points"])
+		_value = _pool_pts
+		if (task["need"] as Array).all(func(k: String) -> bool: return _pool_seen.has(k)):
+			_hit = true
+			_done_t = SETTLE
+		return
+	if info["id"] != task["trick"] or _hit:
+		return
+	_value = float(info.get(task["metric"], 0.0))
+	_hit = true
+	_done_t = SETTLE
+
+
 func _on_slide(info: Dictionary) -> void:
 	if not running or _fail_t >= 0.0:
 		return
@@ -745,6 +803,15 @@ func _on_slide(info: Dictionary) -> void:
 			_cur["slide"] = info
 			_cur["phase"] = "out"
 			_cur["out_air"] = _since_air < 0.3 and game.rider.mode != Rider.Mode.AIR    # vom Slider abgesprungen, eben gelandet
+		return
+	if task["kind"] == "r2r":
+		# Rail to Rail: Slider zählen, die per Transfer aneinanderhängen (der erste darf kurz sein)
+		var xfer: bool = info.get("transfer", false)
+		_count = maxi(_count, 1) + 1 if xfer else 1
+		if _count >= int(task["chain"]):
+			_value = float(info.get(task["metric"], 0.0))
+			_hit = true
+			_done_t = SETTLE
 		return
 	if not _in_target(p):
 		return
@@ -821,10 +888,7 @@ func _finish(ok: bool) -> void:
 func _submit_rank() -> void:
 	var lb: Leaderboard = game.leaderboard
 	_rank_text = ""
-	if not lb.enabled() or (game._test_log and not lb.has_name()):
-		return
-	if not lb.has_name():
-		_rank_text = "Rangliste: Namen auf der Startseite eintragen (Taste Rangliste)"
+	if not lb.participating():
 		return
 	if int(game.settings.get_v("grip")) == 3:
 		_rank_text = "Rangliste nicht mit Seilzug-Grenze „Aus“"
@@ -839,6 +903,11 @@ func _submit_rank() -> void:
 		_rank_text = ("Rangliste: Platz %d von %d" % [int(r["rank"]), int(r["total"])]) if r.get("improved", false) \
 			else ("Rangliste: Platz %d von %d mit deinem Bestwert %s" % [int(r["rank"]), int(r["total"]),
 				Training.format_value(task, float(r["value"]))])
+		if not lb.has_name():
+			_rank_text += "   ·   als %s" % str(r.get("name", "Anonym"))
+		if r.get("improved", false):
+			game.hud.mini_rank.mark_record()          # Mini-Rangliste: DU gold bis zum nächsten Versuch
+		game.refresh_mini_rank()
 	else:
 		_rank_text = "Rangliste: " + str(r.get("error", "Fehler"))
 	if panel.is_open():
@@ -863,6 +932,13 @@ func _update_hud() -> void:
 		match task["kind"]:
 			"turn":
 				live = Training.format_value(task, _value)
+			"pool":
+				if task["trick"] == "special":
+					live = "%d Punkte" % roundi(_pool_pts)
+				elif task["metric"] == "height" and (game.rider.mode == Rider.Mode.AIR or _hit):
+					live = "Höhe " + Training.format_value(task, _value if _hit else _max_y)
+				elif _hit:
+					live = Training.format_value(task, _value)
 			"kick", "raley", "dock":
 				if task["metric"] == "height" and (game.rider.mode == Rider.Mode.AIR or _hit):
 					live = "Höhe " + Training.format_value(task, _max_y)
@@ -870,6 +946,8 @@ func _update_hud() -> void:
 					live = "Weite " + Training.format_value(task, _value if _hit else _jump_dist())
 			"chain":
 				live = Training.format_value(task, _count)
+			"r2r":
+				live = "Slider %d / %d" % [mini(_count + (1 if game.rider.is_sliding() and not _hit else 0), int(task["chain"])), int(task["chain"])]
 			"slide":
 				if task["metric"] == "height" and (_via_air or _target_started):
 					live = "Höhe " + Training.format_value(task, _xfer_h if _target_started else _max_y)
@@ -883,8 +961,10 @@ func _update_hud() -> void:
 			"dpress":
 				if task["press"] == "switch":
 					live = "%d Wechsel   Bester %s" % [roundi(_press_t), Training.format_value(task, _value)]
+				elif _seg:
+					live = "%s   (Press am Stück %.1f s)" % [Training.format_value(task, _value), _press_t]
 				else:
-					live = "Press %s   Bester %s" % [Training.format_value(task, _press_t), Training.format_value(task, _value)]
+					live = "Press am Stück %.1f s" % _press_t
 			"special":
 				var n := _st_next - 1 if not _cur.is_empty() else _st_next
 				if n < task["combo"].size():

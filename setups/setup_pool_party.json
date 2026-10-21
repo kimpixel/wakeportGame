@@ -1,0 +1,19 @@
+{
+  "name": "Pool Party",
+  "date": "????-??",
+  "_info": "Fantasie-Setup rund um den 6-Stair Pool: T2 zwei Pools (hin zum Endmast und zurück zum Steg) mit verschiedenen Ausgängen, dazu Kicker, Spine Kicker und Transition Rail; T1 ein Pool mit Low to High und Flat Down.",
+  "T2": [
+    {"part": "kicker_m", "s": 45, "x": -5, "dir": "out"},
+    {"part": "stair_pool_6", "s": 62, "x": 4.2, "dir": "out"},
+    {"part": "ball", "s": 85, "x": 0},
+    {"part": "spine_kicker", "s": 102, "x": 5.5},
+    {"part": "stair_pool_6", "s": 125, "x": -4.2, "dir": "in", "exit_left": "_6sp_dk_rail", "exit_right": "_6sp_fd_ledge"},
+    {"part": "transition_rail_half", "s": 140, "x": 6, "dir": "out"},
+    {"part": "kicker_l", "s": 150, "x": 9, "dir": "in", "yaw": -5}
+  ],
+  "T1": [
+    {"part": "kicker_m", "s": 60, "x": -6, "dir": "out"},
+    {"part": "stair_pool_6", "s": 100, "x": 5, "dir": "out", "exit_left": "_6sp_lth_rail", "exit_right": "_6sp_fd_ledge"},
+    {"part": "kicker_m", "s": 140, "x": -6, "dir": "in"}
+  ]
+}

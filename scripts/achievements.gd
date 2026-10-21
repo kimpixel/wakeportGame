@@ -19,6 +19,7 @@ const LIST := [
 	{"id": "zugvogel", "name": "Zugvogel", "text": "Einen Raley gesprungen, während die Kraniche über den See ziehen."},
 	{"id": "blitz", "name": "Blitzableiter", "text": "Im Gewitter gefahren und vom Blitz getroffen. YOLO!"},
 	{"id": "badegast", "name": "Badegast", "text": "An einem heißen Tag einen Badegast auf der Luftmatratze nass gespritzt."},
+	{"id": "arschbombe", "name": "Arschbombe", "text": "Aus der Luft ins Becken des 6-Stair Pools gestürzt. Platsch!"},
 ]
 
 static var no_save := false       # Tests: nur für diese Sitzung merken
