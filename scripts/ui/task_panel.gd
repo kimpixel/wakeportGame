@@ -20,6 +20,9 @@ var _result_medal: Medal
 var _result_row: HBoxContainer
 var _text: Label
 var _rank: Label                 # Rangliste: Platz (Ergebnis)
+var leaderboard: Leaderboard     # main.gd: für das Namensfeld (vor add_child setzen)
+var _name: NameField             # Ergebnis ohne gespeicherten Namen: Name gleich hier eintragen
+var _name_tip: Label
 var _photos: HBoxContainer       # Fotos des Filmteams vom Versuch (Ergebnis)
 var _medals: Array[Medal] = []
 var _medal_labels: Array[Label] = []
@@ -100,6 +103,27 @@ func _ready() -> void:
 	_rank.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_rank.visible = false
 	v.add_child(_rank)
+	# noch kein Name: gleich hier eintragen (Ergebnis zählt sonst als „Anonym #…“)
+	_name = NameField.new()
+	_name.mobile = mobile
+	_name.font = _font
+	_name.visible = false
+	v.add_child(_name)
+	var nb := _button("Speichern", false)
+	nb.size_flags_horizontal = Control.SIZE_SHRINK_END
+	nb.custom_minimum_size = Vector2(130, 48)
+	_name.build(20, "DEIN NAME", nb)
+	_name.saved.connect(func(n: String) -> void:
+		_name.visible = false
+		var re := RegEx.create_from_string("Anonym #\\w+")
+		_rank.text = re.sub(_rank.text, n, true)
+		_name_tip.text = "Gespeichert – du stehst jetzt als „%s“ in der Rangliste." % n
+		_name_tip.visible = true
+		_layout())
+	_name_tip = _label(15, Color(1, 1, 1, 0.7))
+	_name_tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_name_tip.visible = false
+	v.add_child(_name_tip)
 	var mrow := GridContainer.new()
 	mrow.columns = 3
 	mrow.add_theme_constant_override("h_separation", 18)
@@ -175,6 +199,8 @@ func show_intro(mode_name: String, idx: int, count: int, task: Dictionary, best:
 	_fill(mode_name, idx, count, task, best, has_next)
 	_result_row.visible = false
 	_rank.visible = false
+	_name.visible = false
+	_name_tip.visible = false
 	_set_photos([])
 	var keys: String = tr(task.get("keys_mobile", task["keys"]) if mobile else task["keys"])
 	var goal: String = tr(task["goal"])
@@ -230,8 +256,21 @@ func show_round(head: String, score: int, rank: String) -> void:
 func set_rank(text: String) -> void:
 	_rank.text = text
 	_rank.visible = text != ""
+	_update_name(text)
 	if is_open():
 		_layout()
+
+
+## Namensfeld nur, wenn das Ergebnis in die Rangliste kam (Platz steht da) und noch kein Name gespeichert ist.
+func _update_name(rank_text: String) -> void:
+	_name_tip.visible = false
+	var show := leaderboard != null and leaderboard.participating() and not leaderboard.has_name() \
+		and (rank_text.contains("Platz") or rank_text.contains("PLATZ"))
+	_name.leaderboard = leaderboard
+	_name.visible = show
+	if show:
+		_name.edit.text = ""
+		_name.set_msg("Trag deinen Namen ein – sonst stehst du als „Anonym“ in der Rangliste.")
 
 
 ## Fotos als Abzüge (weißer Rand) nebeneinander; eins allein etwas größer.
@@ -319,6 +358,11 @@ func _input(event: InputEvent) -> void:
 	if not event.is_pressed() or event.is_echo():
 		return
 	var k := event as InputEventKey
+	if get_viewport().gui_get_focus_owner() == _name.edit and k != null:
+		if event.is_action_pressed("ui_cancel"):     # Esc: nur das Tippen beenden
+			_name.edit.release_focus()
+			get_viewport().set_input_as_handled()
+		return                                       # Enter speichert (text_submitted), Buchstaben ins Feld
 	if event.is_action_pressed("menu_start"):        # Enter / PS: Los bzw. Nochmal (Leertaste/Kreuz drückt den Knopf mit Fokus)
 		go_pressed.emit()
 	elif event.is_action_pressed("ui_cancel"):       # Esc / Kreis: Startseite
