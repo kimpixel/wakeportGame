@@ -549,6 +549,10 @@ func _ready() -> void:
 		_task_idx = (mi[1].to_int() - 1) if mi.size() > 1 else 0
 		if not _screen_arg:
 			_enter_training()
+	if OS.has_feature("web") and str(JavaScriptBridge.eval(
+			"(function(){var v=sessionStorage.getItem('wthLangReload');sessionStorage.removeItem('wthLangReload');return v||''})()",
+			true)) == "1":
+		_lang_reload = true                  # Browser: Seite wurde für den Sprachwechsel neu geladen
 	if _lang_reload:                         # nach Sprachwechsel: Startseite mit offenen Einstellungen
 		_lang_reload = false
 		_screen_arg = true
@@ -850,11 +854,19 @@ func _initial_lang() -> String:
 
 ## Sprache gewechselt: alle Texte entstehen beim Aufbau, darum die Szene neu aufbauen (Einstellungen sind
 ## schon gespeichert); danach gehen die Einstellungen wieder auf.
+## Im Browser die ganze Seite neu laden: den Neuaufbau in der laufenden Seite (Gelände, Pflanzen, zweite Szene
+## im Speicher) hielt der Browser nicht durch, das Spiel blieb hängen. Neu laden zeigt den Ladebalken.
 func _change_lang(code: String) -> void:
 	if code == _lang_req:
 		return
 	_lang_req = code
 	if Loc.apply(code) == _lang:
+		return
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("sessionStorage.setItem('wthLangReload', '1')", true)
+		# user:// (Einstellung) landet erst kurz nach dem Schreiben in der IndexedDB des Browsers
+		await get_tree().create_timer(1.0, true).timeout
+		JavaScriptBridge.eval("window.location.reload()", true)
 		return
 	_lang_reload = true
 	get_tree().paused = false
