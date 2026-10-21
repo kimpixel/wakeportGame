@@ -7,6 +7,7 @@ class_name Achievements
 const SECTION := "erfolge"
 const SLOTS := 12                 # so viele Plätze zeigt die Liste (auch noch nicht ausgedachte)
 
+# i18n-begin name,text
 const LIST := [
 	{"id": "fisch", "name": "Fischkontakt", "text": "Mit einem springenden Hecht zusammengestoßen."},
 	{"id": "sup", "name": "Nass gespritzt", "text": "Einen SUP-Paddler mit voller Fahrt nass gespritzt."},
@@ -21,6 +22,7 @@ const LIST := [
 	{"id": "badegast", "name": "Badegast", "text": "An einem heißen Tag einen Badegast auf der Luftmatratze nass gespritzt."},
 	{"id": "arschbombe", "name": "Arschbombe", "text": "Aus der Luft ins Becken des 6-Stair Pools gestürzt. Platsch!"},
 ]
+# i18n-end
 
 static var no_save := false       # Tests: nur für diese Sitzung merken
 static var _session := {}         # id -> Datum (ohne Speichern)

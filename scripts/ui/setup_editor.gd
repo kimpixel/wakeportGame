@@ -20,6 +20,7 @@ const SNAP := 0.1                # m Raster beim Verschieben
 const HISTORY := 80
 const PICK_MARGIN := 0.3         # m um den Grundriss, der noch als Treffer zählt
 const HACK_COLOR := Color(1.0, 0.55, 0.15)
+# i18n-begin
 const CATEGORIES := [
 	["KICKER & WEDGES", ["ramp"]],
 	["BOXEN, LEDGES & CURBS", ["block"]],
@@ -27,6 +28,7 @@ const CATEGORIES := [
 	["MODULE (MEHRERE TEILE)", ["group"]],
 	["SONSTIGES", ["bump", "ball"]],
 ]
+# i18n-end
 
 var host: StartScreen            # Stil (Tasten, Schrift) und die echten Seilbahnen
 var ui_scale := 1.0              # Skalierung der Startseite (für die Auflösung der Karte)
@@ -97,7 +99,9 @@ const PLANT_PAGE := 4
 const PLANT_HISTORY := 30
 const BRUSHES := [0.5, 1.0, 2.0, 3.0, 5.0, 8.0, 12.0]
 const DENSITIES := [["locker", 0.6], ["normal", 1.0], ["dicht", 1.6]]
-const TOOLS := [["malen", "Malen"], ["radieren", "Radieren"], ["auto", "Automatik"], ["schieben", "Schieben"]]
+const TOOLS := [["malen", "Malen"], ["radieren", "Radieren"], ["auto", "Automatik"], ["schieben", "Schieben"]]  # i18n
+## Namen der Dichten (DENSITIES) zum Übersetzen
+const DENSITY_NAMES := ["locker", "normal", "dicht"]  # i18n
 const LAYER_FILL := {"boden": Color(0.3, 0.85, 1.0, 0.25), "gehoelz": Color(1.0, 0.6, 0.2, 0.25)}
 var _plant_mode := false
 var _plant_id := "ufergras"
@@ -199,15 +203,15 @@ func _build_top_bar() -> Control:
 	row.add_theme_constant_override("h_separation", 8)
 	row.add_theme_constant_override("v_separation", 6)
 	p.add_child(row)
-	var back := host._button("Zurück", 16)
+	var back := host._button(tr("Zurück"), 16)
 	back.pressed.connect(_on_back)
 	row.add_child(back)
-	var title := host._label("SETUP-EDITOR", 22, StartScreen.SEL)
+	var title := host._label(tr("SETUP-EDITOR"), 22, StartScreen.SEL)
 	title.custom_minimum_size.y = 48
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(title)
 	_name_edit = LineEdit.new()
-	_name_edit.placeholder_text = "Name des Setups"
+	_name_edit.placeholder_text = tr("Name des Setups")
 	_name_edit.custom_minimum_size = Vector2(240, 48)
 	_name_edit.add_theme_font_size_override("font_size", 16)
 	_name_edit.text_changed.connect(func(t: String) -> void:
@@ -220,16 +224,16 @@ func _build_top_bar() -> Control:
 		b.toggle_mode = true
 		b.button_group = tg
 		b.custom_minimum_size.x = 56
-		b.tooltip_text = "Terminal 2 (Strand)" if t == "T2" else "Terminal 1 (Lounge-Steg)"
+		b.tooltip_text = tr("Terminal 2 (Strand)") if t == "T2" else tr("Terminal 1 (Lounge-Steg)")
 		b.pressed.connect(func() -> void: _set_terminal(t))
 		row.add_child(b)
 		_term_buttons.append(b)
-	_btn_undo = host._button("Rückgängig", 16)
-	_btn_undo.tooltip_text = "Strg+Z"
+	_btn_undo = host._button(tr("Rückgängig"), 16)
+	_btn_undo.tooltip_text = tr("Strg+Z")
 	_btn_undo.pressed.connect(_undo_step)
 	row.add_child(_btn_undo)
-	_btn_redo = host._button("Wiederholen", 16)
-	_btn_redo.tooltip_text = "Strg+Y"
+	_btn_redo = host._button(tr("Wiederholen"), 16)
+	_btn_redo.tooltip_text = tr("Strg+Y")
 	for b: Button in [_btn_undo, _btn_redo]:
 		var dis := host._box(Color(0.1, 0.12, 0.14, 0.6), 12)
 		dis.border_color = Color(1, 1, 1, 0.15)
@@ -244,10 +248,10 @@ func _build_top_bar() -> Control:
 		_3d = on
 		_update_cam())
 	row.add_child(_btn_3d)
-	var save := host._button("SPEICHERN", 16, true)
+	var save := host._button(tr("SPEICHERN"), 16, true)
 	save.pressed.connect(func() -> void: _save(false))
 	row.add_child(save)
-	var play := host._button("SPEICHERN & FAHREN", 16, true)
+	var play := host._button(tr("SPEICHERN & FAHREN"), 16, true)
 	play.pressed.connect(func() -> void: _save(true))
 	row.add_child(play)
 	return p
@@ -287,7 +291,7 @@ func _build_map() -> Control:
 		b.pressed.connect(func() -> void: _zoom_at(_map.size * 0.5, f))
 		zoom.add_child(b)
 	var fit := host._button("[ ]", 18)
-	fit.tooltip_text = "Ganze Bahn zeigen"
+	fit.tooltip_text = tr("Ganze Bahn zeigen")
 	fit.custom_minimum_size = Vector2(56, 52)
 	fit.pressed.connect(_fit)
 	zoom.add_child(fit)
@@ -313,8 +317,8 @@ func _build_side() -> PanelContainer:
 	tabs.add_theme_constant_override("v_separation", 6)
 	v.add_child(tabs)
 	var tg := ButtonGroup.new()
-	for title: String in ["Teile", "Hacks", "Auswahl", "Setup", "Pflanzen"]:
-		var b := host._button(title, 16)
+	for title: String in ["Teile", "Hacks", "Auswahl", "Setup", "Pflanzen"]:  # i18n
+		var b := host._button(tr(title), 16)
 		b.toggle_mode = true
 		b.button_group = tg
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -333,7 +337,7 @@ func _build_side() -> PanelContainer:
 		_pages.append(scroll)
 	_fill_parts(_pages[0].get_child(0))
 	_hack_list = _pages[1].get_child(0)
-	_hack_list.add_child(host._small("Hacks werden beim Öffnen gesammelt …"))
+	_hack_list.add_child(host._small(tr("Hacks werden beim Öffnen gesammelt …")))
 	_sel_box = _pages[2].get_child(0)
 	_build_setup_page(_pages[3].get_child(0))
 	_build_plant_page(_pages[PLANT_PAGE].get_child(0))
@@ -369,7 +373,7 @@ func _show_page(idx: int) -> void:
 
 ## Bauteile aus parts.json, nach Art sortiert. Antippen = in die Bildmitte stellen.
 func _fill_parts(page: VBoxContainer) -> void:
-	page.add_child(_hint("Antippen stellt das Teil in die Mitte der Karte. Danach ziehen, drehen, Richtung wählen."))
+	page.add_child(_hint(tr("Antippen stellt das Teil in die Mitte der Karte. Danach ziehen, drehen, Richtung wählen.")))
 	for cat: Array in CATEGORIES:
 		var ids: Array = []
 		for id: String in _catalog:
@@ -380,7 +384,7 @@ func _fill_parts(page: VBoxContainer) -> void:
 		if ids.is_empty():
 			continue
 		ids.sort_custom(func(a: String, b: String) -> bool: return _part_name(a).naturalnocasecmp_to(_part_name(b)) < 0)
-		page.add_child(host._small(cat[0]))
+		page.add_child(host._small(tr(cat[0])))
 		var grid := GridContainer.new()
 		grid.columns = 2
 		grid.add_theme_constant_override("h_separation", 6)
@@ -400,18 +404,18 @@ func _build_setup_page(page: VBoxContainer) -> void:
 	_setup_info = host._label("", 16, Color(1, 1, 1, 0.85))
 	_setup_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	page.add_child(_setup_info)
-	page.add_child(host._small("VORLAGE LADEN   (ersetzt beide Terminals)"))
+	page.add_child(host._small(tr("VORLAGE LADEN   (ersetzt beide Terminals)")))
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 6)
 	grid.add_theme_constant_override("v_separation", 6)
 	grid.name = "Vorlagen"
 	page.add_child(grid)
-	page.add_child(host._small("TERMINAL"))
+	page.add_child(host._small(tr("TERMINAL")))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	page.add_child(row)
-	var clear := host._button("Terminal leeren", 16)
+	var clear := host._button(tr("Terminal leeren"), 16)
 	clear.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	clear.pressed.connect(func() -> void:
 		_begin()
@@ -419,38 +423,38 @@ func _build_setup_page(page: VBoxContainer) -> void:
 		_sel.clear()
 		_rebuild())
 	row.add_child(clear)
-	var copy := host._button("Vom anderen Terminal", 16)
+	var copy := host._button(tr("Vom anderen Terminal"), 16)
 	copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	copy.tooltip_text = "Teile des anderen Terminals hierher kopieren (ersetzt dieses Terminal)"
+	copy.tooltip_text = tr("Teile des anderen Terminals hierher kopieren (ersetzt dieses Terminal)")
 	copy.pressed.connect(func() -> void:
 		_begin()
 		_data[_terminal] = (_data.get(_other(), []) as Array).duplicate(true)
 		_sel.clear()
 		_rebuild())
 	row.add_child(copy)
-	page.add_child(host._small("JSON   (zum Weitergeben oder für setups/ im Projekt)"))
+	page.add_child(host._small(tr("JSON   (zum Weitergeben oder für setups/ im Projekt)")))
 	_json_edit = TextEdit.new()
 	_json_edit.custom_minimum_size = Vector2(0, 150)
-	_json_edit.placeholder_text = "Hier ein Setup-JSON einfügen und „Aus Text laden“ drücken"
+	_json_edit.placeholder_text = tr("Hier ein Setup-JSON einfügen und „Aus Text laden“ drücken")
 	_json_edit.add_theme_font_size_override("font_size", 13)
 	_json_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	page.add_child(_json_edit)
 	var jrow := HBoxContainer.new()
 	jrow.add_theme_constant_override("separation", 6)
 	page.add_child(jrow)
-	var exp := host._button("Als JSON kopieren", 16)
+	var exp := host._button(tr("Als JSON kopieren"), 16)
 	exp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	exp.pressed.connect(func() -> void:
 		var txt := _export_json()
 		_json_edit.text = txt
 		DisplayServer.clipboard_set(txt)
-		_show_toast("JSON in die Zwischenablage kopiert"))
+		_show_toast(tr("JSON in die Zwischenablage kopiert")))
 	jrow.add_child(exp)
-	var imp := host._button("Aus Text laden", 16)
+	var imp := host._button(tr("Aus Text laden"), 16)
 	imp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	imp.pressed.connect(_import_json)
 	jrow.add_child(imp)
-	_btn_delete_setup = host._button("Eigenes Setup löschen", 16)
+	_btn_delete_setup = host._button(tr("Eigenes Setup löschen"), 16)
 	_btn_delete_setup.pressed.connect(_delete_setup)
 	page.add_child(_btn_delete_setup)
 
@@ -459,14 +463,14 @@ func _fill_templates() -> void:
 	var grid: GridContainer = _pages[3].get_child(0).get_node("Vorlagen")
 	for c in grid.get_children():
 		c.queue_free()
-	var empty := host._button("Leeres Setup", 16)
+	var empty := host._button(tr("Leeres Setup"), 16)
 	empty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	empty.pressed.connect(func() -> void:
 		_begin()
 		_load({"name": "Eigenes Setup", "T2": [], "T1": []}, ""))
 	grid.add_child(empty)
 	for e: Dictionary in FeatureSet.list_setups():
-		var b := host._button(str(e["name"]).get_slice(" (", 0), 16)
+		var b := host._button(Loc.setup_name(str(e["name"]), true), 16)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.clip_text = true
 		b.tooltip_text = str(e["name"])
@@ -505,7 +509,7 @@ func _close() -> void:
 func _on_back() -> void:
 	if (_dirty or _plants_dirty) and not _leave_armed:
 		_leave_armed = true
-		_show_toast("Nicht gespeichert! Nochmal „Zurück“ = trotzdem verlassen (bleibt bis zum Neuladen erhalten)")
+		_show_toast(tr("Nicht gespeichert! Nochmal „Zurück“ = trotzdem verlassen (bleibt bis zum Neuladen erhalten)"))
 		return
 	_close()
 
@@ -515,7 +519,7 @@ func _load_entry(entry: Dictionary) -> void:
 	if entry.get("user", false):
 		_load(d, str(entry.get("id", "")))
 	else:
-		d["name"] = "Mein " + str(d.get("name", entry.get("name", "Setup"))).get_slice(" (", 0)
+		d["name"] = tr("Mein %s") % Loc.setup_name(str(d.get("name", entry.get("name", "Setup"))), true)
 		_load(d, "")
 
 
@@ -816,7 +820,7 @@ func _map_input(event: InputEvent) -> void:
 			_drag_delta = Vector2(snappedf(d.x, SNAP), snappedf(d.y, SNAP))
 			for e: Array in _drag_nodes:
 				(e[0] as FeaturePart).position = (e[1] as Vector3) + Vector3(_drag_delta.y, 0.0, -_drag_delta.x)
-			_status.text = "verschieben   s %+.1f m   x %+.1f m" % [_drag_delta.x, _drag_delta.y]
+			_status.text = tr("verschieben   s %+.1f m   x %+.1f m") % [_drag_delta.x, _drag_delta.y]
 			_overlay.queue_redraw()
 		_view.accept_event()
 
@@ -1013,7 +1017,7 @@ func _add_part(id: String) -> void:
 	_rows().append(row)
 	_sel = [_rows().size() - 1]
 	_rebuild()
-	_show_toast(_part_name(id) + " eingefügt")
+	_show_toast(tr("%s eingefügt") % _part_name(id))
 
 
 ## Hack aus einem Setup einfügen: gleiche Anordnung, Mitte bei der Bildmitte (s),
@@ -1033,7 +1037,7 @@ func _add_hack(t: Dictionary) -> void:
 		_sel.append(_rows().size() - 1)
 	_rebuild()
 	_show_page(2)
-	_show_toast(str(t["label"]) + " eingefügt")
+	_show_toast(tr("%s eingefügt") % str(t["label"]))
 
 
 func _delete_sel() -> void:
@@ -1176,9 +1180,9 @@ func _sync_selection() -> void:
 		c.queue_free()
 	_overlay.queue_redraw()
 	if _sel.is_empty():
-		_sel_box.add_child(_hint("Nichts ausgewählt. Ein Feature in der Karte antippen (doppelt = ganzer Hack), "
+		_sel_box.add_child(_hint(tr("Nichts ausgewählt. Ein Feature in der Karte antippen (doppelt = ganzer Hack), "
 			+ "Umschalt/Strg + Klick wählt mehrere.\n\nTasten: Pfeile verschieben (Umschalt 1 m), Q/E drehen, "
-			+ "F Richtung, M spiegeln, Strg+D duplizieren, Entf löschen, Strg+Z rückgängig."))
+			+ "F Richtung, M spiegeln, Strg+D duplizieren, Entf löschen, Strg+Z rückgängig.")))
 		return
 	var parts: Array = []
 	for p: FeaturePart in _fs.parts:
@@ -1193,20 +1197,20 @@ func _sync_selection() -> void:
 		var r: Dictionary = _rows()[_sel[0]]
 		var id: String = r.get("part", "")
 		_sel_box.add_child(_hint(_part_info(id)))
-		_num_row("POSITION ENTLANG DES SEILS  s (m)", float(r.get("s", 0.0)), 0.1, -20.0, 300.0,
+		_num_row(tr("POSITION ENTLANG DES SEILS  s (m)"), float(r.get("s", 0.0)), 0.1, -20.0, 300.0,
 			func(v: float) -> void: _set_value("s", snappedf(v, 0.01)))
-		_num_row("SEITLICH  x (m)   + rechts, − links (Blick zum Endmast)", float(r.get("x", 0.0)), 0.1, -60.0, 60.0,
+		_num_row(tr("SEITLICH  x (m)   + rechts, − links (Blick zum Endmast)"), float(r.get("x", 0.0)), 0.1, -60.0, 60.0,
 			func(v: float) -> void: _set_value("x", snappedf(v, 0.01)))
-		_num_row("DREHUNG (Grad)", float(r.get("yaw", 0.0)), 1.0, -90.0, 90.0,
+		_num_row(tr("DREHUNG (Grad)"), float(r.get("yaw", 0.0)), 1.0, -90.0, 90.0,
 			func(v: float) -> void: _set_value("yaw", v))
 		if r.has("dir") or _catalog.get(id, {}).get("type", "") not in ["ball", "bump"]:
-			_sel_box.add_child(host._small("RICHTUNG (Anfahrt)"))
+			_sel_box.add_child(host._small(tr("RICHTUNG (Anfahrt)")))
 			var row := HBoxContainer.new()
 			row.add_theme_constant_override("separation", 6)
 			_sel_box.add_child(row)
 			var g := ButtonGroup.new()
-			for d: Array in [["out", "Zum Endmast  →"], ["in", "←  Zum Steg"]]:
-				var b := host._button(d[1], 16)
+			for d: Array in [["out", "Zum Endmast  →"], ["in", "←  Zum Steg"]]:  # i18n
+				var b := host._button(tr(d[1]), 16)
 				b.toggle_mode = true
 				b.button_group = g
 				b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1221,31 +1225,31 @@ func _sync_selection() -> void:
 			for k: String in _catalog:
 				if _catalog[k] is Dictionary and _catalog[k].get("pool_exit", false):
 					ids.append(k)
-			for side: Array in [["left", "AUSGANG LINKS (Blick von der Rampe)"], ["right", "AUSGANG RECHTS (Blick von der Rampe)"]]:
+			for side: Array in [["left", "AUSGANG LINKS (Blick von der Rampe)"], ["right", "AUSGANG RECHTS (Blick von der Rampe)"]]:  # i18n
 				var key: String = "exit_" + side[0]
-				_choice_row(side[1], ids, str(r.get(key, exits.get(side[0], ""))),
+				_choice_row(tr(side[1]), ids, str(r.get(key, exits.get(side[0], ""))),
 					func(v: String) -> void: _set_value(key, v))
-		for k: Array in [["ramp_in", "AUFFAHRT VORNE (m, 0 = ab)"], ["ramp_out", "AUFFAHRT HINTEN (m, 0 = ab)"]]:
+		for k: Array in [["ramp_in", "AUFFAHRT VORNE (m, 0 = ab)"], ["ramp_out", "AUFFAHRT HINTEN (m, 0 = ab)"]]:  # i18n
 			var def := _ramp_default(id, k[0])
 			if not is_nan(def):
 				var key: String = k[0]
-				_num_row(k[1], float(r.get(key, def)), 0.1, 0.0, 10.0,
+				_num_row(tr(k[1]), float(r.get(key, def)), 0.1, 0.0, 10.0,
 					func(v: float) -> void: _set_value(key, snappedf(v, 0.01)))
 	else:
-		_sel_box.add_child(_hint("%d Teile ausgewählt – sie werden gemeinsam verschoben, gedreht und gespiegelt." % _sel.size()))
+		_sel_box.add_child(_hint(tr("%d Teile ausgewählt – sie werden gemeinsam verschoben, gedreht und gespiegelt.") % _sel.size()))
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 6)
 	grid.add_theme_constant_override("v_separation", 6)
 	_sel_box.add_child(grid)
-	for a: Array in [["Drehen +15°  (Q)", func() -> void: _rotate_sel(15.0)],
-			["Drehen −15°  (E)", func() -> void: _rotate_sel(-15.0)],
-			["Umdrehen  (F)", _flip_sel],
-			["Spiegeln  (M)", _mirror_sel],
-			["Duplizieren", _duplicate_sel],
-			["Ganzen Hack wählen", func() -> void: _select_hack_of(_sel[0])],
-			["Löschen", _delete_sel]]:
-		var b := host._button(a[0], 16)
+	for a: Array in [["Drehen +15°  (Q)", func() -> void: _rotate_sel(15.0)],  # i18n
+			["Drehen −15°  (E)", func() -> void: _rotate_sel(-15.0)],  # i18n
+			["Umdrehen  (F)", _flip_sel],  # i18n
+			["Spiegeln  (M)", _mirror_sel],  # i18n
+			["Duplizieren", _duplicate_sel],  # i18n
+			["Ganzen Hack wählen", func() -> void: _select_hack_of(_sel[0])],  # i18n
+			["Löschen", _delete_sel]]:  # i18n
+		var b := host._button(tr(a[0]), 16)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.clip_text = true
 		b.pressed.connect(a[1])
@@ -1261,7 +1265,7 @@ func _sel_title(parts: Array) -> String:
 			return Hacks.hack_name(hack)
 	if _sel.size() == 1:
 		return _part_name(_rows()[_sel[0]].get("part", ""))
-	return "%d Teile" % parts.size()
+	return tr_n("%d Teil", "%d Teile", parts.size()) % parts.size()
 
 
 ## Zahl mit − / + und Eingabefeld.
@@ -1353,7 +1357,7 @@ func _collect_hacks() -> void:
 				if idx.size() < 2:
 					continue          # ein Modul (z. B. Pyramid Series) steht schon bei den Bauteilen
 				var sig := Hacks.signature(hack, c)
-				var where := "%s (%s)" % [str(e["name"]).get_slice(" (", 0), t]
+				var where := "%s (%s)" % [Loc.setup_name(str(e["name"]), true), t]
 				if by_sig.has(sig):
 					by_sig[sig]["where"].append(where)
 					continue
@@ -1367,9 +1371,9 @@ func _collect_hacks() -> void:
 			fs.free()
 	_hack_templates = by_sig.values()
 	_hack_templates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["label"].naturalnocasecmp_to(b["label"]) < 0)
-	_hack_list.add_child(_hint("Antippen fügt den Hack in die Mitte der Karte ein (gleiche Anordnung, seitlich wie im Original)."))
-	for section: Array in [["HACKS", false], ["GÄNGIGE KOMBINATIONEN", true]]:
-		_hack_list.add_child(host._small(section[0]))
+	_hack_list.add_child(_hint(tr("Antippen fügt den Hack in die Mitte der Karte ein (gleiche Anordnung, seitlich wie im Original).")))
+	for section: Array in [["HACKS", false], ["GÄNGIGE KOMBINATIONEN", true]]:  # i18n
+		_hack_list.add_child(host._small(tr(section[0])))
 		for t: Dictionary in _hack_templates:
 			if t["standard"] != section[1]:
 				continue
@@ -1377,7 +1381,7 @@ func _collect_hacks() -> void:
 			b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 			b.clip_text = true
 			b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			b.tooltip_text = "%s\nIm Setup: %s" % [t["label"], ", ".join(t["where"])]
+			b.tooltip_text = tr("%s\nIm Setup: %s") % [t["label"], ", ".join(t["where"])]
 			var tt := t
 			b.pressed.connect(func() -> void: _add_hack(tt))
 			_hack_list.add_child(b)
@@ -1394,22 +1398,22 @@ func _update_info() -> void:
 	for h: Array in _hacks:
 		if not Hacks.is_standard(h):
 			hack_count += 1
-	var lines: Array[String] = ["%s: %d Features/Hacks (%d Zeilen), davon %d Hacks.   %s: %d Zeilen." % [
+	var lines: Array[String] = [tr("%s: %d Features/Hacks (%d Zeilen), davon %d Hacks.   %s: %d Zeilen.") % [
 		_terminal, _hacks.size(), n, hack_count, _other(), (_data.get(_other(), []) as Array).size()]]
 	# Warnungen: Teile außerhalb der Fahrstrecke (vor der Ufer-Wende bzw. hinter der roten Boje)
 	if not _lane.is_empty():
 		for p: FeaturePart in _fs.parts:
 			var s := p.s_center
 			if s - p.length * 0.5 < _lane["turn_a"] + 8.0 or s + p.length * 0.5 > _lane["red_b"]:
-				lines.append("Achtung: %s bei s = %.0f m liegt außerhalb der Fahrstrecke." % [p.display_name, s])
-	lines.append("Eigenes Setup (gespeichert)" if _user_id != "" else "Noch nicht gespeichert – „Speichern“ legt ein eigenes Setup an.")
+				lines.append(tr("Achtung: %s bei s = %.0f m liegt außerhalb der Fahrstrecke.") % [p.display_name, s])
+	lines.append(tr("Eigenes Setup (gespeichert)") if _user_id != "" else tr("Noch nicht gespeichert – „Speichern“ legt ein eigenes Setup an."))
 	_setup_info.text = "\n".join(lines)
 	_btn_delete_setup.disabled = _user_id == ""
 	if _plant_mode:
-		_status.text = "Pflanzen   ·   %s: %s   ·   linke Taste = Pinsel, rechte Taste ziehen = Karte bewegen, Rad / + − = Zoom" % [
-			{"malen": "Malen", "radieren": "Radieren", "auto": "Automatik", "schieben": "Schieben"}[_plant_tool], Plants.species(_plant_id)["name"]]
+		_status.text = tr("Pflanzen   ·   %s: %s   ·   linke Taste = Pinsel, rechte Taste ziehen = Karte bewegen, Rad / + − = Zoom") % [
+			tr({"malen": "Malen", "radieren": "Radieren", "auto": "Automatik", "schieben": "Schieben"}[_plant_tool]), tr(Plants.species(_plant_id)["name"])]
 	else:
-		_status.text = "%s   ·   %d Teile   ·   Ziehen = verschieben, freie Fläche ziehen = Karte bewegen, Rad / + − = Zoom" % [_terminal, n]
+		_status.text = tr("%s   ·   %d Teile   ·   Ziehen = verschieben, freie Fläche ziehen = Karte bewegen, Rad / + − = Zoom") % [_terminal, n]
 
 
 func _clean_data() -> Dictionary:
@@ -1438,11 +1442,11 @@ func _export_json() -> String:
 func _import_json() -> void:
 	var d: Variant = JSON.parse_string(_json_edit.text)
 	if not (d is Dictionary) or not ((d as Dictionary).has("T2") or (d as Dictionary).has("T1")):
-		_show_toast("Kein gültiges Setup-JSON (braucht \"T2\" und/oder \"T1\")")
+		_show_toast(tr("Kein gültiges Setup-JSON (braucht \"T2\" und/oder \"T1\")"))
 		return
 	_begin()
 	_load(d, _user_id)
-	_show_toast("Setup aus Text geladen")
+	_show_toast(tr("Setup aus Text geladen"))
 
 
 func _save(play: bool) -> void:
@@ -1450,13 +1454,13 @@ func _save(play: bool) -> void:
 	if _user_id == "":
 		_user_id = "eigen-%d" % int(Time.get_unix_time_from_system())
 	if FeatureSet.save_user_setup(_user_id, d) == "":
-		_show_toast("Speichern fehlgeschlagen")
+		_show_toast(tr("Speichern fehlgeschlagen"))
 		return
 	_dirty = false
 	_leave_armed = false
 	_update_info()
 	_fill_templates()
-	_show_toast("Gespeichert: " + str(d["name"]))
+	_show_toast(tr("Gespeichert: %s") % str(d["name"]))
 	saved.emit(_user_id, play)
 	if play:
 		_close()
@@ -1471,7 +1475,7 @@ func _delete_setup() -> void:
 	_dirty = true
 	_update_info()
 	_fill_templates()
-	_show_toast("Eigenes Setup gelöscht (bleibt hier zum Weiterbearbeiten)")
+	_show_toast(tr("Eigenes Setup gelöscht (bleibt hier zum Weiterbearbeiten)"))
 	saved.emit(id, false)
 
 
@@ -1479,11 +1483,11 @@ func _delete_setup() -> void:
 
 ## Reiter „Pflanzen“: Werkzeug, Art, Pinsel, Dichte, Speichern.
 func _build_plant_page(page: VBoxContainer) -> void:
-	page.add_child(_hint("Auf dem Luftbild malen. Wo du malst, radierst oder die Automatik zurückholst, " +
+	page.add_child(_hint(tr("Auf dem Luftbild malen. Wo du malst, radierst oder die Automatik zurückholst, " +
 		"übernimmst du die Stelle: dort setzt das Spiel nichts Automatisches mehr (Wiesengras, Schilf, " +
 		"Ufergras bzw. Sträucher und Bäume aus dem Wald) – getrennt für Bodenpflanzen und Gehölze. " +
-		"Rechte Maustaste ziehen = Karte bewegen."))
-	page.add_child(host._small("WERKZEUG"))
+		"Rechte Maustaste ziehen = Karte bewegen.")))
+	page.add_child(host._small(tr("WERKZEUG")))
 	var tools := GridContainer.new()
 	tools.columns = 2
 	tools.add_theme_constant_override("h_separation", 6)
@@ -1491,19 +1495,19 @@ func _build_plant_page(page: VBoxContainer) -> void:
 	page.add_child(tools)
 	var tg := ButtonGroup.new()
 	for t: Array in TOOLS:
-		var b := host._button(t[1], 16)
+		var b := host._button(tr(t[1]), 16)
 		b.toggle_mode = true
 		b.button_group = tg
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var id: String = t[0]
-		b.tooltip_text = {"malen": "Gewählte Pflanze setzen", "radieren": "Pflanzen der Ebene entfernen (auch die automatischen)",
-			"auto": "Stellen wieder der Automatik überlassen (entfernt Gemaltes der Ebene)", "schieben": "Karte mit dem Finger bewegen"}[id]
+		b.tooltip_text = tr({"malen": "Gewählte Pflanze setzen", "radieren": "Pflanzen der Ebene entfernen (auch die automatischen)",  # i18n
+			"auto": "Stellen wieder der Automatik überlassen (entfernt Gemaltes der Ebene)", "schieben": "Karte mit dem Finger bewegen"}[id])  # i18n
 		b.pressed.connect(func() -> void:
 			_plant_tool = id
 			_update_plant_ui())
 		tools.add_child(b)
 		_tool_buttons[id] = b
-	page.add_child(host._small("PFLANZE   (Radieren/Automatik wirken auf ihre Ebene)"))
+	page.add_child(host._small(tr("PFLANZE   (Radieren/Automatik wirken auf ihre Ebene)")))
 	var grid := GridContainer.new()
 	grid.columns = 2
 	grid.add_theme_constant_override("h_separation", 6)
@@ -1511,14 +1515,14 @@ func _build_plant_page(page: VBoxContainer) -> void:
 	page.add_child(grid)
 	var pg := ButtonGroup.new()
 	for sp: Dictionary in Plants.SPECIES:
-		var b := host._button(sp["name"], 16)
+		var b := host._button(tr(sp["name"]), 16)
 		b.toggle_mode = true
 		b.button_group = pg
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.add_theme_color_override("font_color", (sp["color"] as Color).lightened(0.35))
 		var hr: Array = sp["h"]
-		b.tooltip_text = "%s: %.1f–%.1f m hoch, Abstand %.1f m – %s" % [sp["name"], hr[0], hr[1], sp["spacing"], Plants.LAYER_NAMES[sp["layer"]]]
+		b.tooltip_text = tr("%s: %.1f–%.1f m hoch, Abstand %.1f m – %s") % [tr(sp["name"]), hr[0], hr[1], sp["spacing"], tr(Plants.LAYER_NAMES[sp["layer"]])]
 		var id: String = sp["id"]
 		b.pressed.connect(func() -> void:
 			_plant_id = id
@@ -1527,7 +1531,7 @@ func _build_plant_page(page: VBoxContainer) -> void:
 			_update_plant_ui())
 		grid.add_child(b)
 		_plant_buttons[id] = b
-	page.add_child(host._small("PINSEL"))
+	page.add_child(host._small(tr("PINSEL")))
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 6)
 	page.add_child(row)
@@ -1545,13 +1549,13 @@ func _build_plant_page(page: VBoxContainer) -> void:
 			_brush_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			_brush_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			row.add_child(_brush_label)
-	page.add_child(host._small("DICHTE BEIM MALEN"))
+	page.add_child(host._small(tr("DICHTE BEIM MALEN")))
 	var drow := HBoxContainer.new()
 	drow.add_theme_constant_override("separation", 6)
 	page.add_child(drow)
 	var dg := ButtonGroup.new()
 	for d: Array in DENSITIES:
-		var b := host._button(d[0], 16)
+		var b := host._button(tr(d[0]), 16)
 		b.toggle_mode = true
 		b.button_group = dg
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1564,29 +1568,29 @@ func _build_plant_page(page: VBoxContainer) -> void:
 	_plant_info = host._label("", 15, Color(1, 1, 1, 0.8))
 	_plant_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	page.add_child(_plant_info)
-	var save := host._button("PFLANZEN SPEICHERN", 16, true)
+	var save := host._button(tr("PFLANZEN SPEICHERN"), 16, true)
 	save.pressed.connect(_save_plants)
 	page.add_child(save)
 	var jrow := HBoxContainer.new()
 	jrow.add_theme_constant_override("separation", 6)
 	page.add_child(jrow)
-	var exp := host._button("Als JSON kopieren", 16)
+	var exp := host._button(tr("Als JSON kopieren"), 16)
 	exp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	exp.tooltip_text = "Für setups/plants.json im Projekt"
+	exp.tooltip_text = tr("Für setups/plants.json im Projekt")
 	exp.pressed.connect(func() -> void:
 		DisplayServer.clipboard_set(Plants.to_json())
-		_show_toast("Bepflanzung als JSON in die Zwischenablage kopiert"))
+		_show_toast(tr("Bepflanzung als JSON in die Zwischenablage kopiert")))
 	jrow.add_child(exp)
-	_btn_plant_reset = host._button("Zurücksetzen", 16)
+	_btn_plant_reset = host._button(tr("Zurücksetzen"), 16)
 	_btn_plant_reset.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_btn_plant_reset.tooltip_text = "Eigene Bepflanzung löschen, wieder die aus dem Spiel"
+	_btn_plant_reset.tooltip_text = tr("Eigene Bepflanzung löschen, wieder die aus dem Spiel")
 	_btn_plant_reset.pressed.connect(func() -> void:
 		_plant_begin()
 		Plants.reset_user()
 		_plants_dirty = false
 		plants_saved.emit()
 		_update_plant_ui()
-		_show_toast("Bepflanzung aus dem Spiel geladen"))
+		_show_toast(tr("Bepflanzung aus dem Spiel geladen")))
 	jrow.add_child(_btn_plant_reset)
 
 
@@ -1604,14 +1608,14 @@ func _update_plant_ui() -> void:
 	var parts: Array[String] = []
 	for sp: Dictionary in Plants.SPECIES:
 		if counts.has(sp["id"]):
-			parts.append("%s %d" % [sp["name"], counts[sp["id"]]])
-	var lines: Array[String] = ["Gemalt: " + (", ".join(parts) if not parts.is_empty() else "noch nichts")]
-	lines.append("Von Hand gepflegt: %d m² Boden, %d m² Gehölz" % [
+			parts.append("%s %d" % [tr(sp["name"]), counts[sp["id"]]])
+	var lines: Array[String] = [tr("Gemalt: %s") % (", ".join(parts) if not parts.is_empty() else tr("noch nichts"))]
+	lines.append(tr("Von Hand gepflegt: %d m² Boden, %d m² Gehölz") % [
 		(Plants.managed["boden"] as Dictionary).size() * int(Plants.CELL * Plants.CELL),
 		(Plants.managed["gehoelz"] as Dictionary).size() * int(Plants.CELL * Plants.CELL)])
-	lines.append("Ebene der Pflanze: " + Plants.LAYER_NAMES[Plants.layer_of(_plant_id)])
+	lines.append(tr("Ebene der Pflanze: %s") % tr(Plants.LAYER_NAMES[Plants.layer_of(_plant_id)]))
 	if _plants_dirty:
-		lines.append("Nicht gespeichert.")
+		lines.append(tr("Nicht gespeichert."))
 	_plant_info.text = "\n".join(lines)
 	_btn_plant_reset.visible = Plants.can_reset_user()
 	_btn_undo.disabled = _plant_undo.is_empty() if _plant_mode else _undo.is_empty()
@@ -1716,13 +1720,13 @@ func _plant_step(back: bool) -> void:
 func _save_plants() -> void:
 	var file := Plants.save()
 	if file == "":
-		_show_toast("Speichern fehlgeschlagen")
+		_show_toast(tr("Speichern fehlgeschlagen"))
 		return
 	_plants_dirty = false
 	_leave_armed = false
 	plants_saved.emit()
 	_update_plant_ui()
-	_show_toast("Bepflanzung gespeichert (%s), im Spiel neu aufgebaut" % file.get_file())
+	_show_toast(tr("Bepflanzung gespeichert (%s), im Spiel neu aufgebaut") % file.get_file())
 
 
 ## Pflanzen in der Karte: gepflegte Stellen getönt, automatische Pflanzen blass, gemalte kräftig, Pinsel.
@@ -1791,15 +1795,15 @@ func _draw_overlay() -> void:
 		if Rect2(Vector2.ZERO, o.size).grow(20).has_point(p):
 			_text(o, font, p + Vector2(3, 16), "%d" % roundi(s), 13, Color(1, 1, 1, 0.55))
 		s += step
-	for m: Array in [["mast_a", "Startmast"], ["turn_a", "Wende"], ["red_a", "rote Boje"],
-			["red_b", "rote Boje"], ["turn_b", "Wende"], ["mast_b", "Endmast"]]:
+	for m: Array in [["mast_a", "Startmast"], ["turn_a", "Wende"], ["red_a", "rote Boje"],  # i18n
+			["red_b", "rote Boje"], ["turn_b", "Wende"], ["mast_b", "Endmast"]]:  # i18n
 		var p := _sx_to_screen(_lane[m[0]], -1.5)
-		_text(o, font, p + Vector2(4, -6), m[1], 14, Color(1, 1, 1, 0.8))
+		_text(o, font, p + Vector2(4, -6), tr(m[1]), 14, Color(1, 1, 1, 0.8))
 	# Seiten beschriften (Blick vom Steg zum Endmast)
 	var left := _sx_to_screen(_center.x, -_span * 0.5 + 2.0)
-	_text(o, font, Vector2(12, clampf(left.y, 20, o.size.y - 40)), "links (−x)", 14, Color(1, 1, 1, 0.5))
+	_text(o, font, Vector2(12, clampf(left.y, 20, o.size.y - 40)), tr("links (−x)"), 14, Color(1, 1, 1, 0.5))
 	var right := _sx_to_screen(_center.x, _span * 0.5 - 2.0)
-	_text(o, font, Vector2(12, clampf(right.y, 40, o.size.y - 40)), "rechts (+x)", 14, Color(1, 1, 1, 0.5))
+	_text(o, font, Vector2(12, clampf(right.y, 40, o.size.y - 40)), tr("rechts (+x)"), 14, Color(1, 1, 1, 0.5))
 	# Grundrisse: Auswahl gelb, Hacks orange
 	var c: CableSystem = _cables[_terminal]
 	for hack: Array in _hacks:
@@ -1854,13 +1858,13 @@ func _part_info(id: String) -> String:
 			if not str(c.get("part", "")).begins_with("@") and nm not in names:
 				names.append(nm)
 		if e.has("exits"):
-			names.append("2 Ausgänge (wählbar)")
-		return "Modul: " + " + ".join(names)
+			names.append(tr("2 Ausgänge (wählbar)"))
+		return tr("Modul: %s") % " + ".join(names)
 	var h := float(e.get("height", 0.0))
 	for pt: Array in e.get("profile", []):
 		h = maxf(h, float(pt[1]))
 	var w := float(e.get("width", float(e.get("radius", 0.2)) * 2.0))
-	return "%s   %.1f × %.1f m, Höhe %.2f m" % [_part_name(id), float(e.get("length", w)), w, h]
+	return tr("%s   %.1f × %.1f m, Höhe %.2f m") % [_part_name(id), float(e.get("length", w)), w, h]
 
 
 func _hint(t: String) -> Label:

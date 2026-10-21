@@ -1,0 +1,2750 @@
+# Czech – WakeTheHack
+msgid ""
+msgstr ""
+"Project-Id-Version: WakeTheHack\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: cs\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Source-Language: de\n"
+
+msgid "Fischkontakt"
+msgstr "Kontakt s rybou"
+
+msgid "Mit einem springenden Hecht zusammengestoßen."
+msgstr "Srážka se skákající štikou."
+
+msgid "Nass gespritzt"
+msgstr "Postříkáno"
+
+msgid "Einen SUP-Paddler mit voller Fahrt nass gespritzt."
+msgstr "Postříkal jsi paddlera na SUP v plné rychlosti."
+
+msgid "Steg-Landung"
+msgstr "Přistání na molu"
+
+msgid "Aus der Luft auf dem Startsteg gelandet."
+msgstr "Přistál jsi ze vzduchu na startovním molu."
+
+msgid "Insekten fressen"
+msgstr "Svačina z hmyzu"
+
+msgid "Am Waldrand von Terminal 1 durch einen Mückenschwarm gefahren. Mahlzeit!"
+msgstr "Projel jsi hejnem komárů na okraji lesa u Terminálu 1. Dobrou chuť!"
+
+msgid "Boot crash"
+msgstr "Srážka s lodí"
+
+msgid "Ins rote Boot gefahren oder hineingefallen."
+msgstr "Vjel jsi do červené lodi nebo jsi do ní spadl."
+
+msgid "Ho ho ho!"
+msgstr "Ho ho ho!"
+
+msgid "Am Nikolaustag im Schnee eine Wende gefahren."
+msgstr "Na svatého Mikuláše jsi projel otočku ve sněhu."
+
+msgid "Was ein Frechdachs"
+msgstr "To je ale rošťák"
+
+msgid "Ein Haubentaucher ist direkt unter dir durchgetaucht."
+msgstr "Potápka roháč se potopila přímo pod tebou."
+
+msgid "Schwanenliebe"
+msgstr "Labutí láska"
+
+msgid "Zwei Schwäne haben mit ihren Hälsen ein Herz geformt – und du warst dabei."
+msgstr "Dvě labutě vytvořily krky srdce – a ty jsi u toho byl."
+
+msgid "Zugvogel"
+msgstr "Tažný pták"
+
+msgid "Einen Raley gesprungen, während die Kraniche über den See ziehen."
+msgstr "Skočil jsi Raley, zatímco jeřábi táhli nad jezerem."
+
+msgid "Blitzableiter"
+msgstr "Hromosvod"
+
+msgid "Im Gewitter gefahren und vom Blitz getroffen. YOLO!"
+msgstr "Jezdil jsi v bouřce a zasáhl tě blesk. YOLO!"
+
+msgid "Badegast"
+msgstr "Koupající"
+
+msgid "An einem heißen Tag einen Badegast auf der Luftmatratze nass gespritzt."
+msgstr "V horkém dni jsi postříkal koupajícího na nafukovací matraci."
+
+msgid "Arschbombe"
+msgstr "Bomba"
+
+msgid "Aus der Luft ins Becken des 6-Stair Pools gestürzt. Platsch!"
+msgstr "Spadl jsi ze vzduchu do bazénu 6-Stair Poolu. Žbluňk!"
+
+msgid "Zeitung"
+msgstr "Noviny"
+
+msgid "Sunset"
+msgstr "Sunset"
+
+msgid "Ice"
+msgstr "Ice"
+
+msgid "Topo"
+msgstr "Topo"
+
+msgid "Dots"
+msgstr "Dots"
+
+msgid "Bereit"
+msgstr "Připraveno"
+
+msgid "Anfahren"
+msgstr "Rozjíždí se"
+
+msgid "Fahrt → Mast 2"
+msgstr "Jízda → Stožár 2"
+
+msgid "Fahrt → Ufer"
+msgstr "Jízda → Břeh"
+
+msgid "Bremst zur Wende"
+msgstr "Brzdí k otočce"
+
+msgid "Wende"
+msgstr "Otočka"
+
+msgid "Operator bringt die Handle"
+msgstr "Operátor nese hrazdu"
+
+msgid "Wartet auf den Fahrer"
+msgstr "Čeká na jezdce"
+
+msgid "Ende – zurück am Start"
+msgstr "Konec – zpět na startu"
+
+msgid "Abgesoffen"
+msgstr "Potopil ses"
+
+msgid "Gestürzt"
+msgstr "Pád"
+
+msgid "Seil verloren"
+msgstr "Lano ztraceno"
+
+msgid "Nicht um die weiße Boje"
+msgstr "Ne kolem bílé bóje"
+
+msgid "Ohne Absprung fahren"
+msgstr "Přejet bez odrazu"
+
+msgid "Kicker verpasst"
+msgstr "Kicker minut"
+
+msgid "Slider verpasst"
+msgstr "Slider minut"
+
+msgid "Ins Wasser – Transfer verpasst"
+msgstr "Do vody – transfer minut"
+
+msgid "Pipe verpasst"
+msgstr "Pipe minuta"
+
+msgid "Keine Kombination geschafft"
+msgstr "Žádná kombinace nevyšla"
+
+msgid "Kein Drift nach einem Feature"
+msgstr "Žádný drift po featuru"
+
+msgid "Kein Sprung-Start – auf dem Steg ↓ halten, bis das Seil losreißt"
+msgstr "Žádný start z mola – drž ↓ na molu, dokud tě lano nestrhne"
+
+msgid "Kein Raley – mehr Seilzug: weit raus, dann hart zur Mitte kanten (Marke RALEY)"
+msgstr "Žádný Raley – víc tahu: jeď daleko ven, pak tvrdě na hranu ke středu (značka RALEY)"
+
+msgid "Zeit abgelaufen"
+msgstr "Čas vypršel"
+
+msgid "Das war kein Raley Start – Brett quer zum Seil stellen"
+msgstr "To nebyl Raley Start – postav prkno napříč k lanu"
+
+msgid "Das war kein Nolli – Brett längs zum Seil lassen"
+msgstr "To nebyl Nolli – nech prkno podél lana"
+
+msgid "Junge mach mal langsam! (%s)"
+msgstr "Pomalu, kámo! (%s)"
+
+msgid "Das war %s – gefordert: %s"
+msgstr "To byl %s – požadováno: %s"
+
+msgid "360 links im Drift!  (%d / %d)"
+msgstr "360 doleva v driftu!  (%d / %d)"
+
+msgid "360 rechts im Drift!  (%d / %d)"
+msgstr "360 doprava v driftu!  (%d / %d)"
+
+msgid "Kein 360 im Drift"
+msgstr "Žádná 360 v driftu"
+
+msgid "%s im Drift!  (%d Wechsel)"
+msgstr "%s v driftu!  (změn: %d)"
+
+msgid "Kein Press im Drift"
+msgstr "Žádný press v driftu"
+
+msgid "%s Drift"
+msgstr "Drift %s"
+
+msgid "ausgelassen"
+msgstr "vynecháno"
+
+msgid "zu kurz auf dem Slider"
+msgstr "příliš krátce na slideru"
+
+msgid "kein Ollie on (über die Auffahrt)"
+msgstr "žádný ollie on (přes nájezd)"
+
+msgid "Aufspringen: %s statt %s"
+msgstr "Naskočení: %s místo %s"
+
+msgid "%s statt %s"
+msgstr "%s místo %s"
+
+msgid "kein Press"
+msgstr "žádný press"
+
+msgid "Abgang: %s statt %s"
+msgstr "Seskok: %s místo %s"
+
+msgid "gerade"
+msgstr "rovně"
+
+msgid "%s geschafft!"
+msgstr "%s zvládnuto!"
+
+msgid "Gerade abgefahren – hier quer mit Drift abgehen"
+msgstr "Sjel jsi rovně – tady sjeď bokem s driftem"
+
+msgid "noch keine Medaille"
+msgstr "zatím bez medaile"
+
+msgid "Rangliste nicht mit Seilzug-Grenze „Aus“"
+msgstr "Žebříček ne s limitem tahu „Vyp.“"
+
+msgid "Rangliste: wird gesendet …"
+msgstr "Žebříček: odesílá se …"
+
+msgid "Rangliste: Platz %d von %d"
+msgstr "Žebříček: místo %d z %d"
+
+msgid "Rangliste: Platz %d von %d mit deinem Bestwert %s"
+msgstr "Žebříček: místo %d z %d s tvým rekordem %s"
+
+msgid "als %s"
+msgstr "jako %s"
+
+msgid "Rangliste: %s"
+msgstr "Žebříček: %s"
+
+msgid "Fehler"
+msgstr "Chyba"
+
+msgid "%d Punkt"
+msgid_plural "%d Punkte"
+msgstr[0] "%d bod"
+msgstr[1] "%d body"
+msgstr[2] "%d bodů"
+
+msgid "Höhe %s"
+msgstr "Výška %s"
+
+msgid "Weite %s"
+msgstr "Vzdálenost %s"
+
+msgid "links %d / %d   rechts %d / %d"
+msgstr "vlevo %d / %d   vpravo %d / %d"
+
+msgid "Bester Drift %s"
+msgstr "Nejlepší drift %s"
+
+msgid "%d Wechsel   Bester %s"
+msgstr "Změn: %d   nejlépe %s"
+
+msgid "Press am Stück %s"
+msgstr "Press v kuse %s"
+
+msgid "%d geschafft"
+msgstr "Zvládnuto: %d"
+
+msgid "Bestwert %s"
+msgstr "Rekord %s"
+
+msgid "VERSUCH"
+msgstr "POKUS"
+
+msgid "ZEIT"
+msgstr "ČAS"
+
+msgid "Verpasst"
+msgstr "Minuto"
+
+msgid "Transfer verpasst"
+msgstr "Transfer minut"
+
+msgid "Verfolger"
+msgstr "Sledování"
+
+msgid "Orbit"
+msgstr "Orbit"
+
+msgid "Ufer"
+msgstr "Břeh"
+
+msgid "Runde 7:30"
+msgstr "Kolo 7:30"
+
+msgid "Runde 10:00"
+msgstr "Kolo 10:00"
+
+msgid "Runde 15:00"
+msgstr "Kolo 15:00"
+
+msgid "Freies Fahren"
+msgstr "Volná jízda"
+
+msgid "Niedrig"
+msgstr "Nízká"
+
+msgid "Mittel"
+msgstr "Střední"
+
+msgid "Hoch"
+msgstr "Vysoká"
+
+msgid "Custom"
+msgstr "Custom"
+
+msgid "H  Hilfe"
+msgstr "H  Nápověda"
+
+msgid "PUNKTE"
+msgstr "BODY"
+
+msgid "ZEIT UM"
+msgstr "ČAS VYPRŠEL"
+
+msgid "GEHEIMER ERFOLG FREIGESCHALTET"
+msgstr "TAJNÝ ÚSPĚCH ODEMČEN"
+
+msgid "TEMPO"
+msgstr "RYCHLOST"
+
+msgid "SEILZUG"
+msgstr "TAH LANA"
+
+msgid ""
+"← / →   lenken   (in der Luft und beim Raley: drehen; auf dem Slider: Boardslide ↔ 50-50 umspringen; auf dem Slider Leertaste halten + ←/→: seitlich auf den Nachbar-Slider springen = Rail to Rail)\n"
+"↑ / ↓   in der Luft: Frontroll / Backroll (beim Invert gleich nach dem Absprung: ↑ S-Bend, ↓ Backroll)     auf dem Slider (schon im Anflug): Nosepress / Tailpress     im Drift: Drift-Press     Sprung-Start: auf dem Steg ↓ halten, bis das Seil losreißt (Brett längs: Nolli, quer: Raley Start)\n"
+"Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das Brett dreht frei, etwas schneller; quer vom Slider ins Wasser nur mit Drift; Treppe am Pool nur im Drift\n"
+"Leertaste halten + loslassen   Absprung (Ollie; voll aufgeladen mit Seilzug über der Marke RALEY und ohne Feature voraus: Invert = Raley – Höhe aus Seilzug + Tempo)\n"
+"Start mit Countdown 3 – 2 – 1 – GO (Runde 7:30)     R  zurück zum Steg (−2:00, dann Countdown), in den Spielmodi: neuer Versuch     + / -  Anlagentempo\n"
+"Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−1:00)     R = Steg (−2:00)\n"
+"C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause     O  Einstellungen\n"
+"Z  Szenario würfeln     P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus (aus: keine Rangliste)     H  Hilfe ein/aus     F11  Vollbild     F3  Hitboxen + Drift-Winkel (Debug)     F4  Parameter (Debug, nur lokal)\n"
+"Tab  Startseite (Terminal, Feature-Setup, Einstellungen)     Menüs: Tab / Pfeile wählen, Leertaste drücken, Enter Start, Esc zurück\n"
+"Gamepad: Stick/Steuerkreuz lenken, Kreuz oder R2 (analog) Sprung, Kreis Drift, L1/R1 Tempo (in der Luft: schnelle 180), rechter Stick umsehen (R3 halten: Zoom), Touchpad Steg, Share Szenario würfeln, PS Pause, Options Einstellungen"
+msgstr ""
+"← / →   řízení   (ve vzduchu a při Raley: otáčení; na slideru: přepnutí Boardslide ↔ 50-50; na slideru drž mezerník + ←/→: skok bokem na sousední slider = Rail to Rail)\n"
+"↑ / ↓   ve vzduchu: Frontroll / Backroll (Invert hned po odrazu: ↑ S-Bend, ↓ Backroll)     na slideru (už při nájezdu): Nosepress / Tailpress     v driftu: Drift Press     Start z mola: drž ↓ na molu, dokud tě lano nestrhne (prkno podél: Nolli, napříč: Raley Start)\n"
+"Ctrl (nebo Alt)   Drift: kloužeš dál rovně (řídit nejde), prkno se volně točí, o něco rychleji; bokem ze slideru do vody jen s driftem; schody v poolu jen v driftu\n"
+"Drž mezerník + pusť   Odraz (Ollie; plně nabito s tahem nad značkou RALEY a bez featuru vpředu: Invert = Raley – výška z tahu + rychlosti)\n"
+"Start s odpočtem 3 – 2 – 1 – GO (kolo 7:30)     R  zpět na molo (−2:00, pak odpočet), v herních módech: nový pokus     + / -  rychlost vleku\n"
+"Po pádu:  drž mezerník = plavat k hrazdě     Ctrl = hned dál (−1:00)     R = molo (−2:00)\n"
+"C  Kamera     Myš: rozhlížení (klik zachytí myš), kolečko: zoom     Esc  Pauza     O  Nastavení\n"
+"Z  Náhodný scénář     P  Autopilot     M  Zvuk vyp./zap.     G  Vytržení lana zap./vyp. (vyp.: bez žebříčku)     H  Nápověda zap./vyp.     F11  Celá obrazovka     F3  Hitboxy + úhel driftu (debug)     F4  Parametry (debug, jen lokálně)\n"
+"Tab  Úvodní obrazovka (terminál, setup, nastavení)     Menu: Tab / šipky výběr, mezerník stisk, Enter start, Esc zpět\n"
+"Gamepad: páčka/kříž řízení, Křížek nebo R2 (analogově) skok, Kolečko drift, L1/R1 rychlost (ve vzduchu: rychlá 180), pravá páčka rozhlížení (R3 držet: zoom), touchpad molo, Share náhodný scénář, PS pauza, Options nastavení"
+
+msgid ""
+"Start mit Countdown          ← / → (bzw. Handy neigen mit Lenkung: Gyro)   lenken (auf dem Slider: Tipp bzw. deutlich neigen = Boardslide ↔ 50-50; SPRUNG halten + ← / → = seitlich auf den Nachbar-Slider, Rail to Rail)\n"
+"SPRUNG (links) halten + loslassen   Absprung (voll aufgeladen, Seilzug über RALEY: Raley)\n"
+"Pfeil ↑ / ↓   in der Luft Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), auf dem Slider (schon im Anflug) Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)\n"
+"DRIFT (links, über SPRUNG)   Kante lösen (Treppe am Pool nur im Drift)        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)\n"
+"☰   Menü (pausiert): Einstellungen, Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Szenario würfeln, Seil-Abreißen an/aus (aus: keine Rangliste)"
+msgstr ""
+"Start s odpočtem          ← / → (nebo naklánění mobilu při řízení: Gyro)   řízení (na slideru: ťuknutí nebo výrazné naklonění = Boardslide ↔ 50-50; drž SKOK + ← / → = skok bokem na sousední slider, Rail to Rail)\n"
+"Drž SKOK (vlevo) + pusť   Odraz (plně nabito, tah nad RALEY: Raley)\n"
+"Šipka ↑ / ↓   ve vzduchu Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), na slideru (už při nájezdu) Nose- / Tailpress, v driftu Drift Press, na molu drž ▼ = start z mola (podél Nolli, napříč Raley Start)\n"
+"DRIFT (vlevo, nad SKOK)   uvolnit hranu (schody v poolu jen v driftu)        Po pádu: drž PLAVAT = plavání, SKIP = hned dál (−1:00)\n"
+"☰   Menu (pauza): nastavení, nápověda, zpět na molo (módy: nový pokus), úvodní obrazovka, zvuk, náhodný scénář, vytržení lana zap./vyp. (vyp.: bez žebříčku)"
+
+msgid "Runde %s"
+msgstr "Kolo %s"
+
+msgid "Freies Fahren hat keine Rangliste"
+msgstr "Volná jízda nemá žebříček"
+
+msgid "Eigene Setups haben keine Rangliste"
+msgstr "Vlastní setupy nemají žebříček"
+
+msgid "Rangliste nur mit %d km/h und %d m Seil"
+msgstr "Žebříček jen s %d km/h a %d m lana"
+
+msgid "Du erscheinst nicht in der Rangliste (Startseite → Rangliste)"
+msgstr "Nejsi v žebříčku (úvodní obrazovka → Žebříček)"
+
+msgid "Aus"
+msgstr "Vyp."
+
+msgid "Keine Rangliste mit Seilzug-Grenze „Aus“"
+msgstr "Bez žebříčku s limitem tahu „Vyp.“"
+
+msgid "Seilzug aus"
+msgstr "Limit tahu vyp."
+
+msgid "Frei"
+msgstr "Volně"
+
+msgid "Eigenes Setup"
+msgstr "Vlastní setup"
+
+msgid "Tempo / Seil"
+msgstr "Rychlost / lano"
+
+msgid "{t}.{m}.{j}"
+msgstr "{t}. {m}. {j}"
+
+msgid "Rangliste noch nicht eingerichtet"
+msgstr "Žebříček ještě není nastaven"
+
+msgid "Keine Verbindung"
+msgstr "Bez připojení"
+
+msgid "Serverfehler (%d)"
+msgstr "Chyba serveru (%d)"
+
+msgid "nur POST"
+msgstr "jen POST"
+
+msgid "kein JSON"
+msgstr "žádný JSON"
+
+msgid "kein Zugriff"
+msgstr "bez přístupu"
+
+msgid "zu viele Anfragen, bitte später"
+msgstr "příliš mnoho požadavků, zkus to později"
+
+msgid "Serverfehler"
+msgstr "Chyba serveru"
+
+msgid "Name schon vergeben"
+msgstr "Jméno je už obsazené"
+
+msgid "ungültig"
+msgstr "neplatné"
+
+msgid "Wert außerhalb der Grenzen"
+msgstr "Hodnota mimo rozsah"
+
+msgid "Spieler unbekannt"
+msgstr "Neznámý hráč"
+
+msgid "Name: 2 bis 16 Zeichen"
+msgstr "Jméno: 2 až 16 znaků"
+
+msgid "Name: nur Buchstaben, Ziffern, Leerzeichen, . _ -"
+msgstr "Jméno: jen písmena, číslice, mezery, . _ -"
+
+msgid "Diesen Namen bitte nicht"
+msgstr "Tohle jméno prosím ne"
+
+msgid "Abgesoffen!"
+msgstr "Potopil ses!"
+
+msgid "Was ein Frechdachs!"
+msgstr "To je ale rošťák!"
+
+msgid "Badegast nass gespritzt!"
+msgstr "Koupající postříkán!"
+
+msgid "Zugvogel!"
+msgstr "Tažný pták!"
+
+msgid "Hecht erwischt!"
+msgstr "Štika trefena!"
+
+msgid "SUP nass gespritzt!"
+msgstr "SUP postříkán!"
+
+msgid "Igitt – Insekt verschluckt!"
+msgstr "Fuj – spolknutý hmyz!"
+
+msgid "Arschbombe!"
+msgstr "Bomba!"
+
+msgid "Steg-Landung!"
+msgstr "Přistání na molu!"
+
+msgid "Seil reißt ab: an"
+msgstr "Vytržení lana: zap."
+
+msgid "Seil reißt ab: aus – keine Rangliste"
+msgstr "Vytržení lana: vyp. – bez žebříčku"
+
+msgid "Setup: %s"
+msgstr "Setup: %s"
+
+msgid "Strafzeit −%d:%02d"
+msgstr "Trest −%d:%02d"
+
+msgid "Zeit um!  %d Punkte"
+msgstr "Čas vypršel!  %d b."
+
+msgid "Letzte Runde: %d Punkte"
+msgstr "Poslední kolo: %d b."
+
+msgid "Rangliste …"
+msgstr "Žebříček …"
+
+msgid "Platz %d von %d"
+msgstr "Místo %d z %d"
+
+msgid "Dein Bestwert: %s"
+msgstr "Tvůj rekord: %s"
+
+msgid "PLATZ %d von %d"
+msgstr "MÍSTO %d Z %d"
+
+msgid "FREI"
+msgstr "VOLNĚ"
+
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Wenden %d   ·   Kamera: %s%s"
+msgstr ""
+"Jezdec %d km/h   ·   Vlek %s: %s (rychlost %d km/h)\n"
+"Otočky %d   ·   Kamera: %s%s"
+
+msgid "STURZ  –  der Operator bringt dir die Handle"
+msgstr "PÁD  –  operátor ti nese hrazdu"
+
+msgid "STURZ  –  die Handle liegt bereit"
+msgstr "PÁD  –  hrazda je připravená"
+
+msgid "ca. %d s"
+msgstr "cca %d s"
+
+msgid "SCHWIMMEN halten"
+msgstr "Drž PLAVAT"
+
+msgid "Zur Handle schwimmen"
+msgstr "Plavat k hrazdě"
+
+msgid "SKIP"
+msgstr "SKIP"
+
+msgid "Sofort weiterfahren"
+msgstr "Hned jet dál"
+
+msgid "keine Strafzeit"
+msgstr "bez trestu"
+
+msgid "Zurück zum Steg"
+msgstr "Zpět na molo"
+
+msgid "LEERTASTE halten"
+msgstr "Drž MEZERNÍK"
+
+msgid "STRG"
+msgstr "CTRL"
+
+msgid ""
+"Neigungssensor nicht verfügbar –\n"
+"Bewegungssensoren im Browser erlauben"
+msgstr ""
+"Senzor náklonu není k dispozici –\n"
+"povol senzory pohybu v prohlížeči"
+
+msgid "SPRUNG-START  %d %%"
+msgstr "START Z MOLA  %d %%"
+
+msgid "Hitboxen an"
+msgstr "Hitboxy zap."
+
+msgid "Hitboxen aus"
+msgstr "Hitboxy vyp."
+
+msgid "Wende um die Boje"
+msgstr "Otočka kolem bóje"
+
+msgid "Saubere Wende"
+msgstr "Čistá otočka"
+
+msgid "Ins Boot gefahren!"
+msgstr "Vjel jsi do lodi!"
+
+msgid "Boot crash!"
+msgstr "Srážka s lodí!"
+
+msgid "Terminal 1"
+msgstr "Terminál 1"
+
+msgid "Terminal 2"
+msgstr "Terminál 2"
+
+msgid "MODUS"
+msgstr "REŽIM"
+
+msgid "Musik"
+msgstr "Hudba"
+
+msgid "Musik hinzufügen"
+msgstr "Přidat hudbu"
+
+msgid "Vom Blitz getroffen!"
+msgstr "Zasažen bleskem!"
+
+msgid "Bodenpflanzen (Gräser, Schilf)"
+msgstr "Přízemní rostliny (trávy, rákos)"
+
+msgid "Gehölze (Sträucher, Bäume)"
+msgstr "Dřeviny (keře, stromy)"
+
+msgid "Schilf"
+msgstr "Rákos"
+
+msgid "Ufergras"
+msgstr "Pobřežní tráva"
+
+msgid "Wiesengras"
+msgstr "Luční tráva"
+
+msgid "Strauch"
+msgstr "Keř"
+
+msgid "Laubbaum"
+msgstr "Listnatý strom"
+
+msgid "Kiefer"
+msgstr "Borovice"
+
+msgid "Seil aus der Hand gerissen!"
+msgstr "Lano vytrženo z rukou!"
+
+msgid "Quer abgefahren – Brett gerade stellen oder driften!"
+msgstr "Sjel jsi bokem – narovnej prkno nebo driftuj!"
+
+msgid "Treppe nur im Drift!"
+msgstr "Schody jen v driftu!"
+
+msgid "Drift-Press zu quer gedriftet!"
+msgstr "Drift press – moc napříč!"
+
+msgid "Gegen den Steg!"
+msgstr "Do mola!"
+
+msgid "Gegen %s gefahren!"
+msgstr "Náraz do: %s!"
+
+msgid "das Hindernis"
+msgstr "překážka"
+
+msgid "Verkantet gelandet!"
+msgstr "Přistání na hraně!"
+
+msgid "Auf dem Ball gelandet!"
+msgstr "Přistání na míči!"
+
+msgid "Zu harte Landung!"
+msgstr "Moc tvrdé přistání!"
+
+msgid "Überschlag nicht geschafft!"
+msgstr "Rotace nedokončena!"
+
+msgid "Ab ans Ufer!"
+msgstr "Hurá na břeh!"
+
+msgid "Gegen den Mast!"
+msgstr "Do stožáru!"
+
+msgid "%s – Drift-Winkel %d°  (erlaubt bis %d°)"
+msgstr "%s – úhel driftu %d°  (povoleno do %d°)"
+
+msgid "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)"
+msgstr "DRIFT – hrana uvolněna, prkno klouže bokem (%.1f m/s)"
+
+msgid "{tag}. {monat}"
+msgstr "{tag}. {monat}"
+
+msgid "Januar"
+msgstr "ledna"
+
+msgid "Februar"
+msgstr "února"
+
+msgid "März"
+msgstr "března"
+
+msgid "April"
+msgstr "dubna"
+
+msgid "Mai"
+msgstr "května"
+
+msgid "Juni"
+msgstr "června"
+
+msgid "Juli"
+msgstr "července"
+
+msgid "August"
+msgstr "srpna"
+
+msgid "September"
+msgstr "září"
+
+msgid "Oktober"
+msgstr "října"
+
+msgid "November"
+msgstr "listopadu"
+
+msgid "Dezember"
+msgstr "prosince"
+
+msgid "%d %% eingesunken"
+msgstr "%d %% ponoření"
+
+msgid "%d %% im Press"
+msgstr "%d %% v pressu"
+
+msgid "%d Wechsel"
+msgid_plural "%d Wechsel"
+msgstr[0] "%d změna"
+msgstr[1] "%d změny"
+msgstr[2] "%d změn"
+
+msgid "%d Slider"
+msgid_plural "%d Slider"
+msgstr[0] "%d slider"
+msgstr[1] "%d slidery"
+msgstr[2] "%d sliderů"
+
+msgid "%d Umdrehung"
+msgid_plural "%d Umdrehungen"
+msgstr[0] "%d otočka"
+msgstr[1] "%d otočky"
+msgstr[2] "%d otoček"
+
+msgid "%d %% im Drift"
+msgstr "%d %% v driftu"
+
+msgid "bis %d %%"
+msgstr "do %d %%"
+
+msgid "nicht einsinken"
+msgstr "nepotopit se"
+
+msgid "bis %s"
+msgstr "do %s"
+
+msgid "ab %s"
+msgstr "od %s"
+
+msgid "Bronze"
+msgstr "Bronz"
+
+msgid "Silber"
+msgstr "Stříbro"
+
+msgid "Gold"
+msgstr "Zlato"
+
+msgid "Nosepress im Drift"
+msgstr "Nosepress v driftu"
+
+msgid "Wie der Tailpress, nur über die Nose: das Brett im Drift erst um 90° quer drehen, dann ins vordere Ende drücken, das Tail steht hoch. Der Winkel zählt von der Querstellung. Gemessen: Anteil der Wende im vollen Nosepress – ohne einzusinken. Gold = die ganze Wende."
+msgstr "Jako tailpress, jen přes nose: v driftu nejdřív otoč prkno o 90° napříč, pak zatlač do předního konce, tail jde nahoru. Úhel se počítá od polohy napříč. Měří se: podíl otočky v plném nosepressu – bez potopení. Zlato = celá otočka."
+
+msgid "Strg halten  driften     ↑ halten  Nosepress     ← / →  Drift-Winkel halten"
+msgstr "Drž Ctrl  drift     drž ↑  Nosepress     ← / →  drž úhel driftu"
+
+msgid "DRIFT halten  driften     ▲ halten  Nosepress     Neigen  Winkel halten"
+msgstr "Drž DRIFT  drift     drž ▲  Nosepress     náklon  drž úhel"
+
+msgid "Erst quer drehen, dann drücken – mit der Nose vorne stehst du 90° falsch. Je schneller, desto querer darfst du driften. Den Drift nicht loslassen – dann ist der Press sofort vorbei."
+msgstr "Nejdřív napříč, pak tlačit – s nose vepředu jsi o 90° vedle. Čím rychleji, tím víc napříč smíš driftovat. Nepouštěj drift – jinak press hned skončí."
+
+msgid "Press-Wechsel"
+msgstr "Střídání pressu"
+
+msgid "Nose- und Tailpress im Wechsel"
+msgstr "Nose- a tailpress střídavě"
+
+msgid "In einem Drift zwischen Nosepress und Tailpress hin und her wechseln. Gemessen: Wechsel in einem Drift (jeder volle Press auf das andere Ende zählt; Drift loslassen fängt neu an)."
+msgstr "V jednom driftu střídej sem a tam nosepress a tailpress. Měří se: změny v jednom driftu (počítá se každý plný press na druhém konci; puštění driftu začíná znovu)."
+
+msgid "Strg halten  driften     ↑ / ↓  Nose- / Tailpress"
+msgstr "Drž Ctrl  drift     ↑ / ↓  Nose- / Tailpress"
+
+msgid "DRIFT halten  driften     ▲ / ▼  Nose- / Tailpress"
+msgstr "Drž DRIFT  drift     ▲ / ▼  Nose- / Tailpress"
+
+msgid "Der Press braucht knapp eine Sekunde, bis er ganz drin ist – nicht zu hektisch wechseln."
+msgstr "Press potřebuje skoro vteřinu, než je celý – nestřídej moc zbrkle."
+
+msgid "Competition"
+msgstr "Competition"
+
+msgid "Runde auf Zeit: so viele Punkte wie möglich. Terminal, Feature-Setup und Rundenlänge frei wählbar."
+msgstr "Kolo na čas: co nejvíc bodů. Terminál, setup a délka kola podle volby."
+
+msgid "Wenden"
+msgstr "Otočky"
+
+msgid "Wenden fahren, ohne einzusinken."
+msgstr "Jezdit otočky bez potopení."
+
+msgid "Wende Endmast"
+msgstr "Otočka u koncového stožáru"
+
+msgid "Wende am Endmast"
+msgstr "Otočka u koncového stožáru"
+
+msgid "Fahr durch die Wende am Endmast, ohne einzusinken. Gemessen wird, wie tief du einsinkst."
+msgstr "Projeď otočku u koncového stožáru bez potopení. Měří se, jak hluboko se ponoříš."
+
+msgid "← / →  lenken     Strg  driften"
+msgstr "← / →  řízení     Ctrl  drift"
+
+msgid "Neigen  lenken     DRIFT  driften"
+msgstr "Náklon  řízení     DRIFT  drift"
+
+msgid "An der roten Boje nach außen rauskanten und Tempo aufbauen, dann um den Carrier pendeln – das Seil muss gespannt bleiben. Wird es locker, weiter nach außen ziehen."
+msgstr "U červené bóje vyjeď na hraně ven a naber rychlost, pak se zhoupni kolem carrieru – lano musí zůstat napnuté. Když povolí, táhni dál ven."
+
+msgid "Ufer-Wende"
+msgstr "Otočka u břehu"
+
+msgid "Wende am Ufer"
+msgstr "Otočka u břehu"
+
+msgid "Die Wende vor dem Startsteg: hier ist weniger Platz. Wieder ohne einzusinken."
+msgstr "Otočka před startovním molem: tady je méně místa. Zase bez potopení."
+
+msgid "Früh rauskanten – zum Ufer hin bleibt wenig Raum zum Ausschwingen."
+msgstr "Vyjeď na hranu brzy – směrem ke břehu zbývá málo místa na rozhoupání."
+
+msgid "Um die Boje"
+msgstr "Kolem bóje"
+
+msgid "Wende um die weiße Boje"
+msgstr "Otočka kolem bílé bóje"
+
+msgid "Fahr außen um eine der weißen Bojen und komm sauber aus der Wende. Ohne Boje gibt es keine Medaille."
+msgstr "Objeď zvenku jednu z bílých bójí a vyjeď čistě z otočky. Bez bóje není medaile."
+
+msgid "Schon vor der roten Boje weit nach außen ziehen, sonst reicht der Schwung nicht um die weiße Boje."
+msgstr "Táhni daleko ven už před červenou bójí, jinak setrvačnost na bílou bóji nestačí."
+
+msgid "Kicker"
+msgstr "Kicker"
+
+msgid "Über den Kicker – so hoch wie möglich."
+msgstr "Přes kicker – co nejvýš."
+
+msgid "Kicker M"
+msgstr "Kicker M"
+
+msgid "Kicker M überfahren"
+msgstr "Přejet Kicker M"
+
+msgid "Fahr ohne Absprung gerade über den Kicker M (der kleinere, näher am Seil). Gemessen wird die größte Höhe über dem Wasser."
+msgstr "Přejeď rovně přes Kicker M bez odrazu (ten menší, blíž k lanu). Měří se: největší výška nad vodou."
+
+msgid "← / →  lenken     Leertaste halten + loslassen  Absprung"
+msgstr "← / →  řízení     drž mezerník + pusť  odraz"
+
+msgid "Neigen  lenken     SPRUNG halten + loslassen  Absprung"
+msgstr "Náklon  řízení     drž SKOK + pusť  odraz"
+
+msgid "Gerade und mit Tempo anfahren – schräg verliert man Höhe. Kurz vor dem Kicker nicht mehr lenken."
+msgstr "Najížděj rovně a s rychlostí – šikmo ztrácíš výšku. Těsně před kickerem už neřiď."
+
+msgid "M mit Absprung"
+msgstr "M s odrazem"
+
+msgid "Kicker M mit Absprung"
+msgstr "Kicker M s odrazem"
+
+msgid "Wie eben, aber an der Kante abspringen: Kicker-Steigung + Sprungkraft = Höhe."
+msgstr "Jako předtím, ale odraz na hraně: sklon kickeru + síla odrazu = výška."
+
+msgid "Leertaste halten (auf dem Kicker) + an der Kante loslassen"
+msgstr "Drž mezerník (na kickeru) + pusť na hraně"
+
+msgid "SPRUNG halten (auf dem Kicker) + an der Kante loslassen"
+msgstr "Drž SKOK (na kickeru) + pusť na hraně"
+
+msgid "Schon auf dem Kicker voll aufladen und genau an der Kante loslassen – zu früh verschenkt den Wurf der Rampe."
+msgstr "Plně nabij už na kickeru a pusť přesně na hraně – příliš brzy promarníš vymrštění rampy."
+
+msgid "Kicker L"
+msgstr "Kicker L"
+
+msgid "Kicker L mit Absprung"
+msgstr "Kicker L s odrazem"
+
+msgid "Der große Kicker L (rechts): höher, steiler – und härter bei der Landung."
+msgstr "Velký Kicker L (vpravo): vyšší, strmější – a tvrdší při přistání."
+
+msgid "Leertaste halten + an der Kante loslassen"
+msgstr "Drž mezerník + pusť na hraně"
+
+msgid "SPRUNG halten + an der Kante loslassen"
+msgstr "Drž SKOK + pusť na hraně"
+
+msgid "Bei der Landung gerade bleiben – wer quer aufkommt, stürzt."
+msgstr "Při přistání zůstaň rovně – kdo dopadne bokem, spadne."
+
+msgid "Slider"
+msgstr "Slider"
+
+msgid "Slider fahren: aufspringen, 50-50, Boardslide, Press."
+msgstr "Jízda po sliderech: naskočení, 50-50, boardslide, press."
+
+msgid "Full Pipe"
+msgstr "Full Pipe"
+
+msgid "Rauf auf die Full Pipe"
+msgstr "Na Full Pipe"
+
+msgid "Fahr über die Auffahrt auf die Full Pipe und rutsch sie so weit wie möglich ab. Gemessen: gerutschte Meter."
+msgstr "Vyjeď po nájezdu na Full Pipe a sjeď ji co nejdál. Měří se: ujeté metry."
+
+msgid "← / →  lenken (auf dem Slider: Boardslide / 50-50)"
+msgstr "← / →  řízení (na slideru: Boardslide / 50-50)"
+
+msgid "Neigen  lenken (auf dem Slider deutlich neigen: Boardslide / 50-50)"
+msgstr "Náklon  řízení (na slideru výrazně naklonit: Boardslide / 50-50)"
+
+msgid "Mittig auf die Auffahrt zielen. Auf dem Rohr hält dich das Einloggen in der Spur."
+msgstr "Miř na střed nájezdu. Na trubce tě drží v linii přichycení."
+
+msgid "Boardslide"
+msgstr "Boardslide"
+
+msgid "Boardslide auf der Pipe"
+msgstr "Boardslide na pipe"
+
+msgid "Quer über die Pipe: nur Meter im Boardslide zählen. Am Ende das Brett wieder gerade stellen – wer quer ins Wasser fährt, stürzt."
+msgstr "Napříč přes pipe: počítají se jen metry v boardslidu. Na konci prkno zase narovnej – kdo vjede do vody bokem, spadne."
+
+msgid "Auf der Pipe ← / → tippen (Boardslide), vor dem Ende nochmal tippen (zurück auf 50-50)"
+msgstr "Na pipe ťukni ← / → (boardslide), před koncem ťukni znovu (zpět na 50-50)"
+
+msgid "Auf der Pipe deutlich neigen (Boardslide), vor dem Ende nochmal neigen (zurück auf 50-50)"
+msgstr "Na pipe výrazně nakloň (boardslide), před koncem znovu nakloň (zpět na 50-50)"
+
+msgid "Oder schon in der Luft quer drehen – das Brett rastet in die nächste Stellung ein. Kurz vor dem Ende umspringen oder auf der Abfahrt gerade drehen."
+msgstr "Nebo se otoč napříč už ve vzduchu – prkno zapadne do nejbližší polohy. Přepni těsně před koncem nebo se narovnej na sjezdu."
+
+msgid "Drift"
+msgstr "Drift"
+
+msgid "Boardslide mit Drift-Abgang"
+msgstr "Boardslide se seskokem v driftu"
+
+msgid "Boardslide über die Pipe und quer bleiben – beim Abgang Drift halten: dann rutscht das Brett quer weiter, ohne einzuhaken."
+msgstr "Boardslide přes pipe a zůstaň napříč – při seskoku drž drift: prkno klouže dál bokem, aniž by zachytilo."
+
+msgid "Auf der Pipe ← / → tippen (Boardslide), Strg (Drift) halten, wenn das Brett das Wasser berührt"
+msgstr "Na pipe ťukni ← / → (boardslide), drž Ctrl (drift), když se prkno dotkne vody"
+
+msgid "Auf der Pipe deutlich neigen (Boardslide), DRIFT halten, wenn das Brett das Wasser berührt"
+msgstr "Na pipe výrazně nakloň (boardslide), drž DRIFT, když se prkno dotkne vody"
+
+msgid "Drift rechtzeitig drücken – kurz vor dem Ende der Pipe. Wer das Brett gerade stellt, bekommt hier keinen Wert."
+msgstr "Zmáčkni drift včas – těsně před koncem pipe. Kdo prkno narovná, nedostane tady žádnou hodnotu."
+
+msgid "Umspringen"
+msgstr "Přeskakování"
+
+msgid "Boardslide / 50-50 umspringen"
+msgstr "Přeskakování boardslide / 50-50"
+
+msgid "Auf dem Long Rail (links, 100 m) zwischen Boardslide und 50-50 wechseln. Gezählt werden die Wechsel."
+msgstr "Na Long Railu (vlevo, 100 m) střídej boardslide a 50-50. Počítají se změny."
+
+msgid "Auf dem Slider: je Tipp ← / →  90° drehen"
+msgstr "Na slideru: každé ťuknutí ← / → otočí o 90°"
+
+msgid "Auf dem Slider: deutlich neigen, zurück, wieder neigen"
+msgstr "Na slideru: výrazně naklonit, zpět, znovu naklonit"
+
+msgid "Nach jedem Tipp loslassen – erst dann geht der nächste Wechsel."
+msgstr "Po každém ťuknutí pusť – teprve pak funguje další změna."
+
+msgid "Press"
+msgstr "Press"
+
+msgid "Nose- oder Tailpress"
+msgstr "Nose- nebo tailpress"
+
+msgid "Auf dem Long Rail Gewicht auf Nose oder Tail: gemessen werden die Sekunden im Press."
+msgstr "Na Long Railu přenes váhu na nose nebo tail: měří se sekundy v pressu."
+
+msgid "Auf dem Slider: ↑  Nosepress    ↓  Tailpress (halten)"
+msgstr "Na slideru: ↑  Nosepress    ↓  Tailpress (držet)"
+
+msgid "Auf dem Slider: ▲  Nosepress    ▼  Tailpress (halten)"
+msgstr "Na slideru: ▲  Nosepress    ▼  Tailpress (držet)"
+
+msgid "Erst sauber auf dem Rail stehen, dann ↑ oder ↓ halten. Beim Absprung loslassen, sonst gibt es keinen Überschlag."
+msgstr "Nejdřív stůj pořádně na railu, pak drž ↑ nebo ↓. Při odrazu pusť, jinak nebude rotace."
+
+msgid "Long Rail"
+msgstr "Long Rail"
+
+msgid "Long Rail: 100 m"
+msgstr "Long Rail: 100 m"
+
+msgid "So weit wie möglich auf dem 100-m-Rail bleiben."
+msgstr "Zůstaň na 100metrovém railu co nejdál."
+
+msgid "← / →  lenken"
+msgstr "← / →  řízení"
+
+msgid "Neigen  lenken"
+msgstr "Náklon  řízení"
+
+msgid "Der Seilzug zieht dich zur Seilmitte – auf dem Rail nicht gegenlenken, das Einloggen hält die Spur."
+msgstr "Tah tě táhne ke středu – na railu nekontruj, přichycení drží linii."
+
+msgid "Slider-Kette"
+msgstr "Řetěz sliderů"
+
+msgid "Rechts stehen vier Slider hintereinander: Full Pipe, Rail, A-Frame, Pipe. Wie viele schaffst du in einer Fahrt?"
+msgstr "Vpravo stojí čtyři slidery za sebou: Full Pipe, Rail, A-Frame, Pipe. Kolik jich dáš v jedné jízdě?"
+
+msgid "← / →  lenken     Leertaste  Absprung"
+msgstr "← / →  řízení     mezerník  odraz"
+
+msgid "Neigen  lenken     SPRUNG  Absprung"
+msgstr "Náklon  řízení     SKOK  odraz"
+
+msgid "Nach jedem Slider zieht dich das Seil nach innen: sofort wieder nach außen auf Linie lenken – alle stehen auf derselben Spur."
+msgstr "Po každém slideru tě lano táhne dovnitř: hned zase řiď ven na linii – všechny stojí na stejné linii."
+
+msgid "BS Nosepress"
+msgstr "BS Nosepress"
+
+msgid "Ollie in Boardslide Nosepress"
+msgstr "Ollie do Boardslide Nosepressu"
+
+msgid "Mit einem Ollie aus dem Wasser direkt auf die Full Pipe, in der Luft quer drehen und im Boardslide mit Nosepress rutschen. Gemessen: gerutschte Meter – nur wenn Ollie on, Boardslide und Nosepress stimmen."
+msgstr "Ollie z vody přímo na Full Pipe, ve vzduchu otočit napříč a jet v boardslidu s nosepressem. Měří se: ujeté metry – jen když sedí ollie on, boardslide a nosepress."
+
+msgid "Leertaste  Ollie     in der Luft ← / → kurz tippen (Vierteldrehung)     auf der Pipe ↑ halten"
+msgstr "Mezerník  Ollie     ve vzduchu krátce ťukni ← / → (čtvrt otočky)     na pipe drž ↑"
+
+msgid "SPRUNG  Ollie     in der Luft kurz neigen (Vierteldrehung)     auf der Pipe ▲ halten"
+msgstr "SKOK  Ollie     ve vzduchu krátce nakloň (čtvrt otočky)     na pipe drž ▲"
+
+msgid "Nicht über die Auffahrt fahren, sondern vor der Pipe abspringen. Eine Vierteldrehung reicht – das Brett rastet quer ein. Am Ende das Brett gerade stellen (← / →) oder Drift halten, sonst stürzt man quer ins Wasser."
+msgstr "Nejeď přes nájezd, ale odraz se před pipe. Čtvrt otočky stačí – prkno zapadne napříč. Na konci prkno narovnej (← / →) nebo drž drift, jinak spadneš bokem do vody."
+
+msgid "Special"
+msgstr "Special"
+
+msgid "Slider Special"
+msgstr "Slider Special"
+
+msgid "Rail"
+msgstr "Rail"
+
+msgid "A-Frame"
+msgstr "A-Frame"
+
+msgid "Pipe"
+msgstr "Pipe"
+
+msgid "Die Slider-Kette rechts, an jedem Slider eine feste Kombination. Gezählt: geschaffte Slider."
+msgstr "Řetěz sliderů vpravo, na každém slideru pevná kombinace. Počítá se: zvládnuté slidery."
+
+msgid "Leertaste  Ollie on / out     ← / →  in der Luft drehen, auf dem Slider Boardslide / 50-50     ↑ / ↓  Nose- / Tailpress"
+msgstr "Mezerník  Ollie on / out     ← / →  točení ve vzduchu, na slideru Boardslide / 50-50     ↑ / ↓  Nose- / Tailpress"
+
+msgid "SPRUNG  Ollie on / out     Neigen  in der Luft drehen, auf dem Slider Boardslide / 50-50     ▲ / ▼  Nose- / Tailpress"
+msgstr "SKOK  Ollie on / out     Náklon  točení ve vzduchu, na slideru Boardslide / 50-50     ▲ / ▼  Nose- / Tailpress"
+
+msgid "Ollie on heißt: aus dem Wasser direkt auf das Rohr springen, nicht über die Auffahrt fahren. Den Press mehr als die halbe Slide-Zeit halten."
+msgstr "Ollie on znamená: z vody skočit přímo na trubku, nejet přes nájezd. Press drž déle než polovinu slidu."
+
+msgid "Invert Training"
+msgstr "Invert Training"
+
+msgid "Inverts: Tricks aus dem Raley-Absprung nach der Wende."
+msgstr "Inverty: triky z odrazu Raley po otočce."
+
+msgid "Raley – Höhe"
+msgstr "Raley – výška"
+
+msgid "Höchster Raley"
+msgstr "Nejvyšší Raley"
+
+msgid "Nach der Ufer-Wende Seilzug aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: größte Höhe."
+msgstr "Po otočce u břehu vybuduj tah a dej Raley – bez rotace, bez extra. Měří se: největší výška."
+
+msgid "Leertaste lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist"
+msgstr "Drž mezerník dlouho (plně nabít) + pusť, když je tah nad značkou RALEY"
+
+msgid "SPRUNG lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist"
+msgstr "Drž SKOK dlouho (plně nabít) + pusť, když je tah nad značkou RALEY"
+
+msgid "Nach der Wende weit nach außen fahren, dann hart gegen den Zug zur Seilmitte kanten – loslassen, solange der Seilzug über der Marke RALEY ist – je mehr Zug und Tempo, desto höher."
+msgstr "Po otočce jeď daleko ven, pak tvrdě na hranu proti tahu ke středu – pusť, dokud je tah nad značkou RALEY – čím víc tahu a rychlosti, tím výš."
+
+msgid "Raley – Weite"
+msgstr "Raley – vzdálenost"
+
+msgid "Weitester Raley"
+msgstr "Nejdelší Raley"
+
+msgid "Nach der Ufer-Wende Seilzug aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: Weite vom Absprung bis zur Landung."
+msgstr "Po otočce u břehu vybuduj tah a dej Raley – bez rotace, bez extra. Měří se: vzdálenost od odrazu po přistání."
+
+msgid "Weit nach außen, dann hart zur Seilmitte kanten – je mehr Zug und Tempo, desto weiter."
+msgstr "Daleko ven, pak tvrdě na hranu ke středu – čím víc tahu a rychlosti, tím dál."
+
+msgid "Krypt"
+msgstr "Krypt"
+
+msgid "Krypt (Raley 180 rechts)"
+msgstr "Krypt (Raley 180 doprava)"
+
+msgid "Raley mit genau einer halben Drehung nach rechts. Gemessen: größte Höhe."
+msgstr "Raley s přesně půl otočkou doprava. Měří se: největší výška."
+
+msgid "Raley, dann gegen Ende →  halten (180)"
+msgstr "Raley, pak ke konci drž →  (180)"
+
+msgid "Raley, dann gegen Ende nach rechts neigen (180)"
+msgstr "Raley, pak ke konci nakloň doprava (180)"
+
+msgid "Erst strecken lassen, dann ← / → : der Schwung bricht ab, du schwingst zurück und drehst aufrecht – rechtzeitig loslassen."
+msgstr "Nejdřív se nech natáhnout, pak ← / → : švih se utne, zhoupneš se zpět a točíš se vzpřímeně – pusť včas."
+
+msgid "Blind Judge"
+msgstr "Blind Judge"
+
+msgid "Blind Judge (Raley 180 links)"
+msgstr "Blind Judge (Raley 180 doleva)"
+
+msgid "Raley mit genau einer halben Drehung nach links. Gemessen: größte Höhe."
+msgstr "Raley s přesně půl otočkou doleva. Měří se: největší výška."
+
+msgid "Raley, dann gegen Ende ←  halten (180)"
+msgstr "Raley, pak ke konci drž ←  (180)"
+
+msgid "Raley, dann gegen Ende nach links neigen (180)"
+msgstr "Raley, pak ke konci nakloň doleva (180)"
+
+msgid "313 (Raley 360 links)"
+msgstr "313 (Raley 360 doleva)"
+
+msgid "Raley mit genau einer ganzen Drehung nach links. Gemessen: größte Höhe."
+msgstr "Raley s přesně jednou celou otočkou doleva. Měří se: největší výška."
+
+msgid "Raley, dann gegen Ende ←  halten (360)"
+msgstr "Raley, pak ke konci drž ←  (360)"
+
+msgid "Raley, dann gegen Ende nach links neigen (360)"
+msgstr "Raley, pak ke konci nakloň doleva (360)"
+
+msgid "Viel Höhe holen – die ganze Drehung braucht die Zeit vom höchsten Punkt bis zur Landung."
+msgstr "Naber hodně výšky – celá otočka potřebuje čas od nejvyššího bodu po přistání."
+
+msgid "S-Bend"
+msgstr "S-Bend"
+
+msgid "Raley-Absprung und gestreckt einmal um die eigene Längsachse – ohne Drehung danach. Gemessen: größte Höhe."
+msgstr "Odraz Raley a natažený jednou kolem své podélné osy – bez rotace potom. Měří se: největší výška."
+
+msgid "Raley, gleich nach dem Absprung ↑"
+msgstr "Raley, hned po odrazu ↑"
+
+msgid "Raley, gleich nach dem Absprung ▲"
+msgstr "Raley, hned po odrazu ▲"
+
+msgid "Die Taste nur ganz am Anfang drücken – später wird es ein normaler Raley."
+msgstr "Klávesu zmáčkni jen úplně na začátku – později z toho bude normální Raley."
+
+msgid "Backroll (todo)"
+msgstr "Backroll (todo)"
+
+msgid "Backroll (Invert, todo)"
+msgstr "Backroll (Invert, todo)"
+
+msgid "Raley-Absprung und seitlich nach außen kopfüber rollen – ohne Drehung danach. Gemessen: größte Höhe."
+msgstr "Odraz Raley a přetočení bokem ven hlavou dolů – bez rotace potom. Měří se: největší výška."
+
+msgid "Raley, gleich nach dem Absprung ↓"
+msgstr "Raley, hned po odrazu ↓"
+
+msgid "Raley, gleich nach dem Absprung ▼"
+msgstr "Raley, hned po odrazu ▼"
+
+msgid "Special - S-Bend to Blind"
+msgstr "Special - S-Bend to Blind"
+
+msgid "Special: S-Bend to Blind"
+msgstr "Special: S-Bend to Blind"
+
+msgid "S-Bend und danach genau eine halbe Drehung nach links – blind landen. Gemessen: größte Höhe."
+msgstr "S-Bend a potom přesně půl otočky doleva – přistání blind. Měří se: největší výška."
+
+msgid "Raley, gleich nach dem Absprung ↑, nach der Drehung um die Handle ←  (180)"
+msgstr "Raley, hned po odrazu ↑, po otočce kolem hrazdy ←  (180)"
+
+msgid "Raley, gleich nach dem Absprung ▲, nach der Drehung um die Handle nach links neigen (180)"
+msgstr "Raley, hned po odrazu ▲, po otočce kolem hrazdy nakloň doleva (180)"
+
+msgid "Viel Höhe holen: ← erst, wenn der S-Bend durch ist – dann schwingst du zurück und drehst aufrecht. Rechtzeitig loslassen."
+msgstr "Naber hodně výšky: ← až po dokončení S-Bendu – pak se zhoupneš zpět a točíš se vzpřímeně. Pusť včas."
+
+msgid "Sprung-Start"
+msgstr "Start z mola"
+
+msgid "Vom Startsteg: gegen das Seil stemmen, bis es dich losreißt."
+msgstr "Ze startovního mola: zapírej se proti lanu, dokud tě nestrhne."
+
+msgid "Nolli"
+msgstr "Nolli"
+
+msgid "Nolli vom Steg"
+msgstr "Nolli z mola"
+
+msgid "Bleib auf dem Startsteg mit dem Brett längs zum Seil (50-50) stehen und halte ↓: du stemmst dich gegen das anfahrende Seil, der Seilzug lädt sich auf. Bei maximaler Seilspannung reißt es dich nach vorne – ein Nolli. Gemessen: größte Höhe."
+msgstr "Zůstaň stát na startovním molu s prknem podél lana (50-50) a drž ↓: zapíráš se proti rozjíždějícímu se lanu, tah narůstá. Při maximálním tahu tě vymrští dopředu – Nolli. Měří se: největší výška."
+
+msgid "↓ halten (schon beim Countdown), bis das Seil losreißt"
+msgstr "Drž ↓ (už při odpočtu), dokud tě lano nestrhne"
+
+msgid "▼ halten (schon beim Countdown), bis das Seil losreißt"
+msgstr "Drž ▼ (už při odpočtu), dokud tě lano nestrhne"
+
+msgid "Je genauer das Brett längs zum Seil steht, desto mehr Power. Nicht vorher loslassen – sonst ist es ein normaler Start."
+msgstr "Čím přesněji prkno stojí podél lana, tím víc síly. Nepouštěj dřív – jinak je to normální start."
+
+msgid "Nolli 180/360"
+msgstr "Nolli 180/360"
+
+msgid "Nolli mit Drehung"
+msgstr "Nolli s otočkou"
+
+msgid "Nolli vom Steg und in der Luft drehen: 180 = Bronze, 360 = Silber, 540 = Gold."
+msgstr "Nolli z mola a otočka ve vzduchu: 180 = bronz, 360 = stříbro, 540 = zlato."
+
+msgid "↓ halten bis zum Riss, dann in der Luft ← / →  drehen"
+msgstr "Drž ↓ až do strhnutí, pak ve vzduchu točit ← / →"
+
+msgid "▼ halten bis zum Riss, dann in der Luft neigen = drehen"
+msgstr "Drž ▼ až do strhnutí, pak ve vzduchu naklonit = točit"
+
+msgid "Gleich nach dem Riss drehen und rechtzeitig loslassen – das Brett muss zur Landung in Fahrtrichtung zeigen."
+msgstr "Toč hned po strhnutí a pusť včas – prkno musí při přistání mířit ve směru jízdy."
+
+msgid "Raley Start"
+msgstr "Raley Start"
+
+msgid "Raley Start vom Steg"
+msgstr "Raley Start z mola"
+
+msgid "Dreh dich auf dem Steg um 90°, sodass das Brett quer zum Seil steht, und halte ↓: du sitzt tief auf der Kante, Brust zum Seil. Reißt das Seil los, schwingt dein Körper um den Griff wie beim Raley. Gemessen: größte Höhe."
+msgstr "Otoč se na molu o 90°, aby prkno stálo napříč k lanu, a drž ↓: sedíš nízko na hraně, hrudí k lanu. Když tě lano strhne, tělo se zhoupne kolem hrazdy jako při Raley. Měří se: největší výška."
+
+msgid "← / →  auf dem Steg quer drehen     ↓ halten, bis das Seil losreißt"
+msgstr "← / →  otočit napříč na molu     drž ↓, dokud tě lano nestrhne"
+
+msgid "Neigen  auf dem Steg quer drehen     ▼ halten, bis das Seil losreißt"
+msgstr "Náklon  otočit napříč na molu     drž ▼, dokud tě lano nestrhne"
+
+msgid "Schon beim Countdown drehen – je genauer quer, desto höher. Ab 45° Abweichung wird es ein Nolli."
+msgstr "Toč se už při odpočtu – čím přesněji napříč, tím výš. Od odchylky 45° z toho bude Nolli."
+
+msgid "Raley Start + Invert"
+msgstr "Raley Start + Invert"
+
+msgid "Raley Start mit Invert"
+msgstr "Raley Start s invertem"
+
+msgid "Raley Start und in der Luft noch etwas dazu: 180 = Bronze, S-Bend oder Backroll = Silber, S-Bend/Backroll + 360 = Gold. Gemessen: Punkte des Sprungs."
+msgstr "Raley Start a ve vzduchu ještě něco navíc: 180 = bronz, S-Bend nebo Backroll = stříbro, S-Bend/Backroll + 360 = zlato. Měří se: body za skok."
+
+msgid "Quer drehen, ↓ halten bis zum Riss, in der Luft loslassen, dann gleich ↑ S-Bend / ↓ Backroll, gegen Ende ← / →  drehen"
+msgstr "Otočit napříč, drž ↓ do strhnutí, ve vzduchu pusť, pak hned ↑ S-Bend / ↓ Backroll, ke konci točit ← / →"
+
+msgid "Quer drehen, ▼ halten bis zum Riss, in der Luft loslassen, dann gleich ▲ S-Bend / ▼ Backroll, gegen Ende neigen  drehen"
+msgstr "Otočit napříč, drž ▼ do strhnutí, ve vzduchu pusť, pak hned ▲ S-Bend / ▼ Backroll, ke konci naklonit = točit"
+
+msgid "Das gehaltene ↓ zählt nicht – erst loslassen, dann sofort ↑ oder ↓ drücken: der Trick wird nur ganz am Anfang gewählt."
+msgstr "Držená ↓ se nepočítá – nejdřív pusť, pak hned zmáčkni ↑ nebo ↓: trik se volí jen úplně na začátku."
+
+msgid "Driften"
+msgstr "Driftování"
+
+msgid "Kante lösen und gleiten: das Brett dreht frei, die Fahrtrichtung bleibt."
+msgstr "Uvolnit hranu a klouzat: prkno se volně točí, směr jízdy zůstává."
+
+msgid "360 im Drift"
+msgstr "360 v driftu"
+
+msgid "360er im Drift"
+msgstr "360ky v driftu"
+
+msgid "Driften heißt: die Kante lösen. Das Brett liegt flach und greift nicht mehr – Lenken ändert die Fahrtrichtung nicht, nur der Seilzug zieht dich, und das Brett lässt sich frei herumdrehen. Dreh so zwischen den roten Bojen (Ufer bis Endmast) fünf 360er in die eine und fünf in die andere Richtung – gezählt wird jede volle Umdrehung im Drift, höchstens fünf je Richtung."
+msgstr "Driftovat znamená uvolnit hranu. Prkno leží naplocho a už nedrží – řízení nemění směr jízdy, táhne tě jen lano a prkno se dá volně točit. Mezi červenými bójemi (od břehu ke koncovému stožáru) udělej pět 360 na jednu a pět na druhou stranu – počítá se každá celá otočka v driftu, nejvýš pět na každou stranu."
+
+msgid "Strg halten  driften     ← / →  Brett drehen"
+msgstr "Drž Ctrl  drift     ← / →  točit prknem"
+
+msgid "DRIFT halten  driften     Neigen  Brett drehen"
+msgstr "Drž DRIFT  drift     náklon  točit prknem"
+
+msgid "Erst fünf in eine Richtung, dann umsteuern – die Strecke reicht nur knapp, also nicht trödeln. Wer den Drift loslässt, verliert die angefangene Umdrehung – und quer greift die Kante hart und bremst."
+msgstr "Nejdřív pět na jednu stranu, pak přehoď – trať tak tak stačí, tak se neloudej. Kdo pustí drift, přijde o rozdělanou otočku – a napříč hrana tvrdě chytí a brzdí."
+
+msgid "Wende im Drift"
+msgstr "Otočka v driftu"
+
+msgid "Die Wende durchgleiten"
+msgstr "Proklouzat otočkou"
+
+msgid "Vor der Wende am Endmast mächtig Schwung holen und dann die ganze Wende im Drift durchgleiten – ohne einzusinken. Gemessen: Anteil der Wende, in dem du im Drift gleitest, ohne einzusinken (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht)."
+msgstr "Před otočkou u koncového stožáru naber pořádný švih a pak proklouzej celou otočku v driftu – bez potopení. Měří se: podíl otočky, kdy kloužeš v driftu bez potopení (od brzdění carrieru, dokud lano znovu netáhne v novém směru)."
+
+msgid "← / →  lenken (Schwung holen)     Strg halten  driften"
+msgstr "← / →  řízení (nabrat švih)     drž Ctrl  drift"
+
+msgid "Neigen  lenken (Schwung holen)     DRIFT halten  driften"
+msgstr "Náklon  řízení (nabrat švih)     drž DRIFT  drift"
+
+msgid "An der roten Boje weit rauskanten und Tempo aufbauen. Im Drift bremst das Wasser weniger – du gleitest weiter. Ist zu wenig Schwung da, sinkst du ein."
+msgstr "U červené bóje vyjeď daleko na hranu a naber rychlost. V driftu voda brzdí míň – kloužeš dál. Když je švihu málo, potopíš se."
+
+msgid "Drift nach Feature"
+msgstr "Drift po featuru"
+
+msgid "Nach dem Feature driften"
+msgstr "Drift po featuru"
+
+msgid "Terminal 2, Setup Juli & August: von der Mitte Richtung Steg über ein Feature deiner Wahl und gleich danach driften – mindestens 10 m. Gemessen: der längste Drift, der direkt nach einem Feature beginnt (auch nach dem Sprung davon)."
+msgstr "Terminál 2, setup Červenec a srpen: ze středu směrem k molu přes feature podle volby a hned potom driftovat – aspoň 10 m. Měří se: nejdelší drift, který začne hned po featuru (i po skoku z něj)."
+
+msgid "Strg schon auf dem Feature halten und danach nicht loslassen"
+msgstr "Drž Ctrl už na featuru a pak nepouštěj"
+
+msgid "DRIFT schon auf dem Feature halten und danach nicht loslassen"
+msgstr "Drž DRIFT už na featuru a pak nepouštěj"
+
+msgid "Mit Drift darf das Brett beim Abgang auch quer stehen. Der Seilzug zieht dich im Drift zur Seilmitte – vorher weit außen auf das Feature fahren."
+msgstr "S driftem smí prkno při seskoku stát i napříč. V driftu tě lano táhne ke středu – najeď na feature daleko zvenku."
+
+msgid "Tailpress im Drift"
+msgstr "Tailpress v driftu"
+
+msgid "Auf dem Weg zum vorderen Wendepunkt driften und dabei ins Tail drücken: das Brett kippt um das Tail, die Nose steht hoch, die freie Hand streift das Wasser. Du gleitest mit dem ganzen Schwung weiter. Driftest du querer, als es dein Tempo erlaubt (höchstens 86°, nach links wie nach rechts), stürzt du – mit ← / → den Winkel halten. Gemessen: Anteil der Wende im vollen Tailpress (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht) – ohne einzusinken. Gold = die ganze Wende."
+msgstr "Cestou k přednímu bodu otočky driftuj a tlač do tailu: prkno se překlopí přes tail, nose jde nahoru, volná ruka hladí vodu. Kloužeš dál s celým švihem. Když driftuješ víc napříč, než ti rychlost dovolí (nejvýš 86°, doleva i doprava), spadneš – drž úhel ← / →. Měří se: podíl otočky v plném tailpressu (od brzdění carrieru, dokud lano znovu netáhne v novém směru) – bez potopení. Zlato = celá otočka."
+
+msgid "Strg halten  driften     ↓ halten  Tailpress     ← / →  Drift-Winkel halten"
+msgstr "Drž Ctrl  drift     drž ↓  Tailpress     ← / →  drž úhel driftu"
+
+msgid "DRIFT halten  driften     ▼ halten  Tailpress     Neigen  Winkel halten"
+msgstr "Drž DRIFT  drift     drž ▼  Tailpress     náklon  drž úhel"
+
+msgid "Hart rauskanten, im Drift das Brett erst weit quer drehen (um 75°), dann ins Tail drücken – so bremst nichts. Im goldenen Bereich des Bogens (die letzten rund 45° vor der Grenze) bremst der Press gar nicht; querer als 86° reißt es dich um. Den Winkel mit ← / → halten, während dich das Seil um den Carrier schwingt."
+msgstr "Tvrdě na hranu, v driftu nejdřív otoč prkno daleko napříč (asi 75°), pak tlač do tailu – tak nic nebrzdí. Ve zlaté zóně oblouku (posledních zhruba 45° před hranicí) press vůbec nebrzdí; víc napříč než 86° a letíš. Drž úhel ← / →, zatímco tě lano houpe kolem carrieru."
+
+msgid "Transfer"
+msgstr "Transfer"
+
+msgid "Von einem Feature auf ein anderes springen."
+msgstr "Skok z jednoho featuru na druhý."
+
+msgid "Klein"
+msgstr "Malý"
+
+msgid "Pyramid auf Pyramid-Rail"
+msgstr "Pyramid na Pyramid Rail"
+
+msgid "Pyramid"
+msgstr "Pyramid"
+
+msgid "A-Frame Rail"
+msgstr "A-Frame Rail"
+
+msgid "Erst auf die Pyramid, dann aufs Rail springen"
+msgstr "Nejdřív na Pyramid, pak skok na rail"
+
+msgid "Terminal 2, Setup C: über die Pyramid fahren und oben seitlich auf das A-Frame Rail daneben springen. Gemessen: Sprunghöhe – so hoch wie möglich, aber das Rail noch erwischen."
+msgstr "Terminál 2, setup C: přejeď přes Pyramid a nahoře skoč bokem na A-Frame Rail vedle. Měří se: výška skoku – co nejvýš, ale aby sis rail ještě chytil."
+
+msgid "Leertaste halten + loslassen  Absprung, in der Luft ← / →  Richtung Rail"
+msgstr "Drž mezerník + pusť  odraz, ve vzduchu ← / →  směrem k railu"
+
+msgid "SPRUNG halten + loslassen  Absprung, in der Luft neigen  Richtung Rail"
+msgstr "Drž SKOK + pusť  odraz, ve vzduchu nakloň  směrem k railu"
+
+msgid "Auf der Pyramid nahe an der Rail-Seite fahren, dann kurz abspringen – das Einloggen zieht dich aufs Rail."
+msgstr "Na Pyramid jeď blízko strany railu, pak se krátce odraz – přichycení tě stáhne na rail."
+
+msgid "Groß"
+msgstr "Velký"
+
+msgid "Wedge auf Down Ledge"
+msgstr "Wedge na Down Ledge"
+
+msgid "Cheese Wedge"
+msgstr "Cheese Wedge"
+
+msgid "Down Ledge"
+msgstr "Down Ledge"
+
+msgid "Erst über den Wedge, dann auf die Down Ledge springen"
+msgstr "Nejdřív přes wedge, pak skok na Down Ledge"
+
+msgid "Terminal 1, Setup A: über den Wedge (Kicker-Höhe wie Kicker M) und seitlich hoch auf die Down Ledge springen. Gemessen: Sprunghöhe – so hoch wie möglich, aber die Ledge noch erwischen."
+msgstr "Terminál 1, setup A: přes wedge (výška jako Kicker M) a skok bokem nahoru na Down Ledge. Měří se: výška skoku – co nejvýš, ale aby sis ledge ještě chytil."
+
+msgid "Leertaste halten (auf dem Wedge) + an der Kante loslassen, in der Luft ← / →  Richtung Ledge"
+msgstr "Drž mezerník (na wedgi) + pusť na hraně, ve vzduchu ← / →  směrem k ledge"
+
+msgid "SPRUNG halten (auf dem Wedge) + an der Kante loslassen, in der Luft neigen"
+msgstr "Drž SKOK (na wedgi) + pusť na hraně, ve vzduchu nakloň"
+
+msgid "Die Ledge ist höher als die Kante des Wedges – voll aufladen und kräftig abspringen."
+msgstr "Ledge je výš než hrana wedge – nabij naplno a pořádně se odraz."
+
+msgid "Curb auf Down Ledge"
+msgstr "Curb na Down Ledge"
+
+msgid "Transition Curb"
+msgstr "Transition Curb"
+
+msgid "Erst auf die Transition Curb, dann auf die Down Ledge springen"
+msgstr "Nejdřív na Transition Curb, pak skok na Down Ledge"
+
+msgid "Terminal 2, Setup D: mit einem Ollie auf die Transition Curb, darauf hoch und dann auf die Down Ledge daneben springen. Wie du slidest, ist egal. Gemessen: Sprunghöhe von der Curb – so hoch wie möglich, aber die Ledge noch erwischen."
+msgstr "Terminál 2, setup D: ollie na Transition Curb, po ní nahoru a pak skok na Down Ledge vedle. Jak slidovat, je jedno. Měří se: výška skoku z curbu – co nejvýš, ale aby sis ledge ještě chytil."
+
+msgid "Leertaste: Ollie auf die Curb, auf der Curb nochmal abspringen, in der Luft ← / →"
+msgstr "Mezerník: ollie na curb, na curbu znovu odraz, ve vzduchu ← / →"
+
+msgid "SPRUNG: Ollie auf die Curb, auf der Curb nochmal abspringen, in der Luft neigen"
+msgstr "SKOK: ollie na curb, na curbu znovu odraz, ve vzduchu nakloň"
+
+msgid "Auf der Curb ist glattes Plastik – lenken geht nicht. Schon vor dem Ollie auf die richtige Linie gehen."
+msgstr "Na curbu je kluzký plast – řídit nejde. Postav se do správné linie už před ollie."
+
+msgid "Special Press"
+msgstr "Special Press"
+
+msgid "Curb auf Down Ledge mit Nosepress"
+msgstr "Curb na Down Ledge s nosepressem"
+
+msgid "Wie Transfer special, aber auf der Down Ledge einen Nosepress halten. Gemessen: Sekunden im Press."
+msgstr "Jako Transfer special, ale na Down Ledge drž nosepress. Měří se: sekundy v pressu."
+
+msgid "Auf der Ledge ↑ halten (Nosepress)"
+msgstr "Na ledge drž ↑ (nosepress)"
+
+msgid "Auf der Ledge ▲ halten (Nosepress)"
+msgstr "Na ledge drž ▲ (nosepress)"
+
+msgid "Erst sauber auf der Ledge landen, dann ↑ drücken – beim Abgang loslassen."
+msgstr "Nejdřív čistě přistaň na ledge, pak zmáčkni ↑ – při seskoku pusť."
+
+msgid "Pool"
+msgstr "Pool"
+
+msgid "Der 6-Stair Pool: rein ins Becken, die Treppe im Drift, auf den Rand und die Ausgänge."
+msgstr "6-Stair Pool: do bazénu, schody v driftu, na okraj a k výjezdům."
+
+msgid "Pool Drop"
+msgstr "Pool Drop"
+
+msgid "Pool Drop – Höhe"
+msgstr "Pool Drop – výška"
+
+msgid "Nicht über die Rampe ins Becken"
+msgstr "Ne přes rampu do bazénu"
+
+msgid "Fahr über die Rampe des Pools und spring ins Becken. Gemessen: höchster Punkt über dem See."
+msgstr "Přejeď přes rampu poolu a skoč do bazénu. Měří se: nejvyšší bod nad jezerem."
+
+msgid "← / →  lenken     Leertaste halten + an der Kante loslassen  Absprung"
+msgstr "← / →  řízení     drž mezerník + pusť na hraně  odraz"
+
+msgid "Neigen  lenken     SPRUNG halten + an der Kante loslassen  Absprung"
+msgstr "Náklon  řízení     drž SKOK + pusť na hraně  odraz"
+
+msgid "Mittig auf die Rampe zielen, voll aufladen und genau an der Kante loslassen. Nicht zu weit springen – hinter dem Becken kommt die Treppe."
+msgstr "Miř na střed rampy, nabij naplno a pusť přesně na hraně. Neskákej moc daleko – za bazénem jsou schody."
+
+msgid "Pool Drop – Weite"
+msgstr "Pool Drop – vzdálenost"
+
+msgid "Wie eben, aber so weit wie möglich ins Becken. Gemessen: Weite vom Absprung bis zur Landung im Becken."
+msgstr "Jako předtím, ale co nejdál do bazénu. Měří se: vzdálenost od odrazu po přistání v bazénu."
+
+msgid "Mit vollem Tempo und voller Ladung – das Becken ist 15 m lang, die Landung muss im Wasser sein."
+msgstr "Plnou rychlostí a plně nabito – bazén má 15 m, přistání musí být ve vodě."
+
+msgid "Treppe runter"
+msgstr "Schody dolů"
+
+msgid "Die Treppe im Drift hinunter"
+msgstr "Ze schodů v driftu"
+
+msgid "Nicht über die Treppe"
+msgstr "Ne přes schody"
+
+msgid "Rein ins Becken, durchfahren und die Treppe am Ende im Drift hinunter in den See. Gemessen: Tempo unten."
+msgstr "Do bazénu, projet a schody na konci v driftu dolů do jezera. Měří se: rychlost dole."
+
+msgid "Strg (Drift) halten, bevor das Brett die Treppe erreicht"
+msgstr "Drž Ctrl (drift), než prkno dojede ke schodům"
+
+msgid "DRIFT halten, bevor das Brett die Treppe erreicht"
+msgstr "Drž DRIFT, než prkno dojede ke schodům"
+
+msgid "Ohne Drift ist die Treppe ein Sturz. Gerade auf die Treppe zielen – die Stufen sind glatt, lenken geht dort nicht."
+msgstr "Bez driftu jsou schody pád. Miř rovně na schody – schody jsou kluzké, řídit tam nejde."
+
+msgid "Treppe hoch"
+msgstr "Schody nahoru"
+
+msgid "Die Treppe im Drift hinauf"
+msgstr "Po schodech nahoru v driftu"
+
+msgid "Nicht über die Treppe ins Becken"
+msgstr "Ne po schodech do bazénu"
+
+msgid "Von hinten zwischen den Ausgängen auf die Treppe zu und im Drift hinauf ins Becken. Gemessen: Tempo oben."
+msgstr "Zezadu mezi výjezdy ke schodům a v driftu nahoru do bazénu. Měří se: rychlost nahoře."
+
+msgid "Hinauf braucht Schwung: mit vollem Tempo und gespanntem Seil kommen. Im Becken vor der Rampe abspringen, sonst fährt man gegen die Wand."
+msgstr "Nahoru je potřeba švih: přijeď plnou rychlostí a s napnutým lanem. V bazénu se odraz před rampou, jinak narazíš do zdi."
+
+msgid "Coping"
+msgstr "Coping"
+
+msgid "Auf dem Rand sliden"
+msgstr "Slide po okraji"
+
+msgid "Pool Coping"
+msgstr "Pool Coping"
+
+msgid "Fahr außen über die Rampe direkt auf den Rand des Beckens (Coping) und rutsch so weit wie möglich. Gemessen: Meter auf dem Rand."
+msgstr "Přejeď zvenku přes rampu přímo na okraj bazénu (coping) a sjeď co nejdál. Měří se: metry na okraji."
+
+msgid "← / →  lenken (auf dem Rand: Boardslide / 50-50)"
+msgstr "← / →  řízení (na okraji: Boardslide / 50-50)"
+
+msgid "Neigen  lenken (auf dem Rand deutlich neigen: Boardslide / 50-50)"
+msgstr "Náklon  řízení (na okraji výrazně naklonit: Boardslide / 50-50)"
+
+msgid "Die Spur genau auf den Rand legen (ganz rechts auf der Rampe). Der Rand ist nur 40 cm breit – das Einloggen hilft."
+msgstr "Polož stopu přesně na okraj (úplně vpravo na rampě). Okraj má jen 40 cm – přichycení pomáhá."
+
+msgid "Coping to Ledge"
+msgstr "Coping to Ledge"
+
+msgid "Rand und Ausgang in einem Zug"
+msgstr "Okraj a výjezd najednou"
+
+msgid "Nicht vom Rand auf den Ausgang"
+msgstr "Ne z okraje na výjezd"
+
+msgid "Auf dem Rand sliden und am Ende über die Safety ohne Absetzen auf die Down Ledge. Gemessen: Meter auf Rand und Ledge zusammen."
+msgstr "Slide po okraji a na konci přes safety bez dosednutí na Down Ledge. Měří se: metry na okraji a ledge dohromady."
+
+msgid "Die Safety am Anfang der Ledge wirft dich ein Stück hoch – gerade bleiben, dann landest du wieder auf der Ledge."
+msgstr "Safety na začátku ledge tě trochu vyhodí – zůstaň rovně a zase přistaneš na ledge."
+
+msgid "Stair Gap"
+msgstr "Stair Gap"
+
+msgid "Über die Treppe springen"
+msgstr "Skok přes schody"
+
+msgid "Kein Sprung aus dem Becken über die Treppe"
+msgstr "Žádný skok z bazénu přes schody"
+
+msgid "Im Becken Anlauf nehmen und am Ende über die ganze Treppe in den See springen. Gemessen: Weite des Sprungs."
+msgstr "V bazénu se rozjeď a na konci přeskoč celé schody do jezera. Měří se: vzdálenost skoku."
+
+msgid "Leertaste halten + am Ende des Beckens loslassen"
+msgstr "Drž mezerník + pusť na konci bazénu"
+
+msgid "SPRUNG halten + am Ende des Beckens loslassen"
+msgstr "Drž SKOK + pusť na konci bazénu"
+
+msgid "Erst kurz vor der Treppe loslassen. Landest du auf den Stufen, brauchst du Drift."
+msgstr "Pusť až těsně před schody. Když přistaneš na schodech, potřebuješ drift."
+
+msgid "Pool Special"
+msgstr "Pool Special"
+
+msgid "Pool Drop und Treppe im Drift nicht geschafft"
+msgstr "Pool Drop a schody v driftu nevyšly"
+
+msgid "Die Pool-Linie in einem Zug: Pool Drop (gern mit Drehung) und dann die Treppe im Drift hinunter – als Kombination. Gemessen: Punkte der Pool-Tricks."
+msgstr "Linie poolu najednou: Pool Drop (klidně s otočkou) a pak schody v driftu dolů – jako kombinace. Měří se: body za triky v poolu."
+
+msgid "Leertaste  Absprung an der Rampe     ← / →  in der Luft drehen     Strg  Drift auf der Treppe"
+msgstr "Mezerník  odraz na rampě     ← / →  točení ve vzduchu     Ctrl  drift na schodech"
+
+msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe"
+msgstr "SKOK  odraz na rampě     Náklon  točení ve vzduchu     DRIFT  na schodech"
+
+msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgstr "Kombinace trvá 3 s – po dropu se neloudej. Otočky v dropu dávají víc bodů, schody se v kombinaci počítají dvakrát."
+
+msgid "Donkey Rail"
+msgstr "Donkey Rail"
+
+msgid "Ausgang: Donkey Rail"
+msgstr "Výjezd: Donkey Rail"
+
+msgid "Pool B (hinten rechts): links über die Rampe auf den Rand und über die Safety auf das Donkey Rail. Gemessen: Meter auf dem Rail."
+msgstr "Pool B (vzadu vpravo): vlevo přes rampu na okraj a přes safety na Donkey Rail. Měří se: metry na railu."
+
+msgid "Erst runter, dann flach: auf dem flachen Stück bremst es nicht mehr, dort ruhig bleiben."
+msgstr "Nejdřív dolů, pak rovně: na rovném úseku už nebrzdí, tam zůstaň klidný."
+
+msgid "Low to High Ledge"
+msgstr "Low to High Ledge"
+
+msgid "Ausgang: Low to High Ledge"
+msgstr "Výjezd: Low to High Ledge"
+
+msgid "Pool B: rechts auf den Rand und auf die Low to High Ledge – sie steigt noch an. Gemessen: Meter auf der Ledge."
+msgstr "Pool B: vpravo na okraj a na Low to High Ledge – ta ještě stoupá. Měří se: metry na ledge."
+
+msgid "Bergauf kostet Tempo: mit gespanntem Seil auf den Rand kommen. Hinten ist sie 2 m hoch – gerade abspringen."
+msgstr "Do kopce to stojí rychlost: přijeď na okraj s napnutým lanem. Vzadu má 2 m – odraz se rovně."
+
+msgid "Double Kinked Rail"
+msgstr "Double Kinked Rail"
+
+msgid "Ausgang: Double Kinked Rail"
+msgstr "Výjezd: Double Kinked Rail"
+
+msgid "Pool C (links): außen über die Rampe auf den Rand und auf das Double Kinked Rail mit zwei Knicken. Gemessen: Meter auf dem Rail."
+msgstr "Pool C (vlevo): zvenku přes rampu na okraj a na Double Kinked Rail se dvěma zlomy. Měří se: metry na railu."
+
+msgid "Außen zieht das Seil dich zur Mitte – auf dem Rand nicht gegenlenken, das Einloggen hält die Spur."
+msgstr "Zvenku tě lano táhne ke středu – na okraji nekontruj, přichycení drží linii."
+
+msgid "Flat Down Ledge"
+msgstr "Flat Down Ledge"
+
+msgid "Ausgang: Flat Down Ledge"
+msgstr "Výjezd: Flat Down Ledge"
+
+msgid "Pool C: innen (zum Seil hin) auf den Rand und auf die Flat Down Ledge – erst flach, dann abwärts. Gemessen: Meter auf der Ledge."
+msgstr "Pool C: zevnitř (směrem k lanu) na okraj a na Flat Down Ledge – nejdřív rovně, pak dolů. Měří se: metry na ledge."
+
+msgid "Die innere Seite liegt nah am Seil – das Seil zieht kaum quer, dafür ist die Spur schmal."
+msgstr "Vnitřní strana leží blízko lana – lano skoro netáhne do strany, zato je linie úzká."
+
+msgid "Rail to Rail"
+msgstr "Rail to Rail"
+
+msgid "Auf dem Slider seitlich auf den Nachbarn hinüberspringen."
+msgstr "Ze slideru skočit bokem na souseda."
+
+msgid "Pipe to Pipe"
+msgstr "Pipe to Pipe"
+
+msgid "Rechts stehen zwei Pipes nebeneinander (0,8 m Lücke). Über die Auffahrt auf die äußere, kurze Pipe, dann seitlich auf die innere, lange Pipe hinüberspringen. Gemessen: gerutschte Meter auf der zweiten Pipe – je früher der Transfer, desto mehr."
+msgstr "Vpravo stojí dvě pipe vedle sebe (mezera 0,8 m). Vyjeď po nájezdu na vnější krátkou pipe, pak skoč bokem na vnitřní dlouhou. Měří se: ujeté metry na druhé pipe – čím dřív transfer, tím víc."
+
+msgid "Auf der Pipe Leertaste halten, dabei ← (Seite), Leertaste loslassen = Hop"
+msgstr "Na pipe drž mezerník, k tomu ← (strana), pusť mezerník = hop"
+
+msgid "Auf der Pipe SPRUNG halten, dabei ← (Seite), SPRUNG loslassen = Hop"
+msgstr "Na pipe drž SKOK, k tomu ← (strana), pusť SKOK = hop"
+
+msgid "Schon auf der Auffahrt laden, auf der Pipe ← dazu und loslassen. Die Hop-Hilfe zielt auf die Mitte der Nachbar-Pipe. In der Luft dreht ←/→ erst wieder, wenn du es einmal losgelassen hast."
+msgstr "Nabíjej už na nájezdu, na pipe přidej ← a pusť. Pomoc pro hop míří na střed sousední pipe. Ve vzduchu ←/→ zase točí, až když ji jednou pustíš."
+
+msgid "Pipe to Pipe to Pipe"
+msgstr "Pipe to Pipe to Pipe"
+
+msgid "Links stehen drei Pipes versetzt nebeneinander wie eine Treppe zur Seilmitte. Auf die erste, dann zweimal hinüber: Pipe 1 → Pipe 2 → Pipe 3. Gemessen: gerutschte Meter auf der dritten Pipe."
+msgstr "Vlevo stojí tři pipe posunuté vedle sebe jako schody ke středu. Na první, pak dvakrát vedle: Pipe 1 → Pipe 2 → Pipe 3. Měří se: ujeté metry na třetí pipe."
+
+msgid "Auf der Pipe Leertaste halten, dabei → (Seite), Leertaste loslassen = Hop – auf Pipe 2 gleich nochmal"
+msgstr "Na pipe drž mezerník, k tomu → (strana), pusť mezerník = hop – na pipe 2 hned znovu"
+
+msgid "Auf der Pipe SPRUNG halten, dabei → (Seite), SPRUNG loslassen = Hop – auf Pipe 2 gleich nochmal"
+msgstr "Na pipe drž SKOK, k tomu → (strana), pusť SKOK = hop – na pipe 2 hned znovu"
+
+msgid "Pipe 2 ist kurz: sofort nach der Landung wieder laden. Ein kurzer Druck reicht für den Hop – voll aufladen muss man nicht."
+msgstr "Pipe 2 je krátká: hned po přistání znovu nabíjej. Na hop stačí krátký stisk – nabíjet naplno není třeba."
+
+msgid "BOOT"
+msgstr "LOĎ"
+
+msgid "DROHNE"
+msgstr "DRON"
+
+msgid ""
+"RANG-\n"
+"LISTE\n"
+"AUS"
+msgstr ""
+"ŽEB-\n"
+"ŘÍČEK\n"
+"VYP."
+
+msgid "KEINE RANGLISTE"
+msgstr "BEZ ŽEBŘÍČKU"
+
+msgid "DU"
+msgstr "TY"
+
+msgid "RANGLISTE"
+msgstr "ŽEBŘÍČEK"
+
+msgid "Noch frei – Platz 1 wartet"
+msgstr "Ještě volno – místo 1 čeká"
+
+msgid "Neuer Rekord!"
+msgstr "Nový rekord!"
+
+msgid "%s überholt!"
+msgstr "%s předjet!"
+
+msgid "%d überholt!"
+msgstr "Předjeto: %d!"
+
+msgid "DU · REKORD"
+msgstr "TY · REKORD"
+
+msgid "dein Rekord"
+msgstr "tvůj rekord"
+
+msgid "noch %s bis %d."
+msgstr "ještě %s na %d. místo"
+
+msgid "PAUSE"
+msgstr "PAUZA"
+
+msgid "Weiter  (Esc)"
+msgstr "Pokračovat  (Esc)"
+
+msgid "Einstellungen"
+msgstr "Nastavení"
+
+msgid "Hilfe ein/aus"
+msgstr "Nápověda zap./vyp."
+
+msgid "Nächster Titel"
+msgstr "Další skladba"
+
+msgid "Startseite"
+msgstr "Úvodní obrazovka"
+
+msgid "Zurück"
+msgstr "Zpět"
+
+msgid "SETUP-EDITOR"
+msgstr "EDITOR SETUPŮ"
+
+msgid "Name des Setups"
+msgstr "Název setupu"
+
+msgid "Terminal 2 (Strand)"
+msgstr "Terminál 2 (pláž)"
+
+msgid "Terminal 1 (Lounge-Steg)"
+msgstr "Terminál 1 (lounge molo)"
+
+msgid "Rückgängig"
+msgstr "Zpět o krok"
+
+msgid "Strg+Z"
+msgstr "Ctrl+Z"
+
+msgid "Wiederholen"
+msgstr "Znovu"
+
+msgid "Strg+Y"
+msgstr "Ctrl+Y"
+
+msgid "SPEICHERN"
+msgstr "ULOŽIT"
+
+msgid "SPEICHERN & FAHREN"
+msgstr "ULOŽIT A JET"
+
+msgid "Ganze Bahn zeigen"
+msgstr "Ukázat celou dráhu"
+
+msgid "Hacks werden beim Öffnen gesammelt …"
+msgstr "Hacky se sbírají při otevření …"
+
+msgid "Antippen stellt das Teil in die Mitte der Karte. Danach ziehen, drehen, Richtung wählen."
+msgstr "Ťuknutím postavíš díl doprostřed mapy. Pak táhnout, otáčet, zvolit směr."
+
+msgid "VORLAGE LADEN   (ersetzt beide Terminals)"
+msgstr "NAČÍST ŠABLONU   (nahradí oba terminály)"
+
+msgid "TERMINAL"
+msgstr "TERMINÁL"
+
+msgid "Terminal leeren"
+msgstr "Vyprázdnit terminál"
+
+msgid "Vom anderen Terminal"
+msgstr "Z druhého terminálu"
+
+msgid "Teile des anderen Terminals hierher kopieren (ersetzt dieses Terminal)"
+msgstr "Zkopírovat sem díly druhého terminálu (nahradí tento terminál)"
+
+msgid "JSON   (zum Weitergeben oder für setups/ im Projekt)"
+msgstr "JSON   (ke sdílení nebo pro setups/ v projektu)"
+
+msgid "Hier ein Setup-JSON einfügen und „Aus Text laden“ drücken"
+msgstr "Sem vlož JSON setupu a stiskni „Načíst z textu“"
+
+msgid "Als JSON kopieren"
+msgstr "Kopírovat jako JSON"
+
+msgid "JSON in die Zwischenablage kopiert"
+msgstr "JSON zkopírován do schránky"
+
+msgid "Aus Text laden"
+msgstr "Načíst z textu"
+
+msgid "Eigenes Setup löschen"
+msgstr "Smazat vlastní setup"
+
+msgid "Leeres Setup"
+msgstr "Prázdný setup"
+
+msgid "Nicht gespeichert! Nochmal „Zurück“ = trotzdem verlassen (bleibt bis zum Neuladen erhalten)"
+msgstr "Neuloženo! Znovu „Zpět“ = přesto odejít (zůstane do znovunačtení)"
+
+msgid "Mein %s"
+msgstr "Můj %s"
+
+msgid "verschieben   s %+.1f m   x %+.1f m"
+msgstr "posun   s %+.1f m   x %+.1f m"
+
+msgid "%s eingefügt"
+msgstr "Vloženo: %s"
+
+msgid ""
+"Nichts ausgewählt. Ein Feature in der Karte antippen (doppelt = ganzer Hack), Umschalt/Strg + Klick wählt mehrere.\n"
+"\n"
+"Tasten: Pfeile verschieben (Umschalt 1 m), Q/E drehen, F Richtung, M spiegeln, Strg+D duplizieren, Entf löschen, Strg+Z rückgängig."
+msgstr ""
+"Nic není vybráno. Ťukni na feature v mapě (dvakrát = celý hack), Shift/Ctrl + klik vybere více.\n"
+"\n"
+"Klávesy: šipky posun (Shift 1 m), Q/E otáčení, F směr, M zrcadlit, Ctrl+D duplikovat, Del smazat, Ctrl+Z zpět."
+
+msgid "POSITION ENTLANG DES SEILS  s (m)"
+msgstr "POZICE PODÉL LANA  s (m)"
+
+msgid "SEITLICH  x (m)   + rechts, − links (Blick zum Endmast)"
+msgstr "DO STRANY  x (m)   + vpravo, − vlevo (pohled ke koncovému stožáru)"
+
+msgid "DREHUNG (Grad)"
+msgstr "OTOČENÍ (stupně)"
+
+msgid "RICHTUNG (Anfahrt)"
+msgstr "SMĚR (nájezd)"
+
+msgid "%d Teile ausgewählt – sie werden gemeinsam verschoben, gedreht und gespiegelt."
+msgstr "Vybráno dílů: %d – posouvají se, otáčejí a zrcadlí společně."
+
+msgid "%d Teil"
+msgid_plural "%d Teile"
+msgstr[0] "%d díl"
+msgstr[1] "%d díly"
+msgstr[2] "%d dílů"
+
+msgid "Antippen fügt den Hack in die Mitte der Karte ein (gleiche Anordnung, seitlich wie im Original)."
+msgstr "Ťuknutím vložíš hack doprostřed mapy (stejné uspořádání, do strany jako v originálu)."
+
+msgid ""
+"%s\n"
+"Im Setup: %s"
+msgstr ""
+"%s\n"
+"V setupu: %s"
+
+msgid "%s: %d Features/Hacks (%d Zeilen), davon %d Hacks.   %s: %d Zeilen."
+msgstr "%s: %d featurů/hacků (%d řádků), z toho %d hacků.   %s: %d řádků."
+
+msgid "Achtung: %s bei s = %.0f m liegt außerhalb der Fahrstrecke."
+msgstr "Pozor: %s na s = %.0f m leží mimo jízdní dráhu."
+
+msgid "Eigenes Setup (gespeichert)"
+msgstr "Vlastní setup (uložený)"
+
+msgid "Noch nicht gespeichert – „Speichern“ legt ein eigenes Setup an."
+msgstr "Ještě neuloženo – „Uložit“ vytvoří vlastní setup."
+
+msgid "Pflanzen   ·   %s: %s   ·   linke Taste = Pinsel, rechte Taste ziehen = Karte bewegen, Rad / + − = Zoom"
+msgstr "Rostliny   ·   %s: %s   ·   levé tlačítko = štětec, tažení pravým = posun mapy, kolečko / + − = zoom"
+
+msgid "%s   ·   %d Teile   ·   Ziehen = verschieben, freie Fläche ziehen = Karte bewegen, Rad / + − = Zoom"
+msgstr "%s   ·   dílů: %d   ·   tažení = posun, tažení v prázdnu = posun mapy, kolečko / + − = zoom"
+
+msgid "Kein gültiges Setup-JSON (braucht \"T2\" und/oder \"T1\")"
+msgstr "Neplatný JSON setupu (potřebuje \"T2\" a/nebo \"T1\")"
+
+msgid "Setup aus Text geladen"
+msgstr "Setup načten z textu"
+
+msgid "Speichern fehlgeschlagen"
+msgstr "Uložení se nezdařilo"
+
+msgid "Gespeichert: %s"
+msgstr "Uloženo: %s"
+
+msgid "Eigenes Setup gelöscht (bleibt hier zum Weiterbearbeiten)"
+msgstr "Vlastní setup smazán (zůstává tu k další úpravě)"
+
+msgid "Auf dem Luftbild malen. Wo du malst, radierst oder die Automatik zurückholst, übernimmst du die Stelle: dort setzt das Spiel nichts Automatisches mehr (Wiesengras, Schilf, Ufergras bzw. Sträucher und Bäume aus dem Wald) – getrennt für Bodenpflanzen und Gehölze. Rechte Maustaste ziehen = Karte bewegen."
+msgstr "Maluj na letecký snímek. Kde maluješ, mažeš nebo vracíš automatiku, převezmeš místo: hra tam už nic automaticky nesází (luční tráva, rákos, pobřežní tráva nebo keře a stromy z lesa) – zvlášť pro přízemní rostliny a dřeviny. Tažení pravým tlačítkem myši = posun mapy."
+
+msgid "WERKZEUG"
+msgstr "NÁSTROJ"
+
+msgid "PFLANZE   (Radieren/Automatik wirken auf ihre Ebene)"
+msgstr "ROSTLINA   (mazání/automatika působí na její vrstvu)"
+
+msgid "%s: %.1f–%.1f m hoch, Abstand %.1f m – %s"
+msgstr "%s: %.1f–%.1f m vysoké, rozestup %.1f m – %s"
+
+msgid "PINSEL"
+msgstr "ŠTĚTEC"
+
+msgid "DICHTE BEIM MALEN"
+msgstr "HUSTOTA MALOVÁNÍ"
+
+msgid "PFLANZEN SPEICHERN"
+msgstr "ULOŽIT ROSTLINY"
+
+msgid "Für setups/plants.json im Projekt"
+msgstr "Pro setups/plants.json v projektu"
+
+msgid "Bepflanzung als JSON in die Zwischenablage kopiert"
+msgstr "Výsadba zkopírována do schránky jako JSON"
+
+msgid "Zurücksetzen"
+msgstr "Obnovit"
+
+msgid "Eigene Bepflanzung löschen, wieder die aus dem Spiel"
+msgstr "Smazat vlastní výsadbu, zpět na tu ze hry"
+
+msgid "Bepflanzung aus dem Spiel geladen"
+msgstr "Výsadba ze hry načtena"
+
+msgid "Gemalt: %s"
+msgstr "Namalováno: %s"
+
+msgid "noch nichts"
+msgstr "zatím nic"
+
+msgid "Von Hand gepflegt: %d m² Boden, %d m² Gehölz"
+msgstr "Ručně udržováno: %d m² půda, %d m² dřeviny"
+
+msgid "Ebene der Pflanze: %s"
+msgstr "Vrstva rostliny: %s"
+
+msgid "Nicht gespeichert."
+msgstr "Neuloženo."
+
+msgid "Bepflanzung gespeichert (%s), im Spiel neu aufgebaut"
+msgstr "Výsadba uložena (%s), ve hře znovu postavena"
+
+msgid "links (−x)"
+msgstr "vlevo (−x)"
+
+msgid "rechts (+x)"
+msgstr "vpravo (+x)"
+
+msgid "2 Ausgänge (wählbar)"
+msgstr "2 výjezdy (volitelné)"
+
+msgid "Modul: %s"
+msgstr "Modul: %s"
+
+msgid "%s   %.1f × %.1f m, Höhe %.2f m"
+msgstr "%s   %.1f × %.1f m, výška %.2f m"
+
+msgid "KICKER & WEDGES"
+msgstr "KICKERY A WEDGE"
+
+msgid "BOXEN, LEDGES & CURBS"
+msgstr "BOXY, LEDGE A CURBY"
+
+msgid "RAILS & PIPES"
+msgstr "RAILY A PIPE"
+
+msgid "MODULE (MEHRERE TEILE)"
+msgstr "MODULY (VÍCE DÍLŮ)"
+
+msgid "SONSTIGES"
+msgstr "OSTATNÍ"
+
+msgid "Malen"
+msgstr "Malovat"
+
+msgid "Radieren"
+msgstr "Mazat"
+
+msgid "Automatik"
+msgstr "Automatika"
+
+msgid "Schieben"
+msgstr "Posouvat"
+
+msgid "Teile"
+msgstr "Díly"
+
+msgid "Hacks"
+msgstr "Hacky"
+
+msgid "Auswahl"
+msgstr "Výběr"
+
+msgid "Setup"
+msgstr "Setup"
+
+msgid "Pflanzen"
+msgstr "Rostliny"
+
+msgid "Zum Endmast  →"
+msgstr "Ke koncovému stožáru  →"
+
+msgid "←  Zum Steg"
+msgstr "←  K molu"
+
+msgid "AUSGANG LINKS (Blick von der Rampe)"
+msgstr "VÝJEZD VLEVO (pohled z rampy)"
+
+msgid "AUSGANG RECHTS (Blick von der Rampe)"
+msgstr "VÝJEZD VPRAVO (pohled z rampy)"
+
+msgid "AUFFAHRT VORNE (m, 0 = ab)"
+msgstr "NÁJEZD VPŘEDU (m, 0 = žádný)"
+
+msgid "AUFFAHRT HINTEN (m, 0 = ab)"
+msgstr "NÁJEZD VZADU (m, 0 = žádný)"
+
+msgid "Drehen +15°  (Q)"
+msgstr "Otočit +15°  (Q)"
+
+msgid "Drehen −15°  (E)"
+msgstr "Otočit −15°  (E)"
+
+msgid "Umdrehen  (F)"
+msgstr "Obrátit  (F)"
+
+msgid "Spiegeln  (M)"
+msgstr "Zrcadlit  (M)"
+
+msgid "Duplizieren"
+msgstr "Duplikovat"
+
+msgid "Ganzen Hack wählen"
+msgstr "Vybrat celý hack"
+
+msgid "Löschen"
+msgstr "Smazat"
+
+msgid "HACKS"
+msgstr "HACKY"
+
+msgid "GÄNGIGE KOMBINATIONEN"
+msgstr "BĚŽNÉ KOMBINACE"
+
+msgid "Gewählte Pflanze setzen"
+msgstr "Zasadit vybranou rostlinu"
+
+msgid "Pflanzen der Ebene entfernen (auch die automatischen)"
+msgstr "Odstranit rostliny vrstvy (i automatické)"
+
+msgid "Stellen wieder der Automatik überlassen (entfernt Gemaltes der Ebene)"
+msgstr "Vrátit místa automatice (odstraní namalované ve vrstvě)"
+
+msgid "Karte mit dem Finger bewegen"
+msgstr "Posouvat mapu prstem"
+
+msgid "Startmast"
+msgstr "Startovní stožár"
+
+msgid "rote Boje"
+msgstr "červená bóje"
+
+msgid "Endmast"
+msgstr "Koncový stožár"
+
+msgid "WAKE THE HACK"
+msgstr "WAKE THE HACK"
+
+msgid "Wakeport Raunheim"
+msgstr "Wakeport Raunheim"
+
+msgid "„%s“"
+msgstr "„%s“"
+
+msgid "SPIELMODUS"
+msgstr "HERNÍ REŽIM"
+
+msgid "COMMUNITY CHALLENGE"
+msgstr "COMMUNITY CHALLENGE"
+
+msgid "SZENARIO"
+msgstr "SCÉNÁŘ"
+
+msgid "Zufällig"
+msgstr "Náhodný"
+
+msgid "Neues Szenario würfeln  (Z, Gamepad: Share)"
+msgstr "Vylosovat nový scénář  (Z, gamepad: Share)"
+
+msgid "CHALLENGE"
+msgstr "CHALLENGE"
+
+msgid "FEATURE-SETUP"
+msgstr "SETUP FEATURŮ"
+
+msgid "Setup-Editor"
+msgstr "Editor setupů"
+
+msgid "Erfolge"
+msgstr "Úspěchy"
+
+msgid "Rangliste"
+msgstr "Žebříček"
+
+msgid "SPIEL STARTEN"
+msgstr "SPUSTIT HRU"
+
+msgid "Kostenlos & Open Source – spendier mir einen Kaffee"
+msgstr "Zdarma a open source – kup mi kafe"
+
+msgid "CHALLENGE STARTEN"
+msgstr "SPUSTIT CHALLENGE"
+
+msgid "Bestwert: %s"
+msgstr "Rekord: %s"
+
+msgid "EINSTELLUNGEN"
+msgstr "NASTAVENÍ"
+
+msgid "Spiel"
+msgstr "Hra"
+
+msgid "Fahrer"
+msgstr "Jezdec"
+
+msgid "Welt"
+msgstr "Svět"
+
+msgid "Technik"
+msgstr "Technika"
+
+msgid "Wasser"
+msgstr "Voda"
+
+msgid "FERTIG"
+msgstr "HOTOVO"
+
+msgid "Automatisch (System)"
+msgstr "Automaticky (systém)"
+
+msgid "SPRACHE"
+msgstr "JAZYK"
+
+msgid "COMPETITION: RUNDENLÄNGE"
+msgstr "COMPETITION: DÉLKA KOLA"
+
+msgid "HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"
+msgstr "POMOCNÍCI   (každý vypnutý pomocník +15 % na všechny triky)"
+
+msgid "Auf dem Slider einloggen"
+msgstr "Přichycení na slideru"
+
+msgid "An"
+msgstr "Zap."
+
+msgid "Überschlag dreht von selbst zu Ende"
+msgstr "Rotace se dotočí sama"
+
+msgid "SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G; Aus = keine Rangliste)"
+msgstr "LIMIT TAHU   (moc velký tah ti vytrhne hrazdu z ruky; ve hře G; vyp. = bez žebříčku)"
+
+msgid "BRETT"
+msgstr "PRKNO"
+
+msgid "STANCE   (Regular: links vorne)"
+msgstr "STANCE   (Regular: levá noha vpředu)"
+
+msgid "Regular"
+msgstr "Regular"
+
+msgid "Goofy"
+msgstr "Goofy"
+
+msgid "HELM"
+msgstr "HELMA"
+
+msgid "WESTE"
+msgstr "VESTA"
+
+msgid "WETTER   (von Hand, bis zum Neustart; Szenario auf der Startseite)"
+msgstr "POČASÍ   (ručně, do restartu; scénář na úvodní obrazovce)"
+
+msgid "DATUM"
+msgstr "DATUM"
+
+msgid "UHRZEIT"
+msgstr "ČAS"
+
+msgid "Jetzt  (live)"
+msgstr "Teď  (živě)"
+
+msgid "Heute, aktuelle Uhrzeit und Wetter am See"
+msgstr "Dnes, aktuální čas a počasí u jezera"
+
+msgid "SEILLÄNGE"
+msgstr "DÉLKA LANA"
+
+msgid "ANLAGEN-TEMPO"
+msgstr "RYCHLOST VLEKU"
+
+msgid "%d km/h"
+msgstr "%d km/h"
+
+msgid "Seil und Tempo: Standard  (16 m, 30 km/h)"
+msgstr "Lano a rychlost: standard  (16 m, 30 km/h)"
+
+msgid "FLUGZEUGE"
+msgstr "LETADLA"
+
+msgid "Normal"
+msgstr "Normálně"
+
+msgid "Rush Hour"
+msgstr "Špička"
+
+msgid "FAHRER AUF DER ANDEREN ANLAGE"
+msgstr "JEZDEC NA DRUHÉM VLEKU"
+
+msgid "CHALLENGE: FILMTEAM"
+msgstr "CHALLENGE: FILMOVÝ ŠTÁB"
+
+msgid "Zufall"
+msgstr "Náhodně"
+
+msgid "Boot"
+msgstr "Loď"
+
+msgid "Drohne"
+msgstr "Dron"
+
+msgid "LAUTSTÄRKE EFFEKTE"
+msgstr "HLASITOST EFEKTŮ"
+
+msgid "LAUTSTÄRKE JUBEL"
+msgstr "HLASITOST FANDĚNÍ"
+
+msgid "LAUTSTÄRKE FLUGZEUGE"
+msgstr "HLASITOST LETADEL"
+
+msgid "KAMERA"
+msgstr "KAMERA"
+
+msgid "KAMERA-ABSTAND"
+msgstr "VZDÁLENOST KAMERY"
+
+msgid "LENKUNG"
+msgstr "ŘÍZENÍ"
+
+msgid "Gyro (Handy neigen)"
+msgstr "Gyro (naklánění mobilu)"
+
+msgid "Tasten (Steuerkreuz)"
+msgstr "Tlačítka (kříž)"
+
+msgid "NEIGUNG ZUM LENKEN"
+msgstr "NÁKLON PRO ŘÍZENÍ"
+
+msgid "Wenig empfindlich"
+msgstr "Málo citlivé"
+
+msgid "Sehr empfindlich"
+msgstr "Velmi citlivé"
+
+msgid "NEIGUNG UMKEHREN"
+msgstr "OBRÁTIT NÁKLON"
+
+msgid "Nein"
+msgstr "Ne"
+
+msgid "Ja"
+msgstr "Ano"
+
+msgid "Die Grafikstufe stellt alle Wasser-Effekte passend ein. Einzelne Effekte lassen sich hier an- und ausschalten (wirkt sofort) – weicht etwas von der Stufe ab, steht die Grafik auf „Custom“."
+msgstr "Úroveň grafiky nastaví všechny vodní efekty. Jednotlivé efekty tu můžeš zapnout a vypnout (projeví se hned) – když se něco liší od úrovně, grafika ukazuje „Custom“."
+
+msgid "WASSERFARBE"
+msgstr "BARVA VODY"
+
+msgid "Türkis  (bisher)"
+msgstr "Tyrkysová  (dřívější)"
+
+msgid "Seeblau"
+msgstr "Jezerní modrá"
+
+msgid "OBERFLÄCHENSTRUKTUR   (gleitende Kräuselung statt Sinus)"
+msgstr "STRUKTURA HLADINY   (klouzavé čeření místo sinusu)"
+
+msgid "SPIEGELUNG JE NACH BLICKWINKEL   (flach: Himmel, von oben: ins Wasser)"
+msgstr "ODRAZ PODLE ÚHLU POHLEDU   (naplocho: obloha, shora: do vody)"
+
+msgid "SONNENGLITZERN"
+msgstr "TŘPYTKY SLUNCE"
+
+msgid "LICHT DURCH DIE WELLENKÄMME"
+msgstr "SVĚTLO HŘEBENY VLN"
+
+msgid "SCHAUM MIT STRUKTUR   (fleckig, reißt auf)"
+msgstr "PĚNA SE STRUKTUROU   (skvrnitá, trhá se)"
+
+msgid "SPITZE WELLEN   (auch für die Physik)"
+msgstr "OSTRÉ VLNY   (i pro fyziku)"
+
+msgid "MIT WASSERTIEFE   (etwas teurer; Wasser wird dafür transparent gezeichnet)"
+msgstr "S HLOUBKOU VODY   (o něco náročnější; voda se kreslí průhledně)"
+
+msgid "DURCHSICHT IM FLACHEN"
+msgstr "PRŮHLEDNOST NA MĚLČINĚ"
+
+msgid "ECHTE SPIEGELBILDER   (nur Desktop, teuer; nur wenn die Durchsicht aus ist)"
+msgstr "SKUTEČNÉ ODRAZY   (jen desktop, náročné; jen když je průhlednost vypnutá)"
+
+msgid "Spiel-Musik: lizenzfreie Titel von Pixabay. Dazu kannst du eigene Titel wählen (MP3, OGG, WAV) – sie bleiben auf diesem Gerät bzw. in diesem Browser gespeichert. Alles läuft gemischt im Hintergrund."
+msgstr "Herní hudba: skladby bez licenčních poplatků z Pixabay. K tomu si můžeš vybrat vlastní skladby (MP3, OGG, WAV) – zůstanou uložené v tomto zařízení nebo prohlížeči. Vše hraje zamíchané na pozadí."
+
+msgid "MUSIK"
+msgstr "HUDBA"
+
+msgid "QUELLE"
+msgstr "ZDROJ"
+
+msgid "Spiel-Musik"
+msgstr "Herní hudba"
+
+msgid "Eigene Titel"
+msgstr "Vlastní skladby"
+
+msgid "Beides"
+msgstr "Obojí"
+
+msgid "LAUTSTÄRKE MUSIK"
+msgstr "HLASITOST HUDBY"
+
+msgid "Titel hinzufügen"
+msgstr "Přidat skladby"
+
+msgid "Eigene entfernen"
+msgstr "Odstranit vlastní"
+
+msgid "%d Spiel-Musik, %d eigene"
+msgstr "Herní hudba: %d, vlastní: %d"
+
+msgid "lädt: %s"
+msgstr "načítá se: %s"
+
+msgid "Danke für die Spiel-Musik (Pixabay): %s"
+msgstr "Díky za herní hudbu (Pixabay): %s"
+
+msgid "ODER NEBENHER HÖREN, z. B. mit Spotify (dann hier Musik aus)"
+msgstr "NEBO POSLOUCHEJ BOKEM, např. přes Spotify (pak tady hudbu vypni)"
+
+msgid "Skate-Punk bei Spotify"
+msgstr "Skate punk na Spotify"
+
+msgid "GRAFIK   (niedrig = flüssiger, schont den Akku; stellt auch das Wasser ein)"
+msgstr "GRAFIKA   (nízká = plynulejší, šetří baterii; nastaví i vodu)"
+
+msgid "Nr. %d"
+msgstr "Č. %d"
+
+msgid "FEATURES & HACKS"
+msgstr "FEATURY A HACKY"
+
+msgid "GEHEIME ERFOLGE"
+msgstr "TAJNÉ ÚSPĚCHY"
+
+msgid "%d von %d entdeckt – was es gibt, siehst du erst, wenn du es geschafft hast."
+msgstr "Objeveno %d z %d – co existuje, uvidíš, až to dokážeš."
+
+msgid "IN DER RANGLISTE ERSCHEINEN"
+msgstr "ZOBRAZOVAT MĚ V ŽEBŘÍČKU"
+
+msgid "DEIN NAME"
+msgstr "TVOJE JMÉNO"
+
+msgid "ohne Namen: anonym"
+msgstr "bez jména: anonymně"
+
+msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
+msgstr "Tvoje jméno do žebříčku (2 až 16 znaků)"
+
+msgid "Speichern"
+msgstr "Uložit"
+
+msgid "Wird gelöscht …"
+msgstr "Maže se …"
+
+msgid "Gelöscht: Name und alle deine Einträge."
+msgstr "Smazáno: jméno a všechny tvoje záznamy."
+
+msgid "Heads up! Das Game ist noch mitten im Shape – Physik und Punkte werden ständig nachgeschliffen. Darum wird die Rangliste ab und zu gewiped. Kein Stress: einfach neu droppen und wieder ganz nach oben shredden."
+msgstr "Heads up! Hra je pořád uprostřed shapu – fyzika a body se neustále ladí. Proto se žebříček občas wipne. Žádný stres: prostě znovu dropni a shreduj zpátky až nahoru."
+
+msgid "Lädt …"
+msgstr "Načítá se …"
+
+msgid "Challenge"
+msgstr "Challenge"
+
+msgid "Noch keine Einträge"
+msgstr "Zatím žádné záznamy"
+
+msgid "Noch niemand in der Rangliste – fahr den ersten Eintrag!"
+msgstr "V žebříčku zatím nikdo není – zajeď první záznam!"
+
+msgid "Test-Version: eigene Test-Rangliste"
+msgstr "Testovací verze: vlastní testovací žebříček"
+
+msgid "Noch kein Eintrag – fahr den ersten!"
+msgstr "Zatím bez záznamu – zajeď první!"
+
+msgid "%d Fahrer"
+msgid_plural "%d Fahrer"
+msgstr[0] "%d jezdec"
+msgstr[1] "%d jezdci"
+msgstr[2] "%d jezdců"
+
+msgid "Wertung geändert: ältere Ergebnisse stehen in einer früheren Rangliste"
+msgstr "Hodnocení změněno: starší výsledky jsou v dřívějším žebříčku"
+
+msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
+msgstr "Jméno zůstává. Úplně ven: přepínač nahoře na Vyp. (smaže vše)."
+
+msgid "Wird gespeichert …"
+msgstr "Ukládá se …"
+
+msgid "Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."
+msgstr "Uloženo. Tvoje záznamy jsou teď pod tímto jménem."
+
+msgid "Deine Bestwerte erscheinen öffentlich in der Rangliste – ohne Namen als „Anonym #…“. Gespeichert werden nur Name (falls angegeben), Bestwerte und Datum, dazu eine zufällige Geräte-Nummer als Prüfsumme. Aus = alles löschen."
+msgstr "Tvoje rekordy se veřejně objeví v žebříčku – bez jména jako „Anonym #…“. Ukládá se jen jméno (pokud je zadané), rekordy a datum, k tomu náhodné číslo zařízení jako kontrolní součet. Vyp. = smazat vše."
+
+msgid "Du erscheinst nicht in der Rangliste, es wird nichts gesendet."
+msgstr "Nejsi v žebříčku, nic se neodesílá."
+
+msgid "erreicht am %s"
+msgstr "získáno %s"
+
+msgid "Geheim"
+msgstr "Tajné"
+
+msgid "Noch nicht entdeckt"
+msgstr "Zatím neobjeveno"
+
+msgid "Im Setup: %s"
+msgstr "V setupu: %s"
+
+msgid "Gelb / Grün"
+msgstr "Žlutá / Zelená"
+
+msgid "Weiß / Schwarz"
+msgstr "Bílá / Černá"
+
+msgid "Blau"
+msgstr "Modrá"
+
+msgid "Orange"
+msgstr "Oranžová"
+
+msgid "Schwarz glänzend"
+msgstr "Lesklá černá"
+
+msgid "Pink / Türkis"
+msgstr "Růžová / Tyrkysová"
+
+msgid "Oliv"
+msgstr "Olivová"
+
+msgid "Rot"
+msgstr "Červená"
+
+msgid "Grün"
+msgstr "Zelená"
+
+msgid "Gelb"
+msgstr "Žlutá"
+
+msgid "Lila"
+msgstr "Fialová"
+
+msgid "Schwarz"
+msgstr "Černá"
+
+msgid "Weiß"
+msgstr "Bílá"
+
+msgid "LOS"
+msgstr "JEDEM"
+
+msgid "Nächste Challenge"
+msgstr "Další challenge"
+
+msgid "Steuerung:"
+msgstr "Ovládání:"
+
+msgid "Tipp:"
+msgstr "Tip:"
+
+msgid "Leertaste"
+msgstr "Mezerník"
+
+msgid "Neue Bestleistung!"
+msgstr "Nový osobní rekord!"
+
+msgid "NOCHMAL"
+msgstr "ZNOVU"
+
+msgid "RUNDE BEENDET"
+msgstr "KOLO SKONČILO"
+
+msgid "ERNEUT SPIELEN"
+msgstr "HRÁT ZNOVU"
+
+msgid "DRIFT"
+msgstr "DRIFT"
+
+msgid "SPRUNG"
+msgstr "SKOK"
+
+msgid "SCHWIMMEN"
+msgstr "PLAVAT"
+
+msgid "Weiter"
+msgstr "Pokračovat"
+
+msgid "Zurück zum Steg  (−2:00)"
+msgstr "Zpět na molo  (−2:00)"
+
+msgid "Ton aus/an"
+msgstr "Zvuk vyp./zap."
+
+msgid "Szenario würfeln"
+msgstr "Náhodný scénář"
+
+msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
+msgstr "Vytržení lana zap./vyp.  (vyp.: bez žebříčku)"
+
+msgid "Sonnig"
+msgstr "Slunečno"
+
+msgid "Heiter"
+msgstr "Polojasno"
+
+msgid "Bewölkt"
+msgstr "Oblačno"
+
+msgid "Bedeckt"
+msgstr "Zataženo"
+
+msgid "Schauer"
+msgstr "Přeháňky"
+
+msgid "Regen"
+msgstr "Déšť"
+
+msgid "Dunst"
+msgstr "Opar"
+
+msgid "Schnee"
+msgstr "Sníh"
+
+msgid "Gewitter"
+msgstr "Bouřka"
+
+msgid "After Hour Raley Session"
+msgstr "After Hour Raley Session"
+
+msgid "Early Bird Session"
+msgstr "Early Bird Session"
+
+msgid "Hochsommer. Was für eine Hitze"
+msgstr "Vrcholné léto. To je ale vedro"
+
+msgid "Schöne Regen-Session"
+msgstr "Krásná session v dešti"
+
+msgid "Night Session"
+msgstr "Night Session"
+
+msgid "Sonne hinter den Bäumen"
+msgstr "Slunce za stromy"
+
+msgid "Nach dem Schauer"
+msgstr "Po přeháňce"
+
+msgid "Blaue Stunde"
+msgstr "Modrá hodinka"
+
+msgid "Goldener Oktober"
+msgstr "Zlatý říjen"
+
+msgid "Chemtrails, oder Kondensstreifen? ;-)"
+msgstr "Chemtrails, nebo kondenzační stopy? ;-)"
+
+msgid "Gewitter – YOLO"
+msgstr "Bouřka – YOLO"
+
+msgid "Nikolaus-Session"
+msgstr "Mikulášská session"
+
+msgid "2026 September"
+msgstr "Září 2026"
+
+msgid "Juli & August"
+msgstr "Červenec a srpen"
+
+msgid "(Jahr ?)"
+msgstr "(rok ?)"
+
+msgid "Setup A"
+msgstr "Setup A"
+
+msgid "(Datum ?)"
+msgstr "(datum ?)"
+
+msgid "Setup B"
+msgstr "Setup B"
+
+msgid "Setup C"
+msgstr "Setup C"
+
+msgid "Setup D"
+msgstr "Setup D"
+
+msgid "Setup E"
+msgstr "Setup E"
+
+msgid "Pool Party"
+msgstr "Pool Party"
+
+msgid "Utopia"
+msgstr "Utopia"
+
+msgid "Raildorado"
+msgstr "Raildorado"
+
+msgid "Kicker S"
+msgstr "Kicker S"
+
+msgid "Spine Kicker"
+msgstr "Spine Kicker"
+
+msgid "Pyramid Series"
+msgstr "Pyramid Series"
+
+msgid "Ollie Box"
+msgstr "Ollie Box"
+
+msgid "Ollie Box 1/2"
+msgstr "Ollie Box 1/2"
+
+msgid "Ledge"
+msgstr "Ledge"
+
+msgid "Ollie Box Ledge"
+msgstr "Ollie Box Ledge"
+
+msgid "Up Rail"
+msgstr "Up Rail"
+
+msgid "Transition Rail"
+msgstr "Transition Rail"
+
+msgid "1/2 Transition Rail"
+msgstr "1/2 Transition Rail"
+
+msgid "Pro Rail"
+msgstr "Pro Rail"
+
+msgid "Port Plaza"
+msgstr "Port Plaza"
+
+msgid "Plaza Rail"
+msgstr "Plaza Rail"
+
+msgid "Plaza Safety"
+msgstr "Plaza Safety"
+
+msgid "Plaza Rampe"
+msgstr "Rampa Plaza"
+
+msgid "Pipe 1/2"
+msgstr "Pipe 1/2"
+
+msgid "Pipe lang"
+msgstr "Dlouhá pipe"
+
+msgid "6-Stair Pool"
+msgstr "6-Stair Pool"
+
+msgid "Pool Rampe"
+msgstr "Rampa poolu"
+
+msgid "Treppe"
+msgstr "Schody"
+
+msgid "Down Rail"
+msgstr "Down Rail"
+
+msgid "Low to High Rail"
+msgstr "Low to High Rail"
+
+msgid "Double Kinked Ledge"
+msgstr "Double Kinked Ledge"
+
+msgid "Flat Down Rail"
+msgstr "Flat Down Rail"
+
+msgid "Ball"
+msgstr "Míč"
+
+msgid "Bump"
+msgstr "Bump"
+

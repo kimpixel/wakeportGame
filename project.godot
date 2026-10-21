@@ -40,3 +40,8 @@ bare={
 "type": "float",
 "value": 0.0
 }
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://locale/en.po", "res://locale/fr.po", "res://locale/es.po", "res://locale/nl.po", "res://locale/pl.po", "res://locale/cs.po", "res://locale/pt_BR.po")
+locale/fallback="de"

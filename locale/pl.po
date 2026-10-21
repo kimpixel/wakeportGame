@@ -1,0 +1,2750 @@
+# Polish – WakeTheHack
+msgid ""
+msgstr ""
+"Project-Id-Version: WakeTheHack\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pl\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Source-Language: de\n"
+
+msgid "Fischkontakt"
+msgstr "Kontakt z rybą"
+
+msgid "Mit einem springenden Hecht zusammengestoßen."
+msgstr "Zderzenie ze skaczącym szczupakiem."
+
+msgid "Nass gespritzt"
+msgstr "Ochlapany"
+
+msgid "Einen SUP-Paddler mit voller Fahrt nass gespritzt."
+msgstr "Ochlapałeś paddlera SUP przy pełnej prędkości."
+
+msgid "Steg-Landung"
+msgstr "Lądowanie na pomoście"
+
+msgid "Aus der Luft auf dem Startsteg gelandet."
+msgstr "Wylądowałeś z powietrza na pomoście startowym."
+
+msgid "Insekten fressen"
+msgstr "Przekąska z owadów"
+
+msgid "Am Waldrand von Terminal 1 durch einen Mückenschwarm gefahren. Mahlzeit!"
+msgstr "Przejechałeś przez rój komarów na skraju lasu przy Terminalu 1. Smacznego!"
+
+msgid "Boot crash"
+msgstr "Kraksa z łodzią"
+
+msgid "Ins rote Boot gefahren oder hineingefallen."
+msgstr "Wjechałeś w czerwoną łódź albo do niej wpadłeś."
+
+msgid "Ho ho ho!"
+msgstr "Ho ho ho!"
+
+msgid "Am Nikolaustag im Schnee eine Wende gefahren."
+msgstr "Przejechałeś nawrót w śniegu w dniu św. Mikołaja."
+
+msgid "Was ein Frechdachs"
+msgstr "Ale łobuz"
+
+msgid "Ein Haubentaucher ist direkt unter dir durchgetaucht."
+msgstr "Perkoz dwuczuby zanurkował tuż pod tobą."
+
+msgid "Schwanenliebe"
+msgstr "Łabędzia miłość"
+
+msgid "Zwei Schwäne haben mit ihren Hälsen ein Herz geformt – und du warst dabei."
+msgstr "Dwa łabędzie utworzyły szyjami serce – a ty to widziałeś."
+
+msgid "Zugvogel"
+msgstr "Ptak wędrowny"
+
+msgid "Einen Raley gesprungen, während die Kraniche über den See ziehen."
+msgstr "Skoczyłeś Raleya, gdy żurawie przelatywały nad jeziorem."
+
+msgid "Blitzableiter"
+msgstr "Piorunochron"
+
+msgid "Im Gewitter gefahren und vom Blitz getroffen. YOLO!"
+msgstr "Jeździłeś w czasie burzy i trafił cię piorun. YOLO!"
+
+msgid "Badegast"
+msgstr "Plażowicz"
+
+msgid "An einem heißen Tag einen Badegast auf der Luftmatratze nass gespritzt."
+msgstr "W upalny dzień ochlapałeś plażowicza na materacu."
+
+msgid "Arschbombe"
+msgstr "Bomba"
+
+msgid "Aus der Luft ins Becken des 6-Stair Pools gestürzt. Platsch!"
+msgstr "Spadłeś z powietrza do basenu 6-Stair Pool. Plusk!"
+
+msgid "Zeitung"
+msgstr "Gazeta"
+
+msgid "Sunset"
+msgstr "Sunset"
+
+msgid "Ice"
+msgstr "Ice"
+
+msgid "Topo"
+msgstr "Topo"
+
+msgid "Dots"
+msgstr "Dots"
+
+msgid "Bereit"
+msgstr "Gotowe"
+
+msgid "Anfahren"
+msgstr "Rusza"
+
+msgid "Fahrt → Mast 2"
+msgstr "Jazda → Maszt 2"
+
+msgid "Fahrt → Ufer"
+msgstr "Jazda → Brzeg"
+
+msgid "Bremst zur Wende"
+msgstr "Hamuje do nawrotu"
+
+msgid "Wende"
+msgstr "Nawrót"
+
+msgid "Operator bringt die Handle"
+msgstr "Operator przynosi rączkę"
+
+msgid "Wartet auf den Fahrer"
+msgstr "Czeka na ridera"
+
+msgid "Ende – zurück am Start"
+msgstr "Koniec – z powrotem na starcie"
+
+msgid "Abgesoffen"
+msgstr "Zatonąłeś"
+
+msgid "Gestürzt"
+msgstr "Upadek"
+
+msgid "Seil verloren"
+msgstr "Lina zgubiona"
+
+msgid "Nicht um die weiße Boje"
+msgstr "Nie dookoła białej boi"
+
+msgid "Ohne Absprung fahren"
+msgstr "Przejedź bez wybicia"
+
+msgid "Kicker verpasst"
+msgstr "Kicker chybiony"
+
+msgid "Slider verpasst"
+msgstr "Slider chybiony"
+
+msgid "Ins Wasser – Transfer verpasst"
+msgstr "Do wody – transfer chybiony"
+
+msgid "Pipe verpasst"
+msgstr "Pipe chybiona"
+
+msgid "Keine Kombination geschafft"
+msgstr "Żadna kombinacja nie wyszła"
+
+msgid "Kein Drift nach einem Feature"
+msgstr "Brak driftu po featurze"
+
+msgid "Kein Sprung-Start – auf dem Steg ↓ halten, bis das Seil losreißt"
+msgstr "Brak startu z pomostu – trzymaj ↓ na pomoście, aż lina cię wyrwie"
+
+msgid "Kein Raley – mehr Seilzug: weit raus, dann hart zur Mitte kanten (Marke RALEY)"
+msgstr "Brak Raleya – więcej naciągu: daleko na zewnątrz, potem mocno na krawędź do środka (znacznik RALEY)"
+
+msgid "Zeit abgelaufen"
+msgstr "Czas minął"
+
+msgid "Das war kein Raley Start – Brett quer zum Seil stellen"
+msgstr "To nie był Raley Start – ustaw deskę w poprzek liny"
+
+msgid "Das war kein Nolli – Brett längs zum Seil lassen"
+msgstr "To nie był Nolli – trzymaj deskę wzdłuż liny"
+
+msgid "Junge mach mal langsam! (%s)"
+msgstr "Spokojnie, kolego! (%s)"
+
+msgid "Das war %s – gefordert: %s"
+msgstr "To był %s – wymagane: %s"
+
+msgid "360 links im Drift!  (%d / %d)"
+msgstr "360 w lewo w drifcie!  (%d / %d)"
+
+msgid "360 rechts im Drift!  (%d / %d)"
+msgstr "360 w prawo w drifcie!  (%d / %d)"
+
+msgid "Kein 360 im Drift"
+msgstr "Brak 360 w drifcie"
+
+msgid "%s im Drift!  (%d Wechsel)"
+msgstr "%s w drifcie!  (zmian: %d)"
+
+msgid "Kein Press im Drift"
+msgstr "Brak pressu w drifcie"
+
+msgid "%s Drift"
+msgstr "Drift %s"
+
+msgid "ausgelassen"
+msgstr "pominięty"
+
+msgid "zu kurz auf dem Slider"
+msgstr "za krótko na sliderze"
+
+msgid "kein Ollie on (über die Auffahrt)"
+msgstr "brak ollie on (wjazd po rampie)"
+
+msgid "Aufspringen: %s statt %s"
+msgstr "Wskok: %s zamiast %s"
+
+msgid "%s statt %s"
+msgstr "%s zamiast %s"
+
+msgid "kein Press"
+msgstr "brak pressu"
+
+msgid "Abgang: %s statt %s"
+msgstr "Zjazd: %s zamiast %s"
+
+msgid "gerade"
+msgstr "prosto"
+
+msgid "%s geschafft!"
+msgstr "%s zaliczony!"
+
+msgid "Gerade abgefahren – hier quer mit Drift abgehen"
+msgstr "Zjazd prosto – tu zjedź bokiem z driftem"
+
+msgid "noch keine Medaille"
+msgstr "jeszcze bez medalu"
+
+msgid "Rangliste nicht mit Seilzug-Grenze „Aus“"
+msgstr "Brak rankingu przy limicie naciągu „Wył.”"
+
+msgid "Rangliste: wird gesendet …"
+msgstr "Ranking: wysyłanie …"
+
+msgid "Rangliste: Platz %d von %d"
+msgstr "Ranking: miejsce %d z %d"
+
+msgid "Rangliste: Platz %d von %d mit deinem Bestwert %s"
+msgstr "Ranking: miejsce %d z %d z twoim rekordem %s"
+
+msgid "als %s"
+msgstr "jako %s"
+
+msgid "Rangliste: %s"
+msgstr "Ranking: %s"
+
+msgid "Fehler"
+msgstr "Błąd"
+
+msgid "%d Punkt"
+msgid_plural "%d Punkte"
+msgstr[0] "%d punkt"
+msgstr[1] "%d punkty"
+msgstr[2] "%d punktów"
+
+msgid "Höhe %s"
+msgstr "Wysokość %s"
+
+msgid "Weite %s"
+msgstr "Odległość %s"
+
+msgid "links %d / %d   rechts %d / %d"
+msgstr "lewo %d / %d   prawo %d / %d"
+
+msgid "Bester Drift %s"
+msgstr "Najlepszy drift %s"
+
+msgid "%d Wechsel   Bester %s"
+msgstr "Zmian: %d   najlepiej %s"
+
+msgid "Press am Stück %s"
+msgstr "Press bez przerwy %s"
+
+msgid "%d geschafft"
+msgstr "Zaliczone: %d"
+
+msgid "Bestwert %s"
+msgstr "Rekord %s"
+
+msgid "VERSUCH"
+msgstr "PRÓBA"
+
+msgid "ZEIT"
+msgstr "CZAS"
+
+msgid "Verpasst"
+msgstr "Chybione"
+
+msgid "Transfer verpasst"
+msgstr "Transfer chybiony"
+
+msgid "Verfolger"
+msgstr "Pościg"
+
+msgid "Orbit"
+msgstr "Orbita"
+
+msgid "Ufer"
+msgstr "Brzeg"
+
+msgid "Runde 7:30"
+msgstr "Runda 7:30"
+
+msgid "Runde 10:00"
+msgstr "Runda 10:00"
+
+msgid "Runde 15:00"
+msgstr "Runda 15:00"
+
+msgid "Freies Fahren"
+msgstr "Wolna jazda"
+
+msgid "Niedrig"
+msgstr "Niska"
+
+msgid "Mittel"
+msgstr "Średni"
+
+msgid "Hoch"
+msgstr "Wysoka"
+
+msgid "Custom"
+msgstr "Custom"
+
+msgid "H  Hilfe"
+msgstr "H  Pomoc"
+
+msgid "PUNKTE"
+msgstr "PUNKTY"
+
+msgid "ZEIT UM"
+msgstr "KONIEC CZASU"
+
+msgid "GEHEIMER ERFOLG FREIGESCHALTET"
+msgstr "ODBLOKOWANO TAJNE OSIĄGNIĘCIE"
+
+msgid "TEMPO"
+msgstr "PRĘDKOŚĆ"
+
+msgid "SEILZUG"
+msgstr "NACIĄG LINY"
+
+msgid ""
+"← / →   lenken   (in der Luft und beim Raley: drehen; auf dem Slider: Boardslide ↔ 50-50 umspringen; auf dem Slider Leertaste halten + ←/→: seitlich auf den Nachbar-Slider springen = Rail to Rail)\n"
+"↑ / ↓   in der Luft: Frontroll / Backroll (beim Invert gleich nach dem Absprung: ↑ S-Bend, ↓ Backroll)     auf dem Slider (schon im Anflug): Nosepress / Tailpress     im Drift: Drift-Press     Sprung-Start: auf dem Steg ↓ halten, bis das Seil losreißt (Brett längs: Nolli, quer: Raley Start)\n"
+"Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das Brett dreht frei, etwas schneller; quer vom Slider ins Wasser nur mit Drift; Treppe am Pool nur im Drift\n"
+"Leertaste halten + loslassen   Absprung (Ollie; voll aufgeladen mit Seilzug über der Marke RALEY und ohne Feature voraus: Invert = Raley – Höhe aus Seilzug + Tempo)\n"
+"Start mit Countdown 3 – 2 – 1 – GO (Runde 7:30)     R  zurück zum Steg (−2:00, dann Countdown), in den Spielmodi: neuer Versuch     + / -  Anlagentempo\n"
+"Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−1:00)     R = Steg (−2:00)\n"
+"C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause     O  Einstellungen\n"
+"Z  Szenario würfeln     P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus (aus: keine Rangliste)     H  Hilfe ein/aus     F11  Vollbild     F3  Hitboxen + Drift-Winkel (Debug)     F4  Parameter (Debug, nur lokal)\n"
+"Tab  Startseite (Terminal, Feature-Setup, Einstellungen)     Menüs: Tab / Pfeile wählen, Leertaste drücken, Enter Start, Esc zurück\n"
+"Gamepad: Stick/Steuerkreuz lenken, Kreuz oder R2 (analog) Sprung, Kreis Drift, L1/R1 Tempo (in der Luft: schnelle 180), rechter Stick umsehen (R3 halten: Zoom), Touchpad Steg, Share Szenario würfeln, PS Pause, Options Einstellungen"
+msgstr ""
+"← / →   skręcanie   (w powietrzu i przy Raleyu: obrót; na sliderze: zmiana Boardslide ↔ 50-50; na sliderze trzymaj Spację + ←/→: skok w bok na sąsiedni slider = Rail to Rail)\n"
+"↑ / ↓   w powietrzu: Frontroll / Backroll (Invert zaraz po wybiciu: ↑ S-Bend, ↓ Backroll)     na sliderze (już przy dojeździe): Nosepress / Tailpress     w drifcie: Drift Press     Start z pomostu: trzymaj ↓ na pomoście, aż lina cię wyrwie (deska wzdłuż: Nolli, w poprzek: Raley Start)\n"
+"Ctrl (lub Alt)   Drift: suniesz dalej prosto (bez skręcania), deska obraca się swobodnie, trochę szybciej; bokiem ze slidera do wody tylko z driftem; schody w poolu tylko w drifcie\n"
+"Trzymaj Spację + puść   Wybicie (Ollie; w pełni naładowane z naciągiem powyżej znacznika RALEY i bez featuru przed tobą: Invert = Raley – wysokość z naciągu + prędkości)\n"
+"Start z odliczaniem 3 – 2 – 1 – GO (runda 7:30)     R  powrót na pomost (−2:00, potem odliczanie), w trybach gry: nowa próba     + / -  prędkość wyciągu\n"
+"Po upadku:  trzymaj Spację = płyń do rączki     Ctrl = od razu dalej (−1:00)     R = pomost (−2:00)\n"
+"C  Kamera     Mysz: rozglądanie (klik łapie mysz), kółko: zoom     Esc  Pauza     O  Ustawienia\n"
+"Z  Losuj scenariusz     P  Autopilot     M  Dźwięk wył./wł.     G  Wyrywanie liny wł./wył. (wył.: bez rankingu)     H  Pomoc wł./wył.     F11  Pełny ekran     F3  Hitboxy + kąt driftu (debug)     F4  Parametry (debug, tylko lokalnie)\n"
+"Tab  Ekran startowy (terminal, setup, ustawienia)     Menu: Tab / strzałki wybór, Spacja naciśnij, Enter start, Esc wstecz\n"
+"Pad: gałka/krzyżak skręcanie, Krzyżyk lub R2 (analogowo) skok, Kółko drift, L1/R1 prędkość (w powietrzu: szybkie 180), prawa gałka rozglądanie (R3 trzymane: zoom), touchpad pomost, Share losuj scenariusz, PS pauza, Options ustawienia"
+
+msgid ""
+"Start mit Countdown          ← / → (bzw. Handy neigen mit Lenkung: Gyro)   lenken (auf dem Slider: Tipp bzw. deutlich neigen = Boardslide ↔ 50-50; SPRUNG halten + ← / → = seitlich auf den Nachbar-Slider, Rail to Rail)\n"
+"SPRUNG (links) halten + loslassen   Absprung (voll aufgeladen, Seilzug über RALEY: Raley)\n"
+"Pfeil ↑ / ↓   in der Luft Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), auf dem Slider (schon im Anflug) Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)\n"
+"DRIFT (links, über SPRUNG)   Kante lösen (Treppe am Pool nur im Drift)        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)\n"
+"☰   Menü (pausiert): Einstellungen, Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Szenario würfeln, Seil-Abreißen an/aus (aus: keine Rangliste)"
+msgstr ""
+"Start z odliczaniem          ← / → (lub przechylanie telefonu przy sterowaniu: Gyro)   skręcanie (na sliderze: stuknięcie lub wyraźny przechył = Boardslide ↔ 50-50; trzymaj SKOK + ← / → = skok w bok na sąsiedni slider, Rail to Rail)\n"
+"Trzymaj SKOK (po lewej) + puść   Wybicie (w pełni naładowane, naciąg powyżej RALEY: Raley)\n"
+"Strzałka ↑ / ↓   w powietrzu Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), na sliderze (już przy dojeździe) Nose- / Tailpress, w drifcie Drift Press, na pomoście trzymaj ▼ = start z pomostu (wzdłuż Nolli, w poprzek Raley Start)\n"
+"DRIFT (po lewej, nad SKOK)   puszczenie krawędzi (schody w poolu tylko w drifcie)        Po upadku: trzymaj PŁYŃ = płynięcie, SKIP = od razu dalej (−1:00)\n"
+"☰   Menu (pauza): ustawienia, pomoc, powrót na pomost (tryby: nowa próba), ekran startowy, dźwięk, losuj scenariusz, wyrywanie liny wł./wył. (wył.: bez rankingu)"
+
+msgid "Runde %s"
+msgstr "Runda %s"
+
+msgid "Freies Fahren hat keine Rangliste"
+msgstr "Wolna jazda nie ma rankingu"
+
+msgid "Eigene Setups haben keine Rangliste"
+msgstr "Własne setupy nie mają rankingu"
+
+msgid "Rangliste nur mit %d km/h und %d m Seil"
+msgstr "Ranking tylko przy %d km/h i %d m liny"
+
+msgid "Du erscheinst nicht in der Rangliste (Startseite → Rangliste)"
+msgstr "Nie pojawiasz się w rankingu (ekran startowy → Ranking)"
+
+msgid "Aus"
+msgstr "Wył."
+
+msgid "Keine Rangliste mit Seilzug-Grenze „Aus“"
+msgstr "Brak rankingu przy limicie naciągu „Wył.”"
+
+msgid "Seilzug aus"
+msgstr "Limit naciągu wył."
+
+msgid "Frei"
+msgstr "Wolna"
+
+msgid "Eigenes Setup"
+msgstr "Własny setup"
+
+msgid "Tempo / Seil"
+msgstr "Prędkość / lina"
+
+msgid "{t}.{m}.{j}"
+msgstr "{t}.{m}.{j}"
+
+msgid "Rangliste noch nicht eingerichtet"
+msgstr "Ranking jeszcze nie skonfigurowany"
+
+msgid "Keine Verbindung"
+msgstr "Brak połączenia"
+
+msgid "Serverfehler (%d)"
+msgstr "Błąd serwera (%d)"
+
+msgid "nur POST"
+msgstr "tylko POST"
+
+msgid "kein JSON"
+msgstr "brak JSON"
+
+msgid "kein Zugriff"
+msgstr "brak dostępu"
+
+msgid "zu viele Anfragen, bitte später"
+msgstr "za dużo zapytań, spróbuj później"
+
+msgid "Serverfehler"
+msgstr "Błąd serwera"
+
+msgid "Name schon vergeben"
+msgstr "Nazwa już zajęta"
+
+msgid "ungültig"
+msgstr "nieprawidłowe"
+
+msgid "Wert außerhalb der Grenzen"
+msgstr "Wartość poza zakresem"
+
+msgid "Spieler unbekannt"
+msgstr "Nieznany gracz"
+
+msgid "Name: 2 bis 16 Zeichen"
+msgstr "Nazwa: od 2 do 16 znaków"
+
+msgid "Name: nur Buchstaben, Ziffern, Leerzeichen, . _ -"
+msgstr "Nazwa: tylko litery, cyfry, spacje, . _ -"
+
+msgid "Diesen Namen bitte nicht"
+msgstr "Wybierz proszę inną nazwę"
+
+msgid "Abgesoffen!"
+msgstr "Zatonąłeś!"
+
+msgid "Was ein Frechdachs!"
+msgstr "Ale łobuz!"
+
+msgid "Badegast nass gespritzt!"
+msgstr "Plażowicz ochlapany!"
+
+msgid "Zugvogel!"
+msgstr "Ptak wędrowny!"
+
+msgid "Hecht erwischt!"
+msgstr "Trafiony szczupak!"
+
+msgid "SUP nass gespritzt!"
+msgstr "SUP ochlapany!"
+
+msgid "Igitt – Insekt verschluckt!"
+msgstr "Fuj – połknięty owad!"
+
+msgid "Arschbombe!"
+msgstr "Bomba!"
+
+msgid "Steg-Landung!"
+msgstr "Lądowanie na pomoście!"
+
+msgid "Seil reißt ab: an"
+msgstr "Wyrywanie liny: wł."
+
+msgid "Seil reißt ab: aus – keine Rangliste"
+msgstr "Wyrywanie liny: wył. – bez rankingu"
+
+msgid "Setup: %s"
+msgstr "Setup: %s"
+
+msgid "Strafzeit −%d:%02d"
+msgstr "Kara −%d:%02d"
+
+msgid "Zeit um!  %d Punkte"
+msgstr "Koniec czasu!  %d pkt"
+
+msgid "Letzte Runde: %d Punkte"
+msgstr "Ostatnia runda: %d pkt"
+
+msgid "Rangliste …"
+msgstr "Ranking …"
+
+msgid "Platz %d von %d"
+msgstr "Miejsce %d z %d"
+
+msgid "Dein Bestwert: %s"
+msgstr "Twój rekord: %s"
+
+msgid "PLATZ %d von %d"
+msgstr "MIEJSCE %d Z %d"
+
+msgid "FREI"
+msgstr "WOLNA"
+
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Wenden %d   ·   Kamera: %s%s"
+msgstr ""
+"Rider %d km/h   ·   Wyciąg %s: %s (prędkość %d km/h)\n"
+"Nawroty %d   ·   Kamera: %s%s"
+
+msgid "STURZ  –  der Operator bringt dir die Handle"
+msgstr "UPADEK  –  operator przynosi ci rączkę"
+
+msgid "STURZ  –  die Handle liegt bereit"
+msgstr "UPADEK  –  rączka jest gotowa"
+
+msgid "ca. %d s"
+msgstr "ok. %d s"
+
+msgid "SCHWIMMEN halten"
+msgstr "Trzymaj PŁYŃ"
+
+msgid "Zur Handle schwimmen"
+msgstr "Płyń do rączki"
+
+msgid "SKIP"
+msgstr "SKIP"
+
+msgid "Sofort weiterfahren"
+msgstr "Od razu dalej"
+
+msgid "keine Strafzeit"
+msgstr "bez kary"
+
+msgid "Zurück zum Steg"
+msgstr "Powrót na pomost"
+
+msgid "LEERTASTE halten"
+msgstr "Trzymaj SPACJĘ"
+
+msgid "STRG"
+msgstr "CTRL"
+
+msgid ""
+"Neigungssensor nicht verfügbar –\n"
+"Bewegungssensoren im Browser erlauben"
+msgstr ""
+"Czujnik przechyłu niedostępny –\n"
+"zezwól na czujniki ruchu w przeglądarce"
+
+msgid "SPRUNG-START  %d %%"
+msgstr "START Z POMOSTU  %d %%"
+
+msgid "Hitboxen an"
+msgstr "Hitboxy wł."
+
+msgid "Hitboxen aus"
+msgstr "Hitboxy wył."
+
+msgid "Wende um die Boje"
+msgstr "Nawrót dookoła boi"
+
+msgid "Saubere Wende"
+msgstr "Czysty nawrót"
+
+msgid "Ins Boot gefahren!"
+msgstr "Wjechałeś w łódź!"
+
+msgid "Boot crash!"
+msgstr "Kraksa z łodzią!"
+
+msgid "Terminal 1"
+msgstr "Terminal 1"
+
+msgid "Terminal 2"
+msgstr "Terminal 2"
+
+msgid "MODUS"
+msgstr "TRYB"
+
+msgid "Musik"
+msgstr "Muzyka"
+
+msgid "Musik hinzufügen"
+msgstr "Dodaj muzykę"
+
+msgid "Vom Blitz getroffen!"
+msgstr "Trafiony piorunem!"
+
+msgid "Bodenpflanzen (Gräser, Schilf)"
+msgstr "Rośliny niskie (trawy, trzcina)"
+
+msgid "Gehölze (Sträucher, Bäume)"
+msgstr "Rośliny drzewiaste (krzewy, drzewa)"
+
+msgid "Schilf"
+msgstr "Trzcina"
+
+msgid "Ufergras"
+msgstr "Trawa brzegowa"
+
+msgid "Wiesengras"
+msgstr "Trawa łąkowa"
+
+msgid "Strauch"
+msgstr "Krzew"
+
+msgid "Laubbaum"
+msgstr "Drzewo liściaste"
+
+msgid "Kiefer"
+msgstr "Sosna"
+
+msgid "Seil aus der Hand gerissen!"
+msgstr "Lina wyrwana z rąk!"
+
+msgid "Quer abgefahren – Brett gerade stellen oder driften!"
+msgstr "Zjazd bokiem – wyprostuj deskę albo driftuj!"
+
+msgid "Treppe nur im Drift!"
+msgstr "Schody tylko w drifcie!"
+
+msgid "Drift-Press zu quer gedriftet!"
+msgstr "Drift press – za bardzo w poprzek!"
+
+msgid "Gegen den Steg!"
+msgstr "W pomost!"
+
+msgid "Gegen %s gefahren!"
+msgstr "Uderzenie w %s!"
+
+msgid "das Hindernis"
+msgstr "przeszkodę"
+
+msgid "Verkantet gelandet!"
+msgstr "Lądowanie na krawędzi!"
+
+msgid "Auf dem Ball gelandet!"
+msgstr "Lądowanie na piłce!"
+
+msgid "Zu harte Landung!"
+msgstr "Za twarde lądowanie!"
+
+msgid "Überschlag nicht geschafft!"
+msgstr "Obrót nieukończony!"
+
+msgid "Ab ans Ufer!"
+msgstr "Na brzeg!"
+
+msgid "Gegen den Mast!"
+msgstr "W maszt!"
+
+msgid "%s – Drift-Winkel %d°  (erlaubt bis %d°)"
+msgstr "%s – kąt driftu %d°  (dozwolone do %d°)"
+
+msgid "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)"
+msgstr "DRIFT – krawędź puszczona, deska sunie bokiem (%.1f m/s)"
+
+msgid "{tag}. {monat}"
+msgstr "{tag} {monat}"
+
+msgid "Januar"
+msgstr "stycznia"
+
+msgid "Februar"
+msgstr "lutego"
+
+msgid "März"
+msgstr "marca"
+
+msgid "April"
+msgstr "kwietnia"
+
+msgid "Mai"
+msgstr "maja"
+
+msgid "Juni"
+msgstr "czerwca"
+
+msgid "Juli"
+msgstr "lipca"
+
+msgid "August"
+msgstr "sierpnia"
+
+msgid "September"
+msgstr "września"
+
+msgid "Oktober"
+msgstr "października"
+
+msgid "November"
+msgstr "listopada"
+
+msgid "Dezember"
+msgstr "grudnia"
+
+msgid "%d %% eingesunken"
+msgstr "%d %% zanurzenia"
+
+msgid "%d %% im Press"
+msgstr "%d %% w pressie"
+
+msgid "%d Wechsel"
+msgid_plural "%d Wechsel"
+msgstr[0] "%d zmiana"
+msgstr[1] "%d zmiany"
+msgstr[2] "%d zmian"
+
+msgid "%d Slider"
+msgid_plural "%d Slider"
+msgstr[0] "%d slider"
+msgstr[1] "%d slidery"
+msgstr[2] "%d sliderów"
+
+msgid "%d Umdrehung"
+msgid_plural "%d Umdrehungen"
+msgstr[0] "%d obrót"
+msgstr[1] "%d obroty"
+msgstr[2] "%d obrotów"
+
+msgid "%d %% im Drift"
+msgstr "%d %% w drifcie"
+
+msgid "bis %d %%"
+msgstr "do %d %%"
+
+msgid "nicht einsinken"
+msgstr "nie zatonąć"
+
+msgid "bis %s"
+msgstr "do %s"
+
+msgid "ab %s"
+msgstr "od %s"
+
+msgid "Bronze"
+msgstr "Brąz"
+
+msgid "Silber"
+msgstr "Srebro"
+
+msgid "Gold"
+msgstr "Złoto"
+
+msgid "Nosepress im Drift"
+msgstr "Nosepress w drifcie"
+
+msgid "Wie der Tailpress, nur über die Nose: das Brett im Drift erst um 90° quer drehen, dann ins vordere Ende drücken, das Tail steht hoch. Der Winkel zählt von der Querstellung. Gemessen: Anteil der Wende im vollen Nosepress – ohne einzusinken. Gold = die ganze Wende."
+msgstr "Jak tailpress, tylko na nose: w drifcie najpierw obróć deskę o 90° w poprzek, potem dociśnij przedni koniec, tail idzie w górę. Kąt liczy się od ustawienia w poprzek. Mierzone: udział nawrotu w pełnym nosepressie – bez zatonięcia. Złoto = cały nawrót."
+
+msgid "Strg halten  driften     ↑ halten  Nosepress     ← / →  Drift-Winkel halten"
+msgstr "Trzymaj Ctrl  drift     trzymaj ↑  Nosepress     ← / →  trzymaj kąt driftu"
+
+msgid "DRIFT halten  driften     ▲ halten  Nosepress     Neigen  Winkel halten"
+msgstr "Trzymaj DRIFT  drift     trzymaj ▲  Nosepress     przechył  trzymaj kąt"
+
+msgid "Erst quer drehen, dann drücken – mit der Nose vorne stehst du 90° falsch. Je schneller, desto querer darfst du driften. Den Drift nicht loslassen – dann ist der Press sofort vorbei."
+msgstr "Najpierw obróć w poprzek, potem dociskaj – z nose z przodu jesteś o 90° źle. Im szybciej, tym bardziej w poprzek możesz driftować. Nie puszczaj driftu – wtedy press od razu się kończy."
+
+msgid "Press-Wechsel"
+msgstr "Zmiana pressu"
+
+msgid "Nose- und Tailpress im Wechsel"
+msgstr "Nose- i tailpress na zmianę"
+
+msgid "In einem Drift zwischen Nosepress und Tailpress hin und her wechseln. Gemessen: Wechsel in einem Drift (jeder volle Press auf das andere Ende zählt; Drift loslassen fängt neu an)."
+msgstr "W jednym drifcie przełączaj się tam i z powrotem między nosepressem a tailpressem. Mierzone: zmiany w jednym drifcie (liczy się każdy pełny press na drugim końcu; puszczenie driftu zaczyna od nowa)."
+
+msgid "Strg halten  driften     ↑ / ↓  Nose- / Tailpress"
+msgstr "Trzymaj Ctrl  drift     ↑ / ↓  Nose- / Tailpress"
+
+msgid "DRIFT halten  driften     ▲ / ▼  Nose- / Tailpress"
+msgstr "Trzymaj DRIFT  drift     ▲ / ▼  Nose- / Tailpress"
+
+msgid "Der Press braucht knapp eine Sekunde, bis er ganz drin ist – nicht zu hektisch wechseln."
+msgstr "Press potrzebuje prawie sekundy, by w pełni wejść – nie zmieniaj zbyt nerwowo."
+
+msgid "Competition"
+msgstr "Competition"
+
+msgid "Runde auf Zeit: so viele Punkte wie möglich. Terminal, Feature-Setup und Rundenlänge frei wählbar."
+msgstr "Runda na czas: jak najwięcej punktów. Terminal, setup i długość rundy do wyboru."
+
+msgid "Wenden"
+msgstr "Nawroty"
+
+msgid "Wenden fahren, ohne einzusinken."
+msgstr "Jedź nawroty bez zatonięcia."
+
+msgid "Wende Endmast"
+msgstr "Nawrót maszt końcowy"
+
+msgid "Wende am Endmast"
+msgstr "Nawrót przy maszcie końcowym"
+
+msgid "Fahr durch die Wende am Endmast, ohne einzusinken. Gemessen wird, wie tief du einsinkst."
+msgstr "Przejedź nawrót przy maszcie końcowym bez zatonięcia. Mierzone: jak głęboko się zanurzasz."
+
+msgid "← / →  lenken     Strg  driften"
+msgstr "← / →  skręcanie     Ctrl  drift"
+
+msgid "Neigen  lenken     DRIFT  driften"
+msgstr "Przechył  skręcanie     DRIFT  drift"
+
+msgid "An der roten Boje nach außen rauskanten und Tempo aufbauen, dann um den Carrier pendeln – das Seil muss gespannt bleiben. Wird es locker, weiter nach außen ziehen."
+msgstr "Przy czerwonej boi wyjedź na krawędzi na zewnątrz i nabierz prędkości, potem wahadłem dookoła carriera – lina musi być napięta. Gdy się luzuje, ciągnij dalej na zewnątrz."
+
+msgid "Ufer-Wende"
+msgstr "Nawrót przy brzegu"
+
+msgid "Wende am Ufer"
+msgstr "Nawrót przy brzegu"
+
+msgid "Die Wende vor dem Startsteg: hier ist weniger Platz. Wieder ohne einzusinken."
+msgstr "Nawrót przed pomostem startowym: tu jest mniej miejsca. Znowu bez zatonięcia."
+
+msgid "Früh rauskanten – zum Ufer hin bleibt wenig Raum zum Ausschwingen."
+msgstr "Wcześnie na krawędź – w stronę brzegu zostaje mało miejsca na wyjście."
+
+msgid "Um die Boje"
+msgstr "Dookoła boi"
+
+msgid "Wende um die weiße Boje"
+msgstr "Nawrót dookoła białej boi"
+
+msgid "Fahr außen um eine der weißen Bojen und komm sauber aus der Wende. Ohne Boje gibt es keine Medaille."
+msgstr "Objedź z zewnątrz jedną z białych boi i wyjdź czysto z nawrotu. Bez boi nie ma medalu."
+
+msgid "Schon vor der roten Boje weit nach außen ziehen, sonst reicht der Schwung nicht um die weiße Boje."
+msgstr "Już przed czerwoną boją ciągnij daleko na zewnątrz, inaczej rozpęd nie wystarczy na białą boję."
+
+msgid "Kicker"
+msgstr "Kicker"
+
+msgid "Über den Kicker – so hoch wie möglich."
+msgstr "Przez kicker – jak najwyżej."
+
+msgid "Kicker M"
+msgstr "Kicker M"
+
+msgid "Kicker M überfahren"
+msgstr "Przejazd przez Kicker M"
+
+msgid "Fahr ohne Absprung gerade über den Kicker M (der kleinere, näher am Seil). Gemessen wird die größte Höhe über dem Wasser."
+msgstr "Przejedź prosto przez Kicker M bez wybicia (ten mniejszy, bliżej liny). Mierzone: największa wysokość nad wodą."
+
+msgid "← / →  lenken     Leertaste halten + loslassen  Absprung"
+msgstr "← / →  skręcanie     trzymaj Spację + puść  wybicie"
+
+msgid "Neigen  lenken     SPRUNG halten + loslassen  Absprung"
+msgstr "Przechył  skręcanie     trzymaj SKOK + puść  wybicie"
+
+msgid "Gerade und mit Tempo anfahren – schräg verliert man Höhe. Kurz vor dem Kicker nicht mehr lenken."
+msgstr "Najedź prosto i z prędkością – pod kątem tracisz wysokość. Tuż przed kickerem już nie skręcaj."
+
+msgid "M mit Absprung"
+msgstr "M z wybiciem"
+
+msgid "Kicker M mit Absprung"
+msgstr "Kicker M z wybiciem"
+
+msgid "Wie eben, aber an der Kante abspringen: Kicker-Steigung + Sprungkraft = Höhe."
+msgstr "Jak wyżej, ale wybij się na krawędzi: nachylenie kickera + siła wybicia = wysokość."
+
+msgid "Leertaste halten (auf dem Kicker) + an der Kante loslassen"
+msgstr "Trzymaj Spację (na kickerze) + puść na krawędzi"
+
+msgid "SPRUNG halten (auf dem Kicker) + an der Kante loslassen"
+msgstr "Trzymaj SKOK (na kickerze) + puść na krawędzi"
+
+msgid "Schon auf dem Kicker voll aufladen und genau an der Kante loslassen – zu früh verschenkt den Wurf der Rampe."
+msgstr "Naładuj w pełni już na kickerze i puść dokładnie na krawędzi – za wcześnie marnuje wyrzut rampy."
+
+msgid "Kicker L"
+msgstr "Kicker L"
+
+msgid "Kicker L mit Absprung"
+msgstr "Kicker L z wybiciem"
+
+msgid "Der große Kicker L (rechts): höher, steiler – und härter bei der Landung."
+msgstr "Duży Kicker L (po prawej): wyższy, bardziej stromy – i twardszy przy lądowaniu."
+
+msgid "Leertaste halten + an der Kante loslassen"
+msgstr "Trzymaj Spację + puść na krawędzi"
+
+msgid "SPRUNG halten + an der Kante loslassen"
+msgstr "Trzymaj SKOK + puść na krawędzi"
+
+msgid "Bei der Landung gerade bleiben – wer quer aufkommt, stürzt."
+msgstr "Przy lądowaniu zostań prosto – kto ląduje bokiem, upada."
+
+msgid "Slider"
+msgstr "Slider"
+
+msgid "Slider fahren: aufspringen, 50-50, Boardslide, Press."
+msgstr "Jazda po sliderach: wskok, 50-50, boardslide, press."
+
+msgid "Full Pipe"
+msgstr "Full Pipe"
+
+msgid "Rauf auf die Full Pipe"
+msgstr "Na Full Pipe"
+
+msgid "Fahr über die Auffahrt auf die Full Pipe und rutsch sie so weit wie möglich ab. Gemessen: gerutschte Meter."
+msgstr "Wjedź po rampie na Full Pipe i zjedź po niej jak najdalej. Mierzone: przejechane metry."
+
+msgid "← / →  lenken (auf dem Slider: Boardslide / 50-50)"
+msgstr "← / →  skręcanie (na sliderze: Boardslide / 50-50)"
+
+msgid "Neigen  lenken (auf dem Slider deutlich neigen: Boardslide / 50-50)"
+msgstr "Przechył  skręcanie (na sliderze wyraźnie przechyl: Boardslide / 50-50)"
+
+msgid "Mittig auf die Auffahrt zielen. Auf dem Rohr hält dich das Einloggen in der Spur."
+msgstr "Celuj w środek rampy. Na rurze system zatrzaśnięcia trzyma cię na linii."
+
+msgid "Boardslide"
+msgstr "Boardslide"
+
+msgid "Boardslide auf der Pipe"
+msgstr "Boardslide na pipe"
+
+msgid "Quer über die Pipe: nur Meter im Boardslide zählen. Am Ende das Brett wieder gerade stellen – wer quer ins Wasser fährt, stürzt."
+msgstr "W poprzek po pipe: liczą się tylko metry w boardslidzie. Na końcu znowu wyprostuj deskę – kto wjedzie do wody bokiem, upada."
+
+msgid "Auf der Pipe ← / → tippen (Boardslide), vor dem Ende nochmal tippen (zurück auf 50-50)"
+msgstr "Na pipe stuknij ← / → (boardslide), przed końcem stuknij jeszcze raz (powrót na 50-50)"
+
+msgid "Auf der Pipe deutlich neigen (Boardslide), vor dem Ende nochmal neigen (zurück auf 50-50)"
+msgstr "Na pipe wyraźnie przechyl (boardslide), przed końcem przechyl jeszcze raz (powrót na 50-50)"
+
+msgid "Oder schon in der Luft quer drehen – das Brett rastet in die nächste Stellung ein. Kurz vor dem Ende umspringen oder auf der Abfahrt gerade drehen."
+msgstr "Albo obróć się w poprzek już w powietrzu – deska wskoczy w najbliższą pozycję. Zmień tuż przed końcem albo wyprostuj na zjeździe."
+
+msgid "Drift"
+msgstr "Drift"
+
+msgid "Boardslide mit Drift-Abgang"
+msgstr "Boardslide ze zjazdem w drifcie"
+
+msgid "Boardslide über die Pipe und quer bleiben – beim Abgang Drift halten: dann rutscht das Brett quer weiter, ohne einzuhaken."
+msgstr "Boardslide po pipe i zostań w poprzek – przy zjeździe trzymaj drift: deska sunie dalej bokiem, nie zahaczając."
+
+msgid "Auf der Pipe ← / → tippen (Boardslide), Strg (Drift) halten, wenn das Brett das Wasser berührt"
+msgstr "Na pipe stuknij ← / → (boardslide), trzymaj Ctrl (drift), gdy deska dotknie wody"
+
+msgid "Auf der Pipe deutlich neigen (Boardslide), DRIFT halten, wenn das Brett das Wasser berührt"
+msgstr "Na pipe wyraźnie przechyl (boardslide), trzymaj DRIFT, gdy deska dotknie wody"
+
+msgid "Drift rechtzeitig drücken – kurz vor dem Ende der Pipe. Wer das Brett gerade stellt, bekommt hier keinen Wert."
+msgstr "Wciśnij drift na czas – tuż przed końcem pipe. Kto prostuje deskę, nie dostaje tu wyniku."
+
+msgid "Umspringen"
+msgstr "Przeskakiwanie"
+
+msgid "Boardslide / 50-50 umspringen"
+msgstr "Przeskakiwanie boardslide / 50-50"
+
+msgid "Auf dem Long Rail (links, 100 m) zwischen Boardslide und 50-50 wechseln. Gezählt werden die Wechsel."
+msgstr "Na Long Rail (po lewej, 100 m) zmieniaj między boardslide a 50-50. Liczone są zmiany."
+
+msgid "Auf dem Slider: je Tipp ← / →  90° drehen"
+msgstr "Na sliderze: każde stuknięcie ← / → obraca o 90°"
+
+msgid "Auf dem Slider: deutlich neigen, zurück, wieder neigen"
+msgstr "Na sliderze: wyraźnie przechyl, wróć, znowu przechyl"
+
+msgid "Nach jedem Tipp loslassen – erst dann geht der nächste Wechsel."
+msgstr "Po każdym stuknięciu puść – dopiero wtedy działa kolejna zmiana."
+
+msgid "Press"
+msgstr "Press"
+
+msgid "Nose- oder Tailpress"
+msgstr "Nose- albo tailpress"
+
+msgid "Auf dem Long Rail Gewicht auf Nose oder Tail: gemessen werden die Sekunden im Press."
+msgstr "Na Long Rail przenieś ciężar na nose albo tail: mierzone są sekundy w pressie."
+
+msgid "Auf dem Slider: ↑  Nosepress    ↓  Tailpress (halten)"
+msgstr "Na sliderze: ↑  Nosepress    ↓  Tailpress (trzymaj)"
+
+msgid "Auf dem Slider: ▲  Nosepress    ▼  Tailpress (halten)"
+msgstr "Na sliderze: ▲  Nosepress    ▼  Tailpress (trzymaj)"
+
+msgid "Erst sauber auf dem Rail stehen, dann ↑ oder ↓ halten. Beim Absprung loslassen, sonst gibt es keinen Überschlag."
+msgstr "Najpierw stań pewnie na railu, potem trzymaj ↑ albo ↓. Przy wybiciu puść, inaczej nie będzie obrotu."
+
+msgid "Long Rail"
+msgstr "Long Rail"
+
+msgid "Long Rail: 100 m"
+msgstr "Long Rail: 100 m"
+
+msgid "So weit wie möglich auf dem 100-m-Rail bleiben."
+msgstr "Utrzymaj się jak najdalej na 100-metrowym railu."
+
+msgid "← / →  lenken"
+msgstr "← / →  skręcanie"
+
+msgid "Neigen  lenken"
+msgstr "Przechył  skręcanie"
+
+msgid "Der Seilzug zieht dich zur Seilmitte – auf dem Rail nicht gegenlenken, das Einloggen hält die Spur."
+msgstr "Naciąg ciągnie cię do środka – nie kontruj na railu, zatrzaśnięcie trzyma linię."
+
+msgid "Slider-Kette"
+msgstr "Łańcuch sliderów"
+
+msgid "Rechts stehen vier Slider hintereinander: Full Pipe, Rail, A-Frame, Pipe. Wie viele schaffst du in einer Fahrt?"
+msgstr "Po prawej stoją cztery slidery jeden za drugim: Full Pipe, Rail, A-Frame, Pipe. Ile zaliczysz w jednym przejeździe?"
+
+msgid "← / →  lenken     Leertaste  Absprung"
+msgstr "← / →  skręcanie     Spacja  wybicie"
+
+msgid "Neigen  lenken     SPRUNG  Absprung"
+msgstr "Przechył  skręcanie     SKOK  wybicie"
+
+msgid "Nach jedem Slider zieht dich das Seil nach innen: sofort wieder nach außen auf Linie lenken – alle stehen auf derselben Spur."
+msgstr "Po każdym sliderze lina ciągnie cię do środka: od razu skręć z powrotem na zewnątrz na linię – wszystkie stoją na tej samej linii."
+
+msgid "BS Nosepress"
+msgstr "BS Nosepress"
+
+msgid "Ollie in Boardslide Nosepress"
+msgstr "Ollie w Boardslide Nosepress"
+
+msgid "Mit einem Ollie aus dem Wasser direkt auf die Full Pipe, in der Luft quer drehen und im Boardslide mit Nosepress rutschen. Gemessen: gerutschte Meter – nur wenn Ollie on, Boardslide und Nosepress stimmen."
+msgstr "Ollie z wody prosto na Full Pipe, w powietrzu obrót w poprzek i jazda w boardslidzie z nosepressem. Mierzone: przejechane metry – tylko jeśli ollie on, boardslide i nosepress się zgadzają."
+
+msgid "Leertaste  Ollie     in der Luft ← / → kurz tippen (Vierteldrehung)     auf der Pipe ↑ halten"
+msgstr "Spacja  Ollie     w powietrzu krótko stuknij ← / → (ćwierć obrotu)     na pipe trzymaj ↑"
+
+msgid "SPRUNG  Ollie     in der Luft kurz neigen (Vierteldrehung)     auf der Pipe ▲ halten"
+msgstr "SKOK  Ollie     w powietrzu krótko przechyl (ćwierć obrotu)     na pipe trzymaj ▲"
+
+msgid "Nicht über die Auffahrt fahren, sondern vor der Pipe abspringen. Eine Vierteldrehung reicht – das Brett rastet quer ein. Am Ende das Brett gerade stellen (← / →) oder Drift halten, sonst stürzt man quer ins Wasser."
+msgstr "Nie wjeżdżaj po rampie, tylko wybij się przed pipe. Ćwierć obrotu wystarczy – deska wskoczy w poprzek. Na końcu wyprostuj deskę (← / →) albo trzymaj drift, inaczej wpadniesz bokiem do wody."
+
+msgid "Special"
+msgstr "Special"
+
+msgid "Slider Special"
+msgstr "Slider Special"
+
+msgid "Rail"
+msgstr "Rail"
+
+msgid "A-Frame"
+msgstr "A-Frame"
+
+msgid "Pipe"
+msgstr "Pipe"
+
+msgid "Die Slider-Kette rechts, an jedem Slider eine feste Kombination. Gezählt: geschaffte Slider."
+msgstr "Łańcuch sliderów po prawej, na każdym sliderze ustalona kombinacja. Liczone: zaliczone slidery."
+
+msgid "Leertaste  Ollie on / out     ← / →  in der Luft drehen, auf dem Slider Boardslide / 50-50     ↑ / ↓  Nose- / Tailpress"
+msgstr "Spacja  Ollie on / out     ← / →  obrót w powietrzu, na sliderze Boardslide / 50-50     ↑ / ↓  Nose- / Tailpress"
+
+msgid "SPRUNG  Ollie on / out     Neigen  in der Luft drehen, auf dem Slider Boardslide / 50-50     ▲ / ▼  Nose- / Tailpress"
+msgstr "SKOK  Ollie on / out     Przechył  obrót w powietrzu, na sliderze Boardslide / 50-50     ▲ / ▼  Nose- / Tailpress"
+
+msgid "Ollie on heißt: aus dem Wasser direkt auf das Rohr springen, nicht über die Auffahrt fahren. Den Press mehr als die halbe Slide-Zeit halten."
+msgstr "Ollie on oznacza: z wody prosto na rurę, bez wjazdu po rampie. Trzymaj press dłużej niż połowę slajdu."
+
+msgid "Invert Training"
+msgstr "Invert Training"
+
+msgid "Inverts: Tricks aus dem Raley-Absprung nach der Wende."
+msgstr "Inverty: triki z wybicia Raley po nawrocie."
+
+msgid "Raley – Höhe"
+msgstr "Raley – wysokość"
+
+msgid "Höchster Raley"
+msgstr "Najwyższy Raley"
+
+msgid "Nach der Ufer-Wende Seilzug aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: größte Höhe."
+msgstr "Po nawrocie przy brzegu zbuduj naciąg i ustój Raleya – bez obrotu, bez dodatków. Mierzone: największa wysokość."
+
+msgid "Leertaste lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist"
+msgstr "Długo trzymaj Spację (pełne ładowanie) + puść, gdy naciąg jest powyżej znacznika RALEY"
+
+msgid "SPRUNG lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist"
+msgstr "Długo trzymaj SKOK (pełne ładowanie) + puść, gdy naciąg jest powyżej znacznika RALEY"
+
+msgid "Nach der Wende weit nach außen fahren, dann hart gegen den Zug zur Seilmitte kanten – loslassen, solange der Seilzug über der Marke RALEY ist – je mehr Zug und Tempo, desto höher."
+msgstr "Po nawrocie wyjedź daleko na zewnątrz, potem mocno na krawędź pod ciąg do środka – puść, dopóki naciąg jest powyżej znacznika RALEY – im więcej naciągu i prędkości, tym wyżej."
+
+msgid "Raley – Weite"
+msgstr "Raley – odległość"
+
+msgid "Weitester Raley"
+msgstr "Najdłuższy Raley"
+
+msgid "Nach der Ufer-Wende Seilzug aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: Weite vom Absprung bis zur Landung."
+msgstr "Po nawrocie przy brzegu zbuduj naciąg i ustój Raleya – bez obrotu, bez dodatków. Mierzone: odległość od wybicia do lądowania."
+
+msgid "Weit nach außen, dann hart zur Seilmitte kanten – je mehr Zug und Tempo, desto weiter."
+msgstr "Daleko na zewnątrz, potem mocno na krawędź do środka – im więcej naciągu i prędkości, tym dalej."
+
+msgid "Krypt"
+msgstr "Krypt"
+
+msgid "Krypt (Raley 180 rechts)"
+msgstr "Krypt (Raley 180 w prawo)"
+
+msgid "Raley mit genau einer halben Drehung nach rechts. Gemessen: größte Höhe."
+msgstr "Raley z dokładnie połową obrotu w prawo. Mierzone: największa wysokość."
+
+msgid "Raley, dann gegen Ende →  halten (180)"
+msgstr "Raley, potem pod koniec trzymaj →  (180)"
+
+msgid "Raley, dann gegen Ende nach rechts neigen (180)"
+msgstr "Raley, potem pod koniec przechyl w prawo (180)"
+
+msgid "Erst strecken lassen, dann ← / → : der Schwung bricht ab, du schwingst zurück und drehst aufrecht – rechtzeitig loslassen."
+msgstr "Najpierw daj się wyprostować, potem ← / → : wymach się urywa, wracasz i obracasz się w pionie – puść na czas."
+
+msgid "Blind Judge"
+msgstr "Blind Judge"
+
+msgid "Blind Judge (Raley 180 links)"
+msgstr "Blind Judge (Raley 180 w lewo)"
+
+msgid "Raley mit genau einer halben Drehung nach links. Gemessen: größte Höhe."
+msgstr "Raley z dokładnie połową obrotu w lewo. Mierzone: największa wysokość."
+
+msgid "Raley, dann gegen Ende ←  halten (180)"
+msgstr "Raley, potem pod koniec trzymaj ←  (180)"
+
+msgid "Raley, dann gegen Ende nach links neigen (180)"
+msgstr "Raley, potem pod koniec przechyl w lewo (180)"
+
+msgid "313 (Raley 360 links)"
+msgstr "313 (Raley 360 w lewo)"
+
+msgid "Raley mit genau einer ganzen Drehung nach links. Gemessen: größte Höhe."
+msgstr "Raley z dokładnie jednym pełnym obrotem w lewo. Mierzone: największa wysokość."
+
+msgid "Raley, dann gegen Ende ←  halten (360)"
+msgstr "Raley, potem pod koniec trzymaj ←  (360)"
+
+msgid "Raley, dann gegen Ende nach links neigen (360)"
+msgstr "Raley, potem pod koniec przechyl w lewo (360)"
+
+msgid "Viel Höhe holen – die ganze Drehung braucht die Zeit vom höchsten Punkt bis zur Landung."
+msgstr "Zdobądź dużo wysokości – pełny obrót potrzebuje czasu od najwyższego punktu do lądowania."
+
+msgid "S-Bend"
+msgstr "S-Bend"
+
+msgid "Raley-Absprung und gestreckt einmal um die eigene Längsachse – ohne Drehung danach. Gemessen: größte Höhe."
+msgstr "Wybicie Raley i wyprostowany jeden obrót wokół własnej osi podłużnej – bez obrotu potem. Mierzone: największa wysokość."
+
+msgid "Raley, gleich nach dem Absprung ↑"
+msgstr "Raley, zaraz po wybiciu ↑"
+
+msgid "Raley, gleich nach dem Absprung ▲"
+msgstr "Raley, zaraz po wybiciu ▲"
+
+msgid "Die Taste nur ganz am Anfang drücken – später wird es ein normaler Raley."
+msgstr "Naciśnij klawisz tylko na samym początku – później wychodzi zwykły Raley."
+
+msgid "Backroll (todo)"
+msgstr "Backroll (todo)"
+
+msgid "Backroll (Invert, todo)"
+msgstr "Backroll (Invert, todo)"
+
+msgid "Raley-Absprung und seitlich nach außen kopfüber rollen – ohne Drehung danach. Gemessen: größte Höhe."
+msgstr "Wybicie Raley i przewrót bokiem na zewnątrz głową w dół – bez obrotu potem. Mierzone: największa wysokość."
+
+msgid "Raley, gleich nach dem Absprung ↓"
+msgstr "Raley, zaraz po wybiciu ↓"
+
+msgid "Raley, gleich nach dem Absprung ▼"
+msgstr "Raley, zaraz po wybiciu ▼"
+
+msgid "Special - S-Bend to Blind"
+msgstr "Special - S-Bend to Blind"
+
+msgid "Special: S-Bend to Blind"
+msgstr "Special: S-Bend to Blind"
+
+msgid "S-Bend und danach genau eine halbe Drehung nach links – blind landen. Gemessen: größte Höhe."
+msgstr "S-Bend, a potem dokładnie pół obrotu w lewo – lądowanie blind. Mierzone: największa wysokość."
+
+msgid "Raley, gleich nach dem Absprung ↑, nach der Drehung um die Handle ←  (180)"
+msgstr "Raley, zaraz po wybiciu ↑, po obrocie wokół rączki ←  (180)"
+
+msgid "Raley, gleich nach dem Absprung ▲, nach der Drehung um die Handle nach links neigen (180)"
+msgstr "Raley, zaraz po wybiciu ▲, po obrocie wokół rączki przechyl w lewo (180)"
+
+msgid "Viel Höhe holen: ← erst, wenn der S-Bend durch ist – dann schwingst du zurück und drehst aufrecht. Rechtzeitig loslassen."
+msgstr "Zdobądź dużo wysokości: ← dopiero, gdy S-Bend się skończy – wtedy wracasz i obracasz się w pionie. Puść na czas."
+
+msgid "Sprung-Start"
+msgstr "Start z pomostu"
+
+msgid "Vom Startsteg: gegen das Seil stemmen, bis es dich losreißt."
+msgstr "Z pomostu startowego: zapieraj się o linę, aż cię wyrwie."
+
+msgid "Nolli"
+msgstr "Nolli"
+
+msgid "Nolli vom Steg"
+msgstr "Nolli z pomostu"
+
+msgid "Bleib auf dem Startsteg mit dem Brett längs zum Seil (50-50) stehen und halte ↓: du stemmst dich gegen das anfahrende Seil, der Seilzug lädt sich auf. Bei maximaler Seilspannung reißt es dich nach vorne – ein Nolli. Gemessen: größte Höhe."
+msgstr "Stój na pomoście startowym z deską wzdłuż liny (50-50) i trzymaj ↓: zapierasz się o ruszającą linę, naciąg rośnie. Przy maksymalnym naciągu szarpie cię do przodu – Nolli. Mierzone: największa wysokość."
+
+msgid "↓ halten (schon beim Countdown), bis das Seil losreißt"
+msgstr "Trzymaj ↓ (już przy odliczaniu), aż lina cię wyrwie"
+
+msgid "▼ halten (schon beim Countdown), bis das Seil losreißt"
+msgstr "Trzymaj ▼ (już przy odliczaniu), aż lina cię wyrwie"
+
+msgid "Je genauer das Brett längs zum Seil steht, desto mehr Power. Nicht vorher loslassen – sonst ist es ein normaler Start."
+msgstr "Im dokładniej deska stoi wzdłuż liny, tym więcej mocy. Nie puszczaj wcześniej – inaczej to zwykły start."
+
+msgid "Nolli 180/360"
+msgstr "Nolli 180/360"
+
+msgid "Nolli mit Drehung"
+msgstr "Nolli z obrotem"
+
+msgid "Nolli vom Steg und in der Luft drehen: 180 = Bronze, 360 = Silber, 540 = Gold."
+msgstr "Nolli z pomostu i obrót w powietrzu: 180 = brąz, 360 = srebro, 540 = złoto."
+
+msgid "↓ halten bis zum Riss, dann in der Luft ← / →  drehen"
+msgstr "Trzymaj ↓ aż do szarpnięcia, potem obrót w powietrzu ← / →"
+
+msgid "▼ halten bis zum Riss, dann in der Luft neigen = drehen"
+msgstr "Trzymaj ▼ aż do szarpnięcia, potem przechył w powietrzu = obrót"
+
+msgid "Gleich nach dem Riss drehen und rechtzeitig loslassen – das Brett muss zur Landung in Fahrtrichtung zeigen."
+msgstr "Obracaj zaraz po szarpnięciu i puść na czas – deska musi przy lądowaniu wskazywać kierunek jazdy."
+
+msgid "Raley Start"
+msgstr "Raley Start"
+
+msgid "Raley Start vom Steg"
+msgstr "Raley Start z pomostu"
+
+msgid "Dreh dich auf dem Steg um 90°, sodass das Brett quer zum Seil steht, und halte ↓: du sitzt tief auf der Kante, Brust zum Seil. Reißt das Seil los, schwingt dein Körper um den Griff wie beim Raley. Gemessen: größte Höhe."
+msgstr "Obróć się na pomoście o 90°, tak by deska stała w poprzek liny, i trzymaj ↓: siedzisz nisko na krawędzi, klatką do liny. Gdy lina cię wyrwie, ciało wychyla się wokół rączki jak przy Raleyu. Mierzone: największa wysokość."
+
+msgid "← / →  auf dem Steg quer drehen     ↓ halten, bis das Seil losreißt"
+msgstr "← / →  obrót w poprzek na pomoście     trzymaj ↓, aż lina cię wyrwie"
+
+msgid "Neigen  auf dem Steg quer drehen     ▼ halten, bis das Seil losreißt"
+msgstr "Przechył  obrót w poprzek na pomoście     trzymaj ▼, aż lina cię wyrwie"
+
+msgid "Schon beim Countdown drehen – je genauer quer, desto höher. Ab 45° Abweichung wird es ein Nolli."
+msgstr "Obracaj się już przy odliczaniu – im dokładniej w poprzek, tym wyżej. Od 45° odchylenia wychodzi Nolli."
+
+msgid "Raley Start + Invert"
+msgstr "Raley Start + Invert"
+
+msgid "Raley Start mit Invert"
+msgstr "Raley Start z invertem"
+
+msgid "Raley Start und in der Luft noch etwas dazu: 180 = Bronze, S-Bend oder Backroll = Silber, S-Bend/Backroll + 360 = Gold. Gemessen: Punkte des Sprungs."
+msgstr "Raley Start i jeszcze coś w powietrzu: 180 = brąz, S-Bend albo Backroll = srebro, S-Bend/Backroll + 360 = złoto. Mierzone: punkty za skok."
+
+msgid "Quer drehen, ↓ halten bis zum Riss, in der Luft loslassen, dann gleich ↑ S-Bend / ↓ Backroll, gegen Ende ← / →  drehen"
+msgstr "Obróć w poprzek, trzymaj ↓ aż do szarpnięcia, w powietrzu puść, potem od razu ↑ S-Bend / ↓ Backroll, pod koniec obrót ← / →"
+
+msgid "Quer drehen, ▼ halten bis zum Riss, in der Luft loslassen, dann gleich ▲ S-Bend / ▼ Backroll, gegen Ende neigen  drehen"
+msgstr "Obróć w poprzek, trzymaj ▼ aż do szarpnięcia, w powietrzu puść, potem od razu ▲ S-Bend / ▼ Backroll, pod koniec przechył = obrót"
+
+msgid "Das gehaltene ↓ zählt nicht – erst loslassen, dann sofort ↑ oder ↓ drücken: der Trick wird nur ganz am Anfang gewählt."
+msgstr "Trzymane ↓ się nie liczy – najpierw puść, potem od razu naciśnij ↑ albo ↓: trik wybiera się tylko na samym początku."
+
+msgid "Driften"
+msgstr "Driftowanie"
+
+msgid "Kante lösen und gleiten: das Brett dreht frei, die Fahrtrichtung bleibt."
+msgstr "Puść krawędź i suń: deska obraca się swobodnie, kierunek jazdy zostaje."
+
+msgid "360 im Drift"
+msgstr "360 w drifcie"
+
+msgid "360er im Drift"
+msgstr "360-tki w drifcie"
+
+msgid "Driften heißt: die Kante lösen. Das Brett liegt flach und greift nicht mehr – Lenken ändert die Fahrtrichtung nicht, nur der Seilzug zieht dich, und das Brett lässt sich frei herumdrehen. Dreh so zwischen den roten Bojen (Ufer bis Endmast) fünf 360er in die eine und fünf in die andere Richtung – gezählt wird jede volle Umdrehung im Drift, höchstens fünf je Richtung."
+msgstr "Driftowanie to puszczenie krawędzi. Deska leży płasko i już nie trzyma – skręcanie nie zmienia kierunku jazdy, ciągnie cię tylko lina, a deskę można swobodnie obracać. Między czerwonymi bojami (od brzegu do masztu końcowego) zrób pięć 360-tek w jedną i pięć w drugą stronę – liczy się każdy pełny obrót w drifcie, najwyżej pięć w każdą stronę."
+
+msgid "Strg halten  driften     ← / →  Brett drehen"
+msgstr "Trzymaj Ctrl  drift     ← / →  obracaj deskę"
+
+msgid "DRIFT halten  driften     Neigen  Brett drehen"
+msgstr "Trzymaj DRIFT  drift     przechył  obracaj deskę"
+
+msgid "Erst fünf in eine Richtung, dann umsteuern – die Strecke reicht nur knapp, also nicht trödeln. Wer den Drift loslässt, verliert die angefangene Umdrehung – und quer greift die Kante hart und bremst."
+msgstr "Najpierw pięć w jedną stronę, potem zmień – odcinek ledwo wystarcza, więc się nie ociągaj. Kto puści drift, traci rozpoczęty obrót – a w poprzek krawędź mocno chwyta i hamuje."
+
+msgid "Wende im Drift"
+msgstr "Nawrót w drifcie"
+
+msgid "Die Wende durchgleiten"
+msgstr "Przesuń się przez nawrót"
+
+msgid "Vor der Wende am Endmast mächtig Schwung holen und dann die ganze Wende im Drift durchgleiten – ohne einzusinken. Gemessen: Anteil der Wende, in dem du im Drift gleitest, ohne einzusinken (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht)."
+msgstr "Przed nawrotem przy maszcie końcowym nabierz porządnego rozpędu i przesuń cały nawrót w drifcie – bez zatonięcia. Mierzone: udział nawrotu, w którym suniesz w drifcie bez zatonięcia (od hamowania carriera, aż lina znów pociągnie w nowym kierunku)."
+
+msgid "← / →  lenken (Schwung holen)     Strg halten  driften"
+msgstr "← / →  skręcanie (nabierz rozpędu)     trzymaj Ctrl  drift"
+
+msgid "Neigen  lenken (Schwung holen)     DRIFT halten  driften"
+msgstr "Przechył  skręcanie (nabierz rozpędu)     trzymaj DRIFT  drift"
+
+msgid "An der roten Boje weit rauskanten und Tempo aufbauen. Im Drift bremst das Wasser weniger – du gleitest weiter. Ist zu wenig Schwung da, sinkst du ein."
+msgstr "Przy czerwonej boi wyjedź daleko na krawędzi i nabierz prędkości. W drifcie woda mniej hamuje – suniesz dalej. Za mało rozpędu i toniesz."
+
+msgid "Drift nach Feature"
+msgstr "Drift po featurze"
+
+msgid "Nach dem Feature driften"
+msgstr "Drift po featurze"
+
+msgid "Terminal 2, Setup Juli & August: von der Mitte Richtung Steg über ein Feature deiner Wahl und gleich danach driften – mindestens 10 m. Gemessen: der längste Drift, der direkt nach einem Feature beginnt (auch nach dem Sprung davon)."
+msgstr "Terminal 2, setup Lipiec i sierpień: od środka w stronę pomostu przez wybrany feature i zaraz potem drift – co najmniej 10 m. Mierzone: najdłuższy drift, który zaczyna się zaraz po featurze (także po skoku z niego)."
+
+msgid "Strg schon auf dem Feature halten und danach nicht loslassen"
+msgstr "Trzymaj Ctrl już na featurze i potem nie puszczaj"
+
+msgid "DRIFT schon auf dem Feature halten und danach nicht loslassen"
+msgstr "Trzymaj DRIFT już na featurze i potem nie puszczaj"
+
+msgid "Mit Drift darf das Brett beim Abgang auch quer stehen. Der Seilzug zieht dich im Drift zur Seilmitte – vorher weit außen auf das Feature fahren."
+msgstr "Z driftem deska może przy zjeździe stać też w poprzek. W drifcie lina ciągnie cię do środka – najedź na feature daleko z zewnątrz."
+
+msgid "Tailpress im Drift"
+msgstr "Tailpress w drifcie"
+
+msgid "Auf dem Weg zum vorderen Wendepunkt driften und dabei ins Tail drücken: das Brett kippt um das Tail, die Nose steht hoch, die freie Hand streift das Wasser. Du gleitest mit dem ganzen Schwung weiter. Driftest du querer, als es dein Tempo erlaubt (höchstens 86°, nach links wie nach rechts), stürzt du – mit ← / → den Winkel halten. Gemessen: Anteil der Wende im vollen Tailpress (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht) – ohne einzusinken. Gold = die ganze Wende."
+msgstr "W drodze do przedniego punktu nawrotu driftuj i dociskaj tail: deska przechyla się na tail, nose idzie w górę, wolna ręka muska wodę. Suniesz dalej z całym rozpędem. Jeśli driftujesz bardziej w poprzek, niż pozwala prędkość (najwyżej 86°, w lewo i w prawo), upadasz – trzymaj kąt ← / →. Mierzone: udział nawrotu w pełnym tailpressie (od hamowania carriera, aż lina znów pociągnie w nowym kierunku) – bez zatonięcia. Złoto = cały nawrót."
+
+msgid "Strg halten  driften     ↓ halten  Tailpress     ← / →  Drift-Winkel halten"
+msgstr "Trzymaj Ctrl  drift     trzymaj ↓  Tailpress     ← / →  trzymaj kąt driftu"
+
+msgid "DRIFT halten  driften     ▼ halten  Tailpress     Neigen  Winkel halten"
+msgstr "Trzymaj DRIFT  drift     trzymaj ▼  Tailpress     przechył  trzymaj kąt"
+
+msgid "Hart rauskanten, im Drift das Brett erst weit quer drehen (um 75°), dann ins Tail drücken – so bremst nichts. Im goldenen Bereich des Bogens (die letzten rund 45° vor der Grenze) bremst der Press gar nicht; querer als 86° reißt es dich um. Den Winkel mit ← / → halten, während dich das Seil um den Carrier schwingt."
+msgstr "Mocno na krawędź, w drifcie najpierw obróć deskę daleko w poprzek (ok. 75°), potem dociśnij tail – wtedy nic nie hamuje. W złotej strefie łuku (ostatnie ok. 45° przed granicą) press w ogóle nie hamuje; bardziej w poprzek niż 86° i lecisz. Trzymaj kąt ← / →, gdy lina obraca cię wokół carriera."
+
+msgid "Transfer"
+msgstr "Transfer"
+
+msgid "Von einem Feature auf ein anderes springen."
+msgstr "Skok z jednego featuru na drugi."
+
+msgid "Klein"
+msgstr "Mały"
+
+msgid "Pyramid auf Pyramid-Rail"
+msgstr "Pyramid na Pyramid Rail"
+
+msgid "Pyramid"
+msgstr "Pyramid"
+
+msgid "A-Frame Rail"
+msgstr "A-Frame Rail"
+
+msgid "Erst auf die Pyramid, dann aufs Rail springen"
+msgstr "Najpierw na Pyramid, potem skok na rail"
+
+msgid "Terminal 2, Setup C: über die Pyramid fahren und oben seitlich auf das A-Frame Rail daneben springen. Gemessen: Sprunghöhe – so hoch wie möglich, aber das Rail noch erwischen."
+msgstr "Terminal 2, setup C: przejedź przez Pyramid i na górze skocz w bok na A-Frame Rail obok. Mierzone: wysokość skoku – jak najwyżej, ale tak, by złapać rail."
+
+msgid "Leertaste halten + loslassen  Absprung, in der Luft ← / →  Richtung Rail"
+msgstr "Trzymaj Spację + puść  wybicie, w powietrzu ← / →  w stronę raila"
+
+msgid "SPRUNG halten + loslassen  Absprung, in der Luft neigen  Richtung Rail"
+msgstr "Trzymaj SKOK + puść  wybicie, w powietrzu przechył  w stronę raila"
+
+msgid "Auf der Pyramid nahe an der Rail-Seite fahren, dann kurz abspringen – das Einloggen zieht dich aufs Rail."
+msgstr "Na Pyramid jedź blisko strony raila, potem krótko się wybij – zatrzaśnięcie wciągnie cię na rail."
+
+msgid "Groß"
+msgstr "Duży"
+
+msgid "Wedge auf Down Ledge"
+msgstr "Wedge na Down Ledge"
+
+msgid "Cheese Wedge"
+msgstr "Cheese Wedge"
+
+msgid "Down Ledge"
+msgstr "Down Ledge"
+
+msgid "Erst über den Wedge, dann auf die Down Ledge springen"
+msgstr "Najpierw przez wedge, potem skok na Down Ledge"
+
+msgid "Terminal 1, Setup A: über den Wedge (Kicker-Höhe wie Kicker M) und seitlich hoch auf die Down Ledge springen. Gemessen: Sprunghöhe – so hoch wie möglich, aber die Ledge noch erwischen."
+msgstr "Terminal 1, setup A: przez wedge (wysokość jak Kicker M) i skok w bok w górę na Down Ledge. Mierzone: wysokość skoku – jak najwyżej, ale tak, by złapać ledge."
+
+msgid "Leertaste halten (auf dem Wedge) + an der Kante loslassen, in der Luft ← / →  Richtung Ledge"
+msgstr "Trzymaj Spację (na wedge) + puść na krawędzi, w powietrzu ← / →  w stronę ledge"
+
+msgid "SPRUNG halten (auf dem Wedge) + an der Kante loslassen, in der Luft neigen"
+msgstr "Trzymaj SKOK (na wedge) + puść na krawędzi, w powietrzu przechył"
+
+msgid "Die Ledge ist höher als die Kante des Wedges – voll aufladen und kräftig abspringen."
+msgstr "Ledge jest wyżej niż krawędź wedge – naładuj w pełni i mocno się wybij."
+
+msgid "Curb auf Down Ledge"
+msgstr "Curb na Down Ledge"
+
+msgid "Transition Curb"
+msgstr "Transition Curb"
+
+msgid "Erst auf die Transition Curb, dann auf die Down Ledge springen"
+msgstr "Najpierw na Transition Curb, potem skok na Down Ledge"
+
+msgid "Terminal 2, Setup D: mit einem Ollie auf die Transition Curb, darauf hoch und dann auf die Down Ledge daneben springen. Wie du slidest, ist egal. Gemessen: Sprunghöhe von der Curb – so hoch wie möglich, aber die Ledge noch erwischen."
+msgstr "Terminal 2, setup D: ollie na Transition Curb, w górę po niej, a potem skok na Down Ledge obok. Jak slidujesz, nie ma znaczenia. Mierzone: wysokość skoku z curba – jak najwyżej, ale tak, by złapać ledge."
+
+msgid "Leertaste: Ollie auf die Curb, auf der Curb nochmal abspringen, in der Luft ← / →"
+msgstr "Spacja: ollie na curb, na curbie jeszcze raz wybicie, w powietrzu ← / →"
+
+msgid "SPRUNG: Ollie auf die Curb, auf der Curb nochmal abspringen, in der Luft neigen"
+msgstr "SKOK: ollie na curb, na curbie jeszcze raz wybicie, w powietrzu przechył"
+
+msgid "Auf der Curb ist glattes Plastik – lenken geht nicht. Schon vor dem Ollie auf die richtige Linie gehen."
+msgstr "Curb to śliski plastik – skręcanie nie działa. Ustaw się na właściwej linii już przed ollie."
+
+msgid "Special Press"
+msgstr "Special Press"
+
+msgid "Curb auf Down Ledge mit Nosepress"
+msgstr "Curb na Down Ledge z nosepressem"
+
+msgid "Wie Transfer special, aber auf der Down Ledge einen Nosepress halten. Gemessen: Sekunden im Press."
+msgstr "Jak Transfer special, ale utrzymaj nosepress na Down Ledge. Mierzone: sekundy w pressie."
+
+msgid "Auf der Ledge ↑ halten (Nosepress)"
+msgstr "Na ledge trzymaj ↑ (nosepress)"
+
+msgid "Auf der Ledge ▲ halten (Nosepress)"
+msgstr "Na ledge trzymaj ▲ (nosepress)"
+
+msgid "Erst sauber auf der Ledge landen, dann ↑ drücken – beim Abgang loslassen."
+msgstr "Najpierw czysto wyląduj na ledge, potem naciśnij ↑ – przy zjeździe puść."
+
+msgid "Pool"
+msgstr "Pool"
+
+msgid "Der 6-Stair Pool: rein ins Becken, die Treppe im Drift, auf den Rand und die Ausgänge."
+msgstr "6-Stair Pool: do basenu, schody w drifcie, na krawędź i do wyjść."
+
+msgid "Pool Drop"
+msgstr "Pool Drop"
+
+msgid "Pool Drop – Höhe"
+msgstr "Pool Drop – wysokość"
+
+msgid "Nicht über die Rampe ins Becken"
+msgstr "Nie przez rampę do basenu"
+
+msgid "Fahr über die Rampe des Pools und spring ins Becken. Gemessen: höchster Punkt über dem See."
+msgstr "Przejedź przez rampę poola i skocz do basenu. Mierzone: najwyższy punkt nad jeziorem."
+
+msgid "← / →  lenken     Leertaste halten + an der Kante loslassen  Absprung"
+msgstr "← / →  skręcanie     trzymaj Spację + puść na krawędzi  wybicie"
+
+msgid "Neigen  lenken     SPRUNG halten + an der Kante loslassen  Absprung"
+msgstr "Przechył  skręcanie     trzymaj SKOK + puść na krawędzi  wybicie"
+
+msgid "Mittig auf die Rampe zielen, voll aufladen und genau an der Kante loslassen. Nicht zu weit springen – hinter dem Becken kommt die Treppe."
+msgstr "Celuj w środek rampy, naładuj w pełni i puść dokładnie na krawędzi. Nie skacz za daleko – za basenem są schody."
+
+msgid "Pool Drop – Weite"
+msgstr "Pool Drop – odległość"
+
+msgid "Wie eben, aber so weit wie möglich ins Becken. Gemessen: Weite vom Absprung bis zur Landung im Becken."
+msgstr "Jak wyżej, ale jak najdalej w głąb basenu. Mierzone: odległość od wybicia do lądowania w basenie."
+
+msgid "Mit vollem Tempo und voller Ladung – das Becken ist 15 m lang, die Landung muss im Wasser sein."
+msgstr "Z pełną prędkością i pełnym ładowaniem – basen ma 15 m, lądowanie musi być w wodzie."
+
+msgid "Treppe runter"
+msgstr "Schody w dół"
+
+msgid "Die Treppe im Drift hinunter"
+msgstr "Schodami w dół w drifcie"
+
+msgid "Nicht über die Treppe"
+msgstr "Nie przez schody"
+
+msgid "Rein ins Becken, durchfahren und die Treppe am Ende im Drift hinunter in den See. Gemessen: Tempo unten."
+msgstr "Do basenu, przez niego i schodami na końcu w drifcie w dół do jeziora. Mierzone: prędkość na dole."
+
+msgid "Strg (Drift) halten, bevor das Brett die Treppe erreicht"
+msgstr "Trzymaj Ctrl (drift), zanim deska dojedzie do schodów"
+
+msgid "DRIFT halten, bevor das Brett die Treppe erreicht"
+msgstr "Trzymaj DRIFT, zanim deska dojedzie do schodów"
+
+msgid "Ohne Drift ist die Treppe ein Sturz. Gerade auf die Treppe zielen – die Stufen sind glatt, lenken geht dort nicht."
+msgstr "Bez driftu schody to upadek. Celuj prosto w schody – stopnie są śliskie, tam nie da się skręcać."
+
+msgid "Treppe hoch"
+msgstr "Schody w górę"
+
+msgid "Die Treppe im Drift hinauf"
+msgstr "Schodami w górę w drifcie"
+
+msgid "Nicht über die Treppe ins Becken"
+msgstr "Nie schodami do basenu"
+
+msgid "Von hinten zwischen den Ausgängen auf die Treppe zu und im Drift hinauf ins Becken. Gemessen: Tempo oben."
+msgstr "Od tyłu między wyjściami na schody i w drifcie w górę do basenu. Mierzone: prędkość na górze."
+
+msgid "Hinauf braucht Schwung: mit vollem Tempo und gespanntem Seil kommen. Im Becken vor der Rampe abspringen, sonst fährt man gegen die Wand."
+msgstr "W górę trzeba rozpędu: przyjedź z pełną prędkością i napiętą liną. W basenie wybij się przed rampą, inaczej wjedziesz w ścianę."
+
+msgid "Coping"
+msgstr "Coping"
+
+msgid "Auf dem Rand sliden"
+msgstr "Slide po krawędzi"
+
+msgid "Pool Coping"
+msgstr "Pool Coping"
+
+msgid "Fahr außen über die Rampe direkt auf den Rand des Beckens (Coping) und rutsch so weit wie möglich. Gemessen: Meter auf dem Rand."
+msgstr "Przejedź po zewnętrznej stronie rampy prosto na krawędź basenu (coping) i zjedź jak najdalej. Mierzone: metry na krawędzi."
+
+msgid "← / →  lenken (auf dem Rand: Boardslide / 50-50)"
+msgstr "← / →  skręcanie (na krawędzi: Boardslide / 50-50)"
+
+msgid "Neigen  lenken (auf dem Rand deutlich neigen: Boardslide / 50-50)"
+msgstr "Przechył  skręcanie (na krawędzi wyraźnie przechyl: Boardslide / 50-50)"
+
+msgid "Die Spur genau auf den Rand legen (ganz rechts auf der Rampe). Der Rand ist nur 40 cm breit – das Einloggen hilft."
+msgstr "Ustaw linię dokładnie na krawędzi (całkiem po prawej na rampie). Krawędź ma tylko 40 cm – zatrzaśnięcie pomaga."
+
+msgid "Coping to Ledge"
+msgstr "Coping to Ledge"
+
+msgid "Rand und Ausgang in einem Zug"
+msgstr "Krawędź i wyjście za jednym razem"
+
+msgid "Nicht vom Rand auf den Ausgang"
+msgstr "Nie z krawędzi na wyjście"
+
+msgid "Auf dem Rand sliden und am Ende über die Safety ohne Absetzen auf die Down Ledge. Gemessen: Meter auf Rand und Ledge zusammen."
+msgstr "Slide po krawędzi, a na końcu przez safety bez odstawiania na Down Ledge. Mierzone: metry na krawędzi i ledge razem."
+
+msgid "Die Safety am Anfang der Ledge wirft dich ein Stück hoch – gerade bleiben, dann landest du wieder auf der Ledge."
+msgstr "Safety na początku ledge podrzuca cię trochę w górę – zostań prosto, a wylądujesz znowu na ledge."
+
+msgid "Stair Gap"
+msgstr "Stair Gap"
+
+msgid "Über die Treppe springen"
+msgstr "Skok nad schodami"
+
+msgid "Kein Sprung aus dem Becken über die Treppe"
+msgstr "Brak skoku z basenu nad schodami"
+
+msgid "Im Becken Anlauf nehmen und am Ende über die ganze Treppe in den See springen. Gemessen: Weite des Sprungs."
+msgstr "Rozpędź się w basenie i na końcu przeskocz całe schody do jeziora. Mierzone: odległość skoku."
+
+msgid "Leertaste halten + am Ende des Beckens loslassen"
+msgstr "Trzymaj Spację + puść na końcu basenu"
+
+msgid "SPRUNG halten + am Ende des Beckens loslassen"
+msgstr "Trzymaj SKOK + puść na końcu basenu"
+
+msgid "Erst kurz vor der Treppe loslassen. Landest du auf den Stufen, brauchst du Drift."
+msgstr "Puść dopiero tuż przed schodami. Jeśli wylądujesz na stopniach, potrzebujesz driftu."
+
+msgid "Pool Special"
+msgstr "Pool Special"
+
+msgid "Pool Drop und Treppe im Drift nicht geschafft"
+msgstr "Pool Drop i schody w drifcie nie wyszły"
+
+msgid "Die Pool-Linie in einem Zug: Pool Drop (gern mit Drehung) und dann die Treppe im Drift hinunter – als Kombination. Gemessen: Punkte der Pool-Tricks."
+msgstr "Linia poola za jednym razem: Pool Drop (chętnie z obrotem), a potem schodami w drifcie w dół – jako kombinacja. Mierzone: punkty za triki w poolu."
+
+msgid "Leertaste  Absprung an der Rampe     ← / →  in der Luft drehen     Strg  Drift auf der Treppe"
+msgstr "Spacja  wybicie na rampie     ← / →  obrót w powietrzu     Ctrl  drift na schodach"
+
+msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe"
+msgstr "SKOK  wybicie na rampie     Przechył  obrót w powietrzu     DRIFT  na schodach"
+
+msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgstr "Kombinacja trwa 3 s – po dropie się nie ociągaj. Obroty w dropie dają więcej punktów, schody liczą się w kombinacji podwójnie."
+
+msgid "Donkey Rail"
+msgstr "Donkey Rail"
+
+msgid "Ausgang: Donkey Rail"
+msgstr "Wyjście: Donkey Rail"
+
+msgid "Pool B (hinten rechts): links über die Rampe auf den Rand und über die Safety auf das Donkey Rail. Gemessen: Meter auf dem Rail."
+msgstr "Pool B (z tyłu po prawej): po lewej przez rampę na krawędź i przez safety na Donkey Rail. Mierzone: metry na railu."
+
+msgid "Erst runter, dann flach: auf dem flachen Stück bremst es nicht mehr, dort ruhig bleiben."
+msgstr "Najpierw w dół, potem płasko: na płaskim odcinku już nie hamuje, tam zachowaj spokój."
+
+msgid "Low to High Ledge"
+msgstr "Low to High Ledge"
+
+msgid "Ausgang: Low to High Ledge"
+msgstr "Wyjście: Low to High Ledge"
+
+msgid "Pool B: rechts auf den Rand und auf die Low to High Ledge – sie steigt noch an. Gemessen: Meter auf der Ledge."
+msgstr "Pool B: po prawej na krawędź i na Low to High Ledge – ona jeszcze się wznosi. Mierzone: metry na ledge."
+
+msgid "Bergauf kostet Tempo: mit gespanntem Seil auf den Rand kommen. Hinten ist sie 2 m hoch – gerade abspringen."
+msgstr "Pod górę kosztuje prędkość: wjedź na krawędź z napiętą liną. Na końcu ma 2 m wysokości – wybij się prosto."
+
+msgid "Double Kinked Rail"
+msgstr "Double Kinked Rail"
+
+msgid "Ausgang: Double Kinked Rail"
+msgstr "Wyjście: Double Kinked Rail"
+
+msgid "Pool C (links): außen über die Rampe auf den Rand und auf das Double Kinked Rail mit zwei Knicken. Gemessen: Meter auf dem Rail."
+msgstr "Pool C (po lewej): z zewnątrz przez rampę na krawędź i na Double Kinked Rail z dwoma załamaniami. Mierzone: metry na railu."
+
+msgid "Außen zieht das Seil dich zur Mitte – auf dem Rand nicht gegenlenken, das Einloggen hält die Spur."
+msgstr "Z zewnątrz lina ciągnie cię do środka – nie kontruj na krawędzi, zatrzaśnięcie trzyma linię."
+
+msgid "Flat Down Ledge"
+msgstr "Flat Down Ledge"
+
+msgid "Ausgang: Flat Down Ledge"
+msgstr "Wyjście: Flat Down Ledge"
+
+msgid "Pool C: innen (zum Seil hin) auf den Rand und auf die Flat Down Ledge – erst flach, dann abwärts. Gemessen: Meter auf der Ledge."
+msgstr "Pool C: od środka (w stronę liny) na krawędź i na Flat Down Ledge – najpierw płasko, potem w dół. Mierzone: metry na ledge."
+
+msgid "Die innere Seite liegt nah am Seil – das Seil zieht kaum quer, dafür ist die Spur schmal."
+msgstr "Strona wewnętrzna leży blisko liny – lina prawie nie ciągnie w bok, za to linia jest wąska."
+
+msgid "Rail to Rail"
+msgstr "Rail to Rail"
+
+msgid "Auf dem Slider seitlich auf den Nachbarn hinüberspringen."
+msgstr "Na sliderze skok w bok na sąsiada."
+
+msgid "Pipe to Pipe"
+msgstr "Pipe to Pipe"
+
+msgid "Rechts stehen zwei Pipes nebeneinander (0,8 m Lücke). Über die Auffahrt auf die äußere, kurze Pipe, dann seitlich auf die innere, lange Pipe hinüberspringen. Gemessen: gerutschte Meter auf der zweiten Pipe – je früher der Transfer, desto mehr."
+msgstr "Po prawej stoją dwie pipe obok siebie (0,8 m przerwy). Wjedź po rampie na zewnętrzną, krótką pipe, potem przeskocz w bok na wewnętrzną, długą. Mierzone: przejechane metry na drugiej pipe – im wcześniej transfer, tym więcej."
+
+msgid "Auf der Pipe Leertaste halten, dabei ← (Seite), Leertaste loslassen = Hop"
+msgstr "Na pipe trzymaj Spację, do tego ← (strona), puść Spację = hop"
+
+msgid "Auf der Pipe SPRUNG halten, dabei ← (Seite), SPRUNG loslassen = Hop"
+msgstr "Na pipe trzymaj SKOK, do tego ← (strona), puść SKOK = hop"
+
+msgid "Schon auf der Auffahrt laden, auf der Pipe ← dazu und loslassen. Die Hop-Hilfe zielt auf die Mitte der Nachbar-Pipe. In der Luft dreht ←/→ erst wieder, wenn du es einmal losgelassen hast."
+msgstr "Ładuj już na rampie, na pipe dodaj ← i puść. Pomoc hopu celuje w środek sąsiedniej pipe. W powietrzu ←/→ obraca dopiero znowu, gdy raz je puścisz."
+
+msgid "Pipe to Pipe to Pipe"
+msgstr "Pipe to Pipe to Pipe"
+
+msgid "Links stehen drei Pipes versetzt nebeneinander wie eine Treppe zur Seilmitte. Auf die erste, dann zweimal hinüber: Pipe 1 → Pipe 2 → Pipe 3. Gemessen: gerutschte Meter auf der dritten Pipe."
+msgstr "Po lewej stoją trzy pipe przesunięte obok siebie jak schody do środka. Na pierwszą, potem dwa razy w bok: Pipe 1 → Pipe 2 → Pipe 3. Mierzone: przejechane metry na trzeciej pipe."
+
+msgid "Auf der Pipe Leertaste halten, dabei → (Seite), Leertaste loslassen = Hop – auf Pipe 2 gleich nochmal"
+msgstr "Na pipe trzymaj Spację, do tego → (strona), puść Spację = hop – na pipe 2 od razu jeszcze raz"
+
+msgid "Auf der Pipe SPRUNG halten, dabei → (Seite), SPRUNG loslassen = Hop – auf Pipe 2 gleich nochmal"
+msgstr "Na pipe trzymaj SKOK, do tego → (strona), puść SKOK = hop – na pipe 2 od razu jeszcze raz"
+
+msgid "Pipe 2 ist kurz: sofort nach der Landung wieder laden. Ein kurzer Druck reicht für den Hop – voll aufladen muss man nicht."
+msgstr "Pipe 2 jest krótka: zaraz po lądowaniu znowu ładuj. Krótkie wciśnięcie wystarczy na hop – pełne ładowanie nie jest potrzebne."
+
+msgid "BOOT"
+msgstr "ŁÓDŹ"
+
+msgid "DROHNE"
+msgstr "DRON"
+
+msgid ""
+"RANG-\n"
+"LISTE\n"
+"AUS"
+msgstr ""
+"RAN-\n"
+"KING\n"
+"WYŁ."
+
+msgid "KEINE RANGLISTE"
+msgstr "BRAK RANKINGU"
+
+msgid "DU"
+msgstr "TY"
+
+msgid "RANGLISTE"
+msgstr "RANKING"
+
+msgid "Noch frei – Platz 1 wartet"
+msgstr "Jeszcze wolne – miejsce 1 czeka"
+
+msgid "Neuer Rekord!"
+msgstr "Nowy rekord!"
+
+msgid "%s überholt!"
+msgstr "%s wyprzedzony!"
+
+msgid "%d überholt!"
+msgstr "Wyprzedzeni: %d!"
+
+msgid "DU · REKORD"
+msgstr "TY · REKORD"
+
+msgid "dein Rekord"
+msgstr "twój rekord"
+
+msgid "noch %s bis %d."
+msgstr "jeszcze %s do miejsca %d."
+
+msgid "PAUSE"
+msgstr "PAUZA"
+
+msgid "Weiter  (Esc)"
+msgstr "Dalej  (Esc)"
+
+msgid "Einstellungen"
+msgstr "Ustawienia"
+
+msgid "Hilfe ein/aus"
+msgstr "Pomoc wł./wył."
+
+msgid "Nächster Titel"
+msgstr "Następny utwór"
+
+msgid "Startseite"
+msgstr "Ekran startowy"
+
+msgid "Zurück"
+msgstr "Wstecz"
+
+msgid "SETUP-EDITOR"
+msgstr "EDYTOR SETUPU"
+
+msgid "Name des Setups"
+msgstr "Nazwa setupu"
+
+msgid "Terminal 2 (Strand)"
+msgstr "Terminal 2 (plaża)"
+
+msgid "Terminal 1 (Lounge-Steg)"
+msgstr "Terminal 1 (pomost lounge)"
+
+msgid "Rückgängig"
+msgstr "Cofnij"
+
+msgid "Strg+Z"
+msgstr "Ctrl+Z"
+
+msgid "Wiederholen"
+msgstr "Ponów"
+
+msgid "Strg+Y"
+msgstr "Ctrl+Y"
+
+msgid "SPEICHERN"
+msgstr "ZAPISZ"
+
+msgid "SPEICHERN & FAHREN"
+msgstr "ZAPISZ I JEDŹ"
+
+msgid "Ganze Bahn zeigen"
+msgstr "Pokaż cały tor"
+
+msgid "Hacks werden beim Öffnen gesammelt …"
+msgstr "Hacki są zbierane przy otwieraniu …"
+
+msgid "Antippen stellt das Teil in die Mitte der Karte. Danach ziehen, drehen, Richtung wählen."
+msgstr "Stuknij, by postawić element na środku mapy. Potem przeciągaj, obracaj, wybierz kierunek."
+
+msgid "VORLAGE LADEN   (ersetzt beide Terminals)"
+msgstr "WCZYTAJ SZABLON   (zastępuje oba terminale)"
+
+msgid "TERMINAL"
+msgstr "TERMINAL"
+
+msgid "Terminal leeren"
+msgstr "Wyczyść terminal"
+
+msgid "Vom anderen Terminal"
+msgstr "Z drugiego terminala"
+
+msgid "Teile des anderen Terminals hierher kopieren (ersetzt dieses Terminal)"
+msgstr "Skopiuj tu elementy drugiego terminala (zastępuje ten terminal)"
+
+msgid "JSON   (zum Weitergeben oder für setups/ im Projekt)"
+msgstr "JSON   (do udostępnienia albo do setups/ w projekcie)"
+
+msgid "Hier ein Setup-JSON einfügen und „Aus Text laden“ drücken"
+msgstr "Wklej tu JSON setupu i naciśnij „Wczytaj z tekstu”"
+
+msgid "Als JSON kopieren"
+msgstr "Kopiuj jako JSON"
+
+msgid "JSON in die Zwischenablage kopiert"
+msgstr "JSON skopiowany do schowka"
+
+msgid "Aus Text laden"
+msgstr "Wczytaj z tekstu"
+
+msgid "Eigenes Setup löschen"
+msgstr "Usuń własny setup"
+
+msgid "Leeres Setup"
+msgstr "Pusty setup"
+
+msgid "Nicht gespeichert! Nochmal „Zurück“ = trotzdem verlassen (bleibt bis zum Neuladen erhalten)"
+msgstr "Nie zapisano! Jeszcze raz „Wstecz” = wyjdź mimo to (zostaje do przeładowania)"
+
+msgid "Mein %s"
+msgstr "Mój %s"
+
+msgid "verschieben   s %+.1f m   x %+.1f m"
+msgstr "przesuń   s %+.1f m   x %+.1f m"
+
+msgid "%s eingefügt"
+msgstr "Wstawiono: %s"
+
+msgid ""
+"Nichts ausgewählt. Ein Feature in der Karte antippen (doppelt = ganzer Hack), Umschalt/Strg + Klick wählt mehrere.\n"
+"\n"
+"Tasten: Pfeile verschieben (Umschalt 1 m), Q/E drehen, F Richtung, M spiegeln, Strg+D duplizieren, Entf löschen, Strg+Z rückgängig."
+msgstr ""
+"Nic nie zaznaczono. Stuknij feature na mapie (podwójnie = cały hack), Shift/Ctrl + klik zaznacza kilka.\n"
+"\n"
+"Klawisze: strzałki przesuwają (Shift 1 m), Q/E obrót, F kierunek, M odbicie, Ctrl+D duplikuj, Del usuń, Ctrl+Z cofnij."
+
+msgid "POSITION ENTLANG DES SEILS  s (m)"
+msgstr "POZYCJA WZDŁUŻ LINY  s (m)"
+
+msgid "SEITLICH  x (m)   + rechts, − links (Blick zum Endmast)"
+msgstr "W BOK  x (m)   + w prawo, − w lewo (patrząc na maszt końcowy)"
+
+msgid "DREHUNG (Grad)"
+msgstr "OBRÓT (stopnie)"
+
+msgid "RICHTUNG (Anfahrt)"
+msgstr "KIERUNEK (najazd)"
+
+msgid "%d Teile ausgewählt – sie werden gemeinsam verschoben, gedreht und gespiegelt."
+msgstr "Zaznaczone elementy: %d – są przesuwane, obracane i odbijane razem."
+
+msgid "%d Teil"
+msgid_plural "%d Teile"
+msgstr[0] "%d element"
+msgstr[1] "%d elementy"
+msgstr[2] "%d elementów"
+
+msgid "Antippen fügt den Hack in die Mitte der Karte ein (gleiche Anordnung, seitlich wie im Original)."
+msgstr "Stuknij, by wstawić hack na środku mapy (ten sam układ, w bok jak w oryginale)."
+
+msgid ""
+"%s\n"
+"Im Setup: %s"
+msgstr ""
+"%s\n"
+"W setupie: %s"
+
+msgid "%s: %d Features/Hacks (%d Zeilen), davon %d Hacks.   %s: %d Zeilen."
+msgstr "%s: %d featurów/hacków (%d wierszy), w tym %d hacków.   %s: %d wierszy."
+
+msgid "Achtung: %s bei s = %.0f m liegt außerhalb der Fahrstrecke."
+msgstr "Uwaga: %s przy s = %.0f m leży poza torem jazdy."
+
+msgid "Eigenes Setup (gespeichert)"
+msgstr "Własny setup (zapisany)"
+
+msgid "Noch nicht gespeichert – „Speichern“ legt ein eigenes Setup an."
+msgstr "Jeszcze nie zapisano – „Zapisz” tworzy własny setup."
+
+msgid "Pflanzen   ·   %s: %s   ·   linke Taste = Pinsel, rechte Taste ziehen = Karte bewegen, Rad / + − = Zoom"
+msgstr "Rośliny   ·   %s: %s   ·   lewy przycisk = pędzel, przeciąganie prawym = przesuwanie mapy, kółko / + − = zoom"
+
+msgid "%s   ·   %d Teile   ·   Ziehen = verschieben, freie Fläche ziehen = Karte bewegen, Rad / + − = Zoom"
+msgstr "%s   ·   %d elem.   ·   przeciąganie = przesuń, przeciąganie w pustym miejscu = przesuwanie mapy, kółko / + − = zoom"
+
+msgid "Kein gültiges Setup-JSON (braucht \"T2\" und/oder \"T1\")"
+msgstr "Nieprawidłowy JSON setupu (potrzebne \"T2\" i/lub \"T1\")"
+
+msgid "Setup aus Text geladen"
+msgstr "Setup wczytany z tekstu"
+
+msgid "Speichern fehlgeschlagen"
+msgstr "Zapis nie powiódł się"
+
+msgid "Gespeichert: %s"
+msgstr "Zapisano: %s"
+
+msgid "Eigenes Setup gelöscht (bleibt hier zum Weiterbearbeiten)"
+msgstr "Własny setup usunięty (zostaje tu do dalszej edycji)"
+
+msgid "Auf dem Luftbild malen. Wo du malst, radierst oder die Automatik zurückholst, übernimmst du die Stelle: dort setzt das Spiel nichts Automatisches mehr (Wiesengras, Schilf, Ufergras bzw. Sträucher und Bäume aus dem Wald) – getrennt für Bodenpflanzen und Gehölze. Rechte Maustaste ziehen = Karte bewegen."
+msgstr "Maluj na zdjęciu lotniczym. Tam, gdzie malujesz, wymazujesz albo przywracasz automat, przejmujesz miejsce: gra nie stawia tam już niczego automatycznie (trawa łąkowa, trzcina, trawa brzegowa albo krzewy i drzewa z lasu) – osobno dla roślin niskich i drzewiastych. Przeciąganie prawym przyciskiem = przesuwanie mapy."
+
+msgid "WERKZEUG"
+msgstr "NARZĘDZIE"
+
+msgid "PFLANZE   (Radieren/Automatik wirken auf ihre Ebene)"
+msgstr "ROŚLINA   (gumka/automat działają na jej warstwę)"
+
+msgid "%s: %.1f–%.1f m hoch, Abstand %.1f m – %s"
+msgstr "%s: %.1f–%.1f m wysokości, odstęp %.1f m – %s"
+
+msgid "PINSEL"
+msgstr "PĘDZEL"
+
+msgid "DICHTE BEIM MALEN"
+msgstr "GĘSTOŚĆ MALOWANIA"
+
+msgid "PFLANZEN SPEICHERN"
+msgstr "ZAPISZ ROŚLINY"
+
+msgid "Für setups/plants.json im Projekt"
+msgstr "Do setups/plants.json w projekcie"
+
+msgid "Bepflanzung als JSON in die Zwischenablage kopiert"
+msgstr "Nasadzenia skopiowane do schowka jako JSON"
+
+msgid "Zurücksetzen"
+msgstr "Resetuj"
+
+msgid "Eigene Bepflanzung löschen, wieder die aus dem Spiel"
+msgstr "Usuń własne nasadzenia, wróć do tych z gry"
+
+msgid "Bepflanzung aus dem Spiel geladen"
+msgstr "Wczytano nasadzenia z gry"
+
+msgid "Gemalt: %s"
+msgstr "Namalowano: %s"
+
+msgid "noch nichts"
+msgstr "jeszcze nic"
+
+msgid "Von Hand gepflegt: %d m² Boden, %d m² Gehölz"
+msgstr "Pielęgnowane ręcznie: %d m² podłoże, %d m² rośliny drzewiaste"
+
+msgid "Ebene der Pflanze: %s"
+msgstr "Warstwa rośliny: %s"
+
+msgid "Nicht gespeichert."
+msgstr "Nie zapisano."
+
+msgid "Bepflanzung gespeichert (%s), im Spiel neu aufgebaut"
+msgstr "Nasadzenia zapisane (%s), przebudowane w grze"
+
+msgid "links (−x)"
+msgstr "lewo (−x)"
+
+msgid "rechts (+x)"
+msgstr "prawo (+x)"
+
+msgid "2 Ausgänge (wählbar)"
+msgstr "2 wyjścia (do wyboru)"
+
+msgid "Modul: %s"
+msgstr "Moduł: %s"
+
+msgid "%s   %.1f × %.1f m, Höhe %.2f m"
+msgstr "%s   %.1f × %.1f m, wysokość %.2f m"
+
+msgid "KICKER & WEDGES"
+msgstr "KICKERY I WEDGE"
+
+msgid "BOXEN, LEDGES & CURBS"
+msgstr "BOXY, LEDGE I CURBY"
+
+msgid "RAILS & PIPES"
+msgstr "RAILE I PIPE"
+
+msgid "MODULE (MEHRERE TEILE)"
+msgstr "MODUŁY (KILKA ELEMENTÓW)"
+
+msgid "SONSTIGES"
+msgstr "INNE"
+
+msgid "Malen"
+msgstr "Maluj"
+
+msgid "Radieren"
+msgstr "Wymaż"
+
+msgid "Automatik"
+msgstr "Automat"
+
+msgid "Schieben"
+msgstr "Przesuń"
+
+msgid "Teile"
+msgstr "Elementy"
+
+msgid "Hacks"
+msgstr "Hacki"
+
+msgid "Auswahl"
+msgstr "Zaznaczenie"
+
+msgid "Setup"
+msgstr "Setup"
+
+msgid "Pflanzen"
+msgstr "Rośliny"
+
+msgid "Zum Endmast  →"
+msgstr "Do masztu końcowego  →"
+
+msgid "←  Zum Steg"
+msgstr "←  Do pomostu"
+
+msgid "AUSGANG LINKS (Blick von der Rampe)"
+msgstr "WYJŚCIE LEWE (patrząc z rampy)"
+
+msgid "AUSGANG RECHTS (Blick von der Rampe)"
+msgstr "WYJŚCIE PRAWE (patrząc z rampy)"
+
+msgid "AUFFAHRT VORNE (m, 0 = ab)"
+msgstr "NAJAZD Z PRZODU (m, 0 = brak)"
+
+msgid "AUFFAHRT HINTEN (m, 0 = ab)"
+msgstr "NAJAZD Z TYŁU (m, 0 = brak)"
+
+msgid "Drehen +15°  (Q)"
+msgstr "Obróć +15°  (Q)"
+
+msgid "Drehen −15°  (E)"
+msgstr "Obróć −15°  (E)"
+
+msgid "Umdrehen  (F)"
+msgstr "Odwróć  (F)"
+
+msgid "Spiegeln  (M)"
+msgstr "Odbij  (M)"
+
+msgid "Duplizieren"
+msgstr "Duplikuj"
+
+msgid "Ganzen Hack wählen"
+msgstr "Zaznacz cały hack"
+
+msgid "Löschen"
+msgstr "Usuń"
+
+msgid "HACKS"
+msgstr "HACKI"
+
+msgid "GÄNGIGE KOMBINATIONEN"
+msgstr "TYPOWE KOMBINACJE"
+
+msgid "Gewählte Pflanze setzen"
+msgstr "Postaw wybraną roślinę"
+
+msgid "Pflanzen der Ebene entfernen (auch die automatischen)"
+msgstr "Usuń rośliny z warstwy (także automatyczne)"
+
+msgid "Stellen wieder der Automatik überlassen (entfernt Gemaltes der Ebene)"
+msgstr "Oddaj miejsca automatowi (usuwa namalowane z warstwy)"
+
+msgid "Karte mit dem Finger bewegen"
+msgstr "Przesuwaj mapę palcem"
+
+msgid "Startmast"
+msgstr "Maszt startowy"
+
+msgid "rote Boje"
+msgstr "czerwona boja"
+
+msgid "Endmast"
+msgstr "Maszt końcowy"
+
+msgid "WAKE THE HACK"
+msgstr "WAKE THE HACK"
+
+msgid "Wakeport Raunheim"
+msgstr "Wakeport Raunheim"
+
+msgid "„%s“"
+msgstr "„%s”"
+
+msgid "SPIELMODUS"
+msgstr "TRYB GRY"
+
+msgid "COMMUNITY CHALLENGE"
+msgstr "COMMUNITY CHALLENGE"
+
+msgid "SZENARIO"
+msgstr "SCENARIUSZ"
+
+msgid "Zufällig"
+msgstr "Losowy"
+
+msgid "Neues Szenario würfeln  (Z, Gamepad: Share)"
+msgstr "Wylosuj nowy scenariusz  (Z, pad: Share)"
+
+msgid "CHALLENGE"
+msgstr "CHALLENGE"
+
+msgid "FEATURE-SETUP"
+msgstr "SETUP FEATURÓW"
+
+msgid "Setup-Editor"
+msgstr "Edytor setupów"
+
+msgid "Erfolge"
+msgstr "Osiągnięcia"
+
+msgid "Rangliste"
+msgstr "Ranking"
+
+msgid "SPIEL STARTEN"
+msgstr "START GRY"
+
+msgid "Kostenlos & Open Source – spendier mir einen Kaffee"
+msgstr "Darmowe i open source – postaw mi kawę"
+
+msgid "CHALLENGE STARTEN"
+msgstr "START CHALLENGE"
+
+msgid "Bestwert: %s"
+msgstr "Rekord: %s"
+
+msgid "EINSTELLUNGEN"
+msgstr "USTAWIENIA"
+
+msgid "Spiel"
+msgstr "Gra"
+
+msgid "Fahrer"
+msgstr "Rider"
+
+msgid "Welt"
+msgstr "Świat"
+
+msgid "Technik"
+msgstr "Technika"
+
+msgid "Wasser"
+msgstr "Woda"
+
+msgid "FERTIG"
+msgstr "GOTOWE"
+
+msgid "Automatisch (System)"
+msgstr "Automatycznie (system)"
+
+msgid "SPRACHE"
+msgstr "JĘZYK"
+
+msgid "COMPETITION: RUNDENLÄNGE"
+msgstr "COMPETITION: DŁUGOŚĆ RUNDY"
+
+msgid "HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"
+msgstr "POMOCE   (każda wyłączona pomoc +15 % do wszystkich trików)"
+
+msgid "Auf dem Slider einloggen"
+msgstr "Zatrzaskiwanie na sliderze"
+
+msgid "An"
+msgstr "Wł."
+
+msgid "Überschlag dreht von selbst zu Ende"
+msgstr "Obrót kończy się sam"
+
+msgid "SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G; Aus = keine Rangliste)"
+msgstr "LIMIT NACIĄGU   (za duży ciąg wyrywa ci rączkę z rąk; w grze G; wył. = bez rankingu)"
+
+msgid "BRETT"
+msgstr "DESKA"
+
+msgid "STANCE   (Regular: links vorne)"
+msgstr "STANCE   (Regular: lewa noga z przodu)"
+
+msgid "Regular"
+msgstr "Regular"
+
+msgid "Goofy"
+msgstr "Goofy"
+
+msgid "HELM"
+msgstr "KASK"
+
+msgid "WESTE"
+msgstr "KAMIZELKA"
+
+msgid "WETTER   (von Hand, bis zum Neustart; Szenario auf der Startseite)"
+msgstr "POGODA   (ręcznie, do restartu; scenariusz na ekranie startowym)"
+
+msgid "DATUM"
+msgstr "DATA"
+
+msgid "UHRZEIT"
+msgstr "GODZINA"
+
+msgid "Jetzt  (live)"
+msgstr "Teraz  (na żywo)"
+
+msgid "Heute, aktuelle Uhrzeit und Wetter am See"
+msgstr "Dziś, aktualna godzina i pogoda nad jeziorem"
+
+msgid "SEILLÄNGE"
+msgstr "DŁUGOŚĆ LINY"
+
+msgid "ANLAGEN-TEMPO"
+msgstr "PRĘDKOŚĆ WYCIĄGU"
+
+msgid "%d km/h"
+msgstr "%d km/h"
+
+msgid "Seil und Tempo: Standard  (16 m, 30 km/h)"
+msgstr "Lina i prędkość: standard  (16 m, 30 km/h)"
+
+msgid "FLUGZEUGE"
+msgstr "SAMOLOTY"
+
+msgid "Normal"
+msgstr "Normalnie"
+
+msgid "Rush Hour"
+msgstr "Godziny szczytu"
+
+msgid "FAHRER AUF DER ANDEREN ANLAGE"
+msgstr "RIDER NA DRUGIM WYCIĄGU"
+
+msgid "CHALLENGE: FILMTEAM"
+msgstr "CHALLENGE: EKIPA FILMOWA"
+
+msgid "Zufall"
+msgstr "Losowo"
+
+msgid "Boot"
+msgstr "Łódź"
+
+msgid "Drohne"
+msgstr "Dron"
+
+msgid "LAUTSTÄRKE EFFEKTE"
+msgstr "GŁOŚNOŚĆ EFEKTÓW"
+
+msgid "LAUTSTÄRKE JUBEL"
+msgstr "GŁOŚNOŚĆ DOPINGU"
+
+msgid "LAUTSTÄRKE FLUGZEUGE"
+msgstr "GŁOŚNOŚĆ SAMOLOTÓW"
+
+msgid "KAMERA"
+msgstr "KAMERA"
+
+msgid "KAMERA-ABSTAND"
+msgstr "ODLEGŁOŚĆ KAMERY"
+
+msgid "LENKUNG"
+msgstr "STEROWANIE"
+
+msgid "Gyro (Handy neigen)"
+msgstr "Gyro (przechylanie telefonu)"
+
+msgid "Tasten (Steuerkreuz)"
+msgstr "Przyciski (krzyżak)"
+
+msgid "NEIGUNG ZUM LENKEN"
+msgstr "PRZECHYŁ DO SKRĘCANIA"
+
+msgid "Wenig empfindlich"
+msgstr "Mało czuły"
+
+msgid "Sehr empfindlich"
+msgstr "Bardzo czuły"
+
+msgid "NEIGUNG UMKEHREN"
+msgstr "ODWRÓĆ PRZECHYŁ"
+
+msgid "Nein"
+msgstr "Nie"
+
+msgid "Ja"
+msgstr "Tak"
+
+msgid "Die Grafikstufe stellt alle Wasser-Effekte passend ein. Einzelne Effekte lassen sich hier an- und ausschalten (wirkt sofort) – weicht etwas von der Stufe ab, steht die Grafik auf „Custom“."
+msgstr "Poziom grafiki ustawia pasujące efekty wody. Pojedyncze efekty można tu włączać i wyłączać (działa od razu) – jeśli coś odbiega od poziomu, grafika pokazuje „Custom”."
+
+msgid "WASSERFARBE"
+msgstr "KOLOR WODY"
+
+msgid "Türkis  (bisher)"
+msgstr "Turkus  (poprzedni)"
+
+msgid "Seeblau"
+msgstr "Jeziorny błękit"
+
+msgid "OBERFLÄCHENSTRUKTUR   (gleitende Kräuselung statt Sinus)"
+msgstr "STRUKTURA POWIERZCHNI   (płynne zmarszczki zamiast sinusa)"
+
+msgid "SPIEGELUNG JE NACH BLICKWINKEL   (flach: Himmel, von oben: ins Wasser)"
+msgstr "ODBICIE ZALEŻNE OD KĄTA   (płasko: niebo, z góry: w głąb wody)"
+
+msgid "SONNENGLITZERN"
+msgstr "BLASK SŁOŃCA"
+
+msgid "LICHT DURCH DIE WELLENKÄMME"
+msgstr "ŚWIATŁO PRZEZ GRZBIETY FAL"
+
+msgid "SCHAUM MIT STRUKTUR   (fleckig, reißt auf)"
+msgstr "PIANA ZE STRUKTURĄ   (plamista, rwie się)"
+
+msgid "SPITZE WELLEN   (auch für die Physik)"
+msgstr "OSTRE FALE   (także dla fizyki)"
+
+msgid "MIT WASSERTIEFE   (etwas teurer; Wasser wird dafür transparent gezeichnet)"
+msgstr "Z GŁĘBOKOŚCIĄ WODY   (nieco droższe; woda jest wtedy rysowana jako przezroczysta)"
+
+msgid "DURCHSICHT IM FLACHEN"
+msgstr "PRZEZROCZYSTOŚĆ NA PŁYCIŹNIE"
+
+msgid "ECHTE SPIEGELBILDER   (nur Desktop, teuer; nur wenn die Durchsicht aus ist)"
+msgstr "PRAWDZIWE ODBICIA   (tylko desktop, drogie; tylko gdy przezroczystość jest wyłączona)"
+
+msgid "Spiel-Musik: lizenzfreie Titel von Pixabay. Dazu kannst du eigene Titel wählen (MP3, OGG, WAV) – sie bleiben auf diesem Gerät bzw. in diesem Browser gespeichert. Alles läuft gemischt im Hintergrund."
+msgstr "Muzyka z gry: utwory bez tantiem z Pixabay. Do tego możesz wybrać własne utwory (MP3, OGG, WAV) – zostają zapisane na tym urządzeniu lub w tej przeglądarce. Wszystko gra wymieszane w tle."
+
+msgid "MUSIK"
+msgstr "MUZYKA"
+
+msgid "QUELLE"
+msgstr "ŹRÓDŁO"
+
+msgid "Spiel-Musik"
+msgstr "Muzyka z gry"
+
+msgid "Eigene Titel"
+msgstr "Własne utwory"
+
+msgid "Beides"
+msgstr "Oba"
+
+msgid "LAUTSTÄRKE MUSIK"
+msgstr "GŁOŚNOŚĆ MUZYKI"
+
+msgid "Titel hinzufügen"
+msgstr "Dodaj utwory"
+
+msgid "Eigene entfernen"
+msgstr "Usuń własne"
+
+msgid "%d Spiel-Musik, %d eigene"
+msgstr "Muzyka z gry: %d, własne: %d"
+
+msgid "lädt: %s"
+msgstr "wczytywanie: %s"
+
+msgid "Danke für die Spiel-Musik (Pixabay): %s"
+msgstr "Dzięki za muzykę w grze (Pixabay): %s"
+
+msgid "ODER NEBENHER HÖREN, z. B. mit Spotify (dann hier Musik aus)"
+msgstr "ALBO SŁUCHAJ OBOK, np. przez Spotify (wtedy wyłącz tu muzykę)"
+
+msgid "Skate-Punk bei Spotify"
+msgstr "Skate punk na Spotify"
+
+msgid "GRAFIK   (niedrig = flüssiger, schont den Akku; stellt auch das Wasser ein)"
+msgstr "GRAFIKA   (niska = płynniej, oszczędza baterię; ustawia też wodę)"
+
+msgid "Nr. %d"
+msgstr "Nr %d"
+
+msgid "FEATURES & HACKS"
+msgstr "FEATURY I HACKI"
+
+msgid "GEHEIME ERFOLGE"
+msgstr "TAJNE OSIĄGNIĘCIA"
+
+msgid "%d von %d entdeckt – was es gibt, siehst du erst, wenn du es geschafft hast."
+msgstr "Odkryto %d z %d – co jest do zdobycia, zobaczysz dopiero, gdy to zrobisz."
+
+msgid "IN DER RANGLISTE ERSCHEINEN"
+msgstr "POKAZUJ MNIE W RANKINGU"
+
+msgid "DEIN NAME"
+msgstr "TWOJA NAZWA"
+
+msgid "ohne Namen: anonym"
+msgstr "bez nazwy: anonimowo"
+
+msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
+msgstr "Twoja nazwa w rankingu (od 2 do 16 znaków)"
+
+msgid "Speichern"
+msgstr "Zapisz"
+
+msgid "Wird gelöscht …"
+msgstr "Usuwanie …"
+
+msgid "Gelöscht: Name und alle deine Einträge."
+msgstr "Usunięto: nazwę i wszystkie twoje wpisy."
+
+msgid "Heads up! Das Game ist noch mitten im Shape – Physik und Punkte werden ständig nachgeschliffen. Darum wird die Rangliste ab und zu gewiped. Kein Stress: einfach neu droppen und wieder ganz nach oben shredden."
+msgstr "Heads up! Gra wciąż jest w fazie shape – fizyka i punkty są ciągle szlifowane. Dlatego ranking od czasu do czasu jest czyszczony. Bez stresu: po prostu dropnij od nowa i shreduj z powrotem na szczyt."
+
+msgid "Lädt …"
+msgstr "Wczytywanie …"
+
+msgid "Challenge"
+msgstr "Challenge"
+
+msgid "Noch keine Einträge"
+msgstr "Brak wpisów"
+
+msgid "Noch niemand in der Rangliste – fahr den ersten Eintrag!"
+msgstr "Nikogo jeszcze nie ma w rankingu – zrób pierwszy wpis!"
+
+msgid "Test-Version: eigene Test-Rangliste"
+msgstr "Wersja testowa: osobny ranking testowy"
+
+msgid "Noch kein Eintrag – fahr den ersten!"
+msgstr "Jeszcze bez wpisu – zrób pierwszy!"
+
+msgid "%d Fahrer"
+msgid_plural "%d Fahrer"
+msgstr[0] "%d rider"
+msgstr[1] "%d riderów"
+msgstr[2] "%d riderów"
+
+msgid "Wertung geändert: ältere Ergebnisse stehen in einer früheren Rangliste"
+msgstr "Zmieniono punktację: starsze wyniki są we wcześniejszym rankingu"
+
+msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
+msgstr "Nazwa zostaje. Całkiem się wypisać: przełącznik u góry na Wył. (usuwa wszystko)."
+
+msgid "Wird gespeichert …"
+msgstr "Zapisywanie …"
+
+msgid "Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."
+msgstr "Zapisano. Twoje wpisy są teraz pod tą nazwą."
+
+msgid "Deine Bestwerte erscheinen öffentlich in der Rangliste – ohne Namen als „Anonym #…“. Gespeichert werden nur Name (falls angegeben), Bestwerte und Datum, dazu eine zufällige Geräte-Nummer als Prüfsumme. Aus = alles löschen."
+msgstr "Twoje rekordy pojawiają się publicznie w rankingu – bez nazwy jako „Anonym #…”. Zapisywane są tylko nazwa (jeśli podana), rekordy i data, a do tego losowy numer urządzenia jako suma kontrolna. Wył. = usuń wszystko."
+
+msgid "Du erscheinst nicht in der Rangliste, es wird nichts gesendet."
+msgstr "Nie pojawiasz się w rankingu, nic nie jest wysyłane."
+
+msgid "erreicht am %s"
+msgstr "zdobyte %s"
+
+msgid "Geheim"
+msgstr "Tajne"
+
+msgid "Noch nicht entdeckt"
+msgstr "Jeszcze nieodkryte"
+
+msgid "Im Setup: %s"
+msgstr "W setupie: %s"
+
+msgid "Gelb / Grün"
+msgstr "Żółty / Zielony"
+
+msgid "Weiß / Schwarz"
+msgstr "Biały / Czarny"
+
+msgid "Blau"
+msgstr "Niebieski"
+
+msgid "Orange"
+msgstr "Pomarańczowy"
+
+msgid "Schwarz glänzend"
+msgstr "Czarny połysk"
+
+msgid "Pink / Türkis"
+msgstr "Różowy / Turkus"
+
+msgid "Oliv"
+msgstr "Oliwkowy"
+
+msgid "Rot"
+msgstr "Czerwony"
+
+msgid "Grün"
+msgstr "Zielony"
+
+msgid "Gelb"
+msgstr "Żółty"
+
+msgid "Lila"
+msgstr "Fioletowy"
+
+msgid "Schwarz"
+msgstr "Czarny"
+
+msgid "Weiß"
+msgstr "Biały"
+
+msgid "LOS"
+msgstr "START"
+
+msgid "Nächste Challenge"
+msgstr "Następny challenge"
+
+msgid "Steuerung:"
+msgstr "Sterowanie:"
+
+msgid "Tipp:"
+msgstr "Wskazówka:"
+
+msgid "Leertaste"
+msgstr "Spacja"
+
+msgid "Neue Bestleistung!"
+msgstr "Nowy rekord osobisty!"
+
+msgid "NOCHMAL"
+msgstr "JESZCZE RAZ"
+
+msgid "RUNDE BEENDET"
+msgstr "KONIEC RUNDY"
+
+msgid "ERNEUT SPIELEN"
+msgstr "ZAGRAJ PONOWNIE"
+
+msgid "DRIFT"
+msgstr "DRIFT"
+
+msgid "SPRUNG"
+msgstr "SKOK"
+
+msgid "SCHWIMMEN"
+msgstr "PŁYŃ"
+
+msgid "Weiter"
+msgstr "Dalej"
+
+msgid "Zurück zum Steg  (−2:00)"
+msgstr "Powrót na pomost  (−2:00)"
+
+msgid "Ton aus/an"
+msgstr "Dźwięk wył./wł."
+
+msgid "Szenario würfeln"
+msgstr "Losuj scenariusz"
+
+msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
+msgstr "Wyrywanie liny wł./wył.  (wył.: bez rankingu)"
+
+msgid "Sonnig"
+msgstr "Słonecznie"
+
+msgid "Heiter"
+msgstr "Pogodnie"
+
+msgid "Bewölkt"
+msgstr "Pochmurno"
+
+msgid "Bedeckt"
+msgstr "Całkowite zachmurzenie"
+
+msgid "Schauer"
+msgstr "Przelotne opady"
+
+msgid "Regen"
+msgstr "Deszcz"
+
+msgid "Dunst"
+msgstr "Mgiełka"
+
+msgid "Schnee"
+msgstr "Śnieg"
+
+msgid "Gewitter"
+msgstr "Burza"
+
+msgid "After Hour Raley Session"
+msgstr "After Hour Raley Session"
+
+msgid "Early Bird Session"
+msgstr "Early Bird Session"
+
+msgid "Hochsommer. Was für eine Hitze"
+msgstr "Pełnia lata. Ale upał"
+
+msgid "Schöne Regen-Session"
+msgstr "Piękna sesja w deszczu"
+
+msgid "Night Session"
+msgstr "Night Session"
+
+msgid "Sonne hinter den Bäumen"
+msgstr "Słońce za drzewami"
+
+msgid "Nach dem Schauer"
+msgstr "Po ulewie"
+
+msgid "Blaue Stunde"
+msgstr "Niebieska godzina"
+
+msgid "Goldener Oktober"
+msgstr "Złoty październik"
+
+msgid "Chemtrails, oder Kondensstreifen? ;-)"
+msgstr "Chemtrails czy smugi kondensacyjne? ;-)"
+
+msgid "Gewitter – YOLO"
+msgstr "Burza – YOLO"
+
+msgid "Nikolaus-Session"
+msgstr "Sesja mikołajkowa"
+
+msgid "2026 September"
+msgstr "Wrzesień 2026"
+
+msgid "Juli & August"
+msgstr "Lipiec i sierpień"
+
+msgid "(Jahr ?)"
+msgstr "(rok ?)"
+
+msgid "Setup A"
+msgstr "Setup A"
+
+msgid "(Datum ?)"
+msgstr "(data ?)"
+
+msgid "Setup B"
+msgstr "Setup B"
+
+msgid "Setup C"
+msgstr "Setup C"
+
+msgid "Setup D"
+msgstr "Setup D"
+
+msgid "Setup E"
+msgstr "Setup E"
+
+msgid "Pool Party"
+msgstr "Pool Party"
+
+msgid "Utopia"
+msgstr "Utopia"
+
+msgid "Raildorado"
+msgstr "Raildorado"
+
+msgid "Kicker S"
+msgstr "Kicker S"
+
+msgid "Spine Kicker"
+msgstr "Spine Kicker"
+
+msgid "Pyramid Series"
+msgstr "Pyramid Series"
+
+msgid "Ollie Box"
+msgstr "Ollie Box"
+
+msgid "Ollie Box 1/2"
+msgstr "Ollie Box 1/2"
+
+msgid "Ledge"
+msgstr "Ledge"
+
+msgid "Ollie Box Ledge"
+msgstr "Ollie Box Ledge"
+
+msgid "Up Rail"
+msgstr "Up Rail"
+
+msgid "Transition Rail"
+msgstr "Transition Rail"
+
+msgid "1/2 Transition Rail"
+msgstr "1/2 Transition Rail"
+
+msgid "Pro Rail"
+msgstr "Pro Rail"
+
+msgid "Port Plaza"
+msgstr "Port Plaza"
+
+msgid "Plaza Rail"
+msgstr "Plaza Rail"
+
+msgid "Plaza Safety"
+msgstr "Plaza Safety"
+
+msgid "Plaza Rampe"
+msgstr "Rampa Plaza"
+
+msgid "Pipe 1/2"
+msgstr "Pipe 1/2"
+
+msgid "Pipe lang"
+msgstr "Długa pipe"
+
+msgid "6-Stair Pool"
+msgstr "6-Stair Pool"
+
+msgid "Pool Rampe"
+msgstr "Rampa poola"
+
+msgid "Treppe"
+msgstr "Schody"
+
+msgid "Down Rail"
+msgstr "Down Rail"
+
+msgid "Low to High Rail"
+msgstr "Low to High Rail"
+
+msgid "Double Kinked Ledge"
+msgstr "Double Kinked Ledge"
+
+msgid "Flat Down Rail"
+msgstr "Flat Down Rail"
+
+msgid "Ball"
+msgstr "Piłka"
+
+msgid "Bump"
+msgstr "Bump"
+

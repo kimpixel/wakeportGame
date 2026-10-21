@@ -246,10 +246,10 @@ func pick_files() -> void:
 	if OS.has_feature("web"):
 		_pick_web()
 		return
-	var filters := PackedStringArray(["*.mp3, *.ogg, *.wav ; Musik"])
+	var filters := PackedStringArray(["*.mp3, *.ogg, *.wav ; " + tr("Musik")])
 	var home := OS.get_system_dir(OS.SYSTEM_DIR_MUSIC)
 	if DisplayServer.has_feature(DisplayServer.FEATURE_NATIVE_DIALOG_FILE):
-		DisplayServer.file_dialog_show("Musik hinzufügen", home, "", false,
+		DisplayServer.file_dialog_show(tr("Musik hinzufügen"), home, "", false,
 			DisplayServer.FILE_DIALOG_MODE_OPEN_FILES, filters,
 			func(ok: bool, paths: PackedStringArray, _f: int) -> void:
 				if ok:

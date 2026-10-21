@@ -5,8 +5,10 @@ class_name SunCalc
 const LAT := 50.0122               # T2-Startmast, aus den UTM-Koordinaten der Geodaten
 const LON := 8.4773
 
+# i18n-begin
 const MONTHS := ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August",
 	"September", "Oktober", "November", "Dezember"]
+# i18n-end
 
 
 ## Sonnenstand: x = Höhe über dem Horizont, y = Azimut (Grad, von Norden im Uhrzeigersinn).
@@ -36,7 +38,8 @@ static func utc_offset(year: int, day_of_year: int) -> int:
 ## Tag im Jahr -> "21. Juni"
 static func date_text(year: int, day_of_year: int) -> String:
 	var d := _date(year, day_of_year)
-	return "%d. %s" % [d["day"], MONTHS[int(d["month"]) - 1]]
+	# {tag}/{monat} statt %: die Reihenfolge ist je Sprache anders („18. August“, „August 18“)
+	return Loc.t("{tag}. {monat}").format({"tag": d["day"], "monat": Loc.t(MONTHS[int(d["month"]) - 1])})
 
 
 static func day_of_year(year: int, month: int, day: int) -> int:

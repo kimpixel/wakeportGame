@@ -123,13 +123,13 @@ func _ready() -> void:
 	var brow := HBoxContainer.new()
 	brow.add_theme_constant_override("separation", 10)
 	v.add_child(brow)
-	_go = _button("LOS", true)
+	_go = _button(tr("LOS"), true)
 	_go.pressed.connect(func() -> void: go_pressed.emit())
 	brow.add_child(_go)
-	_next = _button("Nächste Challenge", false)
+	_next = _button(tr("Nächste Challenge"), false)
 	_next.pressed.connect(func() -> void: next_pressed.emit())
 	brow.add_child(_next)
-	_home = _button("Startseite", false)
+	_home = _button(tr("Startseite"), false)
 	_home.pressed.connect(func() -> void: home_pressed.emit())
 	brow.add_child(_home)
 	get_viewport().size_changed.connect(_layout)
@@ -176,13 +176,13 @@ func show_intro(mode_name: String, idx: int, count: int, task: Dictionary, best:
 	_result_row.visible = false
 	_rank.visible = false
 	_set_photos([])
-	var keys: String = task.get("keys_mobile", task["keys"]) if mobile else task["keys"]
-	var goal: String = task["goal"]
+	var keys: String = tr(task.get("keys_mobile", task["keys"]) if mobile else task["keys"])
+	var goal: String = tr(task["goal"])
 	var combo: Array = task.get("combo", [])
 	for i in combo.size():       # Slider Special: die Kombination je Slider
-		goal += "\n%d. %s:  %s" % [i + 1, combo[i].get("name", ""), Challenge.combo_text(combo[i])]
-	_text.text = "%s\n\nSteuerung:  %s\nTipp:  %s" % [goal, keys, task["tip"]]
-	_go.text = "LOS" + ("" if mobile else "  (Leertaste)")
+		goal += "\n%d. %s:  %s" % [i + 1, tr(combo[i].get("name", "")), Challenge.combo_text(combo[i])]
+	_text.text = "%s\n\n%s  %s\n%s  %s" % [goal, tr("Steuerung:"), keys, tr("Tipp:"), tr(task["tip"])]
+	_go.text = tr("LOS") + ("" if mobile else "  (%s)" % tr("Leertaste"))
 	_open()
 
 
@@ -193,13 +193,13 @@ func show_result(mode_name: String, idx: int, count: int, task: Dictionary, best
 	_result_row.visible = true
 	_set_photos(photos)
 	_result_medal.set_level(medal)
-	_result.text = ("%s!   %s" % [Training.MEDALS[medal].to_upper(), text]) if medal > 0 else text
+	_result.text = ("%s!   %s" % [tr(Training.MEDALS[medal]).to_upper(), text]) if medal > 0 else text
 	_result.add_theme_color_override("font_color", Training.MEDAL_COLORS[medal] if medal > 0 else Color(1, 1, 1, 0.9))
-	var b := "Bestwert: " + (Training.format_value(task, best[1]) if not is_nan(float(best[1])) else "–")
+	var b := tr("Bestwert: %s") % (Training.format_value(task, best[1]) if not is_nan(float(best[1])) else "–")
 	if new_best:
-		b = "Neue Bestleistung!   " + b
+		b = tr("Neue Bestleistung!") + "   " + b
 	_text.text = b
-	_go.text = "NOCHMAL" + ("" if mobile else "  (Leertaste)")
+	_go.text = tr("NOCHMAL") + ("" if mobile else "  (%s)" % tr("Leertaste"))
 	_open()
 
 
@@ -207,10 +207,10 @@ func show_result(mode_name: String, idx: int, count: int, task: Dictionary, best
 ## Rangliste (kommt per set_rank nach); Knöpfe „Erneut spielen“ (Standard) und „Zurück“ (Startseite).
 func show_round(head: String, score: int, rank: String) -> void:
 	_head.text = head
-	_title.text = "RUNDE BEENDET"
+	_title.text = tr("RUNDE BEENDET")
 	_result_row.visible = true
 	_result_medal.visible = false
-	_result.text = "%d Punkte" % score
+	_result.text = tr_n("%d Punkt", "%d Punkte", score) % score
 	_result.add_theme_font_size_override("font_size", 72)
 	_result.add_theme_color_override("font_color", Color.WHITE)
 	_result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -220,8 +220,8 @@ func show_round(head: String, score: int, rank: String) -> void:
 	_mgrid.visible = false
 	_next.visible = false
 	_set_photos([])
-	_go.text = "ERNEUT SPIELEN" + ("" if mobile else "  (Leertaste)")
-	_home.text = "Zurück"
+	_go.text = tr("ERNEUT SPIELEN") + ("" if mobile else "  (%s)" % tr("Leertaste"))
+	_home.text = tr("Zurück")
 	set_rank(rank)
 	_open()
 
@@ -261,13 +261,13 @@ func _set_photos(photos: Array[Texture2D]) -> void:
 
 
 func _fill(mode_name: String, idx: int, count: int, task: Dictionary, best: Array, has_next: bool) -> void:
-	_head.text = "%s   ·   CHALLENGE %d / %d" % [mode_name.to_upper(), idx + 1, count]
-	_title.text = task["title"]
+	_head.text = "%s   ·   CHALLENGE %d / %d" % [tr(mode_name).to_upper(), idx + 1, count]
+	_title.text = tr(task["title"])
 	for i in 3:
-		_medal_labels[i].text = "%s  %s" % [Training.MEDALS[i + 1], Training.format_threshold(task, i)]
+		_medal_labels[i].text = "%s  %s" % [tr(Training.MEDALS[i + 1]), Training.format_threshold(task, i)]
 		_medals[i].modulate.a = 1.0 if int(best[0]) > i else 0.45
 	_next.visible = has_next
-	_next.text = "Nächste Challenge" + ("" if mobile else "  (N)")
+	_next.text = tr("Nächste Challenge") + ("" if mobile else "  (N)")
 
 
 func _open() -> void:

@@ -17,8 +17,8 @@ static var _mark := 0
 
 ## Beim Start einmal aufrufen: lädt count.js (zählt den Seitenaufruf) und meldet das Gerät.
 static func init() -> void:
-	if not OS.has_feature("web") or not OS.get_cmdline_user_args().is_empty():
-		return
+	if _on or not OS.has_feature("web") or not OS.get_cmdline_user_args().is_empty():
+		return                                # schon an (Sprachwechsel baut die Szene neu auf)
 	# Rückgabewerte von JavaScriptBridge.eval kamen im Browser nicht als bool an (nie gezählt): darum
 	# nichts zurückgeben, alles im Browser entscheiden. Ohne window.wthCount (falscher Host) zählt count() nichts.
 	_on = true

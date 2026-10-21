@@ -27,6 +27,12 @@ const TIMEOUT := 8.0             # s
 const NAME_MAX := 16
 ## Felder einer Aufgabe, die die Messung nicht ändern (nicht in der Wertungs-Version)
 const COSMETIC := ["name", "title", "goal", "keys", "keys_mobile", "tip", "medals", "via_fail"]
+## Fehlertexte des Servers (server/worker.js, Deutsch) – nur damit sie übersetzt werden (tr in _post)
+# i18n-begin
+const SERVER_ERRORS := ["nur POST", "kein JSON", "kein Zugriff", "zu viele Anfragen, bitte später", "unbekannt",
+	"Serverfehler", "gesperrt", "Name schon vergeben", "ungültig", "Wert außerhalb der Grenzen", "Spieler unbekannt",
+	"Name: 2 bis 16 Zeichen", "Name: nur Buchstaben, Ziffern, Leerzeichen, . _ -", "Diesen Namen bitte nicht"]
+# i18n-end
 ## Competition zählt nur mit der Standard-Anlage (wie in den Challenges)
 const COMP_SPEED := 30.0
 const COMP_ROPE := 16.0
@@ -146,29 +152,29 @@ func challenge_board(mode_id: String, task: Dictionary) -> Dictionary:
 		t.erase(k)
 	var ver := "%d-%s-%s" % [RULES, _hash(t), setup_fp(task.get("setup", ""), task.get("terminal", "T2"))]
 	return {"board": "ch/%s/%s" % [mode_id, task["id"]], "ver": _ver(ver), "lower": task.get("lower", false),
-		"task": task, "title": "%s · %s" % [Training.MODES[Training.mode_index(mode_id)]["name"], task["title"]]}
+		"task": task, "title": "%s · %s" % [tr(Training.MODES[Training.mode_index(mode_id)]["name"]), tr(task["title"])]}
 
 
 ## Rangliste der Competition: {board, ver, lower, title}. setup: Eintrag aus FeatureSet.list_setups().
 func competition_board(seconds: int, terminal: String, setup: Dictionary, terminal_name := "") -> Dictionary:
 	var ver := "%d-c-%s" % [RULES, setup_fp(setup.get("file", ""), terminal)]
-	var sname := str(setup.get("name", setup.get("id", "?"))).get_slice(" (", 0)
+	var sname := Loc.setup_name(str(setup.get("name", setup.get("id", "?"))), true)
 	return {"board": "comp/%d/%s/%s" % [seconds, terminal, setup.get("id", "?")], "ver": _ver(ver), "lower": false,
-		"title": "Competition · %s · %s · Runde %d:%02d" % [terminal_name if terminal_name != "" else terminal, sname,
-			seconds / 60, seconds % 60]}
+		"title": "Competition · %s · %s · %s" % [tr(terminal_name) if terminal_name != "" else terminal, sname,
+			tr("Runde %s") % ("%d:%02d" % [seconds / 60, seconds % 60])]}
 
 
 ## Warum eine Competition-Runde nicht in die Rangliste kommt ("" = sie zählt).
 static func competition_blocked(settings: GameSettings, seconds: int, setup: Dictionary) -> String:
 	if seconds <= 0:
-		return "Freies Fahren hat keine Rangliste"
+		return Loc.t("Freies Fahren hat keine Rangliste")
 	if setup.get("user", false):
-		return "Eigene Setups haben keine Rangliste"
+		return Loc.t("Eigene Setups haben keine Rangliste")
 	if not is_equal_approx(float(settings.get_v("speed")), COMP_SPEED) \
 			or not is_equal_approx(float(settings.get_v("rope")), COMP_ROPE):
-		return "Rangliste nur mit %d km/h und %d m Seil" % [int(COMP_SPEED), int(COMP_ROPE)]
+		return Loc.t("Rangliste nur mit %d km/h und %d m Seil") % [int(COMP_SPEED), int(COMP_ROPE)]
 	if int(settings.get_v("grip")) == 3:
-		return "Rangliste nicht mit Seilzug-Grenze „Aus“"
+		return Loc.t("Rangliste nicht mit Seilzug-Grenze „Aus“")
 	return ""
 
 
@@ -178,18 +184,18 @@ func why_not(settings: GameSettings, challenge: bool, seconds := 0, setup := {})
 	if not enabled():
 		return ["", ""]
 	if hidden:
-		return ["Du erscheinst nicht in der Rangliste (Startseite → Rangliste)", "Aus"]
+		return [tr("Du erscheinst nicht in der Rangliste (Startseite → Rangliste)"), tr("Aus")]
 	if int(settings.get_v("grip")) == 3:
-		return ["Keine Rangliste mit Seilzug-Grenze „Aus“", "Seilzug aus"]
+		return [tr("Keine Rangliste mit Seilzug-Grenze „Aus“"), tr("Seilzug aus")]
 	if challenge:
 		return ["", ""]
 	if seconds <= 0:
-		return ["Freies Fahren hat keine Rangliste", "Frei"]
+		return [tr("Freies Fahren hat keine Rangliste"), tr("Frei")]
 	if setup.get("user", false):
-		return ["Eigene Setups haben keine Rangliste", "Eigenes Setup"]
+		return [tr("Eigene Setups haben keine Rangliste"), tr("Eigenes Setup")]
 	var why := competition_blocked(settings, seconds, setup)
 	if why != "":
-		return [why, "Tempo / Seil"]
+		return [why, tr("Tempo / Seil")]
 	return ["", ""]
 
 
@@ -235,7 +241,7 @@ static func _collect_parts(v: Variant, parts: Dictionary, used: Dictionary) -> v
 static func format(b: Dictionary, value: float) -> String:
 	if b.has("task"):
 		return Training.format_value(b["task"], value)
-	return "%d Punkte" % roundi(value)
+	return Loc.tn("%d Punkt", "%d Punkte", roundi(value)) % roundi(value)
 
 
 ## Wert ganz kurz (Mini-Rangliste im Spiel), z. B. "2,4 m", "46 %", "12.300".
@@ -245,25 +251,19 @@ static func format_short(b: Dictionary, value: float) -> String:
 		"sink", "share":
 			return "%d %%" % roundi(value * 100.0)
 		"height", "dist", "dist_5050", "dist_bs":
-			return ("%.1f m" % value).replace(".", ",")
+			return Loc.dec("%.1f m" % value)
 		"press", "time":
-			return ("%.1f s" % value).replace(".", ",")
+			return Loc.dec("%.1f s" % value)
 		"spin":
 			return "%d°" % roundi(value)
 		"points":
-			var s := str(roundi(value))
-			var out := ""
-			for i in s.length():
-				if i > 0 and (s.length() - i) % 3 == 0:
-					out += "."
-				out += s[i]
-			return out
+			return Loc.thousands(roundi(value))
 	return str(roundi(value))
 
 
 static func format_date(ms: float) -> String:
 	var d := Time.get_datetime_dict_from_unix_time(int(ms / 1000.0))
-	return "%02d.%02d.%02d" % [d["day"], d["month"], d["year"] % 100]
+	return Loc.t("{t}.{m}.{j}").format({"t": "%02d" % d["day"], "m": "%02d" % d["month"], "j": "%02d" % (d["year"] % 100)})
 
 
 # ---------------------------------------------------------------- Server
@@ -285,7 +285,7 @@ func submit(b: Dictionary, value: float) -> Dictionary:
 ## Beste n Einträge: {ok, entries: [{rank, name, value, date, me}], total, me, older} oder {error}.
 func top(b: Dictionary, n := 10) -> Dictionary:
 	if not enabled():
-		return {"error": "Rangliste noch nicht eingerichtet"}
+		return {"error": tr("Rangliste noch nicht eingerichtet")}
 	return await _post("/top", {"id": player_id, "board": b["board"], "ver": b["ver"], "lower": b["lower"], "n": n})
 
 
@@ -308,7 +308,7 @@ func boards_with_entries() -> Variant:
 func set_player_name(n: String) -> Dictionary:
 	n = n.strip_edges()
 	if not enabled():
-		return {"error": "Rangliste noch nicht eingerichtet"}
+		return {"error": tr("Rangliste noch nicht eingerichtet")}
 	var r := await _post("/name", {"id": player_id, "name": _sent_name(n)})
 	if r.get("ok", false):
 		player_name = n
@@ -336,12 +336,14 @@ func _post(path: String, body: Dictionary) -> Dictionary:
 		HTTPClient.METHOD_POST, JSON.stringify(body))
 	if err != OK:
 		http.queue_free()
-		return {"error": "Keine Verbindung"}
+		return {"error": tr("Keine Verbindung")}
 	var res: Array = await http.request_completed
 	http.queue_free()
 	if int(res[0]) != HTTPRequest.RESULT_SUCCESS:
-		return {"error": "Keine Verbindung"}
+		return {"error": tr("Keine Verbindung")}
 	var data: Variant = JSON.parse_string((res[3] as PackedByteArray).get_string_from_utf8())
 	if not data is Dictionary:
-		return {"error": "Serverfehler (%d)" % int(res[1])}
+		return {"error": tr("Serverfehler (%d)") % int(res[1])}
+	if (data as Dictionary).get("error") is String:
+		data["error"] = tr(data["error"])        # Fehlertexte des Servers sind Deutsch (SERVER_ERRORS)
 	return data

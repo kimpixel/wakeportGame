@@ -151,7 +151,7 @@ func set_blocked(why: Array) -> void:
 	_shown = ""
 	_title.visible = true
 	_title.add_theme_color_override("font_color", Color(1, 1, 1, 0.6))
-	_title.text = "RANG-\nLISTE\nAUS" if compact else "KEINE RANGLISTE"
+	_title.text = tr("RANG-\nLISTE\nAUS") if compact else tr("KEINE RANGLISTE")
 	var l := _label(11 if compact else 12, Color(1, 1, 1, 0.8))
 	l.text = str(why[1] if compact else why[0])
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -182,14 +182,14 @@ func _list() -> Array:
 		for e: Dictionary in _entries:
 			var d: Dictionary = e.duplicate()
 			if d.get("me", false):
-				d["name"] = "DU"
+				d["name"] = tr("DU")
 				d["gold"] = _record
 			out.append(d)
 		if show_self and not _entries.any(func(e: Dictionary) -> bool: return e.get("me", false)):
 			if _best.is_empty():
-				out.append({"name": "DU", "value": NAN, "me": true, "rank": 0})
+				out.append({"name": tr("DU"), "value": NAN, "me": true, "rank": 0})
 			else:                                 # eigener Eintrag hinter den geladenen 50
-				out.append({"name": "DU", "value": float(_best["value"]), "me": true, "gold": _record,
+				out.append({"name": tr("DU"), "value": float(_best["value"]), "me": true, "gold": _record,
 					"rank": int(_best.get("rank", 0))})
 		return out
 	# Competition: die echte Rangliste (mit dem eigenen Rekord als Zeile, Raute) plus DU mit den Punkten der Runde,
@@ -204,8 +204,8 @@ func _list() -> Array:
 			d["flag"] = true
 		out.append(d)
 	if not beaten and not _best.is_empty() and not _entries.any(func(e: Dictionary) -> bool: return e.get("me", false)):
-		out.append({"name": str(_best.get("name", "DU")), "value": float(_best["value"]), "flag": true})  # hinter Platz 50
-	var du := {"name": "DU", "value": _live, "me": true, "live": true, "gold": beaten}
+		out.append({"name": str(_best.get("name", tr("DU"))), "value": float(_best["value"]), "flag": true})  # hinter Platz 50
+	var du := {"name": tr("DU"), "value": _live, "me": true, "live": true, "gold": beaten}
 	var at := out.size()
 	for i in out.size():
 		if _better(_live, float(out[i]["value"])):
@@ -262,7 +262,7 @@ func _rebuild() -> void:
 		c.queue_free()
 	_me_row = null
 	var n := _total if is_nan(_live) else _rows_total()
-	_title.text = "RANGLISTE · %d" % n if n > 0 else "RANGLISTE"
+	_title.text = tr("RANGLISTE") + (" · %d" % n if n > 0 else "")
 	_title.add_theme_color_override("font_color", GOLD if _toast > 0.0 else Color(1, 1, 1, 0.6))
 	if _toast > 0.0:
 		_title.text = _toast_text
@@ -270,7 +270,7 @@ func _rebuild() -> void:
 	if list.is_empty():
 		if not compact:
 			_rows.add_child(_label(14, Color(1, 1, 1, 0.75)))
-			(_rows.get_child(-1) as Label).text = "Noch frei – Platz 1 wartet"
+			(_rows.get_child(-1) as Label).text = tr("Noch frei – Platz 1 wartet")
 		return
 	for i: int in show:
 		var c := _row(list[i]) if i >= 0 else _dots()
@@ -295,9 +295,9 @@ func _check_overtake(list: Array, me: int) -> void:
 		_flash = 0.8
 		_toast = 2.5
 		if names.is_empty():                      # nur am eigenen Rekord vorbei
-			_toast_text = "Neuer Rekord!"
+			_toast_text = tr("Neuer Rekord!")
 		else:
-			_toast_text = ("%s überholt!" % names[0]) if names.size() == 1 else ("%d überholt!" % names.size())
+			_toast_text = (tr("%s überholt!") % names[0]) if names.size() == 1 else (tr("%d überholt!") % names.size())
 	_last_rank = rank
 
 
@@ -363,7 +363,7 @@ func _row(e: Dictionary) -> Control:
 	var nl := _label(14, col if (me or flag) else Color.WHITE)
 	nl.text = str(e.get("name", "?"))
 	if e.get("gold", false):
-		nl.text = "DU · REKORD"
+		nl.text = tr("DU · REKORD")
 	nl.clip_text = true
 	nl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	nl.custom_minimum_size.x = NAME_W
@@ -372,11 +372,11 @@ func _row(e: Dictionary) -> Control:
 		h.add_child(Mark.new(not flag, col, 12.0 if not flag else 10.0))
 	var sub := _value(e.get("value", 0.0))
 	if flag:
-		sub = "dein Rekord · " + sub
+		sub = tr("dein Rekord") + " · " + sub
 	v.add_child(_sub(sub, Color(col, 0.9) if (me or flag) else Color(1, 1, 1, 0.6)))
 	var t: Array = e.get("target", [])
 	if me and not t.is_empty():                   # nächstes Ziel
-		v.add_child(_sub("noch %s bis %d." % [_value(t[0]), t[1]], Color(1, 1, 1, 0.7)))
+		v.add_child(_sub(tr("noch %s bis %d.") % [_value(t[0]), t[1]], Color(1, 1, 1, 0.7)))
 	return v
 
 

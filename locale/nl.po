@@ -1,0 +1,2744 @@
+# Dutch – WakeTheHack
+msgid ""
+msgstr ""
+"Project-Id-Version: WakeTheHack\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: nl\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Source-Language: de\n"
+
+msgid "Fischkontakt"
+msgstr "Viscontact"
+
+msgid "Mit einem springenden Hecht zusammengestoßen."
+msgstr "Botste tegen een springende snoek."
+
+msgid "Nass gespritzt"
+msgstr "Natgespat"
+
+msgid "Einen SUP-Paddler mit voller Fahrt nass gespritzt."
+msgstr "Een SUP-peddelaar op volle snelheid natgespat."
+
+msgid "Steg-Landung"
+msgstr "Steiger-landing"
+
+msgid "Aus der Luft auf dem Startsteg gelandet."
+msgstr "Vanuit de lucht op de startsteiger geland."
+
+msgid "Insekten fressen"
+msgstr "Insecten eten"
+
+msgid "Am Waldrand von Terminal 1 durch einen Mückenschwarm gefahren. Mahlzeit!"
+msgstr "Aan de bosrand van Terminal 1 door een muggenzwerm gereden. Eet smakelijk!"
+
+msgid "Boot crash"
+msgstr "Bootcrash"
+
+msgid "Ins rote Boot gefahren oder hineingefallen."
+msgstr "In de rode boot gereden of erin gevallen."
+
+msgid "Ho ho ho!"
+msgstr "Ho ho ho!"
+
+msgid "Am Nikolaustag im Schnee eine Wende gefahren."
+msgstr "Op Sinterklaasdag een bocht in de sneeuw gereden."
+
+msgid "Was ein Frechdachs"
+msgstr "Wat een deugniet"
+
+msgid "Ein Haubentaucher ist direkt unter dir durchgetaucht."
+msgstr "Een fuut dook vlak onder je door."
+
+msgid "Schwanenliebe"
+msgstr "Zwanenliefde"
+
+msgid "Zwei Schwäne haben mit ihren Hälsen ein Herz geformt – und du warst dabei."
+msgstr "Twee zwanen vormden met hun halzen een hart – en jij was erbij."
+
+msgid "Zugvogel"
+msgstr "Trekvogel"
+
+msgid "Einen Raley gesprungen, während die Kraniche über den See ziehen."
+msgstr "Een Raley gesprongen terwijl de kraanvogels over het meer trokken."
+
+msgid "Blitzableiter"
+msgstr "Bliksemafleider"
+
+msgid "Im Gewitter gefahren und vom Blitz getroffen. YOLO!"
+msgstr "In een onweer gereden en door de bliksem geraakt. YOLO!"
+
+msgid "Badegast"
+msgstr "Badgast"
+
+msgid "An einem heißen Tag einen Badegast auf der Luftmatratze nass gespritzt."
+msgstr "Op een hete dag een badgast op een luchtbed natgespat."
+
+msgid "Arschbombe"
+msgstr "Bommetje"
+
+msgid "Aus der Luft ins Becken des 6-Stair Pools gestürzt. Platsch!"
+msgstr "Vanuit de lucht in het bassin van de 6-Stair Pool gestort. Plons!"
+
+msgid "Zeitung"
+msgstr "Krant"
+
+msgid "Sunset"
+msgstr "Sunset"
+
+msgid "Ice"
+msgstr "Ice"
+
+msgid "Topo"
+msgstr "Topo"
+
+msgid "Dots"
+msgstr "Dots"
+
+msgid "Bereit"
+msgstr "Klaar"
+
+msgid "Anfahren"
+msgstr "Optrekken"
+
+msgid "Fahrt → Mast 2"
+msgstr "Rijden → Mast 2"
+
+msgid "Fahrt → Ufer"
+msgstr "Rijden → Oever"
+
+msgid "Bremst zur Wende"
+msgstr "Remt voor de bocht"
+
+msgid "Wende"
+msgstr "Bocht"
+
+msgid "Operator bringt die Handle"
+msgstr "Operator brengt de handle"
+
+msgid "Wartet auf den Fahrer"
+msgstr "Wacht op de rider"
+
+msgid "Ende – zurück am Start"
+msgstr "Einde – terug bij de start"
+
+msgid "Abgesoffen"
+msgstr "Weggezakt"
+
+msgid "Gestürzt"
+msgstr "Gevallen"
+
+msgid "Seil verloren"
+msgstr "Lijn kwijt"
+
+msgid "Nicht um die weiße Boje"
+msgstr "Niet om de witte boei"
+
+msgid "Ohne Absprung fahren"
+msgstr "Zonder pop overheen"
+
+msgid "Kicker verpasst"
+msgstr "Kicker gemist"
+
+msgid "Slider verpasst"
+msgstr "Slider gemist"
+
+msgid "Ins Wasser – Transfer verpasst"
+msgstr "In het water – transfer gemist"
+
+msgid "Pipe verpasst"
+msgstr "Pipe gemist"
+
+msgid "Keine Kombination geschafft"
+msgstr "Geen combinatie gelukt"
+
+msgid "Kein Drift nach einem Feature"
+msgstr "Geen drift na een feature"
+
+msgid "Kein Sprung-Start – auf dem Steg ↓ halten, bis das Seil losreißt"
+msgstr "Geen steigerstart – houd ↓ op de steiger tot de lijn je meetrekt"
+
+msgid "Kein Raley – mehr Seilzug: weit raus, dann hart zur Mitte kanten (Marke RALEY)"
+msgstr "Geen Raley – meer lijnspanning: ver naar buiten, dan hard naar het midden kanten (markering RALEY)"
+
+msgid "Zeit abgelaufen"
+msgstr "Tijd voorbij"
+
+msgid "Das war kein Raley Start – Brett quer zum Seil stellen"
+msgstr "Dat was geen Raley Start – zet het board dwars op de lijn"
+
+msgid "Das war kein Nolli – Brett längs zum Seil lassen"
+msgstr "Dat was geen Nolli – houd het board in lijn met de kabel"
+
+msgid "Junge mach mal langsam! (%s)"
+msgstr "Rustig aan, maat! (%s)"
+
+msgid "Das war %s – gefordert: %s"
+msgstr "Dat was %s – gevraagd: %s"
+
+msgid "360 links im Drift!  (%d / %d)"
+msgstr "360 links in de drift!  (%d / %d)"
+
+msgid "360 rechts im Drift!  (%d / %d)"
+msgstr "360 rechts in de drift!  (%d / %d)"
+
+msgid "Kein 360 im Drift"
+msgstr "Geen 360 in de drift"
+
+msgid "%s im Drift!  (%d Wechsel)"
+msgstr "%s in de drift!  (%d wissels)"
+
+msgid "Kein Press im Drift"
+msgstr "Geen press in de drift"
+
+msgid "%s Drift"
+msgstr "%s drift"
+
+msgid "ausgelassen"
+msgstr "overgeslagen"
+
+msgid "zu kurz auf dem Slider"
+msgstr "te kort op de slider"
+
+msgid "kein Ollie on (über die Auffahrt)"
+msgstr "geen ollie on (via de oprit)"
+
+msgid "Aufspringen: %s statt %s"
+msgstr "Opspringen: %s in plaats van %s"
+
+msgid "%s statt %s"
+msgstr "%s in plaats van %s"
+
+msgid "kein Press"
+msgstr "geen press"
+
+msgid "Abgang: %s statt %s"
+msgstr "Afsprong: %s in plaats van %s"
+
+msgid "gerade"
+msgstr "recht"
+
+msgid "%s geschafft!"
+msgstr "%s gelukt!"
+
+msgid "Gerade abgefahren – hier quer mit Drift abgehen"
+msgstr "Recht afgereden – hier dwars met een drift eraf"
+
+msgid "noch keine Medaille"
+msgstr "nog geen medaille"
+
+msgid "Rangliste nicht mit Seilzug-Grenze „Aus“"
+msgstr "Geen ranglijst met lijnspanningsgrens „Uit”"
+
+msgid "Rangliste: wird gesendet …"
+msgstr "Ranglijst: wordt verstuurd …"
+
+msgid "Rangliste: Platz %d von %d"
+msgstr "Ranglijst: plaats %d van %d"
+
+msgid "Rangliste: Platz %d von %d mit deinem Bestwert %s"
+msgstr "Ranglijst: plaats %d van %d met je beste %s"
+
+msgid "als %s"
+msgstr "als %s"
+
+msgid "Rangliste: %s"
+msgstr "Ranglijst: %s"
+
+msgid "Fehler"
+msgstr "Fout"
+
+msgid "%d Punkt"
+msgid_plural "%d Punkte"
+msgstr[0] "%d punt"
+msgstr[1] "%d punten"
+
+msgid "Höhe %s"
+msgstr "Hoogte %s"
+
+msgid "Weite %s"
+msgstr "Afstand %s"
+
+msgid "links %d / %d   rechts %d / %d"
+msgstr "links %d / %d   rechts %d / %d"
+
+msgid "Bester Drift %s"
+msgstr "Beste drift %s"
+
+msgid "%d Wechsel   Bester %s"
+msgstr "%d wissels   beste %s"
+
+msgid "Press am Stück %s"
+msgstr "Press aan één stuk %s"
+
+msgid "%d geschafft"
+msgstr "%d gelukt"
+
+msgid "Bestwert %s"
+msgstr "Beste %s"
+
+msgid "VERSUCH"
+msgstr "POGING"
+
+msgid "ZEIT"
+msgstr "TIJD"
+
+msgid "Verpasst"
+msgstr "Gemist"
+
+msgid "Transfer verpasst"
+msgstr "Transfer gemist"
+
+msgid "Verfolger"
+msgstr "Volgen"
+
+msgid "Orbit"
+msgstr "Orbit"
+
+msgid "Ufer"
+msgstr "Oever"
+
+msgid "Runde 7:30"
+msgstr "Ronde 7:30"
+
+msgid "Runde 10:00"
+msgstr "Ronde 10:00"
+
+msgid "Runde 15:00"
+msgstr "Ronde 15:00"
+
+msgid "Freies Fahren"
+msgstr "Vrij rijden"
+
+msgid "Niedrig"
+msgstr "Laag"
+
+msgid "Mittel"
+msgstr "Gemiddeld"
+
+msgid "Hoch"
+msgstr "Hoog"
+
+msgid "Custom"
+msgstr "Custom"
+
+msgid "H  Hilfe"
+msgstr "H  Help"
+
+msgid "PUNKTE"
+msgstr "PUNTEN"
+
+msgid "ZEIT UM"
+msgstr "TIJD OM"
+
+msgid "GEHEIMER ERFOLG FREIGESCHALTET"
+msgstr "GEHEIME PRESTATIE ONTGRENDELD"
+
+msgid "TEMPO"
+msgstr "SNELHEID"
+
+msgid "SEILZUG"
+msgstr "LIJNSPANNING"
+
+msgid ""
+"← / →   lenken   (in der Luft und beim Raley: drehen; auf dem Slider: Boardslide ↔ 50-50 umspringen; auf dem Slider Leertaste halten + ←/→: seitlich auf den Nachbar-Slider springen = Rail to Rail)\n"
+"↑ / ↓   in der Luft: Frontroll / Backroll (beim Invert gleich nach dem Absprung: ↑ S-Bend, ↓ Backroll)     auf dem Slider (schon im Anflug): Nosepress / Tailpress     im Drift: Drift-Press     Sprung-Start: auf dem Steg ↓ halten, bis das Seil losreißt (Brett längs: Nolli, quer: Raley Start)\n"
+"Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das Brett dreht frei, etwas schneller; quer vom Slider ins Wasser nur mit Drift; Treppe am Pool nur im Drift\n"
+"Leertaste halten + loslassen   Absprung (Ollie; voll aufgeladen mit Seilzug über der Marke RALEY und ohne Feature voraus: Invert = Raley – Höhe aus Seilzug + Tempo)\n"
+"Start mit Countdown 3 – 2 – 1 – GO (Runde 7:30)     R  zurück zum Steg (−2:00, dann Countdown), in den Spielmodi: neuer Versuch     + / -  Anlagentempo\n"
+"Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−1:00)     R = Steg (−2:00)\n"
+"C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause     O  Einstellungen\n"
+"Z  Szenario würfeln     P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus (aus: keine Rangliste)     H  Hilfe ein/aus     F11  Vollbild     F3  Hitboxen + Drift-Winkel (Debug)     F4  Parameter (Debug, nur lokal)\n"
+"Tab  Startseite (Terminal, Feature-Setup, Einstellungen)     Menüs: Tab / Pfeile wählen, Leertaste drücken, Enter Start, Esc zurück\n"
+"Gamepad: Stick/Steuerkreuz lenken, Kreuz oder R2 (analog) Sprung, Kreis Drift, L1/R1 Tempo (in der Luft: schnelle 180), rechter Stick umsehen (R3 halten: Zoom), Touchpad Steg, Share Szenario würfeln, PS Pause, Options Einstellungen"
+msgstr ""
+"← / →   sturen   (in de lucht en bij de Raley: draaien; op de slider: Boardslide ↔ 50-50 wisselen; op de slider spatie ingedrukt + ←/→: zijwaarts op de naburige slider springen = Rail to Rail)\n"
+"↑ / ↓   in de lucht: Frontroll / Backroll (bij Invert direct na de afzet: ↑ S-Bend, ↓ Backroll)     op de slider (al bij de aanloop): Nosepress / Tailpress     in de drift: Drift Press     Steigerstart: ↓ ingedrukt op de steiger tot de lijn je meetrekt (board in lijn: Nolli, dwars: Raley Start)\n"
+"Ctrl (of Alt)   Driften: je glijdt rechtdoor (sturen gaat niet), het board draait vrij, iets sneller; dwars van de slider het water in alleen met drift; trap van de pool alleen in de drift\n"
+"Spatie ingedrukt + loslaten   Afzet (Ollie; volledig geladen met lijnspanning boven de markering RALEY en geen feature vooruit: Invert = Raley – hoogte uit lijnspanning + snelheid)\n"
+"Start met aftellen 3 – 2 – 1 – GO (ronde 7:30)     R  terug naar de steiger (−2:00, dan aftellen), in de spelmodi: nieuwe poging     + / -  kabelsnelheid\n"
+"Na een val:  spatie ingedrukt = naar de handle zwemmen     Ctrl = meteen verder (−1:00)     R = steiger (−2:00)\n"
+"C  Camera     Muis: rondkijken (klik vangt de muis), wiel: zoom     Esc  Pauze     O  Instellingen\n"
+"Z  Scenario dobbelen     P  Autopiloot     M  Geluid uit/aan     G  Lijn losscheuren aan/uit (uit: geen ranglijst)     H  Help aan/uit     F11  Volledig scherm     F3  Hitboxen + drifthoek (debug)     F4  Parameters (debug, alleen lokaal)\n"
+"Tab  Startscherm (terminal, feature-setup, instellingen)     Menu's: Tab / pijlen kiezen, spatie indrukken, Enter start, Esc terug\n"
+"Gamepad: stick/D-pad sturen, Kruis of R2 (analoog) sprong, Cirkel drift, L1/R1 snelheid (in de lucht: snelle 180), rechterstick rondkijken (R3 ingedrukt: zoom), touchpad steiger, Share scenario dobbelen, PS pauze, Options instellingen"
+
+msgid ""
+"Start mit Countdown          ← / → (bzw. Handy neigen mit Lenkung: Gyro)   lenken (auf dem Slider: Tipp bzw. deutlich neigen = Boardslide ↔ 50-50; SPRUNG halten + ← / → = seitlich auf den Nachbar-Slider, Rail to Rail)\n"
+"SPRUNG (links) halten + loslassen   Absprung (voll aufgeladen, Seilzug über RALEY: Raley)\n"
+"Pfeil ↑ / ↓   in der Luft Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), auf dem Slider (schon im Anflug) Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)\n"
+"DRIFT (links, über SPRUNG)   Kante lösen (Treppe am Pool nur im Drift)        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)\n"
+"☰   Menü (pausiert): Einstellungen, Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Szenario würfeln, Seil-Abreißen an/aus (aus: keine Rangliste)"
+msgstr ""
+"Start met aftellen          ← / → (of telefoon kantelen met sturing: Gyro)   sturen (op de slider: tik of duidelijk kantelen = Boardslide ↔ 50-50; SPRONG ingedrukt + ← / → = zijwaarts op de naburige slider, Rail to Rail)\n"
+"SPRONG (links) ingedrukt + loslaten   Afzet (volledig geladen, lijnspanning boven RALEY: Raley)\n"
+"Pijl ↑ / ↓   in de lucht Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), op de slider (al bij de aanloop) Nose- / Tailpress, in de drift Drift Press, op de steiger ▼ ingedrukt = steigerstart (in lijn Nolli, dwars Raley Start)\n"
+"DRIFT (links, boven SPRONG)   kant loslaten (trap van de pool alleen in de drift)        Na een val: ZWEMMEN ingedrukt = zwemmen, SKIP = meteen verder (−1:00)\n"
+"☰   Menu (gepauzeerd): instellingen, help, terug naar de steiger (spelmodi: nieuwe poging), startscherm, geluid, scenario dobbelen, lijn losscheuren aan/uit (uit: geen ranglijst)"
+
+msgid "Runde %s"
+msgstr "Ronde %s"
+
+msgid "Freies Fahren hat keine Rangliste"
+msgstr "Vrij rijden heeft geen ranglijst"
+
+msgid "Eigene Setups haben keine Rangliste"
+msgstr "Eigen setups hebben geen ranglijst"
+
+msgid "Rangliste nur mit %d km/h und %d m Seil"
+msgstr "Ranglijst alleen met %d km/h en %d m lijn"
+
+msgid "Du erscheinst nicht in der Rangliste (Startseite → Rangliste)"
+msgstr "Je staat niet in de ranglijst (startscherm → Ranglijst)"
+
+msgid "Aus"
+msgstr "Uit"
+
+msgid "Keine Rangliste mit Seilzug-Grenze „Aus“"
+msgstr "Geen ranglijst met lijnspanningsgrens „Uit”"
+
+msgid "Seilzug aus"
+msgstr "Spanningsgrens uit"
+
+msgid "Frei"
+msgstr "Vrij"
+
+msgid "Eigenes Setup"
+msgstr "Eigen setup"
+
+msgid "Tempo / Seil"
+msgstr "Snelheid / lijn"
+
+msgid "{t}.{m}.{j}"
+msgstr "{t}-{m}-{j}"
+
+msgid "Rangliste noch nicht eingerichtet"
+msgstr "Ranglijst nog niet ingericht"
+
+msgid "Keine Verbindung"
+msgstr "Geen verbinding"
+
+msgid "Serverfehler (%d)"
+msgstr "Serverfout (%d)"
+
+msgid "nur POST"
+msgstr "alleen POST"
+
+msgid "kein JSON"
+msgstr "geen JSON"
+
+msgid "kein Zugriff"
+msgstr "geen toegang"
+
+msgid "zu viele Anfragen, bitte später"
+msgstr "te veel verzoeken, probeer het later"
+
+msgid "Serverfehler"
+msgstr "Serverfout"
+
+msgid "Name schon vergeben"
+msgstr "Naam al in gebruik"
+
+msgid "ungültig"
+msgstr "ongeldig"
+
+msgid "Wert außerhalb der Grenzen"
+msgstr "Waarde buiten de grenzen"
+
+msgid "Spieler unbekannt"
+msgstr "Speler onbekend"
+
+msgid "Name: 2 bis 16 Zeichen"
+msgstr "Naam: 2 tot 16 tekens"
+
+msgid "Name: nur Buchstaben, Ziffern, Leerzeichen, . _ -"
+msgstr "Naam: alleen letters, cijfers, spaties, . _ -"
+
+msgid "Diesen Namen bitte nicht"
+msgstr "Liever niet deze naam"
+
+msgid "Abgesoffen!"
+msgstr "Weggezakt!"
+
+msgid "Was ein Frechdachs!"
+msgstr "Wat een deugniet!"
+
+msgid "Badegast nass gespritzt!"
+msgstr "Badgast natgespat!"
+
+msgid "Zugvogel!"
+msgstr "Trekvogel!"
+
+msgid "Hecht erwischt!"
+msgstr "Snoek geraakt!"
+
+msgid "SUP nass gespritzt!"
+msgstr "SUP natgespat!"
+
+msgid "Igitt – Insekt verschluckt!"
+msgstr "Bah – insect ingeslikt!"
+
+msgid "Arschbombe!"
+msgstr "Bommetje!"
+
+msgid "Steg-Landung!"
+msgstr "Steiger-landing!"
+
+msgid "Seil reißt ab: an"
+msgstr "Lijn losscheuren: aan"
+
+msgid "Seil reißt ab: aus – keine Rangliste"
+msgstr "Lijn losscheuren: uit – geen ranglijst"
+
+msgid "Setup: %s"
+msgstr "Setup: %s"
+
+msgid "Strafzeit −%d:%02d"
+msgstr "Straftijd −%d:%02d"
+
+msgid "Zeit um!  %d Punkte"
+msgstr "Tijd om!  %d punten"
+
+msgid "Letzte Runde: %d Punkte"
+msgstr "Laatste ronde: %d punten"
+
+msgid "Rangliste …"
+msgstr "Ranglijst …"
+
+msgid "Platz %d von %d"
+msgstr "Plaats %d van %d"
+
+msgid "Dein Bestwert: %s"
+msgstr "Je beste: %s"
+
+msgid "PLATZ %d von %d"
+msgstr "PLAATS %d VAN %d"
+
+msgid "FREI"
+msgstr "VRIJ"
+
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Wenden %d   ·   Kamera: %s%s"
+msgstr ""
+"Rider %d km/h   ·   Kabel %s: %s (snelheid %d km/h)\n"
+"Bochten %d   ·   Camera: %s%s"
+
+msgid "STURZ  –  der Operator bringt dir die Handle"
+msgstr "VAL  –  de operator brengt je de handle"
+
+msgid "STURZ  –  die Handle liegt bereit"
+msgstr "VAL  –  de handle ligt klaar"
+
+msgid "ca. %d s"
+msgstr "ca. %d s"
+
+msgid "SCHWIMMEN halten"
+msgstr "ZWEMMEN ingedrukt"
+
+msgid "Zur Handle schwimmen"
+msgstr "Naar de handle zwemmen"
+
+msgid "SKIP"
+msgstr "SKIP"
+
+msgid "Sofort weiterfahren"
+msgstr "Meteen verder rijden"
+
+msgid "keine Strafzeit"
+msgstr "geen straftijd"
+
+msgid "Zurück zum Steg"
+msgstr "Terug naar de steiger"
+
+msgid "LEERTASTE halten"
+msgstr "SPATIE ingedrukt"
+
+msgid "STRG"
+msgstr "CTRL"
+
+msgid ""
+"Neigungssensor nicht verfügbar –\n"
+"Bewegungssensoren im Browser erlauben"
+msgstr ""
+"Kantelsensor niet beschikbaar –\n"
+"sta bewegingssensoren toe in de browser"
+
+msgid "SPRUNG-START  %d %%"
+msgstr "STEIGERSTART  %d %%"
+
+msgid "Hitboxen an"
+msgstr "Hitboxen aan"
+
+msgid "Hitboxen aus"
+msgstr "Hitboxen uit"
+
+msgid "Wende um die Boje"
+msgstr "Bocht om de boei"
+
+msgid "Saubere Wende"
+msgstr "Nette bocht"
+
+msgid "Ins Boot gefahren!"
+msgstr "In de boot gereden!"
+
+msgid "Boot crash!"
+msgstr "Bootcrash!"
+
+msgid "Terminal 1"
+msgstr "Terminal 1"
+
+msgid "Terminal 2"
+msgstr "Terminal 2"
+
+msgid "MODUS"
+msgstr "MODUS"
+
+msgid "Musik"
+msgstr "Muziek"
+
+msgid "Musik hinzufügen"
+msgstr "Muziek toevoegen"
+
+msgid "Vom Blitz getroffen!"
+msgstr "Door de bliksem geraakt!"
+
+msgid "Bodenpflanzen (Gräser, Schilf)"
+msgstr "Bodemplanten (grassen, riet)"
+
+msgid "Gehölze (Sträucher, Bäume)"
+msgstr "Houtgewassen (struiken, bomen)"
+
+msgid "Schilf"
+msgstr "Riet"
+
+msgid "Ufergras"
+msgstr "Oevergras"
+
+msgid "Wiesengras"
+msgstr "Weidegras"
+
+msgid "Strauch"
+msgstr "Struik"
+
+msgid "Laubbaum"
+msgstr "Loofboom"
+
+msgid "Kiefer"
+msgstr "Den"
+
+msgid "Seil aus der Hand gerissen!"
+msgstr "Lijn uit je handen gerukt!"
+
+msgid "Quer abgefahren – Brett gerade stellen oder driften!"
+msgstr "Dwars eraf – zet het board recht of drift!"
+
+msgid "Treppe nur im Drift!"
+msgstr "Trap alleen in de drift!"
+
+msgid "Drift-Press zu quer gedriftet!"
+msgstr "Drift press – te dwars gedrift!"
+
+msgid "Gegen den Steg!"
+msgstr "Tegen de steiger!"
+
+msgid "Gegen %s gefahren!"
+msgstr "Tegen %s gereden!"
+
+msgid "das Hindernis"
+msgstr "het obstakel"
+
+msgid "Verkantet gelandet!"
+msgstr "Op de kant geland!"
+
+msgid "Auf dem Ball gelandet!"
+msgstr "Op de bal geland!"
+
+msgid "Zu harte Landung!"
+msgstr "Te harde landing!"
+
+msgid "Überschlag nicht geschafft!"
+msgstr "Rotatie niet afgemaakt!"
+
+msgid "Ab ans Ufer!"
+msgstr "Naar de oever!"
+
+msgid "Gegen den Mast!"
+msgstr "Tegen de mast!"
+
+msgid "%s – Drift-Winkel %d°  (erlaubt bis %d°)"
+msgstr "%s – drifthoek %d°  (toegestaan tot %d°)"
+
+msgid "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)"
+msgstr "DRIFT – kant los, board glijdt dwars (%.1f m/s)"
+
+msgid "{tag}. {monat}"
+msgstr "{tag} {monat}"
+
+msgid "Januar"
+msgstr "januari"
+
+msgid "Februar"
+msgstr "februari"
+
+msgid "März"
+msgstr "maart"
+
+msgid "April"
+msgstr "april"
+
+msgid "Mai"
+msgstr "mei"
+
+msgid "Juni"
+msgstr "juni"
+
+msgid "Juli"
+msgstr "juli"
+
+msgid "August"
+msgstr "augustus"
+
+msgid "September"
+msgstr "september"
+
+msgid "Oktober"
+msgstr "oktober"
+
+msgid "November"
+msgstr "november"
+
+msgid "Dezember"
+msgstr "december"
+
+msgid "%d %% eingesunken"
+msgstr "%d %% weggezakt"
+
+msgid "%d %% im Press"
+msgstr "%d %% in de press"
+
+msgid "%d Wechsel"
+msgid_plural "%d Wechsel"
+msgstr[0] "%d wissel"
+msgstr[1] "%d wissels"
+
+msgid "%d Slider"
+msgid_plural "%d Slider"
+msgstr[0] "%d slider"
+msgstr[1] "%d sliders"
+
+msgid "%d Umdrehung"
+msgid_plural "%d Umdrehungen"
+msgstr[0] "%d omwenteling"
+msgstr[1] "%d omwentelingen"
+
+msgid "%d %% im Drift"
+msgstr "%d %% in de drift"
+
+msgid "bis %d %%"
+msgstr "tot %d %%"
+
+msgid "nicht einsinken"
+msgstr "niet wegzakken"
+
+msgid "bis %s"
+msgstr "tot %s"
+
+msgid "ab %s"
+msgstr "vanaf %s"
+
+msgid "Bronze"
+msgstr "Brons"
+
+msgid "Silber"
+msgstr "Zilver"
+
+msgid "Gold"
+msgstr "Goud"
+
+msgid "Nosepress im Drift"
+msgstr "Nosepress in de drift"
+
+msgid "Wie der Tailpress, nur über die Nose: das Brett im Drift erst um 90° quer drehen, dann ins vordere Ende drücken, das Tail steht hoch. Der Winkel zählt von der Querstellung. Gemessen: Anteil der Wende im vollen Nosepress – ohne einzusinken. Gold = die ganze Wende."
+msgstr "Zoals de tailpress, maar via de nose: draai het board in de drift eerst 90° dwars, druk dan in het voorste uiteinde, de tail gaat omhoog. De hoek telt vanaf de dwarsstand. Gemeten: aandeel van de bocht in volle nosepress – zonder weg te zakken. Goud = de hele bocht."
+
+msgid "Strg halten  driften     ↑ halten  Nosepress     ← / →  Drift-Winkel halten"
+msgstr "Ctrl ingedrukt  driften     ↑ ingedrukt  Nosepress     ← / →  drifthoek vasthouden"
+
+msgid "DRIFT halten  driften     ▲ halten  Nosepress     Neigen  Winkel halten"
+msgstr "DRIFT ingedrukt  driften     ▲ ingedrukt  Nosepress     kantelen  hoek vasthouden"
+
+msgid "Erst quer drehen, dann drücken – mit der Nose vorne stehst du 90° falsch. Je schneller, desto querer darfst du driften. Den Drift nicht loslassen – dann ist der Press sofort vorbei."
+msgstr "Eerst dwars draaien, dan drukken – met de nose voorop sta je 90° fout. Hoe sneller, hoe dwarser je mag driften. Laat de drift niet los – dan is de press meteen voorbij."
+
+msgid "Press-Wechsel"
+msgstr "Press-wissel"
+
+msgid "Nose- und Tailpress im Wechsel"
+msgstr "Nose- en tailpress afwisselend"
+
+msgid "In einem Drift zwischen Nosepress und Tailpress hin und her wechseln. Gemessen: Wechsel in einem Drift (jeder volle Press auf das andere Ende zählt; Drift loslassen fängt neu an)."
+msgstr "Wissel in één drift heen en weer tussen nosepress en tailpress. Gemeten: wissels in één drift (elke volle press op het andere uiteinde telt; drift loslaten begint opnieuw)."
+
+msgid "Strg halten  driften     ↑ / ↓  Nose- / Tailpress"
+msgstr "Ctrl ingedrukt  driften     ↑ / ↓  Nose- / Tailpress"
+
+msgid "DRIFT halten  driften     ▲ / ▼  Nose- / Tailpress"
+msgstr "DRIFT ingedrukt  driften     ▲ / ▼  Nose- / Tailpress"
+
+msgid "Der Press braucht knapp eine Sekunde, bis er ganz drin ist – nicht zu hektisch wechseln."
+msgstr "De press heeft bijna een seconde nodig tot hij helemaal ingezet is – niet te hectisch wisselen."
+
+msgid "Competition"
+msgstr "Competition"
+
+msgid "Runde auf Zeit: so viele Punkte wie möglich. Terminal, Feature-Setup und Rundenlänge frei wählbar."
+msgstr "Ronde tegen de klok: zoveel mogelijk punten. Terminal, feature-setup en rondelengte vrij te kiezen."
+
+msgid "Wenden"
+msgstr "Bochten"
+
+msgid "Wenden fahren, ohne einzusinken."
+msgstr "Bochten rijden zonder weg te zakken."
+
+msgid "Wende Endmast"
+msgstr "Bocht eindmast"
+
+msgid "Wende am Endmast"
+msgstr "Bocht bij de eindmast"
+
+msgid "Fahr durch die Wende am Endmast, ohne einzusinken. Gemessen wird, wie tief du einsinkst."
+msgstr "Rij door de bocht bij de eindmast zonder weg te zakken. Gemeten: hoe diep je wegzakt."
+
+msgid "← / →  lenken     Strg  driften"
+msgstr "← / →  sturen     Ctrl  driften"
+
+msgid "Neigen  lenken     DRIFT  driften"
+msgstr "Kantelen  sturen     DRIFT  driften"
+
+msgid "An der roten Boje nach außen rauskanten und Tempo aufbauen, dann um den Carrier pendeln – das Seil muss gespannt bleiben. Wird es locker, weiter nach außen ziehen."
+msgstr "Bij de rode boei naar buiten kanten en snelheid opbouwen, dan om de carrier pendelen – de lijn moet strak blijven. Wordt hij slap, verder naar buiten trekken."
+
+msgid "Ufer-Wende"
+msgstr "Oeverbocht"
+
+msgid "Wende am Ufer"
+msgstr "Bocht bij de oever"
+
+msgid "Die Wende vor dem Startsteg: hier ist weniger Platz. Wieder ohne einzusinken."
+msgstr "De bocht vóór de startsteiger: hier is minder ruimte. Weer zonder weg te zakken."
+
+msgid "Früh rauskanten – zum Ufer hin bleibt wenig Raum zum Ausschwingen."
+msgstr "Vroeg naar buiten kanten – richting oever blijft weinig ruimte om uit te zwaaien."
+
+msgid "Um die Boje"
+msgstr "Om de boei"
+
+msgid "Wende um die weiße Boje"
+msgstr "Bocht om de witte boei"
+
+msgid "Fahr außen um eine der weißen Bojen und komm sauber aus der Wende. Ohne Boje gibt es keine Medaille."
+msgstr "Rij aan de buitenkant om een van de witte boeien en kom netjes uit de bocht. Zonder boei geen medaille."
+
+msgid "Schon vor der roten Boje weit nach außen ziehen, sonst reicht der Schwung nicht um die weiße Boje."
+msgstr "Al vóór de rode boei ver naar buiten trekken, anders is de vaart niet genoeg om de witte boei heen."
+
+msgid "Kicker"
+msgstr "Kicker"
+
+msgid "Über den Kicker – so hoch wie möglich."
+msgstr "Over de kicker – zo hoog mogelijk."
+
+msgid "Kicker M"
+msgstr "Kicker M"
+
+msgid "Kicker M überfahren"
+msgstr "Over Kicker M rijden"
+
+msgid "Fahr ohne Absprung gerade über den Kicker M (der kleinere, näher am Seil). Gemessen wird die größte Höhe über dem Wasser."
+msgstr "Rij zonder pop recht over Kicker M (de kleinere, dichter bij de lijn). Gemeten: grootste hoogte boven het water."
+
+msgid "← / →  lenken     Leertaste halten + loslassen  Absprung"
+msgstr "← / →  sturen     spatie ingedrukt + loslaten  afzet"
+
+msgid "Neigen  lenken     SPRUNG halten + loslassen  Absprung"
+msgstr "Kantelen  sturen     SPRONG ingedrukt + loslaten  afzet"
+
+msgid "Gerade und mit Tempo anfahren – schräg verliert man Höhe. Kurz vor dem Kicker nicht mehr lenken."
+msgstr "Recht en met snelheid aanrijden – schuin verlies je hoogte. Vlak voor de kicker niet meer sturen."
+
+msgid "M mit Absprung"
+msgstr "M met pop"
+
+msgid "Kicker M mit Absprung"
+msgstr "Kicker M met pop"
+
+msgid "Wie eben, aber an der Kante abspringen: Kicker-Steigung + Sprungkraft = Höhe."
+msgstr "Net als net, maar aan de rand afzetten: helling van de kicker + springkracht = hoogte."
+
+msgid "Leertaste halten (auf dem Kicker) + an der Kante loslassen"
+msgstr "Spatie ingedrukt (op de kicker) + aan de rand loslaten"
+
+msgid "SPRUNG halten (auf dem Kicker) + an der Kante loslassen"
+msgstr "SPRONG ingedrukt (op de kicker) + aan de rand loslaten"
+
+msgid "Schon auf dem Kicker voll aufladen und genau an der Kante loslassen – zu früh verschenkt den Wurf der Rampe."
+msgstr "Al op de kicker volledig laden en precies aan de rand loslaten – te vroeg verspilt de worp van de schans."
+
+msgid "Kicker L"
+msgstr "Kicker L"
+
+msgid "Kicker L mit Absprung"
+msgstr "Kicker L met pop"
+
+msgid "Der große Kicker L (rechts): höher, steiler – und härter bei der Landung."
+msgstr "De grote Kicker L (rechts): hoger, steiler – en harder bij de landing."
+
+msgid "Leertaste halten + an der Kante loslassen"
+msgstr "Spatie ingedrukt + aan de rand loslaten"
+
+msgid "SPRUNG halten + an der Kante loslassen"
+msgstr "SPRONG ingedrukt + aan de rand loslaten"
+
+msgid "Bei der Landung gerade bleiben – wer quer aufkommt, stürzt."
+msgstr "Blijf recht bij de landing – wie dwars neerkomt, valt."
+
+msgid "Slider"
+msgstr "Slider"
+
+msgid "Slider fahren: aufspringen, 50-50, Boardslide, Press."
+msgstr "Sliders rijden: opspringen, 50-50, boardslide, press."
+
+msgid "Full Pipe"
+msgstr "Full Pipe"
+
+msgid "Rauf auf die Full Pipe"
+msgstr "Op de Full Pipe"
+
+msgid "Fahr über die Auffahrt auf die Full Pipe und rutsch sie so weit wie möglich ab. Gemessen: gerutschte Meter."
+msgstr "Rij via de oprit op de Full Pipe en glij er zo ver mogelijk over. Gemeten: gegleden meters."
+
+msgid "← / →  lenken (auf dem Slider: Boardslide / 50-50)"
+msgstr "← / →  sturen (op de slider: Boardslide / 50-50)"
+
+msgid "Neigen  lenken (auf dem Slider deutlich neigen: Boardslide / 50-50)"
+msgstr "Kantelen  sturen (op de slider duidelijk kantelen: Boardslide / 50-50)"
+
+msgid "Mittig auf die Auffahrt zielen. Auf dem Rohr hält dich das Einloggen in der Spur."
+msgstr "Mik op het midden van de oprit. Op de buis houdt de lock-on je op lijn."
+
+msgid "Boardslide"
+msgstr "Boardslide"
+
+msgid "Boardslide auf der Pipe"
+msgstr "Boardslide op de pipe"
+
+msgid "Quer über die Pipe: nur Meter im Boardslide zählen. Am Ende das Brett wieder gerade stellen – wer quer ins Wasser fährt, stürzt."
+msgstr "Dwars over de pipe: alleen meters in boardslide tellen. Zet het board aan het eind weer recht – wie dwars het water in rijdt, valt."
+
+msgid "Auf der Pipe ← / → tippen (Boardslide), vor dem Ende nochmal tippen (zurück auf 50-50)"
+msgstr "Op de pipe ← / → tikken (boardslide), vóór het eind nog eens tikken (terug naar 50-50)"
+
+msgid "Auf der Pipe deutlich neigen (Boardslide), vor dem Ende nochmal neigen (zurück auf 50-50)"
+msgstr "Op de pipe duidelijk kantelen (boardslide), vóór het eind nog eens kantelen (terug naar 50-50)"
+
+msgid "Oder schon in der Luft quer drehen – das Brett rastet in die nächste Stellung ein. Kurz vor dem Ende umspringen oder auf der Abfahrt gerade drehen."
+msgstr "Of al in de lucht dwars draaien – het board klikt in de dichtstbijzijnde stand. Vlak voor het eind wisselen of op de afdaling recht draaien."
+
+msgid "Drift"
+msgstr "Drift"
+
+msgid "Boardslide mit Drift-Abgang"
+msgstr "Boardslide met drift-afsprong"
+
+msgid "Boardslide über die Pipe und quer bleiben – beim Abgang Drift halten: dann rutscht das Brett quer weiter, ohne einzuhaken."
+msgstr "Boardslide over de pipe en dwars blijven – bij de afsprong drift vasthouden: dan glijdt het board dwars verder zonder te haken."
+
+msgid "Auf der Pipe ← / → tippen (Boardslide), Strg (Drift) halten, wenn das Brett das Wasser berührt"
+msgstr "Op de pipe ← / → tikken (boardslide), Ctrl (drift) vasthouden als het board het water raakt"
+
+msgid "Auf der Pipe deutlich neigen (Boardslide), DRIFT halten, wenn das Brett das Wasser berührt"
+msgstr "Op de pipe duidelijk kantelen (boardslide), DRIFT vasthouden als het board het water raakt"
+
+msgid "Drift rechtzeitig drücken – kurz vor dem Ende der Pipe. Wer das Brett gerade stellt, bekommt hier keinen Wert."
+msgstr "Op tijd op drift drukken – vlak voor het eind van de pipe. Wie het board recht zet, krijgt hier geen score."
+
+msgid "Umspringen"
+msgstr "Wisselen"
+
+msgid "Boardslide / 50-50 umspringen"
+msgstr "Boardslide / 50-50 wisselen"
+
+msgid "Auf dem Long Rail (links, 100 m) zwischen Boardslide und 50-50 wechseln. Gezählt werden die Wechsel."
+msgstr "Wissel op de Long Rail (links, 100 m) tussen boardslide en 50-50. De wissels worden geteld."
+
+msgid "Auf dem Slider: je Tipp ← / →  90° drehen"
+msgstr "Op de slider: per tik ← / → 90° draaien"
+
+msgid "Auf dem Slider: deutlich neigen, zurück, wieder neigen"
+msgstr "Op de slider: duidelijk kantelen, terug, weer kantelen"
+
+msgid "Nach jedem Tipp loslassen – erst dann geht der nächste Wechsel."
+msgstr "Na elke tik loslaten – pas dan werkt de volgende wissel."
+
+msgid "Press"
+msgstr "Press"
+
+msgid "Nose- oder Tailpress"
+msgstr "Nose- of tailpress"
+
+msgid "Auf dem Long Rail Gewicht auf Nose oder Tail: gemessen werden die Sekunden im Press."
+msgstr "Op de Long Rail gewicht op nose of tail: gemeten worden de seconden in de press."
+
+msgid "Auf dem Slider: ↑  Nosepress    ↓  Tailpress (halten)"
+msgstr "Op de slider: ↑  Nosepress    ↓  Tailpress (vasthouden)"
+
+msgid "Auf dem Slider: ▲  Nosepress    ▼  Tailpress (halten)"
+msgstr "Op de slider: ▲  Nosepress    ▼  Tailpress (vasthouden)"
+
+msgid "Erst sauber auf dem Rail stehen, dann ↑ oder ↓ halten. Beim Absprung loslassen, sonst gibt es keinen Überschlag."
+msgstr "Sta eerst goed op de rail, houd dan ↑ of ↓ vast. Bij de afsprong loslaten, anders komt er geen flip."
+
+msgid "Long Rail"
+msgstr "Long Rail"
+
+msgid "Long Rail: 100 m"
+msgstr "Long Rail: 100 m"
+
+msgid "So weit wie möglich auf dem 100-m-Rail bleiben."
+msgstr "Blijf zo ver mogelijk op de rail van 100 m."
+
+msgid "← / →  lenken"
+msgstr "← / →  sturen"
+
+msgid "Neigen  lenken"
+msgstr "Kantelen  sturen"
+
+msgid "Der Seilzug zieht dich zur Seilmitte – auf dem Rail nicht gegenlenken, das Einloggen hält die Spur."
+msgstr "De lijnspanning trekt je naar het midden – stuur op de rail niet tegen, de lock-on houdt de lijn."
+
+msgid "Slider-Kette"
+msgstr "Slider-ketting"
+
+msgid "Rechts stehen vier Slider hintereinander: Full Pipe, Rail, A-Frame, Pipe. Wie viele schaffst du in einer Fahrt?"
+msgstr "Rechts staan vier sliders achter elkaar: Full Pipe, Rail, A-Frame, Pipe. Hoeveel haal je in één run?"
+
+msgid "← / →  lenken     Leertaste  Absprung"
+msgstr "← / →  sturen     Spatie  afzet"
+
+msgid "Neigen  lenken     SPRUNG  Absprung"
+msgstr "Kantelen  sturen     SPRONG  afzet"
+
+msgid "Nach jedem Slider zieht dich das Seil nach innen: sofort wieder nach außen auf Linie lenken – alle stehen auf derselben Spur."
+msgstr "Na elke slider trekt de lijn je naar binnen: meteen weer naar buiten op de lijn sturen – ze staan allemaal op dezelfde lijn."
+
+msgid "BS Nosepress"
+msgstr "BS Nosepress"
+
+msgid "Ollie in Boardslide Nosepress"
+msgstr "Ollie in Boardslide Nosepress"
+
+msgid "Mit einem Ollie aus dem Wasser direkt auf die Full Pipe, in der Luft quer drehen und im Boardslide mit Nosepress rutschen. Gemessen: gerutschte Meter – nur wenn Ollie on, Boardslide und Nosepress stimmen."
+msgstr "Met een ollie uit het water direct op de Full Pipe, in de lucht dwars draaien en in boardslide met nosepress glijden. Gemeten: gegleden meters – alleen als ollie on, boardslide en nosepress kloppen."
+
+msgid "Leertaste  Ollie     in der Luft ← / → kurz tippen (Vierteldrehung)     auf der Pipe ↑ halten"
+msgstr "Spatie  Ollie     in de lucht ← / → kort tikken (kwartslag)     op de pipe ↑ vasthouden"
+
+msgid "SPRUNG  Ollie     in der Luft kurz neigen (Vierteldrehung)     auf der Pipe ▲ halten"
+msgstr "SPRONG  Ollie     in de lucht kort kantelen (kwartslag)     op de pipe ▲ vasthouden"
+
+msgid "Nicht über die Auffahrt fahren, sondern vor der Pipe abspringen. Eine Vierteldrehung reicht – das Brett rastet quer ein. Am Ende das Brett gerade stellen (← / →) oder Drift halten, sonst stürzt man quer ins Wasser."
+msgstr "Niet via de oprit rijden, maar vóór de pipe afzetten. Een kwartslag is genoeg – het board klikt dwars in. Zet aan het eind het board recht (← / →) of houd drift vast, anders val je dwars het water in."
+
+msgid "Special"
+msgstr "Special"
+
+msgid "Slider Special"
+msgstr "Slider Special"
+
+msgid "Rail"
+msgstr "Rail"
+
+msgid "A-Frame"
+msgstr "A-Frame"
+
+msgid "Pipe"
+msgstr "Pipe"
+
+msgid "Die Slider-Kette rechts, an jedem Slider eine feste Kombination. Gezählt: geschaffte Slider."
+msgstr "De slider-ketting rechts, op elke slider een vaste combinatie. Geteld: gehaalde sliders."
+
+msgid "Leertaste  Ollie on / out     ← / →  in der Luft drehen, auf dem Slider Boardslide / 50-50     ↑ / ↓  Nose- / Tailpress"
+msgstr "Spatie  Ollie on / out     ← / →  draaien in de lucht, op de slider Boardslide / 50-50     ↑ / ↓  Nose- / Tailpress"
+
+msgid "SPRUNG  Ollie on / out     Neigen  in der Luft drehen, auf dem Slider Boardslide / 50-50     ▲ / ▼  Nose- / Tailpress"
+msgstr "SPRONG  Ollie on / out     Kantelen  draaien in de lucht, op de slider Boardslide / 50-50     ▲ / ▼  Nose- / Tailpress"
+
+msgid "Ollie on heißt: aus dem Wasser direkt auf das Rohr springen, nicht über die Auffahrt fahren. Den Press mehr als die halbe Slide-Zeit halten."
+msgstr "Ollie on betekent: uit het water direct op de buis springen, niet via de oprit. Houd de press langer dan de halve slide-tijd vast."
+
+msgid "Invert Training"
+msgstr "Invert Training"
+
+msgid "Inverts: Tricks aus dem Raley-Absprung nach der Wende."
+msgstr "Inverts: tricks uit de Raley-afzet na de bocht."
+
+msgid "Raley – Höhe"
+msgstr "Raley – hoogte"
+
+msgid "Höchster Raley"
+msgstr "Hoogste Raley"
+
+msgid "Nach der Ufer-Wende Seilzug aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: größte Höhe."
+msgstr "Na de oeverbocht lijnspanning opbouwen en een Raley staan – zonder draai, zonder extra's. Gemeten: grootste hoogte."
+
+msgid "Leertaste lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist"
+msgstr "Spatie lang ingedrukt (volledig laden) + loslaten als de lijnspanning boven de markering RALEY is"
+
+msgid "SPRUNG lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist"
+msgstr "SPRONG lang ingedrukt (volledig laden) + loslaten als de lijnspanning boven de markering RALEY is"
+
+msgid "Nach der Wende weit nach außen fahren, dann hart gegen den Zug zur Seilmitte kanten – loslassen, solange der Seilzug über der Marke RALEY ist – je mehr Zug und Tempo, desto höher."
+msgstr "Na de bocht ver naar buiten rijden, dan hard tegen de trek in naar het midden kanten – loslaten zolang de lijnspanning boven de markering RALEY is – hoe meer spanning en snelheid, hoe hoger."
+
+msgid "Raley – Weite"
+msgstr "Raley – afstand"
+
+msgid "Weitester Raley"
+msgstr "Verste Raley"
+
+msgid "Nach der Ufer-Wende Seilzug aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: Weite vom Absprung bis zur Landung."
+msgstr "Na de oeverbocht lijnspanning opbouwen en een Raley staan – zonder draai, zonder extra's. Gemeten: afstand van afzet tot landing."
+
+msgid "Weit nach außen, dann hart zur Seilmitte kanten – je mehr Zug und Tempo, desto weiter."
+msgstr "Ver naar buiten, dan hard naar het midden kanten – hoe meer spanning en snelheid, hoe verder."
+
+msgid "Krypt"
+msgstr "Krypt"
+
+msgid "Krypt (Raley 180 rechts)"
+msgstr "Krypt (Raley 180 rechts)"
+
+msgid "Raley mit genau einer halben Drehung nach rechts. Gemessen: größte Höhe."
+msgstr "Raley met precies een halve draai naar rechts. Gemeten: grootste hoogte."
+
+msgid "Raley, dann gegen Ende →  halten (180)"
+msgstr "Raley, dan tegen het eind →  vasthouden (180)"
+
+msgid "Raley, dann gegen Ende nach rechts neigen (180)"
+msgstr "Raley, dan tegen het eind naar rechts kantelen (180)"
+
+msgid "Erst strecken lassen, dann ← / → : der Schwung bricht ab, du schwingst zurück und drehst aufrecht – rechtzeitig loslassen."
+msgstr "Laat je eerst strekken, dan ← / → : de zwaai breekt af, je zwaait terug en draait rechtop – op tijd loslaten."
+
+msgid "Blind Judge"
+msgstr "Blind Judge"
+
+msgid "Blind Judge (Raley 180 links)"
+msgstr "Blind Judge (Raley 180 links)"
+
+msgid "Raley mit genau einer halben Drehung nach links. Gemessen: größte Höhe."
+msgstr "Raley met precies een halve draai naar links. Gemeten: grootste hoogte."
+
+msgid "Raley, dann gegen Ende ←  halten (180)"
+msgstr "Raley, dan tegen het eind ←  vasthouden (180)"
+
+msgid "Raley, dann gegen Ende nach links neigen (180)"
+msgstr "Raley, dan tegen het eind naar links kantelen (180)"
+
+msgid "313 (Raley 360 links)"
+msgstr "313 (Raley 360 links)"
+
+msgid "Raley mit genau einer ganzen Drehung nach links. Gemessen: größte Höhe."
+msgstr "Raley met precies een hele draai naar links. Gemeten: grootste hoogte."
+
+msgid "Raley, dann gegen Ende ←  halten (360)"
+msgstr "Raley, dan tegen het eind ←  vasthouden (360)"
+
+msgid "Raley, dann gegen Ende nach links neigen (360)"
+msgstr "Raley, dan tegen het eind naar links kantelen (360)"
+
+msgid "Viel Höhe holen – die ganze Drehung braucht die Zeit vom höchsten Punkt bis zur Landung."
+msgstr "Veel hoogte pakken – de hele draai heeft de tijd van het hoogste punt tot de landing nodig."
+
+msgid "S-Bend"
+msgstr "S-Bend"
+
+msgid "Raley-Absprung und gestreckt einmal um die eigene Längsachse – ohne Drehung danach. Gemessen: größte Höhe."
+msgstr "Raley-afzet en gestrekt één keer om je eigen lengteas – zonder draai daarna. Gemeten: grootste hoogte."
+
+msgid "Raley, gleich nach dem Absprung ↑"
+msgstr "Raley, direct na de afzet ↑"
+
+msgid "Raley, gleich nach dem Absprung ▲"
+msgstr "Raley, direct na de afzet ▲"
+
+msgid "Die Taste nur ganz am Anfang drücken – später wird es ein normaler Raley."
+msgstr "Druk de toets alleen helemaal aan het begin – later wordt het een gewone Raley."
+
+msgid "Backroll (todo)"
+msgstr "Backroll (todo)"
+
+msgid "Backroll (Invert, todo)"
+msgstr "Backroll (Invert, todo)"
+
+msgid "Raley-Absprung und seitlich nach außen kopfüber rollen – ohne Drehung danach. Gemessen: größte Höhe."
+msgstr "Raley-afzet en zijwaarts naar buiten ondersteboven rollen – zonder draai daarna. Gemeten: grootste hoogte."
+
+msgid "Raley, gleich nach dem Absprung ↓"
+msgstr "Raley, direct na de afzet ↓"
+
+msgid "Raley, gleich nach dem Absprung ▼"
+msgstr "Raley, direct na de afzet ▼"
+
+msgid "Special - S-Bend to Blind"
+msgstr "Special - S-Bend to Blind"
+
+msgid "Special: S-Bend to Blind"
+msgstr "Special: S-Bend to Blind"
+
+msgid "S-Bend und danach genau eine halbe Drehung nach links – blind landen. Gemessen: größte Höhe."
+msgstr "S-Bend en daarna precies een halve draai naar links – blind landen. Gemeten: grootste hoogte."
+
+msgid "Raley, gleich nach dem Absprung ↑, nach der Drehung um die Handle ←  (180)"
+msgstr "Raley, direct na de afzet ↑, na de draai om de handle ←  (180)"
+
+msgid "Raley, gleich nach dem Absprung ▲, nach der Drehung um die Handle nach links neigen (180)"
+msgstr "Raley, direct na de afzet ▲, na de draai om de handle naar links kantelen (180)"
+
+msgid "Viel Höhe holen: ← erst, wenn der S-Bend durch ist – dann schwingst du zurück und drehst aufrecht. Rechtzeitig loslassen."
+msgstr "Veel hoogte pakken: ← pas als de S-Bend klaar is – dan zwaai je terug en draai je rechtop. Op tijd loslaten."
+
+msgid "Sprung-Start"
+msgstr "Steigerstart"
+
+msgid "Vom Startsteg: gegen das Seil stemmen, bis es dich losreißt."
+msgstr "Vanaf de startsteiger: tegen de lijn inzetten tot hij je meetrekt."
+
+msgid "Nolli"
+msgstr "Nolli"
+
+msgid "Nolli vom Steg"
+msgstr "Nolli vanaf de steiger"
+
+msgid "Bleib auf dem Startsteg mit dem Brett längs zum Seil (50-50) stehen und halte ↓: du stemmst dich gegen das anfahrende Seil, der Seilzug lädt sich auf. Bei maximaler Seilspannung reißt es dich nach vorne – ein Nolli. Gemessen: größte Höhe."
+msgstr "Blijf op de startsteiger staan met het board in lijn met de kabel (50-50) en houd ↓ vast: je zet je schrap tegen de aanlopende lijn, de lijnspanning bouwt op. Bij maximale spanning rukt hij je naar voren – een Nolli. Gemeten: grootste hoogte."
+
+msgid "↓ halten (schon beim Countdown), bis das Seil losreißt"
+msgstr "↓ vasthouden (al tijdens het aftellen) tot de lijn je meetrekt"
+
+msgid "▼ halten (schon beim Countdown), bis das Seil losreißt"
+msgstr "▼ vasthouden (al tijdens het aftellen) tot de lijn je meetrekt"
+
+msgid "Je genauer das Brett längs zum Seil steht, desto mehr Power. Nicht vorher loslassen – sonst ist es ein normaler Start."
+msgstr "Hoe preciezer het board in lijn met de kabel staat, hoe meer power. Niet eerder loslaten – anders is het een gewone start."
+
+msgid "Nolli 180/360"
+msgstr "Nolli 180/360"
+
+msgid "Nolli mit Drehung"
+msgstr "Nolli met draai"
+
+msgid "Nolli vom Steg und in der Luft drehen: 180 = Bronze, 360 = Silber, 540 = Gold."
+msgstr "Nolli vanaf de steiger en in de lucht draaien: 180 = brons, 360 = zilver, 540 = goud."
+
+msgid "↓ halten bis zum Riss, dann in der Luft ← / →  drehen"
+msgstr "↓ vasthouden tot de ruk, dan in de lucht ← / →  draaien"
+
+msgid "▼ halten bis zum Riss, dann in der Luft neigen = drehen"
+msgstr "▼ vasthouden tot de ruk, dan in de lucht kantelen = draaien"
+
+msgid "Gleich nach dem Riss drehen und rechtzeitig loslassen – das Brett muss zur Landung in Fahrtrichtung zeigen."
+msgstr "Direct na de ruk draaien en op tijd loslaten – het board moet bij de landing in de rijrichting wijzen."
+
+msgid "Raley Start"
+msgstr "Raley Start"
+
+msgid "Raley Start vom Steg"
+msgstr "Raley Start vanaf de steiger"
+
+msgid "Dreh dich auf dem Steg um 90°, sodass das Brett quer zum Seil steht, und halte ↓: du sitzt tief auf der Kante, Brust zum Seil. Reißt das Seil los, schwingt dein Körper um den Griff wie beim Raley. Gemessen: größte Höhe."
+msgstr "Draai je op de steiger 90°, zodat het board dwars op de lijn staat, en houd ↓ vast: je zit laag op de kant, borst naar de lijn. Rukt de lijn je mee, dan zwaait je lichaam om de handle zoals bij een Raley. Gemeten: grootste hoogte."
+
+msgid "← / →  auf dem Steg quer drehen     ↓ halten, bis das Seil losreißt"
+msgstr "← / →  op de steiger dwars draaien     ↓ vasthouden tot de lijn je meetrekt"
+
+msgid "Neigen  auf dem Steg quer drehen     ▼ halten, bis das Seil losreißt"
+msgstr "Kantelen  op de steiger dwars draaien     ▼ vasthouden tot de lijn je meetrekt"
+
+msgid "Schon beim Countdown drehen – je genauer quer, desto höher. Ab 45° Abweichung wird es ein Nolli."
+msgstr "Al tijdens het aftellen draaien – hoe preciezer dwars, hoe hoger. Vanaf 45° afwijking wordt het een Nolli."
+
+msgid "Raley Start + Invert"
+msgstr "Raley Start + Invert"
+
+msgid "Raley Start mit Invert"
+msgstr "Raley Start met invert"
+
+msgid "Raley Start und in der Luft noch etwas dazu: 180 = Bronze, S-Bend oder Backroll = Silber, S-Bend/Backroll + 360 = Gold. Gemessen: Punkte des Sprungs."
+msgstr "Raley Start en in de lucht nog iets erbij: 180 = brons, S-Bend of Backroll = zilver, S-Bend/Backroll + 360 = goud. Gemeten: punten van de sprong."
+
+msgid "Quer drehen, ↓ halten bis zum Riss, in der Luft loslassen, dann gleich ↑ S-Bend / ↓ Backroll, gegen Ende ← / →  drehen"
+msgstr "Dwars draaien, ↓ vasthouden tot de ruk, in de lucht loslaten, dan meteen ↑ S-Bend / ↓ Backroll, tegen het eind ← / →  draaien"
+
+msgid "Quer drehen, ▼ halten bis zum Riss, in der Luft loslassen, dann gleich ▲ S-Bend / ▼ Backroll, gegen Ende neigen  drehen"
+msgstr "Dwars draaien, ▼ vasthouden tot de ruk, in de lucht loslaten, dan meteen ▲ S-Bend / ▼ Backroll, tegen het eind kantelen om te draaien"
+
+msgid "Das gehaltene ↓ zählt nicht – erst loslassen, dann sofort ↑ oder ↓ drücken: der Trick wird nur ganz am Anfang gewählt."
+msgstr "De vastgehouden ↓ telt niet – eerst loslaten, dan meteen ↑ of ↓ drukken: de trick wordt alleen helemaal aan het begin gekozen."
+
+msgid "Driften"
+msgstr "Driften"
+
+msgid "Kante lösen und gleiten: das Brett dreht frei, die Fahrtrichtung bleibt."
+msgstr "Kant loslaten en glijden: het board draait vrij, de rijrichting blijft."
+
+msgid "360 im Drift"
+msgstr "360 in de drift"
+
+msgid "360er im Drift"
+msgstr "360's in de drift"
+
+msgid "Driften heißt: die Kante lösen. Das Brett liegt flach und greift nicht mehr – Lenken ändert die Fahrtrichtung nicht, nur der Seilzug zieht dich, und das Brett lässt sich frei herumdrehen. Dreh so zwischen den roten Bojen (Ufer bis Endmast) fünf 360er in die eine und fünf in die andere Richtung – gezählt wird jede volle Umdrehung im Drift, höchstens fünf je Richtung."
+msgstr "Driften betekent: de kant loslaten. Het board ligt plat en grijpt niet meer – sturen verandert je rijrichting niet, alleen de lijn trekt je, en het board laat zich vrij ronddraaien. Draai zo tussen de rode boeien (oever tot eindmast) vijf 360's de ene kant op en vijf de andere – elke volle omwenteling in de drift telt, hoogstens vijf per richting."
+
+msgid "Strg halten  driften     ← / →  Brett drehen"
+msgstr "Ctrl ingedrukt  driften     ← / →  board draaien"
+
+msgid "DRIFT halten  driften     Neigen  Brett drehen"
+msgstr "DRIFT ingedrukt  driften     kantelen  board draaien"
+
+msgid "Erst fünf in eine Richtung, dann umsteuern – die Strecke reicht nur knapp, also nicht trödeln. Wer den Drift loslässt, verliert die angefangene Umdrehung – und quer greift die Kante hart und bremst."
+msgstr "Eerst vijf de ene kant op, dan omsturen – de afstand is net genoeg, dus niet treuzelen. Wie de drift loslaat, verliest de begonnen omwenteling – en dwars grijpt de kant hard en remt."
+
+msgid "Wende im Drift"
+msgstr "Bocht in de drift"
+
+msgid "Die Wende durchgleiten"
+msgstr "De bocht doorglijden"
+
+msgid "Vor der Wende am Endmast mächtig Schwung holen und dann die ganze Wende im Drift durchgleiten – ohne einzusinken. Gemessen: Anteil der Wende, in dem du im Drift gleitest, ohne einzusinken (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht)."
+msgstr "Haal vóór de bocht bij de eindmast flink vaart en glijd dan de hele bocht in de drift door – zonder weg te zakken. Gemeten: aandeel van de bocht waarin je in de drift glijdt zonder weg te zakken (van het remmen van de carrier tot de lijn weer in de nieuwe richting trekt)."
+
+msgid "← / →  lenken (Schwung holen)     Strg halten  driften"
+msgstr "← / →  sturen (vaart halen)     Ctrl ingedrukt  driften"
+
+msgid "Neigen  lenken (Schwung holen)     DRIFT halten  driften"
+msgstr "Kantelen  sturen (vaart halen)     DRIFT ingedrukt  driften"
+
+msgid "An der roten Boje weit rauskanten und Tempo aufbauen. Im Drift bremst das Wasser weniger – du gleitest weiter. Ist zu wenig Schwung da, sinkst du ein."
+msgstr "Bij de rode boei ver naar buiten kanten en snelheid opbouwen. In de drift remt het water minder – je glijdt verder. Is er te weinig vaart, dan zak je weg."
+
+msgid "Drift nach Feature"
+msgstr "Drift na feature"
+
+msgid "Nach dem Feature driften"
+msgstr "Na het feature driften"
+
+msgid "Terminal 2, Setup Juli & August: von der Mitte Richtung Steg über ein Feature deiner Wahl und gleich danach driften – mindestens 10 m. Gemessen: der längste Drift, der direkt nach einem Feature beginnt (auch nach dem Sprung davon)."
+msgstr "Terminal 2, setup Juli & augustus: vanuit het midden richting steiger over een feature naar keuze en direct daarna driften – minstens 10 m. Gemeten: de langste drift die direct na een feature begint (ook na de sprong ervan af)."
+
+msgid "Strg schon auf dem Feature halten und danach nicht loslassen"
+msgstr "Ctrl al op het feature vasthouden en daarna niet loslaten"
+
+msgid "DRIFT schon auf dem Feature halten und danach nicht loslassen"
+msgstr "DRIFT al op het feature vasthouden en daarna niet loslaten"
+
+msgid "Mit Drift darf das Brett beim Abgang auch quer stehen. Der Seilzug zieht dich im Drift zur Seilmitte – vorher weit außen auf das Feature fahren."
+msgstr "Met drift mag het board bij de afsprong ook dwars staan. In de drift trekt de lijn je naar het midden – rij het feature ver aan de buitenkant op."
+
+msgid "Tailpress im Drift"
+msgstr "Tailpress in de drift"
+
+msgid "Auf dem Weg zum vorderen Wendepunkt driften und dabei ins Tail drücken: das Brett kippt um das Tail, die Nose steht hoch, die freie Hand streift das Wasser. Du gleitest mit dem ganzen Schwung weiter. Driftest du querer, als es dein Tempo erlaubt (höchstens 86°, nach links wie nach rechts), stürzt du – mit ← / → den Winkel halten. Gemessen: Anteil der Wende im vollen Tailpress (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht) – ohne einzusinken. Gold = die ganze Wende."
+msgstr "Op weg naar het voorste keerpunt driften en daarbij in de tail drukken: het board kantelt om de tail, de nose gaat omhoog, je vrije hand strijkt over het water. Je glijdt met al je vaart verder. Drift je dwarser dan je snelheid toelaat (hoogstens 86°, naar links en naar rechts), dan val je – houd de hoek met ← / →. Gemeten: aandeel van de bocht in volle tailpress (van het remmen van de carrier tot de lijn weer in de nieuwe richting trekt) – zonder weg te zakken. Goud = de hele bocht."
+
+msgid "Strg halten  driften     ↓ halten  Tailpress     ← / →  Drift-Winkel halten"
+msgstr "Ctrl ingedrukt  driften     ↓ ingedrukt  Tailpress     ← / →  drifthoek vasthouden"
+
+msgid "DRIFT halten  driften     ▼ halten  Tailpress     Neigen  Winkel halten"
+msgstr "DRIFT ingedrukt  driften     ▼ ingedrukt  Tailpress     kantelen  hoek vasthouden"
+
+msgid "Hart rauskanten, im Drift das Brett erst weit quer drehen (um 75°), dann ins Tail drücken – so bremst nichts. Im goldenen Bereich des Bogens (die letzten rund 45° vor der Grenze) bremst der Press gar nicht; querer als 86° reißt es dich um. Den Winkel mit ← / → halten, während dich das Seil um den Carrier schwingt."
+msgstr "Hard naar buiten kanten, in de drift het board eerst ver dwars draaien (ca. 75°), dan in de tail drukken – zo remt niets. In het gouden gebied van de boog (de laatste ca. 45° vóór de grens) remt de press helemaal niet; dwarser dan 86° en je gaat onderuit. Houd de hoek met ← / → terwijl de lijn je om de carrier zwaait."
+
+msgid "Transfer"
+msgstr "Transfer"
+
+msgid "Von einem Feature auf ein anderes springen."
+msgstr "Van het ene feature op het andere springen."
+
+msgid "Klein"
+msgstr "Klein"
+
+msgid "Pyramid auf Pyramid-Rail"
+msgstr "Pyramid op Pyramid Rail"
+
+msgid "Pyramid"
+msgstr "Pyramid"
+
+msgid "A-Frame Rail"
+msgstr "A-Frame Rail"
+
+msgid "Erst auf die Pyramid, dann aufs Rail springen"
+msgstr "Eerst op de Pyramid, dan op de rail springen"
+
+msgid "Terminal 2, Setup C: über die Pyramid fahren und oben seitlich auf das A-Frame Rail daneben springen. Gemessen: Sprunghöhe – so hoch wie möglich, aber das Rail noch erwischen."
+msgstr "Terminal 2, setup C: over de Pyramid rijden en bovenaan zijwaarts op de A-Frame Rail ernaast springen. Gemeten: sprong-hoogte – zo hoog mogelijk, maar de rail nog halen."
+
+msgid "Leertaste halten + loslassen  Absprung, in der Luft ← / →  Richtung Rail"
+msgstr "Spatie ingedrukt + loslaten  afzet, in de lucht ← / →  richting rail"
+
+msgid "SPRUNG halten + loslassen  Absprung, in der Luft neigen  Richtung Rail"
+msgstr "SPRONG ingedrukt + loslaten  afzet, in de lucht kantelen  richting rail"
+
+msgid "Auf der Pyramid nahe an der Rail-Seite fahren, dann kurz abspringen – das Einloggen zieht dich aufs Rail."
+msgstr "Rij op de Pyramid dicht langs de railkant, zet dan kort af – de lock-on trekt je op de rail."
+
+msgid "Groß"
+msgstr "Groot"
+
+msgid "Wedge auf Down Ledge"
+msgstr "Wedge op Down Ledge"
+
+msgid "Cheese Wedge"
+msgstr "Cheese Wedge"
+
+msgid "Down Ledge"
+msgstr "Down Ledge"
+
+msgid "Erst über den Wedge, dann auf die Down Ledge springen"
+msgstr "Eerst over de wedge, dan op de Down Ledge springen"
+
+msgid "Terminal 1, Setup A: über den Wedge (Kicker-Höhe wie Kicker M) und seitlich hoch auf die Down Ledge springen. Gemessen: Sprunghöhe – so hoch wie möglich, aber die Ledge noch erwischen."
+msgstr "Terminal 1, setup A: over de wedge (kickerhoogte als Kicker M) en zijwaarts omhoog op de Down Ledge springen. Gemeten: sprong-hoogte – zo hoog mogelijk, maar de ledge nog halen."
+
+msgid "Leertaste halten (auf dem Wedge) + an der Kante loslassen, in der Luft ← / →  Richtung Ledge"
+msgstr "Spatie ingedrukt (op de wedge) + aan de rand loslaten, in de lucht ← / →  richting ledge"
+
+msgid "SPRUNG halten (auf dem Wedge) + an der Kante loslassen, in der Luft neigen"
+msgstr "SPRONG ingedrukt (op de wedge) + aan de rand loslaten, in de lucht kantelen"
+
+msgid "Die Ledge ist höher als die Kante des Wedges – voll aufladen und kräftig abspringen."
+msgstr "De ledge is hoger dan de rand van de wedge – volledig laden en krachtig afzetten."
+
+msgid "Curb auf Down Ledge"
+msgstr "Curb op Down Ledge"
+
+msgid "Transition Curb"
+msgstr "Transition Curb"
+
+msgid "Erst auf die Transition Curb, dann auf die Down Ledge springen"
+msgstr "Eerst op de Transition Curb, dan op de Down Ledge springen"
+
+msgid "Terminal 2, Setup D: mit einem Ollie auf die Transition Curb, darauf hoch und dann auf die Down Ledge daneben springen. Wie du slidest, ist egal. Gemessen: Sprunghöhe von der Curb – so hoch wie möglich, aber die Ledge noch erwischen."
+msgstr "Terminal 2, setup D: met een ollie op de Transition Curb, erop omhoog en dan op de Down Ledge ernaast springen. Hoe je slidet maakt niet uit. Gemeten: sprong-hoogte vanaf de curb – zo hoog mogelijk, maar de ledge nog halen."
+
+msgid "Leertaste: Ollie auf die Curb, auf der Curb nochmal abspringen, in der Luft ← / →"
+msgstr "Spatie: ollie op de curb, op de curb nog eens afzetten, in de lucht ← / →"
+
+msgid "SPRUNG: Ollie auf die Curb, auf der Curb nochmal abspringen, in der Luft neigen"
+msgstr "SPRONG: ollie op de curb, op de curb nog eens afzetten, in de lucht kantelen"
+
+msgid "Auf der Curb ist glattes Plastik – lenken geht nicht. Schon vor dem Ollie auf die richtige Linie gehen."
+msgstr "Op de curb is glad plastic – sturen gaat niet. Kies al vóór de ollie de juiste lijn."
+
+msgid "Special Press"
+msgstr "Special Press"
+
+msgid "Curb auf Down Ledge mit Nosepress"
+msgstr "Curb op Down Ledge met nosepress"
+
+msgid "Wie Transfer special, aber auf der Down Ledge einen Nosepress halten. Gemessen: Sekunden im Press."
+msgstr "Zoals Transfer special, maar op de Down Ledge een nosepress vasthouden. Gemeten: seconden in de press."
+
+msgid "Auf der Ledge ↑ halten (Nosepress)"
+msgstr "Op de ledge ↑ vasthouden (nosepress)"
+
+msgid "Auf der Ledge ▲ halten (Nosepress)"
+msgstr "Op de ledge ▲ vasthouden (nosepress)"
+
+msgid "Erst sauber auf der Ledge landen, dann ↑ drücken – beim Abgang loslassen."
+msgstr "Eerst netjes op de ledge landen, dan ↑ drukken – bij de afsprong loslaten."
+
+msgid "Pool"
+msgstr "Pool"
+
+msgid "Der 6-Stair Pool: rein ins Becken, die Treppe im Drift, auf den Rand und die Ausgänge."
+msgstr "De 6-Stair Pool: het bassin in, de trap in de drift, op de rand en de uitgangen."
+
+msgid "Pool Drop"
+msgstr "Pool Drop"
+
+msgid "Pool Drop – Höhe"
+msgstr "Pool Drop – hoogte"
+
+msgid "Nicht über die Rampe ins Becken"
+msgstr "Niet via de schans het bassin in"
+
+msgid "Fahr über die Rampe des Pools und spring ins Becken. Gemessen: höchster Punkt über dem See."
+msgstr "Rij over de schans van de pool en spring het bassin in. Gemeten: hoogste punt boven het meer."
+
+msgid "← / →  lenken     Leertaste halten + an der Kante loslassen  Absprung"
+msgstr "← / →  sturen     spatie ingedrukt + aan de rand loslaten  afzet"
+
+msgid "Neigen  lenken     SPRUNG halten + an der Kante loslassen  Absprung"
+msgstr "Kantelen  sturen     SPRONG ingedrukt + aan de rand loslaten  afzet"
+
+msgid "Mittig auf die Rampe zielen, voll aufladen und genau an der Kante loslassen. Nicht zu weit springen – hinter dem Becken kommt die Treppe."
+msgstr "Mik op het midden van de schans, volledig laden en precies aan de rand loslaten. Niet te ver springen – achter het bassin komt de trap."
+
+msgid "Pool Drop – Weite"
+msgstr "Pool Drop – afstand"
+
+msgid "Wie eben, aber so weit wie möglich ins Becken. Gemessen: Weite vom Absprung bis zur Landung im Becken."
+msgstr "Net als net, maar zo ver mogelijk het bassin in. Gemeten: afstand van afzet tot landing in het bassin."
+
+msgid "Mit vollem Tempo und voller Ladung – das Becken ist 15 m lang, die Landung muss im Wasser sein."
+msgstr "Met volle snelheid en volle lading – het bassin is 15 m lang, de landing moet in het water zijn."
+
+msgid "Treppe runter"
+msgstr "Trap af"
+
+msgid "Die Treppe im Drift hinunter"
+msgstr "De trap af in de drift"
+
+msgid "Nicht über die Treppe"
+msgstr "Niet over de trap"
+
+msgid "Rein ins Becken, durchfahren und die Treppe am Ende im Drift hinunter in den See. Gemessen: Tempo unten."
+msgstr "Het bassin in, erdoor en de trap aan het eind in de drift af het meer in. Gemeten: snelheid beneden."
+
+msgid "Strg (Drift) halten, bevor das Brett die Treppe erreicht"
+msgstr "Ctrl (drift) vasthouden voordat het board de trap bereikt"
+
+msgid "DRIFT halten, bevor das Brett die Treppe erreicht"
+msgstr "DRIFT vasthouden voordat het board de trap bereikt"
+
+msgid "Ohne Drift ist die Treppe ein Sturz. Gerade auf die Treppe zielen – die Stufen sind glatt, lenken geht dort nicht."
+msgstr "Zonder drift is de trap een val. Mik recht op de trap – de treden zijn glad, sturen gaat daar niet."
+
+msgid "Treppe hoch"
+msgstr "Trap op"
+
+msgid "Die Treppe im Drift hinauf"
+msgstr "De trap op in de drift"
+
+msgid "Nicht über die Treppe ins Becken"
+msgstr "Niet via de trap het bassin in"
+
+msgid "Von hinten zwischen den Ausgängen auf die Treppe zu und im Drift hinauf ins Becken. Gemessen: Tempo oben."
+msgstr "Van achteren tussen de uitgangen op de trap af en in de drift omhoog het bassin in. Gemeten: snelheid boven."
+
+msgid "Hinauf braucht Schwung: mit vollem Tempo und gespanntem Seil kommen. Im Becken vor der Rampe abspringen, sonst fährt man gegen die Wand."
+msgstr "Omhoog vraagt vaart: kom met volle snelheid en strakke lijn. Zet in het bassin vóór de schans af, anders rij je tegen de muur."
+
+msgid "Coping"
+msgstr "Coping"
+
+msgid "Auf dem Rand sliden"
+msgstr "Op de rand sliden"
+
+msgid "Pool Coping"
+msgstr "Pool Coping"
+
+msgid "Fahr außen über die Rampe direkt auf den Rand des Beckens (Coping) und rutsch so weit wie möglich. Gemessen: Meter auf dem Rand."
+msgstr "Rij aan de buitenkant over de schans direct op de rand van het bassin (coping) en glij zo ver mogelijk. Gemeten: meters op de rand."
+
+msgid "← / →  lenken (auf dem Rand: Boardslide / 50-50)"
+msgstr "← / →  sturen (op de rand: Boardslide / 50-50)"
+
+msgid "Neigen  lenken (auf dem Rand deutlich neigen: Boardslide / 50-50)"
+msgstr "Kantelen  sturen (op de rand duidelijk kantelen: Boardslide / 50-50)"
+
+msgid "Die Spur genau auf den Rand legen (ganz rechts auf der Rampe). Der Rand ist nur 40 cm breit – das Einloggen hilft."
+msgstr "Leg je lijn precies op de rand (helemaal rechts op de schans). De rand is maar 40 cm breed – de lock-on helpt."
+
+msgid "Coping to Ledge"
+msgstr "Coping to Ledge"
+
+msgid "Rand und Ausgang in einem Zug"
+msgstr "Rand en uitgang in één keer"
+
+msgid "Nicht vom Rand auf den Ausgang"
+msgstr "Niet van de rand op de uitgang"
+
+msgid "Auf dem Rand sliden und am Ende über die Safety ohne Absetzen auf die Down Ledge. Gemessen: Meter auf Rand und Ledge zusammen."
+msgstr "Op de rand sliden en aan het eind over de safety zonder neerzetten op de Down Ledge. Gemeten: meters op rand en ledge samen."
+
+msgid "Die Safety am Anfang der Ledge wirft dich ein Stück hoch – gerade bleiben, dann landest du wieder auf der Ledge."
+msgstr "De safety aan het begin van de ledge gooit je een stukje omhoog – recht blijven, dan land je weer op de ledge."
+
+msgid "Stair Gap"
+msgstr "Stair Gap"
+
+msgid "Über die Treppe springen"
+msgstr "Over de trap springen"
+
+msgid "Kein Sprung aus dem Becken über die Treppe"
+msgstr "Geen sprong uit het bassin over de trap"
+
+msgid "Im Becken Anlauf nehmen und am Ende über die ganze Treppe in den See springen. Gemessen: Weite des Sprungs."
+msgstr "Neem in het bassin aanloop en spring aan het eind over de hele trap het meer in. Gemeten: afstand van de sprong."
+
+msgid "Leertaste halten + am Ende des Beckens loslassen"
+msgstr "Spatie ingedrukt + aan het eind van het bassin loslaten"
+
+msgid "SPRUNG halten + am Ende des Beckens loslassen"
+msgstr "SPRONG ingedrukt + aan het eind van het bassin loslaten"
+
+msgid "Erst kurz vor der Treppe loslassen. Landest du auf den Stufen, brauchst du Drift."
+msgstr "Pas vlak voor de trap loslaten. Land je op de treden, dan heb je drift nodig."
+
+msgid "Pool Special"
+msgstr "Pool Special"
+
+msgid "Pool Drop und Treppe im Drift nicht geschafft"
+msgstr "Pool Drop en trap in de drift niet gehaald"
+
+msgid "Die Pool-Linie in einem Zug: Pool Drop (gern mit Drehung) und dann die Treppe im Drift hinunter – als Kombination. Gemessen: Punkte der Pool-Tricks."
+msgstr "De pool-lijn in één keer: Pool Drop (gerust met draai) en dan de trap in de drift af – als combinatie. Gemeten: punten van de pool-tricks."
+
+msgid "Leertaste  Absprung an der Rampe     ← / →  in der Luft drehen     Strg  Drift auf der Treppe"
+msgstr "Spatie  afzet aan de schans     ← / →  draaien in de lucht     Ctrl  drift op de trap"
+
+msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe"
+msgstr "SPRONG  afzet aan de schans     Kantelen  draaien in de lucht     DRIFT  op de trap"
+
+msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgstr "De combinatie loopt 3 s – na de drop niet treuzelen. Draaien in de drop leveren meer punten op, de trap telt in de combinatie dubbel."
+
+msgid "Donkey Rail"
+msgstr "Donkey Rail"
+
+msgid "Ausgang: Donkey Rail"
+msgstr "Uitgang: Donkey Rail"
+
+msgid "Pool B (hinten rechts): links über die Rampe auf den Rand und über die Safety auf das Donkey Rail. Gemessen: Meter auf dem Rail."
+msgstr "Pool B (achter rechts): links over de schans op de rand en over de safety op de Donkey Rail. Gemeten: meters op de rail."
+
+msgid "Erst runter, dann flach: auf dem flachen Stück bremst es nicht mehr, dort ruhig bleiben."
+msgstr "Eerst omlaag, dan vlak: op het vlakke stuk remt het niet meer, daar rustig blijven."
+
+msgid "Low to High Ledge"
+msgstr "Low to High Ledge"
+
+msgid "Ausgang: Low to High Ledge"
+msgstr "Uitgang: Low to High Ledge"
+
+msgid "Pool B: rechts auf den Rand und auf die Low to High Ledge – sie steigt noch an. Gemessen: Meter auf der Ledge."
+msgstr "Pool B: rechts op de rand en op de Low to High Ledge – die loopt nog op. Gemeten: meters op de ledge."
+
+msgid "Bergauf kostet Tempo: mit gespanntem Seil auf den Rand kommen. Hinten ist sie 2 m hoch – gerade abspringen."
+msgstr "Bergop kost snelheid: met strakke lijn op de rand komen. Achteraan is hij 2 m hoog – recht afzetten."
+
+msgid "Double Kinked Rail"
+msgstr "Double Kinked Rail"
+
+msgid "Ausgang: Double Kinked Rail"
+msgstr "Uitgang: Double Kinked Rail"
+
+msgid "Pool C (links): außen über die Rampe auf den Rand und auf das Double Kinked Rail mit zwei Knicken. Gemessen: Meter auf dem Rail."
+msgstr "Pool C (links): aan de buitenkant over de schans op de rand en op de Double Kinked Rail met twee knikken. Gemeten: meters op de rail."
+
+msgid "Außen zieht das Seil dich zur Mitte – auf dem Rand nicht gegenlenken, das Einloggen hält die Spur."
+msgstr "Aan de buitenkant trekt de lijn je naar het midden – stuur op de rand niet tegen, de lock-on houdt de lijn."
+
+msgid "Flat Down Ledge"
+msgstr "Flat Down Ledge"
+
+msgid "Ausgang: Flat Down Ledge"
+msgstr "Uitgang: Flat Down Ledge"
+
+msgid "Pool C: innen (zum Seil hin) auf den Rand und auf die Flat Down Ledge – erst flach, dann abwärts. Gemessen: Meter auf der Ledge."
+msgstr "Pool C: binnen (naar de lijn toe) op de rand en op de Flat Down Ledge – eerst vlak, dan omlaag. Gemeten: meters op de ledge."
+
+msgid "Die innere Seite liegt nah am Seil – das Seil zieht kaum quer, dafür ist die Spur schmal."
+msgstr "De binnenkant ligt dicht bij de lijn – de lijn trekt nauwelijks zijwaarts, maar de lijn is smal."
+
+msgid "Rail to Rail"
+msgstr "Rail to Rail"
+
+msgid "Auf dem Slider seitlich auf den Nachbarn hinüberspringen."
+msgstr "Op de slider zijwaarts naar de buur springen."
+
+msgid "Pipe to Pipe"
+msgstr "Pipe to Pipe"
+
+msgid "Rechts stehen zwei Pipes nebeneinander (0,8 m Lücke). Über die Auffahrt auf die äußere, kurze Pipe, dann seitlich auf die innere, lange Pipe hinüberspringen. Gemessen: gerutschte Meter auf der zweiten Pipe – je früher der Transfer, desto mehr."
+msgstr "Rechts staan twee pipes naast elkaar (0,8 m opening). Via de oprit op de buitenste, korte pipe, dan zijwaarts naar de binnenste, lange pipe springen. Gemeten: gegleden meters op de tweede pipe – hoe eerder de transfer, hoe meer."
+
+msgid "Auf der Pipe Leertaste halten, dabei ← (Seite), Leertaste loslassen = Hop"
+msgstr "Op de pipe spatie ingedrukt, daarbij ← (kant), spatie loslaten = hop"
+
+msgid "Auf der Pipe SPRUNG halten, dabei ← (Seite), SPRUNG loslassen = Hop"
+msgstr "Op de pipe SPRONG ingedrukt, daarbij ← (kant), SPRONG loslaten = hop"
+
+msgid "Schon auf der Auffahrt laden, auf der Pipe ← dazu und loslassen. Die Hop-Hilfe zielt auf die Mitte der Nachbar-Pipe. In der Luft dreht ←/→ erst wieder, wenn du es einmal losgelassen hast."
+msgstr "Al op de oprit laden, op de pipe ← erbij en loslaten. De hop-hulp mikt op het midden van de naburige pipe. In de lucht draait ←/→ pas weer als je het een keer hebt losgelaten."
+
+msgid "Pipe to Pipe to Pipe"
+msgstr "Pipe to Pipe to Pipe"
+
+msgid "Links stehen drei Pipes versetzt nebeneinander wie eine Treppe zur Seilmitte. Auf die erste, dann zweimal hinüber: Pipe 1 → Pipe 2 → Pipe 3. Gemessen: gerutschte Meter auf der dritten Pipe."
+msgstr "Links staan drie pipes verspringend naast elkaar als een trap naar het midden. Op de eerste, dan twee keer naar de buur: Pipe 1 → Pipe 2 → Pipe 3. Gemeten: gegleden meters op de derde pipe."
+
+msgid "Auf der Pipe Leertaste halten, dabei → (Seite), Leertaste loslassen = Hop – auf Pipe 2 gleich nochmal"
+msgstr "Op de pipe spatie ingedrukt, daarbij → (kant), spatie loslaten = hop – op pipe 2 meteen nog eens"
+
+msgid "Auf der Pipe SPRUNG halten, dabei → (Seite), SPRUNG loslassen = Hop – auf Pipe 2 gleich nochmal"
+msgstr "Op de pipe SPRONG ingedrukt, daarbij → (kant), SPRONG loslaten = hop – op pipe 2 meteen nog eens"
+
+msgid "Pipe 2 ist kurz: sofort nach der Landung wieder laden. Ein kurzer Druck reicht für den Hop – voll aufladen muss man nicht."
+msgstr "Pipe 2 is kort: direct na de landing weer laden. Een korte druk is genoeg voor de hop – volledig laden hoeft niet."
+
+msgid "BOOT"
+msgstr "BOOT"
+
+msgid "DROHNE"
+msgstr "DRONE"
+
+msgid ""
+"RANG-\n"
+"LISTE\n"
+"AUS"
+msgstr ""
+"RANG-\n"
+"LIJST\n"
+"UIT"
+
+msgid "KEINE RANGLISTE"
+msgstr "GEEN RANGLIJST"
+
+msgid "DU"
+msgstr "JIJ"
+
+msgid "RANGLISTE"
+msgstr "RANGLIJST"
+
+msgid "Noch frei – Platz 1 wartet"
+msgstr "Nog vrij – plaats 1 wacht"
+
+msgid "Neuer Rekord!"
+msgstr "Nieuw record!"
+
+msgid "%s überholt!"
+msgstr "%s ingehaald!"
+
+msgid "%d überholt!"
+msgstr "%d ingehaald!"
+
+msgid "DU · REKORD"
+msgstr "JIJ · RECORD"
+
+msgid "dein Rekord"
+msgstr "je record"
+
+msgid "noch %s bis %d."
+msgstr "nog %s tot plaats %d."
+
+msgid "PAUSE"
+msgstr "PAUZE"
+
+msgid "Weiter  (Esc)"
+msgstr "Verder  (Esc)"
+
+msgid "Einstellungen"
+msgstr "Instellingen"
+
+msgid "Hilfe ein/aus"
+msgstr "Help aan/uit"
+
+msgid "Nächster Titel"
+msgstr "Volgend nummer"
+
+msgid "Startseite"
+msgstr "Startscherm"
+
+msgid "Zurück"
+msgstr "Terug"
+
+msgid "SETUP-EDITOR"
+msgstr "SETUP-EDITOR"
+
+msgid "Name des Setups"
+msgstr "Naam van de setup"
+
+msgid "Terminal 2 (Strand)"
+msgstr "Terminal 2 (strand)"
+
+msgid "Terminal 1 (Lounge-Steg)"
+msgstr "Terminal 1 (lounge-steiger)"
+
+msgid "Rückgängig"
+msgstr "Ongedaan maken"
+
+msgid "Strg+Z"
+msgstr "Ctrl+Z"
+
+msgid "Wiederholen"
+msgstr "Opnieuw"
+
+msgid "Strg+Y"
+msgstr "Ctrl+Y"
+
+msgid "SPEICHERN"
+msgstr "OPSLAAN"
+
+msgid "SPEICHERN & FAHREN"
+msgstr "OPSLAAN & RIJDEN"
+
+msgid "Ganze Bahn zeigen"
+msgstr "Hele baan tonen"
+
+msgid "Hacks werden beim Öffnen gesammelt …"
+msgstr "Hacks worden bij het openen verzameld …"
+
+msgid "Antippen stellt das Teil in die Mitte der Karte. Danach ziehen, drehen, Richtung wählen."
+msgstr "Tik om het onderdeel in het midden van de kaart te zetten. Daarna slepen, draaien, richting kiezen."
+
+msgid "VORLAGE LADEN   (ersetzt beide Terminals)"
+msgstr "SJABLOON LADEN   (vervangt beide terminals)"
+
+msgid "TERMINAL"
+msgstr "TERMINAL"
+
+msgid "Terminal leeren"
+msgstr "Terminal leegmaken"
+
+msgid "Vom anderen Terminal"
+msgstr "Van de andere terminal"
+
+msgid "Teile des anderen Terminals hierher kopieren (ersetzt dieses Terminal)"
+msgstr "Onderdelen van de andere terminal hierheen kopiëren (vervangt deze terminal)"
+
+msgid "JSON   (zum Weitergeben oder für setups/ im Projekt)"
+msgstr "JSON   (om te delen of voor setups/ in het project)"
+
+msgid "Hier ein Setup-JSON einfügen und „Aus Text laden“ drücken"
+msgstr "Plak hier een setup-JSON en druk op „Laden uit tekst”"
+
+msgid "Als JSON kopieren"
+msgstr "Als JSON kopiëren"
+
+msgid "JSON in die Zwischenablage kopiert"
+msgstr "JSON naar het klembord gekopieerd"
+
+msgid "Aus Text laden"
+msgstr "Laden uit tekst"
+
+msgid "Eigenes Setup löschen"
+msgstr "Eigen setup verwijderen"
+
+msgid "Leeres Setup"
+msgstr "Lege setup"
+
+msgid "Nicht gespeichert! Nochmal „Zurück“ = trotzdem verlassen (bleibt bis zum Neuladen erhalten)"
+msgstr "Niet opgeslagen! Nog eens „Terug” = toch verlaten (blijft bewaard tot herladen)"
+
+msgid "Mein %s"
+msgstr "Mijn %s"
+
+msgid "verschieben   s %+.1f m   x %+.1f m"
+msgstr "verplaatsen   s %+.1f m   x %+.1f m"
+
+msgid "%s eingefügt"
+msgstr "%s ingevoegd"
+
+msgid ""
+"Nichts ausgewählt. Ein Feature in der Karte antippen (doppelt = ganzer Hack), Umschalt/Strg + Klick wählt mehrere.\n"
+"\n"
+"Tasten: Pfeile verschieben (Umschalt 1 m), Q/E drehen, F Richtung, M spiegeln, Strg+D duplizieren, Entf löschen, Strg+Z rückgängig."
+msgstr ""
+"Niets geselecteerd. Tik een feature op de kaart aan (dubbel = hele hack), Shift/Ctrl + klik selecteert meerdere.\n"
+"\n"
+"Toetsen: pijlen verplaatsen (Shift 1 m), Q/E draaien, F richting, M spiegelen, Ctrl+D dupliceren, Del verwijderen, Ctrl+Z ongedaan maken."
+
+msgid "POSITION ENTLANG DES SEILS  s (m)"
+msgstr "POSITIE LANGS DE KABEL  s (m)"
+
+msgid "SEITLICH  x (m)   + rechts, − links (Blick zum Endmast)"
+msgstr "ZIJWAARTS  x (m)   + rechts, − links (kijkend naar de eindmast)"
+
+msgid "DREHUNG (Grad)"
+msgstr "DRAAIING (graden)"
+
+msgid "RICHTUNG (Anfahrt)"
+msgstr "RICHTING (aanloop)"
+
+msgid "%d Teile ausgewählt – sie werden gemeinsam verschoben, gedreht und gespiegelt."
+msgstr "%d onderdelen geselecteerd – ze worden samen verplaatst, gedraaid en gespiegeld."
+
+msgid "%d Teil"
+msgid_plural "%d Teile"
+msgstr[0] "%d onderdeel"
+msgstr[1] "%d onderdelen"
+
+msgid "Antippen fügt den Hack in die Mitte der Karte ein (gleiche Anordnung, seitlich wie im Original)."
+msgstr "Tik om de hack in het midden van de kaart in te voegen (zelfde opstelling, zijwaarts zoals in het origineel)."
+
+msgid ""
+"%s\n"
+"Im Setup: %s"
+msgstr ""
+"%s\n"
+"In setup: %s"
+
+msgid "%s: %d Features/Hacks (%d Zeilen), davon %d Hacks.   %s: %d Zeilen."
+msgstr "%s: %d features/hacks (%d rijen), waarvan %d hacks.   %s: %d rijen."
+
+msgid "Achtung: %s bei s = %.0f m liegt außerhalb der Fahrstrecke."
+msgstr "Let op: %s bij s = %.0f m ligt buiten de rijbaan."
+
+msgid "Eigenes Setup (gespeichert)"
+msgstr "Eigen setup (opgeslagen)"
+
+msgid "Noch nicht gespeichert – „Speichern“ legt ein eigenes Setup an."
+msgstr "Nog niet opgeslagen – „Opslaan” maakt een eigen setup aan."
+
+msgid "Pflanzen   ·   %s: %s   ·   linke Taste = Pinsel, rechte Taste ziehen = Karte bewegen, Rad / + − = Zoom"
+msgstr "Planten   ·   %s: %s   ·   linkerknop = penseel, rechterknop slepen = kaart verplaatsen, wiel / + − = zoom"
+
+msgid "%s   ·   %d Teile   ·   Ziehen = verschieben, freie Fläche ziehen = Karte bewegen, Rad / + − = Zoom"
+msgstr "%s   ·   %d onderdelen   ·   slepen = verplaatsen, lege plek slepen = kaart verplaatsen, wiel / + − = zoom"
+
+msgid "Kein gültiges Setup-JSON (braucht \"T2\" und/oder \"T1\")"
+msgstr "Geen geldige setup-JSON (heeft \"T2\" en/of \"T1\" nodig)"
+
+msgid "Setup aus Text geladen"
+msgstr "Setup uit tekst geladen"
+
+msgid "Speichern fehlgeschlagen"
+msgstr "Opslaan mislukt"
+
+msgid "Gespeichert: %s"
+msgstr "Opgeslagen: %s"
+
+msgid "Eigenes Setup gelöscht (bleibt hier zum Weiterbearbeiten)"
+msgstr "Eigen setup verwijderd (blijft hier om verder te bewerken)"
+
+msgid "Auf dem Luftbild malen. Wo du malst, radierst oder die Automatik zurückholst, übernimmst du die Stelle: dort setzt das Spiel nichts Automatisches mehr (Wiesengras, Schilf, Ufergras bzw. Sträucher und Bäume aus dem Wald) – getrennt für Bodenpflanzen und Gehölze. Rechte Maustaste ziehen = Karte bewegen."
+msgstr "Schilder op de luchtfoto. Waar je schildert, gumt of de automaat terughaalt, neem je de plek over: daar zet het spel niets automatisch meer neer (weidegras, riet, oevergras of struiken en bomen uit het bos) – apart voor bodemplanten en houtgewassen. Rechtermuisknop slepen = kaart verplaatsen."
+
+msgid "WERKZEUG"
+msgstr "GEREEDSCHAP"
+
+msgid "PFLANZE   (Radieren/Automatik wirken auf ihre Ebene)"
+msgstr "PLANT   (gummen/automaat werken op haar laag)"
+
+msgid "%s: %.1f–%.1f m hoch, Abstand %.1f m – %s"
+msgstr "%s: %.1f–%.1f m hoog, afstand %.1f m – %s"
+
+msgid "PINSEL"
+msgstr "PENSEEL"
+
+msgid "DICHTE BEIM MALEN"
+msgstr "DICHTHEID BIJ SCHILDEREN"
+
+msgid "PFLANZEN SPEICHERN"
+msgstr "PLANTEN OPSLAAN"
+
+msgid "Für setups/plants.json im Projekt"
+msgstr "Voor setups/plants.json in het project"
+
+msgid "Bepflanzung als JSON in die Zwischenablage kopiert"
+msgstr "Beplanting als JSON naar het klembord gekopieerd"
+
+msgid "Zurücksetzen"
+msgstr "Terugzetten"
+
+msgid "Eigene Bepflanzung löschen, wieder die aus dem Spiel"
+msgstr "Eigen beplanting verwijderen, weer die van het spel"
+
+msgid "Bepflanzung aus dem Spiel geladen"
+msgstr "Beplanting van het spel geladen"
+
+msgid "Gemalt: %s"
+msgstr "Geschilderd: %s"
+
+msgid "noch nichts"
+msgstr "nog niets"
+
+msgid "Von Hand gepflegt: %d m² Boden, %d m² Gehölz"
+msgstr "Met de hand verzorgd: %d m² bodem, %d m² houtgewas"
+
+msgid "Ebene der Pflanze: %s"
+msgstr "Laag van de plant: %s"
+
+msgid "Nicht gespeichert."
+msgstr "Niet opgeslagen."
+
+msgid "Bepflanzung gespeichert (%s), im Spiel neu aufgebaut"
+msgstr "Beplanting opgeslagen (%s), in het spel opnieuw opgebouwd"
+
+msgid "links (−x)"
+msgstr "links (−x)"
+
+msgid "rechts (+x)"
+msgstr "rechts (+x)"
+
+msgid "2 Ausgänge (wählbar)"
+msgstr "2 uitgangen (te kiezen)"
+
+msgid "Modul: %s"
+msgstr "Module: %s"
+
+msgid "%s   %.1f × %.1f m, Höhe %.2f m"
+msgstr "%s   %.1f × %.1f m, hoogte %.2f m"
+
+msgid "KICKER & WEDGES"
+msgstr "KICKERS & WEDGES"
+
+msgid "BOXEN, LEDGES & CURBS"
+msgstr "BOXES, LEDGES & CURBS"
+
+msgid "RAILS & PIPES"
+msgstr "RAILS & PIPES"
+
+msgid "MODULE (MEHRERE TEILE)"
+msgstr "MODULES (MEERDERE ONDERDELEN)"
+
+msgid "SONSTIGES"
+msgstr "OVERIG"
+
+msgid "Malen"
+msgstr "Schilderen"
+
+msgid "Radieren"
+msgstr "Gummen"
+
+msgid "Automatik"
+msgstr "Automaat"
+
+msgid "Schieben"
+msgstr "Schuiven"
+
+msgid "Teile"
+msgstr "Onderdelen"
+
+msgid "Hacks"
+msgstr "Hacks"
+
+msgid "Auswahl"
+msgstr "Selectie"
+
+msgid "Setup"
+msgstr "Setup"
+
+msgid "Pflanzen"
+msgstr "Planten"
+
+msgid "Zum Endmast  →"
+msgstr "Naar de eindmast  →"
+
+msgid "←  Zum Steg"
+msgstr "←  Naar de steiger"
+
+msgid "AUSGANG LINKS (Blick von der Rampe)"
+msgstr "UITGANG LINKS (gezien vanaf de schans)"
+
+msgid "AUSGANG RECHTS (Blick von der Rampe)"
+msgstr "UITGANG RECHTS (gezien vanaf de schans)"
+
+msgid "AUFFAHRT VORNE (m, 0 = ab)"
+msgstr "OPRIT VOOR (m, 0 = geen)"
+
+msgid "AUFFAHRT HINTEN (m, 0 = ab)"
+msgstr "OPRIT ACHTER (m, 0 = geen)"
+
+msgid "Drehen +15°  (Q)"
+msgstr "Draaien +15°  (Q)"
+
+msgid "Drehen −15°  (E)"
+msgstr "Draaien −15°  (E)"
+
+msgid "Umdrehen  (F)"
+msgstr "Omdraaien  (F)"
+
+msgid "Spiegeln  (M)"
+msgstr "Spiegelen  (M)"
+
+msgid "Duplizieren"
+msgstr "Dupliceren"
+
+msgid "Ganzen Hack wählen"
+msgstr "Hele hack kiezen"
+
+msgid "Löschen"
+msgstr "Verwijderen"
+
+msgid "HACKS"
+msgstr "HACKS"
+
+msgid "GÄNGIGE KOMBINATIONEN"
+msgstr "GANGBARE COMBINATIES"
+
+msgid "Gewählte Pflanze setzen"
+msgstr "Gekozen plant neerzetten"
+
+msgid "Pflanzen der Ebene entfernen (auch die automatischen)"
+msgstr "Planten van de laag verwijderen (ook de automatische)"
+
+msgid "Stellen wieder der Automatik überlassen (entfernt Gemaltes der Ebene)"
+msgstr "Plekken weer aan de automaat overlaten (verwijdert geschilderde planten van de laag)"
+
+msgid "Karte mit dem Finger bewegen"
+msgstr "Kaart met de vinger verplaatsen"
+
+msgid "Startmast"
+msgstr "Startmast"
+
+msgid "rote Boje"
+msgstr "rode boei"
+
+msgid "Endmast"
+msgstr "Eindmast"
+
+msgid "WAKE THE HACK"
+msgstr "WAKE THE HACK"
+
+msgid "Wakeport Raunheim"
+msgstr "Wakeport Raunheim"
+
+msgid "„%s“"
+msgstr "„%s”"
+
+msgid "SPIELMODUS"
+msgstr "SPELMODUS"
+
+msgid "COMMUNITY CHALLENGE"
+msgstr "COMMUNITY CHALLENGE"
+
+msgid "SZENARIO"
+msgstr "SCENARIO"
+
+msgid "Zufällig"
+msgstr "Willekeurig"
+
+msgid "Neues Szenario würfeln  (Z, Gamepad: Share)"
+msgstr "Nieuw scenario dobbelen  (Z, gamepad: Share)"
+
+msgid "CHALLENGE"
+msgstr "CHALLENGE"
+
+msgid "FEATURE-SETUP"
+msgstr "FEATURE-SETUP"
+
+msgid "Setup-Editor"
+msgstr "Setup-editor"
+
+msgid "Erfolge"
+msgstr "Prestaties"
+
+msgid "Rangliste"
+msgstr "Ranglijst"
+
+msgid "SPIEL STARTEN"
+msgstr "SPEL STARTEN"
+
+msgid "Kostenlos & Open Source – spendier mir einen Kaffee"
+msgstr "Gratis & open source – trakteer me op een koffie"
+
+msgid "CHALLENGE STARTEN"
+msgstr "CHALLENGE STARTEN"
+
+msgid "Bestwert: %s"
+msgstr "Beste: %s"
+
+msgid "EINSTELLUNGEN"
+msgstr "INSTELLINGEN"
+
+msgid "Spiel"
+msgstr "Spel"
+
+msgid "Fahrer"
+msgstr "Rider"
+
+msgid "Welt"
+msgstr "Wereld"
+
+msgid "Technik"
+msgstr "Techniek"
+
+msgid "Wasser"
+msgstr "Water"
+
+msgid "FERTIG"
+msgstr "KLAAR"
+
+msgid "Automatisch (System)"
+msgstr "Automatisch (systeem)"
+
+msgid "SPRACHE"
+msgstr "TAAL"
+
+msgid "COMPETITION: RUNDENLÄNGE"
+msgstr "COMPETITION: RONDELENGTE"
+
+msgid "HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"
+msgstr "HULPMIDDELEN   (per uitgeschakelde hulp +15 % op alle tricks)"
+
+msgid "Auf dem Slider einloggen"
+msgstr "Op de slider inloggen"
+
+msgid "An"
+msgstr "Aan"
+
+msgid "Überschlag dreht von selbst zu Ende"
+msgstr "Flip draait vanzelf af"
+
+msgid "SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G; Aus = keine Rangliste)"
+msgstr "LIJNSPANNINGSGRENS   (te veel trek rukt de handle uit je hand; in het spel G; uit = geen ranglijst)"
+
+msgid "BRETT"
+msgstr "BOARD"
+
+msgid "STANCE   (Regular: links vorne)"
+msgstr "STANCE   (Regular: linkervoet voor)"
+
+msgid "Regular"
+msgstr "Regular"
+
+msgid "Goofy"
+msgstr "Goofy"
+
+msgid "HELM"
+msgstr "HELM"
+
+msgid "WESTE"
+msgstr "VEST"
+
+msgid "WETTER   (von Hand, bis zum Neustart; Szenario auf der Startseite)"
+msgstr "WEER   (handmatig, tot herstart; scenario op het startscherm)"
+
+msgid "DATUM"
+msgstr "DATUM"
+
+msgid "UHRZEIT"
+msgstr "TIJD"
+
+msgid "Jetzt  (live)"
+msgstr "Nu  (live)"
+
+msgid "Heute, aktuelle Uhrzeit und Wetter am See"
+msgstr "Vandaag, huidige tijd en weer bij het meer"
+
+msgid "SEILLÄNGE"
+msgstr "LIJNLENGTE"
+
+msgid "ANLAGEN-TEMPO"
+msgstr "KABELSNELHEID"
+
+msgid "%d km/h"
+msgstr "%d km/h"
+
+msgid "Seil und Tempo: Standard  (16 m, 30 km/h)"
+msgstr "Lijn en snelheid: standaard  (16 m, 30 km/h)"
+
+msgid "FLUGZEUGE"
+msgstr "VLIEGTUIGEN"
+
+msgid "Normal"
+msgstr "Normaal"
+
+msgid "Rush Hour"
+msgstr "Spitsuur"
+
+msgid "FAHRER AUF DER ANDEREN ANLAGE"
+msgstr "RIDER OP DE ANDERE KABEL"
+
+msgid "CHALLENGE: FILMTEAM"
+msgstr "CHALLENGE: FILMPLOEG"
+
+msgid "Zufall"
+msgstr "Toeval"
+
+msgid "Boot"
+msgstr "Boot"
+
+msgid "Drohne"
+msgstr "Drone"
+
+msgid "LAUTSTÄRKE EFFEKTE"
+msgstr "VOLUME EFFECTEN"
+
+msgid "LAUTSTÄRKE JUBEL"
+msgstr "VOLUME GEJUICH"
+
+msgid "LAUTSTÄRKE FLUGZEUGE"
+msgstr "VOLUME VLIEGTUIGEN"
+
+msgid "KAMERA"
+msgstr "CAMERA"
+
+msgid "KAMERA-ABSTAND"
+msgstr "CAMERA-AFSTAND"
+
+msgid "LENKUNG"
+msgstr "STUREN"
+
+msgid "Gyro (Handy neigen)"
+msgstr "Gyro (telefoon kantelen)"
+
+msgid "Tasten (Steuerkreuz)"
+msgstr "Knoppen (D-pad)"
+
+msgid "NEIGUNG ZUM LENKEN"
+msgstr "KANTELEN OM TE STUREN"
+
+msgid "Wenig empfindlich"
+msgstr "Weinig gevoelig"
+
+msgid "Sehr empfindlich"
+msgstr "Zeer gevoelig"
+
+msgid "NEIGUNG UMKEHREN"
+msgstr "KANTELEN OMKEREN"
+
+msgid "Nein"
+msgstr "Nee"
+
+msgid "Ja"
+msgstr "Ja"
+
+msgid "Die Grafikstufe stellt alle Wasser-Effekte passend ein. Einzelne Effekte lassen sich hier an- und ausschalten (wirkt sofort) – weicht etwas von der Stufe ab, steht die Grafik auf „Custom“."
+msgstr "Het grafische niveau stelt alle watereffecten passend in. Afzonderlijke effecten kun je hier aan- en uitzetten (werkt meteen) – wijkt iets af van het niveau, dan staat de grafiek op „Custom”."
+
+msgid "WASSERFARBE"
+msgstr "WATERKLEUR"
+
+msgid "Türkis  (bisher)"
+msgstr "Turquoise  (vorige)"
+
+msgid "Seeblau"
+msgstr "Meerblauw"
+
+msgid "OBERFLÄCHENSTRUKTUR   (gleitende Kräuselung statt Sinus)"
+msgstr "OPPERVLAKTESTRUCTUUR   (glijdende rimpeling in plaats van sinus)"
+
+msgid "SPIEGELUNG JE NACH BLICKWINKEL   (flach: Himmel, von oben: ins Wasser)"
+msgstr "SPIEGELING NAAR KIJKHOEK   (vlak: hemel, van boven: het water in)"
+
+msgid "SONNENGLITZERN"
+msgstr "ZONNEGLINSTERING"
+
+msgid "LICHT DURCH DIE WELLENKÄMME"
+msgstr "LICHT DOOR DE GOLFKAMMEN"
+
+msgid "SCHAUM MIT STRUKTUR   (fleckig, reißt auf)"
+msgstr "SCHUIM MET STRUCTUUR   (vlekkerig, scheurt open)"
+
+msgid "SPITZE WELLEN   (auch für die Physik)"
+msgstr "SPITSE GOLVEN   (ook voor de fysica)"
+
+msgid "MIT WASSERTIEFE   (etwas teurer; Wasser wird dafür transparent gezeichnet)"
+msgstr "MET WATERDIEPTE   (iets duurder; het water wordt daarvoor transparant getekend)"
+
+msgid "DURCHSICHT IM FLACHEN"
+msgstr "DOORZICHT IN HET ONDIEPE"
+
+msgid "ECHTE SPIEGELBILDER   (nur Desktop, teuer; nur wenn die Durchsicht aus ist)"
+msgstr "ECHTE SPIEGELBEELDEN   (alleen desktop, duur; alleen als doorzicht uit is)"
+
+msgid "Spiel-Musik: lizenzfreie Titel von Pixabay. Dazu kannst du eigene Titel wählen (MP3, OGG, WAV) – sie bleiben auf diesem Gerät bzw. in diesem Browser gespeichert. Alles läuft gemischt im Hintergrund."
+msgstr "Spelmuziek: rechtenvrije nummers van Pixabay. Daarnaast kun je eigen nummers kiezen (MP3, OGG, WAV) – die blijven op dit apparaat of in deze browser bewaard. Alles speelt gemengd op de achtergrond."
+
+msgid "MUSIK"
+msgstr "MUZIEK"
+
+msgid "QUELLE"
+msgstr "BRON"
+
+msgid "Spiel-Musik"
+msgstr "Spelmuziek"
+
+msgid "Eigene Titel"
+msgstr "Eigen nummers"
+
+msgid "Beides"
+msgstr "Beide"
+
+msgid "LAUTSTÄRKE MUSIK"
+msgstr "VOLUME MUZIEK"
+
+msgid "Titel hinzufügen"
+msgstr "Nummers toevoegen"
+
+msgid "Eigene entfernen"
+msgstr "Eigen verwijderen"
+
+msgid "%d Spiel-Musik, %d eigene"
+msgstr "%d spelmuziek, %d eigen"
+
+msgid "lädt: %s"
+msgstr "laadt: %s"
+
+msgid "Danke für die Spiel-Musik (Pixabay): %s"
+msgstr "Dank voor de spelmuziek (Pixabay): %s"
+
+msgid "ODER NEBENHER HÖREN, z. B. mit Spotify (dann hier Musik aus)"
+msgstr "OF ERNAAST LUISTEREN, bijv. met Spotify (zet dan hier de muziek uit)"
+
+msgid "Skate-Punk bei Spotify"
+msgstr "Skatepunk op Spotify"
+
+msgid "GRAFIK   (niedrig = flüssiger, schont den Akku; stellt auch das Wasser ein)"
+msgstr "GRAFIEK   (laag = vloeiender, spaart de batterij; stelt ook het water in)"
+
+msgid "Nr. %d"
+msgstr "Nr. %d"
+
+msgid "FEATURES & HACKS"
+msgstr "FEATURES & HACKS"
+
+msgid "GEHEIME ERFOLGE"
+msgstr "GEHEIME PRESTATIES"
+
+msgid "%d von %d entdeckt – was es gibt, siehst du erst, wenn du es geschafft hast."
+msgstr "%d van %d ontdekt – wat er is, zie je pas als je het gehaald hebt."
+
+msgid "IN DER RANGLISTE ERSCHEINEN"
+msgstr "IN DE RANGLIJST VERSCHIJNEN"
+
+msgid "DEIN NAME"
+msgstr "JE NAAM"
+
+msgid "ohne Namen: anonym"
+msgstr "zonder naam: anoniem"
+
+msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
+msgstr "Je naam voor de ranglijst (2 tot 16 tekens)"
+
+msgid "Speichern"
+msgstr "Opslaan"
+
+msgid "Wird gelöscht …"
+msgstr "Wordt verwijderd …"
+
+msgid "Gelöscht: Name und alle deine Einträge."
+msgstr "Verwijderd: naam en al je inzendingen."
+
+msgid "Heads up! Das Game ist noch mitten im Shape – Physik und Punkte werden ständig nachgeschliffen. Darum wird die Rangliste ab und zu gewiped. Kein Stress: einfach neu droppen und wieder ganz nach oben shredden."
+msgstr "Heads up! De game is nog volop in de shape – fysica en punten worden steeds bijgeschaafd. Daarom wordt de ranglijst af en toe gewiped. Geen stress: gewoon opnieuw droppen en weer helemaal naar boven shredden."
+
+msgid "Lädt …"
+msgstr "Laden …"
+
+msgid "Challenge"
+msgstr "Challenge"
+
+msgid "Noch keine Einträge"
+msgstr "Nog geen inzendingen"
+
+msgid "Noch niemand in der Rangliste – fahr den ersten Eintrag!"
+msgstr "Nog niemand in de ranglijst – rij de eerste inzending!"
+
+msgid "Test-Version: eigene Test-Rangliste"
+msgstr "Testversie: eigen testranglijst"
+
+msgid "Noch kein Eintrag – fahr den ersten!"
+msgstr "Nog geen inzending – rij de eerste!"
+
+msgid "%d Fahrer"
+msgid_plural "%d Fahrer"
+msgstr[0] "%d rider"
+msgstr[1] "%d riders"
+
+msgid "Wertung geändert: ältere Ergebnisse stehen in einer früheren Rangliste"
+msgstr "Telling gewijzigd: oudere resultaten staan in een eerdere ranglijst"
+
+msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
+msgstr "De naam blijft. Helemaal eruit: schakelaar hierboven op Uit (verwijdert alles)."
+
+msgid "Wird gespeichert …"
+msgstr "Wordt opgeslagen …"
+
+msgid "Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."
+msgstr "Opgeslagen. Je inzendingen staan nu onder deze naam."
+
+msgid "Deine Bestwerte erscheinen öffentlich in der Rangliste – ohne Namen als „Anonym #…“. Gespeichert werden nur Name (falls angegeben), Bestwerte und Datum, dazu eine zufällige Geräte-Nummer als Prüfsumme. Aus = alles löschen."
+msgstr "Je beste resultaten verschijnen openbaar in de ranglijst – zonder naam als „Anonym #…”. Opgeslagen worden alleen naam (indien opgegeven), beste resultaten en datum, plus een willekeurig apparaatnummer als controlegetal. Uit = alles verwijderen."
+
+msgid "Du erscheinst nicht in der Rangliste, es wird nichts gesendet."
+msgstr "Je verschijnt niet in de ranglijst, er wordt niets verstuurd."
+
+msgid "erreicht am %s"
+msgstr "behaald op %s"
+
+msgid "Geheim"
+msgstr "Geheim"
+
+msgid "Noch nicht entdeckt"
+msgstr "Nog niet ontdekt"
+
+msgid "Im Setup: %s"
+msgstr "In setup: %s"
+
+msgid "Gelb / Grün"
+msgstr "Geel / Groen"
+
+msgid "Weiß / Schwarz"
+msgstr "Wit / Zwart"
+
+msgid "Blau"
+msgstr "Blauw"
+
+msgid "Orange"
+msgstr "Oranje"
+
+msgid "Schwarz glänzend"
+msgstr "Glanzend zwart"
+
+msgid "Pink / Türkis"
+msgstr "Roze / Turquoise"
+
+msgid "Oliv"
+msgstr "Olijf"
+
+msgid "Rot"
+msgstr "Rood"
+
+msgid "Grün"
+msgstr "Groen"
+
+msgid "Gelb"
+msgstr "Geel"
+
+msgid "Lila"
+msgstr "Paars"
+
+msgid "Schwarz"
+msgstr "Zwart"
+
+msgid "Weiß"
+msgstr "Wit"
+
+msgid "LOS"
+msgstr "GO"
+
+msgid "Nächste Challenge"
+msgstr "Volgende challenge"
+
+msgid "Steuerung:"
+msgstr "Besturing:"
+
+msgid "Tipp:"
+msgstr "Tip:"
+
+msgid "Leertaste"
+msgstr "Spatie"
+
+msgid "Neue Bestleistung!"
+msgstr "Nieuw persoonlijk record!"
+
+msgid "NOCHMAL"
+msgstr "NOG EENS"
+
+msgid "RUNDE BEENDET"
+msgstr "RONDE AFGELOPEN"
+
+msgid "ERNEUT SPIELEN"
+msgstr "OPNIEUW SPELEN"
+
+msgid "DRIFT"
+msgstr "DRIFT"
+
+msgid "SPRUNG"
+msgstr "SPRONG"
+
+msgid "SCHWIMMEN"
+msgstr "ZWEMMEN"
+
+msgid "Weiter"
+msgstr "Verder"
+
+msgid "Zurück zum Steg  (−2:00)"
+msgstr "Terug naar de steiger  (−2:00)"
+
+msgid "Ton aus/an"
+msgstr "Geluid uit/aan"
+
+msgid "Szenario würfeln"
+msgstr "Scenario dobbelen"
+
+msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
+msgstr "Lijn losscheuren aan/uit  (uit: geen ranglijst)"
+
+msgid "Sonnig"
+msgstr "Zonnig"
+
+msgid "Heiter"
+msgstr "Licht bewolkt"
+
+msgid "Bewölkt"
+msgstr "Bewolkt"
+
+msgid "Bedeckt"
+msgstr "Zwaar bewolkt"
+
+msgid "Schauer"
+msgstr "Buien"
+
+msgid "Regen"
+msgstr "Regen"
+
+msgid "Dunst"
+msgstr "Nevel"
+
+msgid "Schnee"
+msgstr "Sneeuw"
+
+msgid "Gewitter"
+msgstr "Onweer"
+
+msgid "After Hour Raley Session"
+msgstr "After Hour Raley Session"
+
+msgid "Early Bird Session"
+msgstr "Early Bird Session"
+
+msgid "Hochsommer. Was für eine Hitze"
+msgstr "Hoogzomer. Wat een hitte"
+
+msgid "Schöne Regen-Session"
+msgstr "Mooie regensessie"
+
+msgid "Night Session"
+msgstr "Night Session"
+
+msgid "Sonne hinter den Bäumen"
+msgstr "Zon achter de bomen"
+
+msgid "Nach dem Schauer"
+msgstr "Na de bui"
+
+msgid "Blaue Stunde"
+msgstr "Blauwe uurtje"
+
+msgid "Goldener Oktober"
+msgstr "Gouden oktober"
+
+msgid "Chemtrails, oder Kondensstreifen? ;-)"
+msgstr "Chemtrails, of condensstrepen? ;-)"
+
+msgid "Gewitter – YOLO"
+msgstr "Onweer – YOLO"
+
+msgid "Nikolaus-Session"
+msgstr "Sinterklaas-sessie"
+
+msgid "2026 September"
+msgstr "September 2026"
+
+msgid "Juli & August"
+msgstr "Juli & augustus"
+
+msgid "(Jahr ?)"
+msgstr "(jaar ?)"
+
+msgid "Setup A"
+msgstr "Setup A"
+
+msgid "(Datum ?)"
+msgstr "(datum ?)"
+
+msgid "Setup B"
+msgstr "Setup B"
+
+msgid "Setup C"
+msgstr "Setup C"
+
+msgid "Setup D"
+msgstr "Setup D"
+
+msgid "Setup E"
+msgstr "Setup E"
+
+msgid "Pool Party"
+msgstr "Pool Party"
+
+msgid "Utopia"
+msgstr "Utopia"
+
+msgid "Raildorado"
+msgstr "Raildorado"
+
+msgid "Kicker S"
+msgstr "Kicker S"
+
+msgid "Spine Kicker"
+msgstr "Spine Kicker"
+
+msgid "Pyramid Series"
+msgstr "Pyramid Series"
+
+msgid "Ollie Box"
+msgstr "Ollie Box"
+
+msgid "Ollie Box 1/2"
+msgstr "Ollie Box 1/2"
+
+msgid "Ledge"
+msgstr "Ledge"
+
+msgid "Ollie Box Ledge"
+msgstr "Ollie Box Ledge"
+
+msgid "Up Rail"
+msgstr "Up Rail"
+
+msgid "Transition Rail"
+msgstr "Transition Rail"
+
+msgid "1/2 Transition Rail"
+msgstr "1/2 Transition Rail"
+
+msgid "Pro Rail"
+msgstr "Pro Rail"
+
+msgid "Port Plaza"
+msgstr "Port Plaza"
+
+msgid "Plaza Rail"
+msgstr "Plaza Rail"
+
+msgid "Plaza Safety"
+msgstr "Plaza Safety"
+
+msgid "Plaza Rampe"
+msgstr "Plaza-schans"
+
+msgid "Pipe 1/2"
+msgstr "Pipe 1/2"
+
+msgid "Pipe lang"
+msgstr "Lange pipe"
+
+msgid "6-Stair Pool"
+msgstr "6-Stair Pool"
+
+msgid "Pool Rampe"
+msgstr "Pool-schans"
+
+msgid "Treppe"
+msgstr "Trap"
+
+msgid "Down Rail"
+msgstr "Down Rail"
+
+msgid "Low to High Rail"
+msgstr "Low to High Rail"
+
+msgid "Double Kinked Ledge"
+msgstr "Double Kinked Ledge"
+
+msgid "Flat Down Rail"
+msgstr "Flat Down Rail"
+
+msgid "Ball"
+msgstr "Bal"
+
+msgid "Bump"
+msgstr "Bump"
+
