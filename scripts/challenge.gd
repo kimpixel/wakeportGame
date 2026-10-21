@@ -131,6 +131,7 @@ func stop() -> void:
 ## Neuer Versuch: Fahrer an den Start der Aufgabe, Countdown, los.
 func start_attempt() -> void:
 	panel.close()
+	game.hud.mini_rank.clear_record()
 	attempt += 1
 	running = false
 	await _place_and_freeze()
@@ -904,6 +905,8 @@ func _submit_rank() -> void:
 				Training.format_value(task, float(r["value"]))])
 		if not lb.has_name():
 			_rank_text += "   ·   als %s" % str(r.get("name", "Anonym"))
+		if r.get("improved", false):
+			game.hud.mini_rank.mark_record()          # Mini-Rangliste: DU gold bis zum nächsten Versuch
 		game.refresh_mini_rank()
 	else:
 		_rank_text = "Rangliste: " + str(r.get("error", "Fehler"))

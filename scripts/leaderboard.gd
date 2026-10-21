@@ -175,6 +175,27 @@ static func competition_blocked(settings: GameSettings, seconds: int, setup: Dic
 	return ""
 
 
+## Warum hier keine Rangliste gilt: [lang, kurz] (beide "" = sie gilt bzw. es gibt keinen Server). Für die Hinweise
+## an Stelle der Rangliste (im Spiel, Startseite; kurz = Handy hochkant).
+func why_not(settings: GameSettings, challenge: bool, seconds := 0, setup := {}) -> Array:
+	if not enabled():
+		return ["", ""]
+	if hidden:
+		return ["Du erscheinst nicht in der Rangliste (Startseite → Rangliste)", "Aus"]
+	if int(settings.get_v("grip")) == 3:
+		return ["Keine Rangliste mit Seilzug-Grenze „Aus“", "Seilzug aus"]
+	if challenge:
+		return ["", ""]
+	if seconds <= 0:
+		return ["Freies Fahren hat keine Rangliste", "Frei"]
+	if setup.get("user", false):
+		return ["Eigene Setups haben keine Rangliste", "Eigenes Setup"]
+	var why := competition_blocked(settings, seconds, setup)
+	if why != "":
+		return [why, "Tempo / Seil"]
+	return ["", ""]
+
+
 func _ver(v: String) -> String:
 	return ("dev-" + v) if dev else v
 

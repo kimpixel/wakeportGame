@@ -1300,17 +1300,18 @@ var _mini_req := 0
 const MINI_RELOAD := 60.0
 
 
-## Welche Rangliste im Spiel gilt: die der Challenge bzw. der Competition (Rundenlänge, Terminal, Setup); {} = keine.
-func _mini_board() -> Dictionary:
+## Welche Rangliste im Spiel gilt: [board, warum nicht] – die der Challenge bzw. der Competition (Rundenlänge,
+## Terminal, Setup). board {} und warum ["", ""] = nichts zeigen; warum gesetzt = Hinweis statt Liste.
+func _mini_board() -> Array:
 	if start_screen.visible or not leaderboard.enabled():
-		return {}
+		return [{}, ["", ""]]
 	if challenge.active:
-		return leaderboard.challenge_board(challenge.mode_id, challenge.task)
-	var sec := roundi(_game_time)
+		var why := leaderboard.why_not(settings, true)
+		return [{} if why[0] != "" else leaderboard.challenge_board(challenge.mode_id, challenge.task), why]
+	var sec := 0 if _free else roundi(_game_time)
 	var st: Dictionary = _setups[_setup_idx]
-	if Leaderboard.competition_blocked(settings, sec, st) != "":
-		return {}
-	return leaderboard.competition_board(sec, terminal, st)
+	var why := leaderboard.why_not(settings, false, sec, st)
+	return [{} if why[0] != "" else leaderboard.competition_board(sec, terminal, st), why]
 
 
 ## Jedes Bild: Competition-Punkte live in die eigene Zeile; jede Sekunde prüfen, ob die Rangliste wechselt,
@@ -1328,11 +1329,15 @@ func _step_mini_rank(delta: float) -> void:
 	if _mini_t > 0.0:
 		return
 	_mini_t = 1.0
-	var b := _mini_board()
+	var a := _mini_board()
+	var b: Dictionary = a[0]
 	if b.is_empty():
 		_mini_key = ""
 		_mini_req += 1
-		mr.clear()
+		if a[1][0] != "":
+			mr.set_blocked(a[1])            # Einstellung verhindert die Rangliste: sagen warum
+		else:
+			mr.clear()
 		return
 	var key := "%s|%s" % [b["board"], b["ver"]]
 	if key == _mini_key and _mini_age < MINI_RELOAD:
