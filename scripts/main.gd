@@ -467,6 +467,7 @@ func _ready() -> void:
 	# Spielmodi: Aufgaben-Fenster und Ablauf
 	task_panel = TaskPanel.new()
 	task_panel.mobile = mobile.active
+	task_panel.leaderboard = leaderboard
 	task_panel.open_changed = func(open: bool) -> void:
 		mobile.ui_mode = open or start_screen.visible
 		if touch_pad:
@@ -476,6 +477,7 @@ func _ready() -> void:
 	# Competition: Ergebnis am Ende der Runde (im Spiel, gleiches Fenster wie die Challenges)
 	round_panel = TaskPanel.new()
 	round_panel.mobile = mobile.active
+	round_panel.leaderboard = leaderboard
 	round_panel.open_changed = task_panel.open_changed
 	round_panel.go_pressed.connect(_play_again)
 	round_panel.home_pressed.connect(func() -> void:
