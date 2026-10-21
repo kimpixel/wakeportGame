@@ -220,7 +220,7 @@ var _timeout_player: AudioStreamPlayer
 
 func time_up() -> void:
 	if _timeout_player == null:
-		_timeout_player = _player(0.0)
+		_timeout_player = _player(linear_to_db(0.7))   # 30 % leiser als die Aufnahme
 		_timeout_player.process_mode = Node.PROCESS_MODE_ALWAYS
 		_timeout_player.stream = load(TIMEOUT_SOUND) as AudioStream
 	if _timeout_player.stream:
