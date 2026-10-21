@@ -31,8 +31,6 @@ const COSMETIC := ["name", "title", "goal", "keys", "keys_mobile", "tip", "medal
 const COMP_SPEED := 30.0
 const COMP_ROPE := 16.0
 
-signal name_changed
-
 var url := URL
 var dev := true                  # Test-Ranglisten (lokal, PR-Vorschau)
 var player_id := ""
@@ -90,7 +88,6 @@ func set_hidden(v: bool) -> Dictionary:
 	if r.get("ok", false):
 		hidden = v
 		_save()
-		name_changed.emit()
 	return r
 
 
@@ -316,7 +313,6 @@ func set_player_name(n: String) -> Dictionary:
 	if r.get("ok", false):
 		player_name = n
 		_save()
-		name_changed.emit()
 	return r
 
 
@@ -329,7 +325,6 @@ func forget() -> Dictionary:
 		player_name = ""
 		player_id = _new_id()
 		_save()
-		name_changed.emit()
 	return r
 
 

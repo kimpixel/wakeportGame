@@ -56,7 +56,8 @@ Spiel dagegen (Kommandozeile, speichert nichts):
 
 ## Schummeln und Aufräumen (Admin)
 
-Das Spiel läuft im Browser, gesendete Werte lassen sich fälschen. Dagegen: Rate-Limit je IP, Grenzen je
+Das Spiel läuft im Browser, gesendete Werte lassen sich fälschen. Dagegen: Rate-Limit je IP (je 10 Minuten 60 Schreib- und
+300 Lesezugriffe), feste Sortierung je Rangliste (bestimmt der erste Eintrag), Grenzen je
 Rangliste und Löschen von Hand. Admin-Befehle per POST mit `Authorization: Bearer <ADMIN_TOKEN>`:
 
 ```bash
