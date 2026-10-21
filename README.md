@@ -58,6 +58,7 @@ Gamepad-Namen wie beim PS4-Controller (Xbox: ✕ = A, ○ = B, △ = Y, Options 
 | Enter | PS (oder Touchpad) | nur in Menüs: **Spiel starten** bzw. Los / Nochmal / Weiter |
 | – | L1 / R1 | Menüs: Reiter der Einstellungen wechseln |
 | Esc | ○ | Menüs: zurück (Liste oder Fenster schließen; in der Challenge zur Startseite) |
+| F11 / Alt+Enter | – | Vollbild an/aus (nur Desktop-Version, nicht im Browser) |
 | F3 | – | Debug: Fangzonen der Slider einblenden (gelb; wer im Sprung hineinkommt, gleitet aufs Rail) glattes Plastik (blau; nur rutschen, kein Slide, kein Lenken) und Safetys/Auffahrten und Kicker (orange; fährt man wie einen Kicker, kein Slide) |
 
 **Auf dem Handy/Tablet** (im Browser, wird automatisch erkannt):

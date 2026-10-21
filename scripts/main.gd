@@ -415,6 +415,8 @@ func _ready() -> void:
 	start_screen.ingame_closed.connect(_close_settings_ingame)
 	pause_menu.home_pressed.connect(_open_start_screen)
 	add_child(pause_menu)
+	if Fullscreen.available():
+		add_child(Fullscreen.new())    # F11 / Alt+Enter: Vollbild
 	# Debug-Overlay (F4, nur lokal): Parameter live mit Schiebereglern justieren
 	if DebugParams.available():
 		debug_params = DebugParams.new()
