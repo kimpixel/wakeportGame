@@ -7,7 +7,6 @@ class_name Analytics
 ## Auswertung: https://kimpixel.goatcounter.com
 
 const CODE := "kimpixel"                    # GoatCounter-Seite (Account auf goatcounter.com)
-const HOST := "kimpixel.github.io"
 ## Spielzeit-Marken in Minuten (aktive Zeit im Vordergrund, je Sitzung höchstens einmal gemeldet)
 const PLAYTIME := [1, 5, 15, 30, 60, 120]
 
@@ -39,15 +38,16 @@ static func init() -> void:
 	s.onload = function () { q.forEach(function (f) { try { f(); } catch (e) {} }); q = []; };
 	document.head.appendChild(s);
 	window.wthCount('geraet/' + (navigator.maxTouchPoints > 0 ? 'touch' : 'desktop'));
-})()""" % [HOST, CODE], true)
+})()""" % [Leaderboard.HOST, CODE], true)
 
 
 ## Ereignis melden (Pfad ohne führenden Schrägstrich, nur Kleinbuchstaben/Ziffern/-/_ und /).
 static func count(path: String) -> void:
 	if not _on:
 		return
-	var p := path.to_lower().replace(" ", "-").replace("'", "").replace("\\", "")
-	JavaScriptBridge.eval("window.wthCount && window.wthCount('%s')" % p, true)
+	var p := path.to_lower().replace(" ", "-")
+	# als JSON-String eingesetzt: Anführungszeichen, Backslashes und Zeilenumbrüche können das Skript nicht aufbrechen
+	JavaScriptBridge.eval("window.wthCount && window.wthCount(%s)" % JSON.stringify(p), true)
 
 
 ## Jeden Frame aufrufen: meldet die Spielzeit-Marken (1, 5, 15 … Minuten).

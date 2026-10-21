@@ -5,7 +5,7 @@ extends Node3D
 ## Der Schlitten (Carrier) sitzt fest auf EINEM Strang. Der Motor kehrt die Laufrichtung
 ## an jedem Ende um, dadurch pendelt der Carrier hin und her. Am Carrier hängt das Zugseil.
 
-enum State { IDLE, START, RUN, BRAKE, PAUSE, STOPPING, FETCH, HOLD, DONE }
+enum State { IDLE, START, RUN, BRAKE, PAUSE, FETCH, HOLD, DONE }
 ## DONE: Spielzeit vorbei, der Fahrer wurde zum Start (Wendepunkt am Ufer) gebracht.
 ## FETCH: nach Sturz/Seilverlust fährt der Operator den Carrier (und damit die Handle) auf die
 ##        Höhe des Fahrers; HOLD: dort wartet er, bis der Fahrer die Handle greift.
@@ -165,11 +165,6 @@ func start() -> void:
 		state = State.START
 
 
-func emergency_stop() -> void:
-	if state != State.IDLE:
-		state = State.STOPPING
-
-
 ## Handle zum Fahrer bringen: Carrier fährt auf Höhe z (lokal) und wartet dort.
 func fetch(z: float) -> void:
 	if state == State.HOLD:
@@ -255,8 +250,6 @@ func step(delta: float, rider_vz: float, rope_slack: float) -> void:
 	match state:
 		State.IDLE:
 			v = 0.0
-		State.STOPPING:
-			v = move_toward(v, 0.0, decel * 1.5 * delta)
 		State.START, State.RUN:
 			var target_speed := max_speed
 			var a := accel
@@ -354,7 +347,6 @@ func state_text() -> String:
 		State.RUN: return "Fahrt → Mast 2" if dir < 0.0 else "Fahrt → Ufer"
 		State.BRAKE: return "Bremst zur Wende"
 		State.PAUSE: return "Wende"
-		State.STOPPING: return "Not-Stopp"
 		State.FETCH: return "Operator bringt die Handle"
 		State.HOLD: return "Wartet auf den Fahrer"
 		State.DONE: return "Ende – zurück am Start"

@@ -60,16 +60,6 @@ func add_header(label: String) -> void:
 	_items.append({"text": label, "icon": null, "header": true})
 
 
-func item_count() -> int:
-	return _items.size()
-
-
-func set_item_icon(idx: int, img: Texture2D) -> void:
-	_items[idx]["icon"] = img
-	if idx == selected:
-		icon = img
-
-
 func select(idx: int) -> void:
 	if idx < 0 or idx >= _items.size() or _items[idx]["header"]:
 		return
