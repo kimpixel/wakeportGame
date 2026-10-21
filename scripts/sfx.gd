@@ -22,6 +22,7 @@ const NEG_DELAY := 0.4      # s nach dem Sturz, dann ruft der Steuermann
 const HIT_DIR := "res://assets/sounds/feature_hit"      # Brett trifft ein Feature (Aufnahmen)
 const LANDING_DIR := "res://assets/sounds/landing"      # Brett landet auf dem Wasser (Aufnahmen)
 const COUNT_DIR := "res://assets/sounds/countdown"     # Countdown-Ansage (englisch): three, two, one, go
+const TIMEOUT_SOUND := "res://assets/sounds/timeout/timeout.wav"   # Competition: Zeit um (Aufnahme)
 
 var rider: Rider
 var people: Array[Dictionary] = []   # aus Beach: Leute im Startblock
@@ -212,6 +213,19 @@ func say_count(text: String) -> void:
 		_count_player.stream = a
 		_count_player.play()
 		Music.duck(a.get_length() + 0.3)
+
+
+## Competition: Zeit um – Signal über die ganze Anlage (eigener Player, läuft auch nach Neustart/Pause weiter).
+var _timeout_player: AudioStreamPlayer
+
+func time_up() -> void:
+	if _timeout_player == null:
+		_timeout_player = _player(0.0)
+		_timeout_player.process_mode = Node.PROCESS_MODE_ALWAYS
+		_timeout_player.stream = load(TIMEOUT_SOUND) as AudioStream
+	if _timeout_player.stream:
+		_timeout_player.play()
+		Music.duck(_timeout_player.stream.get_length() + 0.3)
 
 
 var _thunder: Array[AudioStreamWAV] = []
