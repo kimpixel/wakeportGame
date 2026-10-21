@@ -1742,6 +1742,15 @@ msgstr "tvůj rekord"
 msgid "noch %s bis %d."
 msgstr "ještě %s na %d. místo"
 
+msgid "dein Name"
+msgstr "tvoje jméno"
+
+msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
+msgstr "Tvoje jméno do žebříčku (2 až 16 znaků)"
+
+msgid "Wird gespeichert …"
+msgstr "Ukládá se …"
+
 msgid "PAUSE"
 msgstr "PAUZA"
 
@@ -2412,9 +2421,6 @@ msgstr "TVOJE JMÉNO"
 msgid "ohne Namen: anonym"
 msgstr "bez jména: anonymně"
 
-msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
-msgstr "Tvoje jméno do žebříčku (2 až 16 znaků)"
-
 msgid "Speichern"
 msgstr "Uložit"
 
@@ -2456,9 +2462,6 @@ msgstr "Hodnocení změněno: starší výsledky jsou v dřívějším žebří�
 
 msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
 msgstr "Jméno zůstává. Úplně ven: přepínač nahoře na Vyp. (smaže vše)."
-
-msgid "Wird gespeichert …"
-msgstr "Ukládá se …"
 
 msgid "Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."
 msgstr "Uloženo. Tvoje záznamy jsou teď pod tímto jménem."
@@ -2520,6 +2523,9 @@ msgstr "Černá"
 msgid "Weiß"
 msgstr "Bílá"
 
+msgid "Gespeichert – du stehst jetzt als „%s“ in der Rangliste."
+msgstr "Uloženo – v žebříčku jsi teď jako „%s“."
+
 msgid "LOS"
 msgstr "JEDEM"
 
@@ -2546,6 +2552,9 @@ msgstr "KOLO SKONČILO"
 
 msgid "ERNEUT SPIELEN"
 msgstr "HRÁT ZNOVU"
+
+msgid "Trag deinen Namen ein – sonst stehst du als „Anonym“ in der Rangliste."
+msgstr "Zadej své jméno – jinak budeš v žebříčku jako „Anonym“."
 
 msgid "DRIFT"
 msgstr "DRIFT"

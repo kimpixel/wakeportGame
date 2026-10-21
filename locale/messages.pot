@@ -162,242 +162,242 @@ msgstr ""
 msgid "Ende – zurück am Start"
 msgstr ""
 
-#: scripts/challenge.gd:83
+#: scripts/challenge.gd:84
 msgid "Abgesoffen"
 msgstr ""
 
-#: scripts/challenge.gd:315
+#: scripts/challenge.gd:316
 msgid "Gestürzt"
 msgstr ""
 
-#: scripts/challenge.gd:315
+#: scripts/challenge.gd:316
 msgid "Seil verloren"
 msgstr ""
 
-#: scripts/challenge.gd:329
+#: scripts/challenge.gd:330
 msgid "Nicht um die weiße Boje"
 msgstr ""
 
-#: scripts/challenge.gd:347
+#: scripts/challenge.gd:348
 msgid "Ohne Absprung fahren"
 msgstr ""
 
-#: scripts/challenge.gd:354
+#: scripts/challenge.gd:355
 msgid "Kicker verpasst"
 msgstr ""
 
-#: scripts/challenge.gd:365
+#: scripts/challenge.gd:366
 msgid "Slider verpasst"
 msgstr ""
 
-#: scripts/challenge.gd:371
+#: scripts/challenge.gd:372
 msgid "Ins Wasser – Transfer verpasst"
 msgstr ""
 
-#: scripts/challenge.gd:374
+#: scripts/challenge.gd:375
 msgid "Pipe verpasst"
 msgstr ""
 
-#: scripts/challenge.gd:385
+#: scripts/challenge.gd:386
 msgid "Keine Kombination geschafft"
 msgstr ""
 
-#: scripts/challenge.gd:403
+#: scripts/challenge.gd:404
 msgid "Kein Drift nach einem Feature"
 msgstr ""
 
-#: scripts/challenge.gd:417
+#: scripts/challenge.gd:418
 msgid "Kein Sprung-Start – auf dem Steg ↓ halten, bis das Seil losreißt"
 msgstr ""
 
-#: scripts/challenge.gd:433
+#: scripts/challenge.gd:434
 msgid "Kein Raley – mehr Seilzug: weit raus, dann hart zur Mitte kanten (Marke RALEY)"
 msgstr ""
 
-#: scripts/challenge.gd:443
+#: scripts/challenge.gd:444
 msgid "Zeit abgelaufen"
 msgstr ""
 
-#: scripts/challenge.gd:477
+#: scripts/challenge.gd:478
 msgid "Das war kein Raley Start – Brett quer zum Seil stellen"
 msgstr ""
 
-#: scripts/challenge.gd:478
+#: scripts/challenge.gd:479
 msgid "Das war kein Nolli – Brett längs zum Seil lassen"
 msgstr ""
 
-#: scripts/challenge.gd:498
+#: scripts/challenge.gd:499
 msgid "Junge mach mal langsam! (%s)"
 msgstr ""
 
-#: scripts/challenge.gd:500
+#: scripts/challenge.gd:501
 msgid "Das war %s – gefordert: %s"
 msgstr ""
 
-#: scripts/challenge.gd:570
+#: scripts/challenge.gd:571
 msgid "360 links im Drift!  (%d / %d)"
 msgstr ""
 
-#: scripts/challenge.gd:570
+#: scripts/challenge.gd:571
 msgid "360 rechts im Drift!  (%d / %d)"
 msgstr ""
 
-#: scripts/challenge.gd:581
+#: scripts/challenge.gd:582
 msgid "Kein 360 im Drift"
 msgstr ""
 
-#: scripts/challenge.gd:619
+#: scripts/challenge.gd:620
 msgid "%s im Drift!  (%d Wechsel)"
 msgstr ""
 
-#: scripts/challenge.gd:641
+#: scripts/challenge.gd:642
 msgid "Kein Press im Drift"
 msgstr ""
 
-#: scripts/challenge.gd:669
+#: scripts/challenge.gd:670
 msgid "%s Drift"
 msgstr ""
 
-#: scripts/challenge.gd:685
+#: scripts/challenge.gd:686
 msgid "ausgelassen"
 msgstr ""
 
-#: scripts/challenge.gd:692
+#: scripts/challenge.gd:693
 msgid "zu kurz auf dem Slider"
 msgstr ""
 
-#: scripts/challenge.gd:714
+#: scripts/challenge.gd:715
 msgid "kein Ollie on (über die Auffahrt)"
 msgstr ""
 
-#: scripts/challenge.gd:716
+#: scripts/challenge.gd:717
 msgid "Aufspringen: %s statt %s"
 msgstr ""
 
-#: scripts/challenge.gd:718
-#: scripts/challenge.gd:720
+#: scripts/challenge.gd:719
+#: scripts/challenge.gd:721
 msgid "%s statt %s"
 msgstr ""
 
-#: scripts/challenge.gd:720
+#: scripts/challenge.gd:721
 msgid "kein Press"
 msgstr ""
 
-#: scripts/challenge.gd:723
+#: scripts/challenge.gd:724
 msgid "Abgang: %s statt %s"
 msgstr ""
 
-#: scripts/challenge.gd:751
+#: scripts/challenge.gd:752
 msgid "gerade"
 msgstr ""
 
-#: scripts/challenge.gd:761
+#: scripts/challenge.gd:762
 msgid "%s geschafft!"
 msgstr ""
 
-#: scripts/challenge.gd:853
+#: scripts/challenge.gd:854
 msgid "Gerade abgefahren – hier quer mit Drift abgehen"
 msgstr ""
 
-#: scripts/challenge.gd:864
+#: scripts/challenge.gd:865
 msgid "noch keine Medaille"
 msgstr ""
 
-#: scripts/challenge.gd:896
+#: scripts/challenge.gd:898
 #: scripts/leaderboard.gd:177
 msgid "Rangliste nicht mit Seilzug-Grenze „Aus“"
 msgstr ""
 
-#: scripts/challenge.gd:898
+#: scripts/challenge.gd:900
 msgid "Rangliste: wird gesendet …"
 msgstr ""
 
-#: scripts/challenge.gd:905
+#: scripts/challenge.gd:908
 msgid "Rangliste: Platz %d von %d"
 msgstr ""
 
-#: scripts/challenge.gd:906
+#: scripts/challenge.gd:909
 msgid "Rangliste: Platz %d von %d mit deinem Bestwert %s"
 msgstr ""
 
-#: scripts/challenge.gd:909
+#: scripts/challenge.gd:912
 msgid "als %s"
 msgstr ""
 
-#: scripts/challenge.gd:914
-#: scripts/main.gd:1316
-#: scripts/main.gd:1321
-#: scripts/main.gd:1322
+#: scripts/challenge.gd:917
+#: scripts/main.gd:1320
+#: scripts/main.gd:1325
+#: scripts/main.gd:1326
 msgid "Rangliste: %s"
 msgstr ""
 
-#: scripts/challenge.gd:914
+#: scripts/challenge.gd:917
+#: scripts/ui/name_field.gd:79
 #: scripts/ui/start_screen.gd:1204
 #: scripts/ui/start_screen.gd:1403
-#: scripts/ui/start_screen.gd:1472
 msgid "Fehler"
 msgstr ""
 
-#: scripts/challenge.gd:939
+#: scripts/challenge.gd:942
 #: scripts/leaderboard.gd:244
 #: scripts/training.gd:542
-#: scripts/ui/task_panel.gd:213
+#: scripts/ui/task_panel.gd:239
 msgid "%d Punkt"
 msgid_plural "%d Punkte"
 msgstr[0] ""
 msgstr[1] ""
 
-#: scripts/challenge.gd:941
-#: scripts/challenge.gd:946
-#: scripts/challenge.gd:955
+#: scripts/challenge.gd:944
+#: scripts/challenge.gd:949
+#: scripts/challenge.gd:958
 msgid "Höhe %s"
 msgstr ""
 
-#: scripts/challenge.gd:948
+#: scripts/challenge.gd:951
 msgid "Weite %s"
 msgstr ""
 
-#: scripts/challenge.gd:957
+#: scripts/challenge.gd:960
 msgid "links %d / %d   rechts %d / %d"
 msgstr ""
 
-#: scripts/challenge.gd:962
+#: scripts/challenge.gd:965
 msgid "Bester Drift %s"
 msgstr ""
 
-#: scripts/challenge.gd:965
+#: scripts/challenge.gd:968
 msgid "%d Wechsel   Bester %s"
 msgstr ""
 
-#: scripts/challenge.gd:967
-#: scripts/challenge.gd:969
+#: scripts/challenge.gd:970
+#: scripts/challenge.gd:972
 msgid "Press am Stück %s"
 msgstr ""
 
-#: scripts/challenge.gd:974
+#: scripts/challenge.gd:977
 msgid "%d geschafft"
 msgstr ""
 
-#: scripts/challenge.gd:979
+#: scripts/challenge.gd:982
 msgid "Bestwert %s"
 msgstr ""
 
-#: scripts/challenge.gd:110
-#: scripts/main.gd:1460
+#: scripts/challenge.gd:111
+#: scripts/main.gd:1464
 msgid "VERSUCH"
 msgstr ""
 
-#: scripts/challenge.gd:128
+#: scripts/challenge.gd:129
 #: scripts/hud.gd:263
-#: scripts/main.gd:1460
+#: scripts/main.gd:1464
 msgid "ZEIT"
 msgstr ""
 
-#: scripts/challenge.gd:409
+#: scripts/challenge.gd:410
 msgid "Verpasst"
 msgstr ""
 
-#: scripts/challenge.gd:821
+#: scripts/challenge.gd:822
 msgid "Transfer verpasst"
 msgstr ""
 
@@ -648,140 +648,140 @@ msgstr ""
 msgid "Steg-Landung!"
 msgstr ""
 
-#: scripts/main.gd:935
+#: scripts/main.gd:938
 msgid "Seil reißt ab: an"
 msgstr ""
 
-#: scripts/main.gd:935
+#: scripts/main.gd:938
 msgid "Seil reißt ab: aus – keine Rangliste"
 msgstr ""
 
-#: scripts/main.gd:1049
+#: scripts/main.gd:1052
 msgid "Setup: %s"
 msgstr ""
 
-#: scripts/main.gd:1256
+#: scripts/main.gd:1259
 msgid "Strafzeit −%d:%02d"
 msgstr ""
 
-#: scripts/main.gd:1270
+#: scripts/main.gd:1273
 msgid "Zeit um!  %d Punkte"
 msgstr ""
 
-#: scripts/main.gd:1279
-#: scripts/main.gd:1315
+#: scripts/main.gd:1282
+#: scripts/main.gd:1319
 msgid "Letzte Runde: %d Punkte"
 msgstr ""
 
-#: scripts/main.gd:1309
+#: scripts/main.gd:1312
 msgid "Rangliste …"
 msgstr ""
 
-#: scripts/main.gd:1314
+#: scripts/main.gd:1318
 msgid "Platz %d von %d"
 msgstr ""
 
-#: scripts/main.gd:1316
-#: scripts/main.gd:1319
+#: scripts/main.gd:1320
+#: scripts/main.gd:1323
 msgid "Dein Bestwert: %s"
 msgstr ""
 
-#: scripts/main.gd:1317
+#: scripts/main.gd:1321
 msgid "PLATZ %d von %d"
 msgstr ""
 
-#: scripts/main.gd:1458
+#: scripts/main.gd:1462
 msgid "FREI"
 msgstr ""
 
-#: scripts/main.gd:1464
+#: scripts/main.gd:1468
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
 "Wenden %d   ·   Kamera: %s%s"
 msgstr ""
 
-#: scripts/main.gd:1494
+#: scripts/main.gd:1498
 msgid "STURZ  –  der Operator bringt dir die Handle"
 msgstr ""
 
-#: scripts/main.gd:1495
+#: scripts/main.gd:1499
 msgid "STURZ  –  die Handle liegt bereit"
 msgstr ""
 
-#: scripts/main.gd:1497
+#: scripts/main.gd:1501
 msgid "ca. %d s"
 msgstr ""
 
-#: scripts/main.gd:1499
+#: scripts/main.gd:1503
 msgid "SCHWIMMEN halten"
 msgstr ""
 
-#: scripts/main.gd:1499
 #: scripts/main.gd:1503
+#: scripts/main.gd:1507
 msgid "Zur Handle schwimmen"
 msgstr ""
 
-#: scripts/main.gd:1500
+#: scripts/main.gd:1504
 #: scripts/ui/touch_pad.gd:230
 msgid "SKIP"
 msgstr ""
 
-#: scripts/main.gd:1500
 #: scripts/main.gd:1504
+#: scripts/main.gd:1508
 msgid "Sofort weiterfahren"
 msgstr ""
 
-#: scripts/main.gd:1500
-#: scripts/main.gd:1501
 #: scripts/main.gd:1504
 #: scripts/main.gd:1505
+#: scripts/main.gd:1508
+#: scripts/main.gd:1509
 msgid "keine Strafzeit"
 msgstr ""
 
-#: scripts/main.gd:1501
 #: scripts/main.gd:1505
+#: scripts/main.gd:1509
 msgid "Zurück zum Steg"
 msgstr ""
 
-#: scripts/main.gd:1503
+#: scripts/main.gd:1507
 msgid "LEERTASTE halten"
 msgstr ""
 
-#: scripts/main.gd:1504
+#: scripts/main.gd:1508
 msgid "STRG"
 msgstr ""
 
-#: scripts/main.gd:1516
+#: scripts/main.gd:1520
 msgid ""
 "Neigungssensor nicht verfügbar –\n"
 "Bewegungssensoren im Browser erlauben"
 msgstr ""
 
-#: scripts/main.gd:1521
+#: scripts/main.gd:1525
 msgid "SPRUNG-START  %d %%"
 msgstr ""
 
-#: scripts/main.gd:1590
+#: scripts/main.gd:1594
 msgid "Hitboxen an"
 msgstr ""
 
-#: scripts/main.gd:1590
+#: scripts/main.gd:1594
 msgid "Hitboxen aus"
 msgstr ""
 
-#: scripts/main.gd:1620
+#: scripts/main.gd:1624
 msgid "Wende um die Boje"
 msgstr ""
 
-#: scripts/main.gd:1620
+#: scripts/main.gd:1624
 msgid "Saubere Wende"
 msgstr ""
 
-#: scripts/main.gd:1769
+#: scripts/main.gd:1773
 msgid "Ins Boot gefahren!"
 msgstr ""
 
-#: scripts/main.gd:1770
+#: scripts/main.gd:1774
 msgid "Boot crash!"
 msgstr ""
 
@@ -793,7 +793,7 @@ msgstr ""
 msgid "Terminal 2"
 msgstr ""
 
-#: scripts/main.gd:1460
+#: scripts/main.gd:1464
 msgid "MODUS"
 msgstr ""
 
@@ -2364,6 +2364,20 @@ msgstr ""
 msgid "noch %s bis %d."
 msgstr ""
 
+#: scripts/ui/name_field.gd:33
+msgid "dein Name"
+msgstr ""
+
+#: scripts/ui/name_field.gd:44
+#: scripts/ui/start_screen.gd:1182
+msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
+msgstr ""
+
+#: scripts/ui/name_field.gd:73
+#: scripts/ui/start_screen.gd:1466
+msgid "Wird gespeichert …"
+msgstr ""
+
 #: scripts/ui/pause_menu.gd:47
 msgid "PAUSE"
 msgstr ""
@@ -2390,13 +2404,13 @@ msgid "Nächster Titel"
 msgstr ""
 
 #: scripts/ui/pause_menu.gd:58
-#: scripts/ui/task_panel.gd:132
+#: scripts/ui/task_panel.gd:156
 #: scripts/ui/touch_pad.gd:109
 msgid "Startseite"
 msgstr ""
 
 #: scripts/ui/setup_editor.gd:206
-#: scripts/ui/task_panel.gd:224
+#: scripts/ui/task_panel.gd:250
 msgid "Zurück"
 msgstr ""
 
@@ -2911,7 +2925,7 @@ msgid "CHALLENGE STARTEN"
 msgstr ""
 
 #: scripts/ui/start_screen.gd:363
-#: scripts/ui/task_panel.gd:198
+#: scripts/ui/task_panel.gd:224
 msgid "Bestwert: %s"
 msgstr ""
 
@@ -3261,6 +3275,7 @@ msgid "IN DER RANGLISTE ERSCHEINEN"
 msgstr ""
 
 #: scripts/ui/start_screen.gd:1167
+#: scripts/ui/task_panel.gd:115
 msgid "DEIN NAME"
 msgstr ""
 
@@ -3268,11 +3283,8 @@ msgstr ""
 msgid "ohne Namen: anonym"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1182
-msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
-msgstr ""
-
 #: scripts/ui/start_screen.gd:1188
+#: scripts/ui/task_panel.gd:112
 msgid "Speichern"
 msgstr ""
 
@@ -3326,10 +3338,6 @@ msgstr ""
 
 #: scripts/ui/start_screen.gd:1463
 msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
-msgstr ""
-
-#: scripts/ui/start_screen.gd:1466
-msgid "Wird gespeichert …"
 msgstr ""
 
 #: scripts/ui/start_screen.gd:1469
@@ -3414,44 +3422,52 @@ msgstr ""
 msgid "Weiß"
 msgstr ""
 
-#: scripts/ui/task_panel.gd:126
-#: scripts/ui/task_panel.gd:185
+#: scripts/ui/task_panel.gd:120
+msgid "Gespeichert – du stehst jetzt als „%s“ in der Rangliste."
+msgstr ""
+
+#: scripts/ui/task_panel.gd:150
+#: scripts/ui/task_panel.gd:211
 msgid "LOS"
 msgstr ""
 
-#: scripts/ui/task_panel.gd:129
-#: scripts/ui/task_panel.gd:270
+#: scripts/ui/task_panel.gd:153
+#: scripts/ui/task_panel.gd:309
 msgid "Nächste Challenge"
 msgstr ""
 
-#: scripts/ui/task_panel.gd:184
+#: scripts/ui/task_panel.gd:210
 msgid "Steuerung:"
 msgstr ""
 
-#: scripts/ui/task_panel.gd:184
+#: scripts/ui/task_panel.gd:210
 msgid "Tipp:"
 msgstr ""
 
-#: scripts/ui/task_panel.gd:185
-#: scripts/ui/task_panel.gd:202
-#: scripts/ui/task_panel.gd:223
+#: scripts/ui/task_panel.gd:211
+#: scripts/ui/task_panel.gd:228
+#: scripts/ui/task_panel.gd:249
 msgid "Leertaste"
 msgstr ""
 
-#: scripts/ui/task_panel.gd:200
+#: scripts/ui/task_panel.gd:226
 msgid "Neue Bestleistung!"
 msgstr ""
 
-#: scripts/ui/task_panel.gd:202
+#: scripts/ui/task_panel.gd:228
 msgid "NOCHMAL"
 msgstr ""
 
-#: scripts/ui/task_panel.gd:210
+#: scripts/ui/task_panel.gd:236
 msgid "RUNDE BEENDET"
 msgstr ""
 
-#: scripts/ui/task_panel.gd:223
+#: scripts/ui/task_panel.gd:249
 msgid "ERNEUT SPIELEN"
+msgstr ""
+
+#: scripts/ui/task_panel.gd:273
+msgid "Trag deinen Namen ein – sonst stehst du als „Anonym“ in der Rangliste."
 msgstr ""
 
 #: scripts/ui/touch_pad.gd:89

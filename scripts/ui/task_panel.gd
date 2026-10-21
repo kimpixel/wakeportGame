@@ -109,15 +109,15 @@ func _ready() -> void:
 	_name.font = _font
 	_name.visible = false
 	v.add_child(_name)
-	var nb := _button("Speichern", false)
+	var nb := _button(tr("Speichern"), false)
 	nb.size_flags_horizontal = Control.SIZE_SHRINK_END
 	nb.custom_minimum_size = Vector2(130, 48)
-	_name.build(20, "DEIN NAME", nb)
+	_name.build(20, tr("DEIN NAME"), nb)
 	_name.saved.connect(func(n: String) -> void:
 		_name.visible = false
 		var re := RegEx.create_from_string("Anonym #\\w+")
 		_rank.text = re.sub(_rank.text, n, true)
-		_name_tip.text = "Gespeichert – du stehst jetzt als „%s“ in der Rangliste." % n
+		_name_tip.text = tr("Gespeichert – du stehst jetzt als „%s“ in der Rangliste.") % n
 		_name_tip.visible = true
 		_layout())
 	_name_tip = _label(15, Color(1, 1, 1, 0.7))
@@ -253,24 +253,24 @@ func show_round(head: String, score: int, rank: String) -> void:
 
 
 ## Zeile mit dem Platz in der Rangliste ("" = ausblenden); kommt nach, sobald der Server antwortet.
-func set_rank(text: String) -> void:
+## placed: das Ergebnis steht in der Rangliste (dann Namensfeld, solange noch kein Name gespeichert ist).
+func set_rank(text: String, placed := false) -> void:
 	_rank.text = text
 	_rank.visible = text != ""
-	_update_name(text)
+	_update_name(placed)
 	if is_open():
 		_layout()
 
 
 ## Namensfeld nur, wenn das Ergebnis in die Rangliste kam (Platz steht da) und noch kein Name gespeichert ist.
-func _update_name(rank_text: String) -> void:
+func _update_name(placed: bool) -> void:
 	_name_tip.visible = false
-	var show := leaderboard != null and leaderboard.participating() and not leaderboard.has_name() \
-		and (rank_text.contains("Platz") or rank_text.contains("PLATZ"))
+	var show := leaderboard != null and leaderboard.participating() and not leaderboard.has_name() and placed
 	_name.leaderboard = leaderboard
 	_name.visible = show
 	if show:
 		_name.edit.text = ""
-		_name.set_msg("Trag deinen Namen ein – sonst stehst du als „Anonym“ in der Rangliste.")
+		_name.set_msg(tr("Trag deinen Namen ein – sonst stehst du als „Anonym“ in der Rangliste."))
 
 
 ## Fotos als Abzüge (weißer Rand) nebeneinander; eins allein etwas größer.

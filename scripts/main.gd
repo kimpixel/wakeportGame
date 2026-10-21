@@ -1313,7 +1313,8 @@ func _submit_round(score: int) -> void:
 	var b := leaderboard.competition_board(sec, terminal, st, TERMINAL_NAMES[TERMINALS.find(terminal)])
 	var r := await leaderboard.submit(b, score)
 	var rank := ""
-	if r.get("ok", false):
+	var placed: bool = r.get("ok", false)
+	if placed:
 		var place := tr("Platz %d von %d") % [int(r["rank"]), int(r["total"])]
 		_last_result = tr("Letzte Runde: %d Punkte") % score + "   ·   " \
 			+ (tr("Rangliste: %s") if r.get("improved", false) else tr("Dein Bestwert: %s")) % place
@@ -1326,7 +1327,7 @@ func _submit_round(score: int) -> void:
 	if _test_log:
 		print("RUNDE RANGLISTE: ", rank)
 	if round_panel.is_open():
-		round_panel.set_rank(rank)
+		round_panel.set_rank(rank, placed)
 	if start_screen.visible:
 		start_screen.set_result(_last_result)
 	_mini_key = ""                       # Mini-Rangliste neu laden (mit dem neuen Eintrag)

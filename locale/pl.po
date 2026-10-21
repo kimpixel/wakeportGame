@@ -1742,6 +1742,15 @@ msgstr "twój rekord"
 msgid "noch %s bis %d."
 msgstr "jeszcze %s do miejsca %d."
 
+msgid "dein Name"
+msgstr "twoja nazwa"
+
+msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
+msgstr "Twoja nazwa w rankingu (od 2 do 16 znaków)"
+
+msgid "Wird gespeichert …"
+msgstr "Zapisywanie …"
+
 msgid "PAUSE"
 msgstr "PAUZA"
 
@@ -2412,9 +2421,6 @@ msgstr "TWOJA NAZWA"
 msgid "ohne Namen: anonym"
 msgstr "bez nazwy: anonimowo"
 
-msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
-msgstr "Twoja nazwa w rankingu (od 2 do 16 znaków)"
-
 msgid "Speichern"
 msgstr "Zapisz"
 
@@ -2456,9 +2462,6 @@ msgstr "Zmieniono punktację: starsze wyniki są we wcześniejszym rankingu"
 
 msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
 msgstr "Nazwa zostaje. Całkiem się wypisać: przełącznik u góry na Wył. (usuwa wszystko)."
-
-msgid "Wird gespeichert …"
-msgstr "Zapisywanie …"
 
 msgid "Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."
 msgstr "Zapisano. Twoje wpisy są teraz pod tą nazwą."
@@ -2520,6 +2523,9 @@ msgstr "Czarny"
 msgid "Weiß"
 msgstr "Biały"
 
+msgid "Gespeichert – du stehst jetzt als „%s“ in der Rangliste."
+msgstr "Zapisano – w rankingu jesteś teraz jako „%s”."
+
 msgid "LOS"
 msgstr "START"
 
@@ -2546,6 +2552,9 @@ msgstr "KONIEC RUNDY"
 
 msgid "ERNEUT SPIELEN"
 msgstr "ZAGRAJ PONOWNIE"
+
+msgid "Trag deinen Namen ein – sonst stehst du als „Anonym“ in der Rangliste."
+msgstr "Wpisz swoją nazwę – inaczej w rankingu będziesz jako „Anonym”."
 
 msgid "DRIFT"
 msgstr "DRIFT"

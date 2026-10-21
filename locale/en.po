@@ -1738,6 +1738,15 @@ msgstr "your record"
 msgid "noch %s bis %d."
 msgstr "%s to go to rank %d."
 
+msgid "dein Name"
+msgstr "your name"
+
+msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
+msgstr "Your name for the leaderboard (2 to 16 characters)"
+
+msgid "Wird gespeichert …"
+msgstr "Saving …"
+
 msgid "PAUSE"
 msgstr "PAUSE"
 
@@ -2407,9 +2416,6 @@ msgstr "YOUR NAME"
 msgid "ohne Namen: anonym"
 msgstr "no name: anonymous"
 
-msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
-msgstr "Your name for the leaderboard (2 to 16 characters)"
-
 msgid "Speichern"
 msgstr "Save"
 
@@ -2450,9 +2456,6 @@ msgstr "Scoring changed: older results are in an earlier leaderboard"
 
 msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
 msgstr "The name stays. To leave completely: switch above to Off (deletes everything)."
-
-msgid "Wird gespeichert …"
-msgstr "Saving …"
 
 msgid "Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."
 msgstr "Saved. Your entries are now listed under this name."
@@ -2514,6 +2517,9 @@ msgstr "Black"
 msgid "Weiß"
 msgstr "White"
 
+msgid "Gespeichert – du stehst jetzt als „%s“ in der Rangliste."
+msgstr "Saved – you are now listed as “%s” on the leaderboard."
+
 msgid "LOS"
 msgstr "GO"
 
@@ -2540,6 +2546,9 @@ msgstr "ROUND OVER"
 
 msgid "ERNEUT SPIELEN"
 msgstr "PLAY AGAIN"
+
+msgid "Trag deinen Namen ein – sonst stehst du als „Anonym“ in der Rangliste."
+msgstr "Enter your name – otherwise you are listed as “Anonym” on the leaderboard."
 
 msgid "DRIFT"
 msgstr "DRIFT"

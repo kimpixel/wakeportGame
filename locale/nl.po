@@ -1738,6 +1738,15 @@ msgstr "je record"
 msgid "noch %s bis %d."
 msgstr "nog %s tot plaats %d."
 
+msgid "dein Name"
+msgstr "je naam"
+
+msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
+msgstr "Je naam voor de ranglijst (2 tot 16 tekens)"
+
+msgid "Wird gespeichert …"
+msgstr "Wordt opgeslagen …"
+
 msgid "PAUSE"
 msgstr "PAUZE"
 
@@ -2407,9 +2416,6 @@ msgstr "JE NAAM"
 msgid "ohne Namen: anonym"
 msgstr "zonder naam: anoniem"
 
-msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
-msgstr "Je naam voor de ranglijst (2 tot 16 tekens)"
-
 msgid "Speichern"
 msgstr "Opslaan"
 
@@ -2450,9 +2456,6 @@ msgstr "Telling gewijzigd: oudere resultaten staan in een eerdere ranglijst"
 
 msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
 msgstr "De naam blijft. Helemaal eruit: schakelaar hierboven op Uit (verwijdert alles)."
-
-msgid "Wird gespeichert …"
-msgstr "Wordt opgeslagen …"
 
 msgid "Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."
 msgstr "Opgeslagen. Je inzendingen staan nu onder deze naam."
@@ -2514,6 +2517,9 @@ msgstr "Zwart"
 msgid "Weiß"
 msgstr "Wit"
 
+msgid "Gespeichert – du stehst jetzt als „%s“ in der Rangliste."
+msgstr "Opgeslagen – je staat nu als „%s” in de ranglijst."
+
 msgid "LOS"
 msgstr "GO"
 
@@ -2540,6 +2546,9 @@ msgstr "RONDE AFGELOPEN"
 
 msgid "ERNEUT SPIELEN"
 msgstr "OPNIEUW SPELEN"
+
+msgid "Trag deinen Namen ein – sonst stehst du als „Anonym“ in der Rangliste."
+msgstr "Vul je naam in – anders sta je als „Anonym” in de ranglijst."
 
 msgid "DRIFT"
 msgstr "DRIFT"

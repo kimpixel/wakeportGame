@@ -1738,6 +1738,15 @@ msgstr "ton record"
 msgid "noch %s bis %d."
 msgstr "encore %s jusqu'à la %d."
 
+msgid "dein Name"
+msgstr "ton nom"
+
+msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
+msgstr "Ton nom pour le classement (2 à 16 caractères)"
+
+msgid "Wird gespeichert …"
+msgstr "Enregistrement …"
+
 msgid "PAUSE"
 msgstr "PAUSE"
 
@@ -2407,9 +2416,6 @@ msgstr "TON NOM"
 msgid "ohne Namen: anonym"
 msgstr "sans nom : anonyme"
 
-msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
-msgstr "Ton nom pour le classement (2 à 16 caractères)"
-
 msgid "Speichern"
 msgstr "Enregistrer"
 
@@ -2450,9 +2456,6 @@ msgstr "Notation modifiée : les anciens résultats sont dans un classement pré
 
 msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
 msgstr "Le nom reste. Pour sortir complètement : interrupteur ci-dessus sur Off (supprime tout)."
-
-msgid "Wird gespeichert …"
-msgstr "Enregistrement …"
 
 msgid "Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."
 msgstr "Enregistré. Tes entrées apparaissent maintenant sous ce nom."
@@ -2514,6 +2517,9 @@ msgstr "Noir"
 msgid "Weiß"
 msgstr "Blanc"
 
+msgid "Gespeichert – du stehst jetzt als „%s“ in der Rangliste."
+msgstr "Enregistré – tu apparais maintenant au classement en tant que « %s »."
+
 msgid "LOS"
 msgstr "GO"
 
@@ -2540,6 +2546,9 @@ msgstr "MANCHE TERMINÉE"
 
 msgid "ERNEUT SPIELEN"
 msgstr "REJOUER"
+
+msgid "Trag deinen Namen ein – sonst stehst du als „Anonym“ in der Rangliste."
+msgstr "Entre ton nom – sinon tu apparais au classement en tant que « Anonym »."
 
 msgid "DRIFT"
 msgstr "DRIFT"

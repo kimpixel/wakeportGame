@@ -28,6 +28,7 @@ var attempt := 0
 var _t := 0.0
 var _value := 0.0               # Messwert des laufenden Versuchs
 var _rank_text := ""            # Rangliste: Platz des letzten gewerteten Versuchs (Ergebnisfenster)
+var _rank_placed := false       # … und der Versuch steht in der Rangliste (Namensfeld anbieten)
 var _max_y := 0.0
 var _jump_from := Vector3.INF   # Absprungpunkt des laufenden Sprungs (Messwert width)
 var _laps0 := 0
@@ -882,7 +883,7 @@ func _finish(ok: bool) -> void:
 	get_tree().paused = true
 	panel.show_result(_mode_name(), task_idx, list.size(), task, _best(), task_idx + 1 < list.size(),
 		medal, text, new_best, shots)
-	panel.set_rank(_rank_text)
+	panel.set_rank(_rank_text, _rank_placed)
 	_update_hud()
 
 
@@ -890,6 +891,7 @@ func _finish(ok: bool) -> void:
 func _submit_rank() -> void:
 	var lb: Leaderboard = game.leaderboard
 	_rank_text = ""
+	_rank_placed = false
 	if not lb.participating():
 		return
 	if int(game.settings.get_v("grip")) == 3:
@@ -902,6 +904,7 @@ func _submit_rank() -> void:
 	if attempt != n or task != t:
 		return
 	if r.get("ok", false):
+		_rank_placed = true
 		_rank_text = (tr("Rangliste: Platz %d von %d") % [int(r["rank"]), int(r["total"])]) if r.get("improved", false) \
 			else (tr("Rangliste: Platz %d von %d mit deinem Bestwert %s") % [int(r["rank"]), int(r["total"]),
 				Training.format_value(task, float(r["value"]))])
@@ -913,7 +916,7 @@ func _submit_rank() -> void:
 	else:
 		_rank_text = tr("Rangliste: %s") % str(r.get("error", tr("Fehler")))
 	if panel.is_open():
-		panel.set_rank(_rank_text)
+		panel.set_rank(_rank_text, _rank_placed)
 
 
 func _best() -> Array:

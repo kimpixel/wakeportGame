@@ -1738,6 +1738,15 @@ msgstr "tu récord"
 msgid "noch %s bis %d."
 msgstr "faltan %s para el %d.º"
 
+msgid "dein Name"
+msgstr "tu nombre"
+
+msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
+msgstr "Tu nombre para el ranking (de 2 a 16 caracteres)"
+
+msgid "Wird gespeichert …"
+msgstr "Guardando …"
+
 msgid "PAUSE"
 msgstr "PAUSA"
 
@@ -2407,9 +2416,6 @@ msgstr "TU NOMBRE"
 msgid "ohne Namen: anonym"
 msgstr "sin nombre: anónimo"
 
-msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
-msgstr "Tu nombre para el ranking (de 2 a 16 caracteres)"
-
 msgid "Speichern"
 msgstr "Guardar"
 
@@ -2450,9 +2456,6 @@ msgstr "Puntuación cambiada: los resultados anteriores están en un ranking ant
 
 msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
 msgstr "El nombre se queda. Para salir del todo: interruptor de arriba en Off (borra todo)."
-
-msgid "Wird gespeichert …"
-msgstr "Guardando …"
 
 msgid "Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."
 msgstr "Guardado. Tus entradas aparecen ahora con este nombre."
@@ -2514,6 +2517,9 @@ msgstr "Negro"
 msgid "Weiß"
 msgstr "Blanco"
 
+msgid "Gespeichert – du stehst jetzt als „%s“ in der Rangliste."
+msgstr "Guardado – ahora apareces en el ranking como «%s»."
+
 msgid "LOS"
 msgstr "VAMOS"
 
@@ -2540,6 +2546,9 @@ msgstr "RONDA TERMINADA"
 
 msgid "ERNEUT SPIELEN"
 msgstr "JUGAR DE NUEVO"
+
+msgid "Trag deinen Namen ein – sonst stehst du als „Anonym“ in der Rangliste."
+msgstr "Escribe tu nombre – si no, apareces en el ranking como «Anonym»."
 
 msgid "DRIFT"
 msgstr "DRIFT"
