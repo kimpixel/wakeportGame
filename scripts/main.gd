@@ -1230,6 +1230,7 @@ func _time_up() -> void:
 	_finishing = true
 	_final_score = rider.score
 	pc.finish()
+	sfx.time_up()
 	hud.show_trick("Zeit um!  %d Punkte" % _final_score)
 
 
