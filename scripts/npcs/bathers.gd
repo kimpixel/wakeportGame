@@ -16,7 +16,6 @@ const TOWELS := 14
 const UMBRELLAS := 6
 const DRIFT_SPEED := 0.12            # m/s
 const DOZER_X := -13.5               # so nah treibt der Schläfer an die T2-Bahn
-const SPRAY_SPEED := 6.0
 const SPRAY_DIST := 3.0
 
 var water: Water
@@ -229,7 +228,7 @@ func _process(delta: float) -> void:
 func _check_spray(f: Dictionary, pos: Vector3) -> void:
 	if player == null or player.mode != Rider.Mode.WATER or float(f["cool"]) > 0.0:
 		return
-	if player.horizontal_speed() < SPRAY_SPEED or player.pos.y > 0.3:
+	if player.horizontal_speed() < Ambient.SPRAY_SPEED or player.pos.y > 0.3:
 		return
 	if Vector2(player.pos.x - pos.x, player.pos.z - pos.z).length() > SPRAY_DIST:
 		return

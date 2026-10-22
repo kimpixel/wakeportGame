@@ -116,7 +116,7 @@ func _set_live(on: bool) -> void:
 ## Filmteam ist da (Boot oder Drohne) bzw. weg.
 func set_source(mode: String) -> void:
 	var on := mode == "boat" or mode == "drone"
-	_live_title.text = "BOOT" if mode == "boat" else "DROHNE"
+	_live_title.text = tr("BOOT") if mode == "boat" else tr("DROHNE")
 	_set_live(on)
 	if not on:
 		recording = false

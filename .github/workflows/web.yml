@@ -12,9 +12,9 @@ on:
     types: [opened, reopened, synchronize, closed]
   workflow_dispatch:
 
+# Standard nur lesen; Schreibrechte bekommen nur die Jobs, die auf gh-pages schreiben bzw. den PR kommentieren
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 # Je PR bzw. Branch eine Gruppe. Nicht github.ref allein: beim Schließen eines gemergten PRs ist das
 # refs/heads/main, und der Lauf hat dann den Build der Hauptversion abgebrochen.
@@ -24,6 +24,9 @@ concurrency:
 
 env:
   GODOT_VERSION: 4.7.2
+  # SHA-512 aus SHA512-SUMS.txt des Godot-Releases (bei neuer Version mit anpassen)
+  GODOT_SHA512: 9aa00f7a605200940bce3027a567b782f49bd8e940dd06ae9e987bd65aee1b1467edd56ed84fcdcbdd44354bf613bdbb4e5d2913e925850368e150c59ed54c65
+  TEMPLATES_SHA512: ca4d71c4d7b81dfc15d1a98baa07534aa95b03fdda78a0075b06672e1648d2e5f40980c9adc28d23e1b92e732ee7bf3461997aa804af74ec2fcd7a93ccb84079
 
 jobs:
   build:
@@ -33,7 +36,7 @@ jobs:
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Godot und Export-Templates laden
         run: |
@@ -41,6 +44,8 @@ jobs:
           cd "$RUNNER_TEMP"
           wget -q "$base/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
           wget -q "$base/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          echo "${GODOT_SHA512}  Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" | sha512sum -c -
+          echo "${TEMPLATES_SHA512}  Godot_v${GODOT_VERSION}-stable_export_templates.tpz" | sha512sum -c -
           unzip -q "Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
           mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" godot
           unzip -q "Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
@@ -98,7 +103,7 @@ jobs:
           grep -q "index.js?v=${BUILD_ID}" index.html
           ls -la
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: web
           path: build/web
@@ -108,21 +113,24 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     # Immer nur ein Schreiber auf gh-pages, nichts abbrechen
     concurrency:
       group: gh-pages
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: web
           path: build/web
 
       - name: Hauptversion veröffentlichen
         if: github.event_name != 'pull_request'
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: JamesIves/github-pages-deploy-action@fa24774553152dd7873cd16ebd8d959b010c5445 # v4
         with:
           folder: build/web
           branch: gh-pages
@@ -131,7 +139,7 @@ jobs:
 
       - name: PR-Vorschau veröffentlichen
         if: github.event_name == 'pull_request'
-        uses: rossjrw/pr-preview-action@v1
+        uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9 # v1
         with:
           source-dir: build/web
           preview-branch: gh-pages
@@ -143,14 +151,17 @@ jobs:
       github.event_name == 'pull_request' && github.event.action == 'closed' &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     concurrency:
       group: gh-pages
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: PR-Vorschau löschen
-        uses: rossjrw/pr-preview-action@v1
+        uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9 # v1
         with:
           preview-branch: gh-pages
           umbrella-dir: pr-preview

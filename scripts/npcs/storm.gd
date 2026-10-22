@@ -77,7 +77,7 @@ func _process(delta: float) -> void:
 	if on_lake and _since_hit > HIT_MIN_GAP and r < HIT_CHANCE:
 		_since_hit = 0.0
 		strike(Vector3(pp.x, pp.y + 1.6, pp.z), true)
-		player.crash("Vom Blitz getroffen!")
+		player.crash(tr("Vom Blitz getroffen!"))
 		struck.emit()
 	elif r < NEAR_CHANCE:
 		var a := randf() * TAU

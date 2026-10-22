@@ -86,10 +86,10 @@ func _init() -> void:
 func _ready() -> void:
 	_add("", "pitch_front", "", Vector2.UP)
 	_add("", "pitch_back", "", Vector2.DOWN)
-	var drift := _add("DRIFT", "release")
+	var drift := _add(tr("DRIFT"), "release")
 	drift.font_size = 26
 	_add("☰", "", "menu")
-	var jump := _add("SPRUNG", "jump")
+	var jump := _add(tr("SPRUNG"), "jump")
 	jump.font_size = 22
 	_add("", "steer_left", "", Vector2.LEFT)
 	_add("", "steer_right", "", Vector2.RIGHT)
@@ -105,10 +105,10 @@ func _ready() -> void:
 	_menu_box = VBoxContainer.new()
 	_menu_box.add_theme_constant_override("separation", 14)
 	_menu.add_child(_menu_box)
-	for e: Array in [["Weiter", "close"], ["Einstellungen", "settings"], ["Hilfe ein/aus", "help"], ["Zurück zum Steg  (−2:00)", "reset"],
-			["Startseite", "home"], ["Ton aus/an", "mute"], ["Szenario würfeln", "shuffle"], ["Seil-Abreißen an/aus  (aus: keine Rangliste)", "rope_rip"]]:
+	for e: Array in [["Weiter", "close"], ["Einstellungen", "settings"], ["Hilfe ein/aus", "help"], ["Zurück zum Steg  (−2:00)", "reset"],  # i18n
+			["Startseite", "home"], ["Ton aus/an", "mute"], ["Szenario würfeln", "shuffle"], ["Seil-Abreißen an/aus  (aus: keine Rangliste)", "rope_rip"]]:  # i18n
 		var b := PadButton.new()
-		b.text = e[0]
+		b.text = tr(e[0])
 		b.id = e[1]
 		b.round = false
 		b.font_size = 26
@@ -222,12 +222,12 @@ func set_steer_buttons(on: bool) -> void:
 func set_swim(on: bool) -> void:
 	var jump: PadButton = _buttons[4]
 	var drift: PadButton = _buttons[2]
-	var jt := "SCHWIMMEN" if on else "SPRUNG"
+	var jt := tr("SCHWIMMEN") if on else tr("SPRUNG")
 	if jump.text == jt:
 		return
 	jump.text = jt
 	jump.font_size = 17 if on else 22
-	drift.text = "SKIP" if on else "DRIFT"
+	drift.text = tr("SKIP") if on else tr("DRIFT")
 	jump.queue_redraw()
 	drift.queue_redraw()
 

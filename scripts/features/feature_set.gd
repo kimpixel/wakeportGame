@@ -89,6 +89,8 @@ func update_reflections() -> void:
 	# Die Probes werden über mehrere Bilder nacheinander aufgenommen; währenddessen würde die Spiegelung auf den
 	# Features flackern. Darum unsichtbar aufnehmen und danach weich einblenden.
 	for _i in _probes.size() * PROBE_FRAMES + 15:
+		if not is_inside_tree():
+			return                                       # Szene neu aufgebaut (z. B. Sprachwechsel)
 		await get_tree().process_frame
 		if gen != _probe_gen:
 			return                                       # inzwischen neu geladen

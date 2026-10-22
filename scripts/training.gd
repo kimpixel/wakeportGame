@@ -28,7 +28,7 @@ extends RefCounted
 ##            stance "5050"/"bs" (überwiegend), press "nose"/"tail" (mehr als die halbe Slide-Zeit)
 
 const COMPETITION := "competition"
-const MEDALS := ["", "Bronze", "Silber", "Gold"]
+const MEDALS := ["", "Bronze", "Silber", "Gold"]  # i18n
 const MEDAL_COLORS := [Color(1, 1, 1, 0.25), Color(0.80, 0.50, 0.25), Color(0.80, 0.82, 0.86), Color(1.0, 0.80, 0.20)]
 
 const SPEED := 30.0             # km/h Anlagen-Tempo in allen Aufgaben (vergleichbar)
@@ -42,6 +42,8 @@ const RAIL := "res://setups/training_rail.json"
 
 ## TEMP: Drift-Nosepress ist abgeschaltet (Rider.DPRESS_NOSE_ON) – diese Challenges stehen solange nicht im
 ## Modus Driften. Zum Zurückholen wieder hinter "tailpress" in MODES einfügen.
+## Texte (name, title, goal, keys, tip …) sind Ausgangstexte, übersetzt beim Anzeigen (tr).
+# i18n-begin name,title,goal,keys,keys_mobile,tip,text,miss,via_fail
 const NOSE_TASKS := [
 	{"id": "nosepress", "name": "Nosepress im Drift", "title": "Nosepress im Drift",
 	 "kind": "dpress", "press": "nose", "setup": LEER, "start": {"turn": "a", "before": 70.0, "x": 2.0},
@@ -311,7 +313,7 @@ const MODES := [
 		 "goal": "Auf dem Weg zum vorderen Wendepunkt driften und dabei ins Tail drücken: das Brett kippt um das Tail, die Nose steht hoch, die freie Hand streift das Wasser. Du gleitest mit dem ganzen Schwung weiter. Driftest du querer, als es dein Tempo erlaubt (höchstens 86°, nach links wie nach rechts), stürzt du – mit ← / → den Winkel halten. Gemessen: Anteil der Wende im vollen Tailpress (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht) – ohne einzusinken. Gold = die ganze Wende.",
 		 "keys": "Strg halten  driften     ↓ halten  Tailpress     ← / →  Drift-Winkel halten",
 		 "keys_mobile": "DRIFT halten  driften     ▼ halten  Tailpress     Neigen  Winkel halten",
-		 "tip": "Hart rauskanten, im Drift das Brett erst weit quer drehen (um 75°), dann ins Tail drücken – so bremst nichts. Im goldenen Bereich des Bogens (die letzten 15° vor der Grenze) bremst der Press gar nicht; querer als 86° reißt es dich um. Den Winkel mit ← / → halten, während dich das Seil um den Carrier schwingt."},
+		 "tip": "Hart rauskanten, im Drift das Brett erst weit quer drehen (um 75°), dann ins Tail drücken – so bremst nichts. Im goldenen Bereich des Bogens (die letzten rund 45° vor der Grenze) bremst der Press gar nicht; querer als 86° reißt es dich um. Den Winkel mit ← / → halten, während dich das Seil um den Carrier schwingt."},
 	]},
 	{"id": "transfer", "name": "Transfer", "text": "Von einem Feature auf ein anderes springen.", "tasks": [
 		{"id": "klein", "name": "Klein", "title": "Pyramid auf Pyramid-Rail",
@@ -474,6 +476,7 @@ const MODES := [
 		 "tip": "Pipe 2 ist kurz: sofort nach der Landung wieder laden. Ein kurzer Druck reicht für den Hop – voll aufladen muss man nicht."},
 	]},
 ]
+# i18n-end
 
 const SECTION := "medaillen"
 
@@ -516,27 +519,27 @@ static func shown(task: Dictionary, value: float) -> float:
 static func format_value(task: Dictionary, value: float) -> String:
 	match task["metric"]:
 		"sink":
-			return "%d %% eingesunken" % roundi(value * 100.0)
+			return Loc.t("%d %% eingesunken") % roundi(value * 100.0)
 		"height", "width", "dist", "dist_5050", "dist_bs":
-			return ("%.2f m" % value).replace(".", ",")   # cm-genau: so wird auch gewertet
+			return Loc.dec("%.2f m" % value)   # cm-genau: so wird auch gewertet
 		"press", "time":
-			return ("%.1f s" % value).replace(".", ",")
+			return Loc.dec("%.1f s" % value)
 		"speed":
-			return ("%.1f km/h" % value).replace(".", ",")
+			return Loc.dec("%.1f km/h" % value)
 		"press_share":
-			return "%d %% im Press" % roundi(value * 100.0)
+			return Loc.t("%d %% im Press") % roundi(value * 100.0)
 		"switches":
-			return "%d Wechsel" % roundi(value)
+			return Loc.tn("%d Wechsel", "%d Wechsel", roundi(value)) % roundi(value)
 		"count":
-			return "%d Slider" % roundi(value)
+			return Loc.tn("%d Slider", "%d Slider", roundi(value)) % roundi(value)
 		"spins":
-			return "%d Umdrehungen" % roundi(value)
+			return Loc.tn("%d Umdrehung", "%d Umdrehungen", roundi(value)) % roundi(value)
 		"share":
-			return "%d %% im Drift" % roundi(value * 100.0)
+			return Loc.t("%d %% im Drift") % roundi(value * 100.0)
 		"spin":
 			return "%d°" % roundi(value)
 		"points":
-			return "%d Punkte" % roundi(value)
+			return Loc.tn("%d Punkt", "%d Punkte", roundi(value)) % roundi(value)
 	return str(value)
 
 
@@ -545,9 +548,9 @@ static func format_threshold(task: Dictionary, i: int) -> String:
 	var v: float = float(task["medals"][i])
 	var lower: bool = task.get("lower", false)
 	if task["metric"] == "sink":
-		return "bis %d %%" % roundi(v * 100.0) if v > 0.0 else "nicht einsinken"
+		return Loc.t("bis %d %%") % roundi(v * 100.0) if v > 0.0 else Loc.t("nicht einsinken")
 	var t := format_value(task, v)
-	return ("bis " if lower else "ab ") + t
+	return (Loc.t("bis %s") if lower else Loc.t("ab %s")) % t
 
 
 ## Schlüssel der Bestleistung in [medaillen]. Mit "lb" in der Aufgabe (Rangliste neu, z. B. nach geänderter

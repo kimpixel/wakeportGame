@@ -49,6 +49,10 @@ extends Node3D
 ##                     mit --go=SEK: Aufgaben-Fenster zu dieser Zeit bestätigen; --mode-auto: Autopilot fährt
 
 const RESET_DELAY := 3.0
+var _lang := ""                 # verwendete Sprache (Loc), Wechsel baut die Szene neu auf
+var _lang_req := ""             # Einstellung "lang" dazu ("" = automatisch)
+var _lang_web := "-"            # Browser: Sprache aus dem localStorage ("-" = keine)
+static var _lang_reload := false   # Szene wurde für einen Sprachwechsel neu aufgebaut: Einstellungen wieder öffnen
 
 # Spielregeln: eine Runde dauert 7:30, es zählen die Punkte in dieser Zeit. Danach wird man
 # nur noch zum Start gebracht. Abkürzungen kosten Zeit.
@@ -103,7 +107,7 @@ var mode_auto := false           # Test: im Spielmodus fährt der Autopilot (--m
 
 ## Welche Anlage fährt der Spieler? Der NPC fährt immer an der anderen.
 const TERMINALS := ["T1", "T2"]
-const TERMINAL_NAMES := ["Terminal 1", "Terminal 2"]
+const TERMINAL_NAMES := ["Terminal 1", "Terminal 2"]  # i18n
 var terminal := "T2"
 var pc: CableSystem              # Anlage des Spielers
 var nc: CableSystem              # Anlage des NPC
@@ -192,6 +196,7 @@ var _log_t := 0.0
 func _ready() -> void:
 	_setup_input()
 	_parse_args()
+	_lang = _initial_lang()
 	_background_window()
 	Analytics.init()                        # Nutzungsstatistik (nur Web-Hauptversion)
 	_build_environment()
@@ -298,7 +303,7 @@ func _ready() -> void:
 			print("ABGESOFFEN at t=%.1f" % _elapsed)
 		if _turn_active:
 			_turn_sank = true
-		hud.show_trick("Abgesoffen!"))
+		hud.show_trick(tr("Abgesoffen!")))
 	rider.skipped.connect(func() -> void:
 		_penalty(SKIP_PENALTY)
 		cam.snap())                      # Kamera springt mit dem Fahrer unters Seil, kein Schwenk
@@ -320,7 +325,7 @@ func _ready() -> void:
 	_terminal_menu = hud.add_menu_choice("Terminal", TERMINAL_NAMES, 0, _on_terminal_menu)
 	var names: Array = []
 	for e: Dictionary in _setups:
-		names.append(e["name"])
+		names.append(Loc.setup_name(str(e["name"])))
 	_setup_menu = hud.add_menu_choice("Feature-Setup", names, _setup_idx, _select_setup)
 	# Handy/Tablet: Tippen = Start bzw. Sprung, Neigen = lenken
 	mobile = MobileInput.new()
@@ -379,19 +384,19 @@ func _ready() -> void:
 	weather.changed.connect(season)
 	season.call()
 	wildlife.grebe_sneaked.connect(func() -> void:
-		hud.show_trick("Was ein Frechdachs!")
+		hud.show_trick(tr("Was ein Frechdachs!"))
 		_unlock_achievement("frechdachs"))
 	wildlife.swans_love.connect(func() -> void:
-		hud.show_trick("Schwanenliebe")
+		hud.show_trick(tr("Schwanenliebe"))
 		_unlock_achievement("schwanenliebe"))
 	storm.struck.connect(func() -> void:
 		_unlock_achievement("blitz"))
 	bathers.splashed.connect(func() -> void:
-		hud.show_trick("Badegast nass gespritzt!")
+		hud.show_trick(tr("Badegast nass gespritzt!"))
 		_unlock_achievement("badegast"))
 	rider.jumped.connect(func(info: Dictionary) -> void:
 		if info.get("raley", false) and wildlife.cranes_overhead():
-			hud.show_trick("Zugvogel!")
+			hud.show_trick(tr("Zugvogel!"))
 			_unlock_achievement("zugvogel"))
 	film = FilmCrew.new()
 	film.game = self
@@ -406,28 +411,31 @@ func _ready() -> void:
 		airplanes.spawn_at(_plane_arg, _plane_near, _plane_land)
 	cam.doppler_tracking = Camera3D.DOPPLER_TRACKING_IDLE_STEP
 	ambient.pike_hit.connect(func() -> void:
-		hud.show_trick("Hecht erwischt!")
+		hud.show_trick(tr("Hecht erwischt!"))
 		_unlock_achievement("fisch"))
 	# SUP aus der Seemitte zu nah an der Bahn: rotes Boot fährt raus und schickt ihn zurück
 	ambient.sup_intruding.connect(film.chase)
 	film.sup_chased.connect(ambient.send_back)
 	ambient.sup_splashed.connect(func() -> void:
-		hud.show_trick("SUP nass gespritzt!")
+		hud.show_trick(tr("SUP nass gespritzt!"))
 		_unlock_achievement("sup"))
 	ambient.insect_eaten.connect(func() -> void:
-		hud.show_trick("Igitt – Insekt verschluckt!")
+		hud.show_trick(tr("Igitt – Insekt verschluckt!"))
 		_unlock_achievement("insekt"))
 	rider.pool_trick.connect(func(info: Dictionary) -> void:
 		if _test_log:
 			print("POOL %s" % info))
 	rider.pool_bomb.connect(func() -> void:
-		hud.show_trick("Arschbombe!")
+		hud.show_trick(tr("Arschbombe!"))
 		_unlock_achievement("arschbombe"))
 	rider.landed_on_dock.connect(func() -> void:
-		hud.show_trick("Steg-Landung!")
+		hud.show_trick(tr("Steg-Landung!"))
 		_unlock_achievement("steg"))
 	if not _test_log:
 		settings.load_file(mobile.active)     # Tests laufen immer mit Standardwerten
+		if _lang_web != "-" and settings.values["lang"] != _lang_web:   # Browser: Sprache aus dem localStorage gilt
+			settings.values["lang"] = _lang_web
+			settings.save_file()
 	if OS.get_cmdline_user_args().is_empty() and str(settings.get_v("scenario")) != "":
 		weather.set_scenario(str(settings.get_v("scenario")))   # fest gewähltes Szenario
 	# eigene Musik des Spielers (an/aus kommt mit den Einstellungen)
@@ -450,6 +458,8 @@ func _ready() -> void:
 	start_screen.ingame_closed.connect(_close_settings_ingame)
 	pause_menu.home_pressed.connect(_open_start_screen)
 	add_child(pause_menu)
+	if Fullscreen.available():
+		add_child(Fullscreen.new())    # F11 / Alt+Enter: Vollbild
 	# Debug-Overlay (F4, nur lokal): Parameter live mit Schiebereglern justieren
 	if DebugParams.available():
 		debug_params = DebugParams.new()
@@ -465,6 +475,7 @@ func _ready() -> void:
 	# Spielmodi: Aufgaben-Fenster und Ablauf
 	task_panel = TaskPanel.new()
 	task_panel.mobile = mobile.active
+	task_panel.leaderboard = leaderboard
 	task_panel.open_changed = func(open: bool) -> void:
 		mobile.ui_mode = open or start_screen.visible
 		if touch_pad:
@@ -474,6 +485,7 @@ func _ready() -> void:
 	# Competition: Ergebnis am Ende der Runde (im Spiel, gleiches Fenster wie die Challenges)
 	round_panel = TaskPanel.new()
 	round_panel.mobile = mobile.active
+	round_panel.leaderboard = leaderboard
 	round_panel.open_changed = task_panel.open_changed
 	round_panel.go_pressed.connect(_play_again)
 	round_panel.home_pressed.connect(func() -> void:
@@ -510,7 +522,8 @@ func _ready() -> void:
 	for a: String in _set_args:
 		var kv := a.split("=", true, 1)
 		if kv.size() == 2 and settings.values.has(kv[0]):
-			settings.values[kv[0]] = type_convert(str_to_var(kv[1]), typeof(GameSettings.DEFAULTS[kv[0]]))
+			var t := typeof(GameSettings.DEFAULTS[kv[0]])
+			settings.values[kv[0]] = kv[1] if t == TYPE_STRING else type_convert(str_to_var(kv[1]), t)   # Text: wie geschrieben
 	settings.emit_all()
 	if _view_arg.size() == 6:
 		# Testansicht: feste Kamera (x,y,z -> Blickpunkt x,y,z)
@@ -540,6 +553,10 @@ func _ready() -> void:
 		_task_idx = (mi[1].to_int() - 1) if mi.size() > 1 else 0
 		if not _screen_arg:
 			_enter_training()
+	if _lang_reload:                         # nach Sprachwechsel: Startseite mit offenen Einstellungen
+		_lang_reload = false
+		_screen_arg = true
+		_screen_select = "@einstellungen"
 	if _screen_arg:
 		_open_start_screen()
 		if _screen_select != "":
@@ -597,7 +614,7 @@ func _on_setups_changed(id: String, play: bool) -> void:
 	_setup_menu.clear()
 	for e: Dictionary in _setups:
 		names.append(e["name"])
-		_setup_menu.add_item(e["name"])
+		_setup_menu.add_item(Loc.setup_name(str(e["name"])))
 	start_screen.set_setup_names(names)
 	var idx := -1
 	for want: String in [id, cur]:
@@ -661,7 +678,7 @@ func _shuffle_scenario() -> void:
 	settings.set_v("scenario", "")
 	weather.set_scenario(Weather.random_scenario(weather.scenario))
 	start_screen.sync_settings()
-	hud.show_trick(weather.scenario_name())
+	hud.show_trick(tr(weather.scenario_name()))
 
 
 ## "Spiel starten": Competition beginnt direkt mit Countdown, die Spielmodi mit ihrer Aufgabe.
@@ -808,7 +825,7 @@ func _select_terminal(t: String) -> void:
 		_terminal_menu.select(TERMINALS.find(terminal))
 		return
 	_apply_terminal(t)
-	hud.show_trick("Terminal " + t)
+	hud.show_trick(tr(TERMINAL_NAMES[TERMINALS.find(t)]) if t in TERMINALS else t)
 	var cfg := ConfigFile.new()
 	cfg.load(SETTINGS)
 	cfg.set_value("game", "terminal", t)
@@ -823,10 +840,56 @@ func _apply_anlage() -> void:
 	nc.max_speed = 30.0 / 3.6
 
 
+## Sprache vor dem Aufbau der Oberfläche: Test-Argument --set=lang=…, sonst gespeichert; Autotests sonst Deutsch
+## (gleiche Log-Texte und Bilder auf jedem Rechner). Im Browser nach einem Sprachwechsel die Sprache aus dem
+## sessionStorage (siehe _change_lang) – die gespeicherte Einstellung war beim Neuladen oft noch die alte.
+func _initial_lang() -> String:
+	var test := _test_log                     # wie settings.load_file: Autotests mit Standardwerten
+	_lang_req = "" if test else str(GameSettings.peek("lang"))
+	if OS.has_feature("web") and not test:
+		# localStorage schreibt sofort und dauerhaft – user:// (IndexedDB) war beim Neuladen oft noch der alte Stand
+		var v: Variant = JavaScriptBridge.eval("localStorage.getItem('wthLang') || ''", true)
+		if v is String and (v as String) != "":
+			_lang_req = "" if v == "auto" else str(v)
+			_lang_web = _lang_req
+		var o: Variant = JavaScriptBridge.eval("(function(){var v=sessionStorage.getItem('wthLangOpen');"
+			+ "sessionStorage.removeItem('wthLangOpen');return v||''})()", true)
+		if o is String and o == "1":
+			_lang_reload = true               # nach Sprachwechsel: Startseite mit offenen Einstellungen
+	for a: String in _set_args:
+		if a.begins_with("lang="):
+			_lang_req = a.substr(5)
+	return Loc.apply("de" if test and _lang_req == "" else _lang_req)
+
+
+## Sprache gewechselt: alle Texte entstehen beim Aufbau, darum die Szene neu aufbauen (Einstellungen sind
+## schon gespeichert); danach gehen die Einstellungen wieder auf.
+## Im Browser die ganze Seite neu laden: den Neuaufbau in der laufenden Seite (Gelände, Pflanzen, zweite Szene
+## im Speicher) hielt der Browser nicht durch, das Spiel blieb hängen. Neu laden zeigt den Ladebalken.
+func _change_lang(code: String) -> void:
+	if code == _lang_req:
+		return
+	_lang_req = code
+	if Loc.apply(code) == _lang:
+		return
+	if OS.has_feature("web"):
+		# Sprache auch im localStorage (sofort gespeichert), Einstellungen nach dem Neuladen wieder öffnen
+		JavaScriptBridge.eval("localStorage.setItem('wthLang', %s); sessionStorage.setItem('wthLangOpen', '1')"
+			% JSON.stringify(code if code != "" else "auto"), true)
+		await get_tree().create_timer(0.5, true).timeout
+		JavaScriptBridge.eval("window.location.reload()", true)
+		return
+	_lang_reload = true
+	get_tree().paused = false
+	get_tree().reload_current_scene.call_deferred()
+
+
 ## Eine Einstellung anwenden (beim Start alle, danach bei jeder Änderung).
 func _apply_setting(key: String) -> void:
 	var v: Variant = settings.get_v(key)
 	match key:
+		"lang":
+			_change_lang(str(v))
 		"mode":
 			if not _test_log:           # Tests: --game-time bzw. Standard
 				_free = int(v) == 0
@@ -896,7 +959,7 @@ func _toggle_rope_rip() -> void:
 	var off := int(settings.get_v("grip")) == 3
 	settings.set_v("grip", _grip_on if off else 3)
 	start_screen.sync_settings()
-	hud.show_trick("Seil reißt ab: " + ("an" if off else "aus – keine Rangliste"))
+	hud.show_trick(tr("Seil reißt ab: an") if not off else tr("Seil reißt ab: aus – keine Rangliste"))
 
 
 ## NPC auf der anderen Anlage an/aus.
@@ -1010,7 +1073,7 @@ func _select_setup(idx: int, force := false) -> void:
 	nc.start()
 	_npc_crash_t = 0.0
 	_setup_menu.select(idx)
-	hud.show_trick("Setup: " + str(_setups[idx]["name"]))
+	hud.show_trick(tr("Setup: %s") % Loc.setup_name(str(_setups[idx]["name"])))
 	var cfg := ConfigFile.new()
 	cfg.load(SETTINGS)
 	cfg.set_value("game", "setup", _setups[idx]["id"])
@@ -1217,7 +1280,7 @@ func _penalty(sec: float) -> void:
 	if not _session or _finishing or _free_ride():
 		return
 	_time_left -= sec
-	hud.show_trick("Strafzeit −%d:%02d" % [int(sec) / 60, int(sec) % 60])
+	hud.show_trick(tr("Strafzeit −%d:%02d") % [int(sec) / 60, int(sec) % 60])
 	if _time_left <= 0.0:
 		_time_up()
 
@@ -1230,7 +1293,8 @@ func _time_up() -> void:
 	_finishing = true
 	_final_score = rider.score
 	pc.finish()
-	hud.show_trick("Zeit um!  %d Punkte" % _final_score)
+	sfx.time_up()
+	hud.show_trick(tr("Zeit um!  %d Punkte") % _final_score)
 
 
 func _end_session() -> void:
@@ -1239,12 +1303,12 @@ func _end_session() -> void:
 		print("RUNDE ENDE at t=%.1f" % _elapsed)
 	_session = false
 	_finishing = false
-	_last_result = "Letzte Runde: %d Punkte" % _final_score
+	_last_result = tr("Letzte Runde: %d Punkte") % _final_score
 	Analytics.count("runde/ende/" + Analytics.score_bucket(_final_score))
 	# man bleibt im Spiel: Ergebnis groß im Fenster, Punkte im HUD bleiben bis zum Neustart stehen
 	var st: Dictionary = _setups[_setup_idx]
-	round_panel.show_round("COMPETITION   ·   %s   ·   %s   ·   %s" % [TERMINAL_NAMES[TERMINALS.find(terminal)],
-		st["name"], _clock(_game_time)], _final_score, "")
+	round_panel.show_round("COMPETITION   ·   %s   ·   %s   ·   %s" % [tr(TERMINAL_NAMES[TERMINALS.find(terminal)]),
+		Loc.setup_name(str(st["name"]), true), _clock(_game_time)], _final_score, "")
 	_submit_round(_final_score)
 
 ## Ergebnis-Fenster „Erneut spielen“: Punkte erst jetzt löschen, zurück auf den Steg, Countdown.
@@ -1269,23 +1333,25 @@ func _submit_round(score: int) -> void:
 		_last_result += "   ·   " + why
 		round_panel.set_rank(why)
 		return
-	round_panel.set_rank("Rangliste …")
+	round_panel.set_rank(tr("Rangliste …"))
 	var b := leaderboard.competition_board(sec, terminal, st, TERMINAL_NAMES[TERMINALS.find(terminal)])
 	var r := await leaderboard.submit(b, score)
 	var rank := ""
-	if r.get("ok", false):
-		_last_result = "Letzte Runde: %d Punkte   ·   %s Platz %d von %d" % [score,
-			"Rangliste" if r.get("improved", false) else "Dein Bestwert:", int(r["rank"]), int(r["total"])]
-		rank = "PLATZ %d von %d" % [int(r["rank"]), int(r["total"])]
+	var placed: bool = r.get("ok", false)
+	if placed:
+		var place := tr("Platz %d von %d") % [int(r["rank"]), int(r["total"])]
+		_last_result = tr("Letzte Runde: %d Punkte") % score + "   ·   " \
+			+ (tr("Rangliste: %s") if r.get("improved", false) else tr("Dein Bestwert: %s")) % place
+		rank = tr("PLATZ %d von %d") % [int(r["rank"]), int(r["total"])]
 		if not r.get("improved", false):
-			rank = "Dein Bestwert: " + rank
+			rank = tr("Dein Bestwert: %s") % rank
 	elif str(r.get("error", "")) != "":
-		_last_result += "   ·   Rangliste: " + str(r["error"])
-		rank = "Rangliste: " + str(r["error"])
+		_last_result += "   ·   " + tr("Rangliste: %s") % str(r["error"])
+		rank = tr("Rangliste: %s") % str(r["error"])
 	if _test_log:
 		print("RUNDE RANGLISTE: ", rank)
 	if round_panel.is_open():
-		round_panel.set_rank(rank)
+		round_panel.set_rank(rank, placed)
 	if start_screen.visible:
 		start_screen.set_result(_last_result)
 	_mini_key = ""                       # Mini-Rangliste neu laden (mit dem neuen Eintrag)
@@ -1300,17 +1366,18 @@ var _mini_req := 0
 const MINI_RELOAD := 60.0
 
 
-## Welche Rangliste im Spiel gilt: die der Challenge bzw. der Competition (Rundenlänge, Terminal, Setup); {} = keine.
-func _mini_board() -> Dictionary:
+## Welche Rangliste im Spiel gilt: [board, warum nicht] – die der Challenge bzw. der Competition (Rundenlänge,
+## Terminal, Setup). board {} und warum ["", ""] = nichts zeigen; warum gesetzt = Hinweis statt Liste.
+func _mini_board() -> Array:
 	if start_screen.visible or not leaderboard.enabled():
-		return {}
+		return [{}, ["", ""]]
 	if challenge.active:
-		return leaderboard.challenge_board(challenge.mode_id, challenge.task)
-	var sec := roundi(_game_time)
+		var why := leaderboard.why_not(settings, true)
+		return [{} if why[0] != "" else leaderboard.challenge_board(challenge.mode_id, challenge.task), why]
+	var sec := 0 if _free else roundi(_game_time)
 	var st: Dictionary = _setups[_setup_idx]
-	if Leaderboard.competition_blocked(settings, sec, st) != "":
-		return {}
-	return leaderboard.competition_board(sec, terminal, st)
+	var why := leaderboard.why_not(settings, false, sec, st)
+	return [{} if why[0] != "" else leaderboard.competition_board(sec, terminal, st), why]
 
 
 ## Jedes Bild: Competition-Punkte live in die eigene Zeile; jede Sekunde prüfen, ob die Rangliste wechselt,
@@ -1328,11 +1395,15 @@ func _step_mini_rank(delta: float) -> void:
 	if _mini_t > 0.0:
 		return
 	_mini_t = 1.0
-	var b := _mini_board()
+	var a := _mini_board()
+	var b: Dictionary = a[0]
 	if b.is_empty():
 		_mini_key = ""
 		_mini_req += 1
-		mr.clear()
+		if a[1][0] != "":
+			mr.set_blocked(a[1])            # Einstellung verhindert die Rangliste: sagen warum
+		else:
+			mr.clear()
 		return
 	var key := "%s|%s" % [b["board"], b["ver"]]
 	if key == _mini_key and _mini_age < MINI_RELOAD:
@@ -1412,14 +1483,14 @@ func _process(_delta: float) -> void:
 		time_text = str(maxi(challenge.attempt, 1))
 		state = Hud.TimeState.RUNNING
 	elif _free_ride():
-		time_text = "FREI"                  # Freies Fahren: keine Uhr
+		time_text = tr("FREI")              # Freies Fahren: keine Uhr
 		state = Hud.TimeState.RUNNING
-	hud.time_title = "VERSUCH" if challenge.active else ("MODUS" if _free_ride() else "ZEIT")
+	hud.time_title = "VERSUCH" if challenge.active else ("MODUS" if _free_ride() else "ZEIT")  # i18n
 	hud.set_stats(time_text, state,
 		_final_score if _finishing or _round_over else rider.score, rider.tension_smooth, minf(rider.crash_tension, Rider.CRASH_TENSION))
 	hud.set_speed(rider.horizontal_speed() * 3.6)
-	hud.set_debug("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nWenden %d   ·   Kamera: %s%s" % [
-		roundi(rider.horizontal_speed() * 3.6), terminal, pc.state_text(), roundi(pc.max_speed * 3.6),
+	hud.set_debug(tr("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nWenden %d   ·   Kamera: %s%s") % [
+		roundi(rider.horizontal_speed() * 3.6), terminal, tr(pc.state_text()), roundi(pc.max_speed * 3.6),
 		pc.laps, cam.mode_name(), "   ·   AUTOPILOT" if rider.autopilot else ""])
 	hud.set_board(rider.board_state_text())
 	if touch_pad:
@@ -1448,17 +1519,18 @@ func _process(_delta: float) -> void:
 		if _swum or _down_t < RECOVERY_DELAY:
 			hud.show_recovery("", [])
 		elif pc.state == CableSystem.State.HOLD or pc.state == CableSystem.State.FETCH:
-			var title := "STURZ  –  der Operator bringt dir die Handle" if pc.state == CableSystem.State.FETCH 				else "STURZ  –  die Handle liegt bereit"
+			var title := tr("STURZ  –  der Operator bringt dir die Handle") if pc.state == CableSystem.State.FETCH \
+				else tr("STURZ  –  die Handle liegt bereit")
 			var free := _free_ride() or not _session
-			var swim := "ca. %d s" % roundi(rider.swim_time())
+			var swim := tr("ca. %d s") % roundi(rider.swim_time())
 			if mobile.active:
-				hud.show_recovery(title, [["SCHWIMMEN halten", "Zur Handle schwimmen", swim, false],
-					["SKIP", "Sofort weiterfahren", "keine Strafzeit" if free else "−1:00", not free],
-					["☰", "Zurück zum Steg", "keine Strafzeit" if free else "−2:00", not free]])
+				hud.show_recovery(title, [[tr("SCHWIMMEN halten"), tr("Zur Handle schwimmen"), swim, false],
+					[tr("SKIP"), tr("Sofort weiterfahren"), tr("keine Strafzeit") if free else "−1:00", not free],
+					["☰", tr("Zurück zum Steg"), tr("keine Strafzeit") if free else "−2:00", not free]])
 			else:
-				hud.show_recovery(title, [["LEERTASTE halten", "Zur Handle schwimmen", swim, false],
-					["STRG", "Sofort weiterfahren", "keine Strafzeit" if free else "−1:00", not free],
-					["R", "Zurück zum Steg", "keine Strafzeit" if free else "−2:00", not free]])
+				hud.show_recovery(title, [[tr("LEERTASTE halten"), tr("Zur Handle schwimmen"), swim, false],
+					[tr("STRG"), tr("Sofort weiterfahren"), tr("keine Strafzeit") if free else "−1:00", not free],
+					["R", tr("Zurück zum Steg"), tr("keine Strafzeit") if free else "−2:00", not free]])
 		else:
 			hud.show_recovery("", [])
 	elif rider.mode != Rider.Mode.CRASHED:
@@ -1469,12 +1541,12 @@ func _process(_delta: float) -> void:
 			if not _round_over and not _finishing and not start_screen.visible and hud.visible and not get_tree().paused:
 				_countdown_start()
 		elif mobile.active and mobile.use_tilt and not mobile.tilt_available:
-			hud.set_center("Neigungssensor nicht verfügbar –\nBewegungssensoren im Browser erlauben")
+			hud.set_center(tr("Neigungssensor nicht verfügbar –\nBewegungssensoren im Browser erlauben"))
 		else:
 			hud.set_center("")
 
 	if rider.dock_charge > 0.0:
-		hud.set_center("SPRUNG-START  %d %%" % roundi(rider.dock_charge * 100.0))   # auch in den Challenges
+		hud.set_center(tr("SPRUNG-START  %d %%") % roundi(rider.dock_charge * 100.0))   # auch in den Challenges
 
 	if _pause_at > 0.0 and _elapsed >= _pause_at:
 		_pause_at = -1.0
@@ -1543,7 +1615,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("hitbox"):
 		features.show_hitboxes = not features.show_hitboxes
 		drift_debug.show_lines = features.show_hitboxes
-		hud.show_trick("Hitboxen " + ("an" if features.show_hitboxes else "aus"))
+		hud.show_trick(tr("Hitboxen an") if features.show_hitboxes else tr("Hitboxen aus"))
 	elif event.is_action_pressed("help"):
 		hud.toggle_help()
 	elif event.is_action_pressed("overview"):
@@ -1573,7 +1645,7 @@ func _track_turn() -> void:
 	if pc.state == CableSystem.State.RUN:
 		_turn_active = false
 		if not _turn_sank:
-			rider.award("Wende um die Boje" if _turn_around else "Saubere Wende", 30 if _turn_around else 15)
+			rider.award(tr("Wende um die Boje") if _turn_around else tr("Saubere Wende"), 30 if _turn_around else 15)
 			if weather.is_nikolaus():
 				_unlock_achievement("nikolaus")
 		elif _test_log:
@@ -1704,7 +1776,7 @@ func _unlock_achievement(id: String) -> void:
 	if start_screen and start_screen.visible:
 		return
 	if Achievements.unlock(id):
-		hud.show_achievement(Achievements.get_def(id)["name"])
+		hud.show_achievement(tr(Achievements.get_def(id)["name"]))
 		Analytics.count("erfolg/" + id)
 		print("ERFOLG ", id)
 
@@ -1722,8 +1794,8 @@ func _check_boat() -> void:
 			hit = true
 	if hit and not _in_boat:
 		if not crashed:
-			rider.crash("Ins Boot gefahren!")
-		hud.show_trick("Boot crash!")
+			rider.crash(tr("Ins Boot gefahren!"))
+		hud.show_trick(tr("Boot crash!"))
 		_unlock_achievement("boot")
 	_in_boat = hit
 
