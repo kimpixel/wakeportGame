@@ -51,6 +51,7 @@ extends Node3D
 const RESET_DELAY := 3.0
 var _lang := ""                 # verwendete Sprache (Loc), Wechsel baut die Szene neu auf
 var _lang_req := ""             # Einstellung "lang" dazu ("" = automatisch)
+var _lang_web := "-"            # Browser: Sprache aus dem localStorage ("-" = keine)
 static var _lang_reload := false   # Szene wurde für einen Sprachwechsel neu aufgebaut: Einstellungen wieder öffnen
 
 # Spielregeln: eine Runde dauert 7:30, es zählen die Punkte in dieser Zeit. Danach wird man
@@ -432,6 +433,9 @@ func _ready() -> void:
 		_unlock_achievement("steg"))
 	if not _test_log:
 		settings.load_file(mobile.active)     # Tests laufen immer mit Standardwerten
+		if _lang_web != "-" and settings.values["lang"] != _lang_web:   # Browser: Sprache aus dem localStorage gilt
+			settings.values["lang"] = _lang_web
+			settings.save_file()
 	if OS.get_cmdline_user_args().is_empty() and str(settings.get_v("scenario")) != "":
 		weather.set_scenario(str(settings.get_v("scenario")))   # fest gewähltes Szenario
 	# eigene Musik des Spielers (an/aus kommt mit den Einstellungen)
@@ -549,10 +553,6 @@ func _ready() -> void:
 		_task_idx = (mi[1].to_int() - 1) if mi.size() > 1 else 0
 		if not _screen_arg:
 			_enter_training()
-	if OS.has_feature("web") and str(JavaScriptBridge.eval(
-			"(function(){var v=sessionStorage.getItem('wthLangReload');sessionStorage.removeItem('wthLangReload');return v||''})()",
-			true)) == "1":
-		_lang_reload = true                  # Browser: Seite wurde für den Sprachwechsel neu geladen
 	if _lang_reload:                         # nach Sprachwechsel: Startseite mit offenen Einstellungen
 		_lang_reload = false
 		_screen_arg = true
@@ -840,12 +840,22 @@ func _apply_anlage() -> void:
 	nc.max_speed = 30.0 / 3.6
 
 
-## Eine Einstellung anwenden (beim Start alle, danach bei jeder Änderung).
 ## Sprache vor dem Aufbau der Oberfläche: Test-Argument --set=lang=…, sonst gespeichert; Autotests sonst Deutsch
-## (gleiche Log-Texte und Bilder auf jedem Rechner).
+## (gleiche Log-Texte und Bilder auf jedem Rechner). Im Browser nach einem Sprachwechsel die Sprache aus dem
+## sessionStorage (siehe _change_lang) – die gespeicherte Einstellung war beim Neuladen oft noch die alte.
 func _initial_lang() -> String:
 	var test := _test_log                     # wie settings.load_file: Autotests mit Standardwerten
 	_lang_req = "" if test else str(GameSettings.peek("lang"))
+	if OS.has_feature("web") and not test:
+		# localStorage schreibt sofort und dauerhaft – user:// (IndexedDB) war beim Neuladen oft noch der alte Stand
+		var v: Variant = JavaScriptBridge.eval("localStorage.getItem('wthLang') || ''", true)
+		if v is String and (v as String) != "":
+			_lang_req = "" if v == "auto" else str(v)
+			_lang_web = _lang_req
+		var o: Variant = JavaScriptBridge.eval("(function(){var v=sessionStorage.getItem('wthLangOpen');"
+			+ "sessionStorage.removeItem('wthLangOpen');return v||''})()", true)
+		if o is String and o == "1":
+			_lang_reload = true               # nach Sprachwechsel: Startseite mit offenen Einstellungen
 	for a: String in _set_args:
 		if a.begins_with("lang="):
 			_lang_req = a.substr(5)
@@ -863,9 +873,10 @@ func _change_lang(code: String) -> void:
 	if Loc.apply(code) == _lang:
 		return
 	if OS.has_feature("web"):
-		JavaScriptBridge.eval("sessionStorage.setItem('wthLangReload', '1')", true)
-		# user:// (Einstellung) landet erst kurz nach dem Schreiben in der IndexedDB des Browsers
-		await get_tree().create_timer(1.0, true).timeout
+		# Sprache auch im localStorage (sofort gespeichert), Einstellungen nach dem Neuladen wieder öffnen
+		JavaScriptBridge.eval("localStorage.setItem('wthLang', %s); sessionStorage.setItem('wthLangOpen', '1')"
+			% JSON.stringify(code if code != "" else "auto"), true)
+		await get_tree().create_timer(0.5, true).timeout
 		JavaScriptBridge.eval("window.location.reload()", true)
 		return
 	_lang_reload = true
@@ -873,6 +884,7 @@ func _change_lang(code: String) -> void:
 	get_tree().reload_current_scene.call_deferred()
 
 
+## Eine Einstellung anwenden (beim Start alle, danach bei jeder Änderung).
 func _apply_setting(key: String) -> void:
 	var v: Variant = settings.get_v(key)
 	match key:
