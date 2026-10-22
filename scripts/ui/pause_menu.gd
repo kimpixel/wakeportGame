@@ -44,18 +44,18 @@ func _ready() -> void:
 	_box.add_theme_constant_override("separation", 12)
 	panel.add_child(_box)
 	var title := Label.new()
-	title.text = "PAUSE"
+	title.text = tr("PAUSE")
 	title.add_theme_font_size_override("font_size", 40)
 	title.add_theme_color_override("font_color", Hud.ACCENT)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_box.add_child(title)
-	_button("Weiter  (Esc)", func() -> void: set_paused(false))
-	_button("Einstellungen", func() -> void: settings_pressed.emit())
-	_button("Hilfe ein/aus", func() -> void: help_pressed.emit())
-	_next_btn = _button("Nächster Titel", func() -> void:
+	_button(tr("Weiter  (Esc)"), func() -> void: set_paused(false))
+	_button(tr("Einstellungen"), func() -> void: settings_pressed.emit())
+	_button(tr("Hilfe ein/aus"), func() -> void: help_pressed.emit())
+	_next_btn = _button(tr("Nächster Titel"), func() -> void:
 		music.next()
 		_update_music())
-	_button("Startseite", func() -> void:
+	_button(tr("Startseite"), func() -> void:
 		set_paused(false)
 		home_pressed.emit())
 	MenuNav.add_scope(_dim, 30)
@@ -76,7 +76,7 @@ func _update_music() -> void:
 	var on := music != null and music.current != ""
 	_next_btn.visible = on
 	if on:
-		_next_btn.text = "Nächster Titel   (♪ %s)" % music.current.left(28)
+		_next_btn.text = tr("Nächster Titel") + "   (♪ %s)" % music.current.left(28)
 
 
 func set_paused(on: bool) -> void:

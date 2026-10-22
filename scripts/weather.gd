@@ -9,6 +9,7 @@ extends Node
 
 signal changed
 
+# i18n-begin name
 const PRESETS := [
 	{"id": "sonnig", "name": "Sonnig", "cloud": 0.05, "rain": 0.0, "haze": 0.0},
 	{"id": "heiter", "name": "Heiter", "cloud": 0.35, "rain": 0.0, "haze": 0.0},
@@ -20,12 +21,14 @@ const PRESETS := [
 	{"id": "schnee", "name": "Schnee", "cloud": 0.9, "rain": 0.0, "haze": 0.35, "snow": 1.0},
 	{"id": "gewitter", "name": "Gewitter", "cloud": 1.0, "rain": 1.0, "haze": 0.3, "storm": 1.0},
 ]
+# i18n-end
 
 ## Szenarien: day = Tag im Jahr (2026), hour = deutsche Uhrzeit, preset = Wetter-id; Extras überschreiben
 ## das Wetter (cloud, rain, haze, mist = Bodennebel, rainbow, trails = Kondensstreifen, hot = Hitzetag: viele Badegäste).
 ## only = "MM-TT": nur an diesem echten Kalendertag im Würfel (dann immer), sonst nicht in der Liste.
 ## pick = false: nicht gewürfelt (Nacht und Blaue Stunde sind zu dunkel, vor allem im Web/am Handy – schwerer, unfair
 ## für die Rangliste), nur gezielt wählbar.
+# i18n-begin name
 const SCENARIOS := [
 	{"id": "afterhour", "name": "After Hour Raley Session", "day": 230, "hour": 19.75, "preset": "sonnig"},
 	{"id": "earlybird", "name": "Early Bird Session", "day": 251, "hour": 8.75, "preset": "dunst", "mist": 1.0,
@@ -44,6 +47,7 @@ const SCENARIOS := [
 	{"id": "gewitter", "name": "Gewitter – YOLO", "day": 205, "hour": 18.25, "preset": "gewitter", "pick": false},
 	{"id": "nikolaus", "name": "Nikolaus-Session", "day": 340, "hour": 15.0, "preset": "schnee", "only": "12-06"},
 ]
+# i18n-end
 const NIKOLAUS_DAY := 340         # 6. Dezember: im Schnee fahren = geheimer Erfolg "nikolaus"
 const CITY_BEARING := 65.0        # Frankfurt (Stadt + Flughafen) von Raunheim aus: Lichtglocke am Nachthimmel
 const MIST_DENSITY := 0.012       # 1/m: Bodennebel direkt über dem Wasser bei mist = 1 (nach oben dünner, shaders/mist.gdshader)

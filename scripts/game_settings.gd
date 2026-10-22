@@ -11,7 +11,7 @@ const FILE := "user://settings.cfg"
 const SECTION := "optionen"
 
 ## Spielmodus: Rundenlänge in Sekunden, 0 = Freies Fahren (ohne Zeit und Strafzeit)
-const MODES := [[450, "Runde 7:30"], [600, "Runde 10:00"], [900, "Runde 15:00"], [0, "Freies Fahren"]]
+const MODES := [[450, "Runde 7:30"], [600, "Runde 10:00"], [900, "Runde 15:00"], [0, "Freies Fahren"]]  # i18n
 ## Westenfarben (Impact-Weste) zur Auswahl
 const VESTS := [Color(1.0, 0.45, 0.05), Color(0.85, 0.12, 0.12), Color(0.15, 0.45, 0.95),
 	Color(0.2, 0.7, 0.3), Color(0.95, 0.85, 0.15), Color(0.6, 0.25, 0.75), Color(0.1, 0.1, 0.12),
@@ -26,7 +26,7 @@ const TILT_DEG := [35.0, 25.0, 16.0]
 const ASSIST_BONUS := 0.15
 ## Grafikstufen Niedrig, Mittel, Hoch; "Custom" = Wasser-Effekte weichen von der Stufe ab (nur Anzeige,
 ## gespeichert bleibt die Stufe für Auflösung, Schatten, Bäume, Gischt)
-const QUALITY_NAMES := ["Niedrig", "Mittel", "Hoch", "Custom"]
+const QUALITY_NAMES := ["Niedrig", "Mittel", "Hoch", "Custom"]  # i18n
 const QUALITY_CUSTOM := 3
 ## Wasser-Effekte je Grafikstufe (Wasserfarbe gehört nicht dazu)
 const WATER_PRESETS := [
@@ -41,6 +41,7 @@ const WATER_PRESETS := [
 const PRESET_VER := 1
 
 const DEFAULTS := {
+	"lang": "",             # Sprache (Loc.LANGS), "" = wie System/Browser
 	"mode": 450,            # Sekunden, 0 = Freies Fahren
 	"board": 0,             # BoardLibrary
 	"goofy": false,         # Stance: false = Regular (links vorne), true = Goofy (rechts vorne)
@@ -105,6 +106,14 @@ static func defaults_ver() -> int:
 	for n: int in DEFAULT_CHANGES:
 		v = maxi(v, n)
 	return v
+
+
+## Einen gespeicherten Wert lesen, ohne alles zu laden (z. B. die Sprache, bevor die Oberfläche entsteht).
+static func peek(key: String) -> Variant:
+	var cfg := ConfigFile.new()
+	if cfg.load(FILE) == OK and cfg.has_section_key(SECTION, key):
+		return type_convert(cfg.get_value(SECTION, key), typeof(DEFAULTS[key]))
+	return DEFAULTS[key]
 
 
 ## Gespeicherte Werte laden. mobile: Handy startet mit mittlerer Grafik.

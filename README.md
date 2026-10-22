@@ -97,6 +97,8 @@ Solange der Carrier noch nicht zurückzieht, schwingst du quer zum Seil um ihn h
 
 Funktioniert am besten in Chrome, Edge oder Firefox am PC. Einmal ins Bild klicken, damit Tastatur und Maus reagieren.
 
+**Sprachen:** Deutsch, English, Français, Español, Nederlands, Polski, Čeština, Português (Brasil). Standard ist die Sprache des Browsers bzw. Systems, umstellen unter Einstellungen → Spiel → Sprache. English: [README.en.md](README.en.md).
+
 ## Nutzungsstatistik
 
 Die Web-Version zählt anonym mit [GoatCounter](https://www.goatcounter.com) (ohne Cookies, ohne IP-Adressen,
@@ -204,6 +206,7 @@ node fetch_geodata.mjs
 | `scripts/features/` | Feature-Setups laden, Form = Physik = Grafik der Bauteile, Hack-Erkennung |
 | `scripts/ui/` | Startseite, Setup-Editor, Pause, Challenge-Fenster, Handy-Tasten, Menü-Navigation |
 | `scripts/leaderboard.gd`, `server/` | Online-Rangliste (Spiel) und Cloudflare Worker + D1 (Server) |
+| `scripts/loc.gd`, `locale/*.po`, `tools/i18n.js` | Sprachen (gettext): Texte im Code mit `tr()`, Übersetzungen je Sprache in `locale/`, Abgleich mit `node tools/i18n.js extract` |
 
 Ausführlich (alle Dateien, Regeln und Entscheidungen): [CLAUDE.md](CLAUDE.md).
 

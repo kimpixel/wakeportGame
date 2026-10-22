@@ -342,14 +342,14 @@ func get_velocity() -> Vector3:
 
 func state_text() -> String:
 	match state:
-		State.IDLE: return "Bereit"
-		State.START: return "Anfahren"
-		State.RUN: return "Fahrt → Mast 2" if dir < 0.0 else "Fahrt → Ufer"
-		State.BRAKE: return "Bremst zur Wende"
-		State.PAUSE: return "Wende"
-		State.FETCH: return "Operator bringt die Handle"
-		State.HOLD: return "Wartet auf den Fahrer"
-		State.DONE: return "Ende – zurück am Start"
+		State.IDLE: return "Bereit"  # i18n
+		State.START: return "Anfahren"  # i18n
+		State.RUN: return "Fahrt → Mast 2" if dir < 0.0 else "Fahrt → Ufer"  # i18n
+		State.BRAKE: return "Bremst zur Wende"  # i18n
+		State.PAUSE: return "Wende"  # i18n
+		State.FETCH: return "Operator bringt die Handle"  # i18n
+		State.HOLD: return "Wartet auf den Fahrer"  # i18n
+		State.DONE: return "Ende – zurück am Start"  # i18n
 	return ""
 
 

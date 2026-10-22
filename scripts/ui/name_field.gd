@@ -30,7 +30,7 @@ func build(size: int, label: String, button: Button) -> void:
 		l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		row.add_child(l)
 	edit = LineEdit.new()
-	edit.placeholder_text = "dein Name"
+	edit.placeholder_text = tr("dein Name")
 	edit.max_length = Leaderboard.NAME_MAX
 	edit.custom_minimum_size = Vector2(150, 48)
 	edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -41,8 +41,8 @@ func build(size: int, label: String, button: Button) -> void:
 		edit.editable = false
 		edit.gui_input.connect(func(e: InputEvent) -> void:
 			if (e is InputEventMouseButton and e.pressed) or (e is InputEventScreenTouch and e.pressed):
-				var r: Variant = JavaScriptBridge.eval("prompt('Dein Name für die Rangliste (2 bis 16 Zeichen)', %s)"
-					% JSON.stringify(edit.text), true)
+				var r: Variant = JavaScriptBridge.eval("prompt(%s, %s)" % [JSON.stringify(tr("Dein Name für die Rangliste (2 bis 16 Zeichen)")),
+					JSON.stringify(edit.text)], true)
 				if r is String:
 					edit.text = (r as String).substr(0, Leaderboard.NAME_MAX)
 					save())
@@ -70,10 +70,10 @@ func save() -> void:
 	edit.release_focus()
 	if n == "" or n == leaderboard.player_name:
 		return
-	set_msg("Wird gespeichert …")
+	set_msg(tr("Wird gespeichert …"))
 	var r := await leaderboard.set_player_name(n)
 	if r.get("ok", false):
 		set_msg("")
 		saved.emit(n)
 	else:
-		set_msg(str(r.get("error", "Fehler")))
+		set_msg(str(r.get("error", tr("Fehler"))))

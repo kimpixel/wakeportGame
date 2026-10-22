@@ -29,8 +29,8 @@ const SPEED_MIN := 16.0          # km/h Anlagen-Tempo
 const SPEED_MAX := 40.0
 const KOFI_URL := "https://ko-fi.com/kimpixel"   # Unterstützen (auch in .github/FUNDING.yml und README)
 ## Namen in der Auswahl (Reihenfolge wie Helmet.DESIGNS bzw. GameSettings.VESTS; fehlt einer: Nummer)
-const HELMET_NAMES := ["Gelb / Grün", "Weiß / Schwarz", "Blau", "Orange", "Schwarz glänzend", "Pink / Türkis", "Oliv"]
-const VEST_NAMES := ["Orange", "Rot", "Blau", "Grün", "Gelb", "Lila", "Schwarz", "Weiß"]
+const HELMET_NAMES := ["Gelb / Grün", "Weiß / Schwarz", "Blau", "Orange", "Schwarz glänzend", "Pink / Türkis", "Oliv"]  # i18n
+const VEST_NAMES := ["Orange", "Rot", "Blau", "Grün", "Gelb", "Lila", "Schwarz", "Weiß"]  # i18n
 
 var features: FeatureSet
 var weather: Weather
@@ -101,6 +101,7 @@ var _preview: FeaturePreview
 var _syncers: Array[Callable] = []
 var _shuffle_btn: Button         # Szenario würfeln (auch Z / Share, Aktion "shuffle")
 var _tab_buttons: Array[Button] = []
+var _lang_row: Control
 var _font: Font
 var _k := 1.0
 
@@ -154,10 +155,10 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	tb.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_ui.add_child(tb)
 	_title_box = tb
-	var t := _label("WAKE THE HACK", 44)
+	var t := _label(tr("WAKE THE HACK"), 44)
 	t.add_theme_constant_override("outline_size", 10)
 	tb.add_child(t)
-	var place := _label("Wakeport Raunheim", 20, Color(1, 1, 1, 0.85))
+	var place := _label(tr("Wakeport Raunheim"), 20, Color(1, 1, 1, 0.85))
 	tb.add_child(place)
 	# Szenario (Datum, Uhrzeit, Wetter; jeder Start würfelt eins aus)
 	var scene_l := _label("", 18, Color(1, 1, 1, 0.7))
@@ -165,7 +166,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	if weather:
 		var upd := func() -> void:
 			var n := weather.scenario_name()
-			scene_l.text = ("„%s“   " % n if n != "" else "") + "%s, %s" % [weather.date_text(), weather.time_text()]
+			scene_l.text = (tr("„%s“") % tr(n) + "   " if n != "" else "") + "%s, %s" % [weather.date_text(), weather.time_text()]
 		weather.changed.connect(upd)
 		upd.call()
 	_result = _label("", 24, SEL)
@@ -199,24 +200,24 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_split.add_child(right)
 	# Spielmodus: Competition, darunter die Community Challenges (Wenden, Kicker, Slider …)
-	left.add_child(_small("SPIELMODUS"))
+	left.add_child(_small(tr("SPIELMODUS")))
 	_mode_select = _select(20)
 	for m: Dictionary in Training.MODES:
 		_mode_ids.append(m["id"])
-		_mode_select.add_item(m["name"])
+		_mode_select.add_item(tr(m["name"]))
 		if m["id"] == Training.COMPETITION:
 			_mode_ids.append("")
-			_mode_select.add_header("COMMUNITY CHALLENGE")
+			_mode_select.add_header(tr("COMMUNITY CHALLENGE"))
 	_mode_select.item_selected.connect(func(i: int) -> void: mode_chosen.emit(_mode_ids[i]))
 	left.add_child(_mode_select)
 	# Szenario (Datum, Uhrzeit, Wetter): Standard Zufällig = nach jedem Spiel ein neues
 	if weather and settings:
-		left.add_child(_small("SZENARIO"))
+		left.add_child(_small(tr("SZENARIO")))
 		var scenes := Weather.scenario_list()
 		var ss := _select(18)
-		ss.add_item("Zufällig")
+		ss.add_item(tr("Zufällig"))
 		for sc: Dictionary in scenes:
-			ss.add_item(sc["name"])
+			ss.add_item(tr(sc["name"]))
 		ss.item_selected.connect(func(i: int) -> void:
 			if i == 0:
 				settings.set_v("scenario", "")
@@ -227,7 +228,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 		ss.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		# Shuffle: sofort ein anderes Szenario würfeln (stellt auf Zufällig)
 		var shuffle := _button("", 18)
-		shuffle.tooltip_text = "Neues Szenario würfeln  (Z, Gamepad: Share)"
+		shuffle.tooltip_text = tr("Neues Szenario würfeln  (Z, Gamepad: Share)")
 		shuffle.custom_minimum_size = Vector2(56, 0)
 		shuffle.draw.connect(func() -> void: _draw_shuffle(shuffle))
 		shuffle.pressed.connect(func() -> void:
@@ -254,7 +255,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_train_box.add_theme_constant_override("separation", 6)
 	_train_box.visible = false
 	right.add_child(_train_box)
-	_train_box.add_child(_small("CHALLENGE"))
+	_train_box.add_child(_small(tr("CHALLENGE")))
 	_task_select = _select(18)
 	_task_select.item_selected.connect(func(i: int) -> void: task_chosen.emit(i))
 	_train_box.add_child(_task_select)
@@ -262,13 +263,13 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_task_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_task_info.custom_minimum_size = Vector2(100, 0)
 	_train_box.add_child(_task_info)
-	_comp_box.add_child(_small("TERMINAL"))
+	_comp_box.add_child(_small(tr("TERMINAL")))
 	_term_select = _select(20)
 	for n: String in terminal_names:
-		_term_select.add_item(n)
+		_term_select.add_item(tr(n))
 	_term_select.item_selected.connect(func(i: int) -> void: terminal_chosen.emit(_terminals[i]))
 	_comp_box.add_child(_term_select)
-	_comp_box.add_child(_small("FEATURE-SETUP"))
+	_comp_box.add_child(_small(tr("FEATURE-SETUP")))
 	_setup_select = _select(18)
 	_setup_select.item_selected.connect(func(i: int) -> void: setup_chosen.emit(i))
 	_comp_box.add_child(_setup_select)
@@ -279,28 +280,28 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	row.add_theme_constant_override("v_separation", 8)
 	mv.add_child(row)
 	_bottom_row = row
-	var eb := _button("Einstellungen", 20)
+	var eb := _button(tr("Einstellungen"), 20)
 	eb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	eb.pressed.connect(func() -> void: _show_popup(_settings))
 	row.add_child(eb)
-	var ed := _button("Setup-Editor", 20)
+	var ed := _button(tr("Setup-Editor"), 20)
 	ed.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ed.pressed.connect(open_editor)
 	row.add_child(ed)
-	var ab := _button("Erfolge", 20)
+	var ab := _button(tr("Erfolge"), 20)
 	ab.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ab.pressed.connect(_open_achievements)
 	row.add_child(ab)
-	var rb := _button("Rangliste", 20)
+	var rb := _button(tr("Rangliste"), 20)
 	rb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rb.pressed.connect(_open_ranking)
 	row.add_child(rb)
-	_start_btn = _button("SPIEL STARTEN", 30, true)
+	_start_btn = _button(tr("SPIEL STARTEN"), 30, true)
 	_start_btn.custom_minimum_size.y = 72
 	_start_btn.pressed.connect(func() -> void: start_pressed.emit())
 	mv.add_child(_start_btn)
 	_kofi_btn = Button.new()
-	_kofi_btn.text = "Kostenlos & Open Source – spendier mir einen Kaffee"
+	_kofi_btn.text = tr("Kostenlos & Open Source – spendier mir einen Kaffee")
 	_kofi_btn.flat = true
 	_kofi_btn.focus_mode = Control.FOCUS_NONE
 	_kofi_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
@@ -346,20 +347,20 @@ func refresh_mode(mode_id: String, task_idx: int) -> void:
 	var comp := mode_id == Training.COMPETITION
 	_comp_box.visible = comp
 	_train_box.visible = not comp
-	_start_btn.text = "SPIEL STARTEN" if comp else "CHALLENGE STARTEN"
+	_start_btn.text = tr("SPIEL STARTEN") if comp else tr("CHALLENGE STARTEN")
 	if not comp:
 		var list := Training.tasks(mode_id)
 		_task_select.clear()
 		for i in list.size():
 			var t: Dictionary = list[i]
-			_task_select.add_item("%d  %s" % [i + 1, t["name"]],
+			_task_select.add_item("%d  %s" % [i + 1, tr(t["name"])],
 				Trophy.texture(clampi(int(Training.best(mode_id, t["id"])[0]), 0, 3)))
 		_task_select.select(clampi(task_idx, 0, list.size() - 1))
 		var t: Dictionary = list[clampi(task_idx, 0, list.size() - 1)]
 		var best := Training.best(mode_id, t["id"])
-		var line: String = t["goal"]
+		var line: String = tr(t["goal"])
 		if not is_nan(float(best[1])):
-			line += "\nBestwert: " + Training.format_value(t, best[1])
+			line += "\n" + tr("Bestwert: %s") % Training.format_value(t, best[1])
 		_task_info.text = line
 	_layout()
 	_refresh_mini()
@@ -370,7 +371,7 @@ func set_setup_names(setup_names: Array) -> void:
 	_setup_names = setup_names
 	_setup_select.clear()
 	for n: String in setup_names:
-		_setup_select.add_item(n.get_slice(" (", 0))     # ohne "(Datum ?)"
+		_setup_select.add_item(Loc.setup_name(n, true))     # ohne "(Datum ?)"
 	_setup_select.select(clampi(_setup_idx, 0, setup_names.size() - 1))
 	if is_inside_tree():
 		_layout()
@@ -677,6 +678,8 @@ func _close_popups() -> void:
 	_dim.visible = false
 	if _ingame:
 		_ingame = false
+		if _lang_row:
+			_lang_row.visible = true
 		visible = false
 		_menu.visible = true
 		_title_box.visible = true
@@ -686,6 +689,8 @@ func _close_popups() -> void:
 ## Im Spiel (pausiert): nur die Einstellungen zeigen, ohne Startseiten-Menü und ohne eigene Kamera.
 func open_settings_ingame() -> void:
 	_ingame = true
+	if _lang_row:
+		_lang_row.visible = false
 	_menu.visible = false
 	_title_box.visible = false
 	visible = true
@@ -700,7 +705,7 @@ func _popup_open() -> bool:
 ## Einstellungen in fünf Reitern: Spiel, Fahrer, Welt, Technik, Musik. Alles außer Wetter/Uhrzeit
 ## landet in GameSettings (gespeichert); main.gd wendet die Werte an.
 func _build_settings() -> void:
-	var f := _popup_frame("EINSTELLUNGEN")
+	var f := _popup_frame(tr("EINSTELLUNGEN"))
 	_settings = f[0]
 	var v: VBoxContainer = f[1]
 	var tabs := HFlowContainer.new()             # hochkant: Reiter brechen in eine zweite Zeile um
@@ -716,7 +721,7 @@ func _build_settings() -> void:
 	scroll.add_child(holder)
 	var tg := ButtonGroup.new()
 	var pages: Array[VBoxContainer] = []
-	for title: String in ["Spiel", "Fahrer", "Welt", "Technik", "Wasser", "Musik"]:
+	for title: String in [tr("Spiel"), tr("Fahrer"), tr("Welt"), tr("Technik"), tr("Wasser"), tr("Musik")]:
 		var page := VBoxContainer.new()
 		page.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		page.add_theme_constant_override("separation", 10)
@@ -747,40 +752,48 @@ func _build_settings() -> void:
 		_page_water(pages[4])
 	if settings and music:
 		_page_music(pages[5])
-	var ok := _button("FERTIG", 24, true)
+	var ok := _button(tr("FERTIG"), 24, true)
 	ok.pressed.connect(_close_popups)
 	v.add_child(ok)
 	sync_settings()
 
 
 func _page_game(p: VBoxContainer) -> void:
+	# Sprache: Namen je in der eigenen Sprache; Wechsel baut das Spiel neu auf (main.gd)
+	var langs: Array = [tr("Automatisch (System)")]
+	var codes: Array = [""]
+	for l: Array in Loc.LANGS:
+		langs.append(l[1])
+		codes.append(l[0])
+	_opt_row(p, tr("SPRACHE") + ("" if Loc.current() == "en" else "   ·   LANGUAGE"), langs, "lang", codes)
+	_lang_row = p.get_child(p.get_child_count() - 1)      # im Spiel ausgeblendet (Wechsel baut alles neu auf)
 	var modes: Array = []
 	var secs: Array = []
 	for m: Array in GameSettings.MODES:
 		secs.append(m[0])
-		modes.append(m[1])
-	_opt_row(p, "COMPETITION: RUNDENLÄNGE", modes, "mode", secs)
-	p.add_child(_small("HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"))
-	_opt_row(p, "Auf dem Slider einloggen", ["An", "Aus"], "assist_lock", [true, false])
-	_opt_row(p, "Überschlag dreht von selbst zu Ende", ["An", "Aus"], "assist_flip", [true, false])
-	_opt_row(p, "SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G; Aus = keine Rangliste)",
-		["An", "Aus"], "grip", [1, 3])
+		modes.append(tr(m[1]))
+	_opt_row(p, tr("COMPETITION: RUNDENLÄNGE"), modes, "mode", secs)
+	p.add_child(_small(tr("HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)")))
+	_opt_row(p, tr("Auf dem Slider einloggen"), [tr("An"), tr("Aus")], "assist_lock", [true, false])
+	_opt_row(p, tr("Überschlag dreht von selbst zu Ende"), [tr("An"), tr("Aus")], "assist_flip", [true, false])
+	_opt_row(p, tr("SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G; Aus = keine Rangliste)"),
+		[tr("An"), tr("Aus")], "grip", [1, 3])
 
 
 func _page_rider(p: VBoxContainer) -> void:
 	var boards: Array = []
 	for i in BoardLibrary.count():
-		boards.append(BoardLibrary.design(i)["name"])
-	_opt_row(p, "BRETT", boards, "board")
-	_opt_row(p, "STANCE   (Regular: links vorne)", ["Regular", "Goofy"], "goofy", [false, true])
+		boards.append(tr(BoardLibrary.design(i)["name"]))
+	_opt_row(p, tr("BRETT"), boards, "board")
+	_opt_row(p, tr("STANCE   (Regular: links vorne)"), [tr("Regular"), tr("Goofy")], "goofy", [false, true])
 	var helmets: Array = []
 	for d: Dictionary in Helmet.DESIGNS:
 		helmets.append([d["left"], d["right"]])
-	_swatch_row(p, "HELM", helmets, "helmet", HELMET_NAMES)
+	_swatch_row(p, tr("HELM"), helmets, "helmet", HELMET_NAMES)
 	var vests: Array = []
 	for c: Color in GameSettings.VESTS:
 		vests.append([c, c])
-	_swatch_row(p, "WESTE", vests, "vest", VEST_NAMES)
+	_swatch_row(p, tr("WESTE"), vests, "vest", VEST_NAMES)
 
 
 func _page_world(p: VBoxContainer) -> void:
@@ -788,95 +801,95 @@ func _page_world(p: VBoxContainer) -> void:
 		# Szenario wählt man auf der Startseite; hier das Wetter von Hand (gilt bis zum Neustart)
 		var ws := _select(18)
 		for n: String in weather.preset_names():
-			ws.add_item(n)
+			ws.add_item(tr(n))
 		ws.item_selected.connect(func(i: int) -> void: weather.set_preset(i))
-		_row(p, "WETTER   (von Hand, bis zum Neustart; Szenario auf der Startseite)").add_child(ws)
-		var date_l := _small("DATUM")
+		_row(p, tr("WETTER   (von Hand, bis zum Neustart; Szenario auf der Startseite)")).add_child(ws)
+		var date_l := _small(tr("DATUM"))
 		var day_s := _slider(1.0, 365.0, 1.0)
 		_row(p, "", date_l).add_child(day_s)
 		day_s.value_changed.connect(func(val: float) -> void:
 			if int(val) != weather.day:
 				weather.set_day(int(val)))
-		var time_l := _small("UHRZEIT")
+		var time_l := _small(tr("UHRZEIT"))
 		var hour_s := _slider(0.0, 24.0, 0.25)
 		_row(p, "", time_l).add_child(hour_s)
 		hour_s.value_changed.connect(func(val: float) -> void:
 			if absf(val - weather.hour) > 0.01:
 				weather.set_hour(val))
-		var now := _button("Jetzt  (live)", 18)
-		now.tooltip_text = "Heute, aktuelle Uhrzeit und Wetter am See"
+		var now := _button(tr("Jetzt  (live)"), 18)
+		now.tooltip_text = tr("Heute, aktuelle Uhrzeit und Wetter am See")
 		now.pressed.connect(weather.set_now)
 		p.add_child(now)
 		var update := func() -> void:
 			ws.select(weather.preset)
 			day_s.set_value_no_signal(weather.day)
 			hour_s.set_value_no_signal(weather.hour)
-			date_l.text = "DATUM   " + weather.date_text()
-			time_l.text = "UHRZEIT   " + weather.time_text() + ("   (live)" if weather.live else "")
+			date_l.text = tr("DATUM") + "   " + weather.date_text()
+			time_l.text = tr("UHRZEIT") + "   " + weather.time_text() + ("   (live)" if weather.live else "")
 		weather.changed.connect(update)
 		update.call()
 	if settings == null:
 		return
 	p.add_child(_label("", 4))
-	_slider_row(p, "SEILLÄNGE", "rope", ROPE_MIN, ROPE_MAX, 0.5, func(x: float) -> String: return "%.1f m" % x)
-	_slider_row(p, "ANLAGEN-TEMPO", "speed", SPEED_MIN, SPEED_MAX, 1.0, func(x: float) -> String: return "%d km/h" % roundi(x))
-	var std := _button("Seil und Tempo: Standard  (16 m, 30 km/h)", 17)
+	_slider_row(p, tr("SEILLÄNGE"), "rope", ROPE_MIN, ROPE_MAX, 0.5, func(x: float) -> String: return "%.1f m" % x)
+	_slider_row(p, tr("ANLAGEN-TEMPO"), "speed", SPEED_MIN, SPEED_MAX, 1.0, func(x: float) -> String: return tr("%d km/h") % roundi(x))
+	var std := _button(tr("Seil und Tempo: Standard  (16 m, 30 km/h)"), 17)
 	std.pressed.connect(func() -> void:
 		settings.set_v("rope", Rider.ROPE_LENGTH)
 		settings.set_v("speed", 30.0)
 		sync_settings())
 	p.add_child(std)
-	_opt_row(p, "FLUGZEUGE", ["Aus", "Normal", "Rush Hour"], "planes", [0, 1, 2])
-	_opt_row(p, "FAHRER AUF DER ANDEREN ANLAGE", ["An", "Aus"], "npc", [true, false])
-	_opt_row(p, "CHALLENGE: FILMTEAM", ["Zufall", "Boot", "Drohne", "Aus"], "film", [0, 1, 2, 3])
+	_opt_row(p, tr("FLUGZEUGE"), [tr("Aus"), tr("Normal"), tr("Rush Hour")], "planes", [0, 1, 2])
+	_opt_row(p, tr("FAHRER AUF DER ANDEREN ANLAGE"), [tr("An"), tr("Aus")], "npc", [true, false])
+	_opt_row(p, tr("CHALLENGE: FILMTEAM"), [tr("Zufall"), tr("Boot"), tr("Drohne"), tr("Aus")], "film", [0, 1, 2, 3])
 
 
 func _page_tech(p: VBoxContainer) -> void:
 	_quality_row(p)
 	var pct := func(x: float) -> String: return "%d %%" % roundi(x * 100.0)
-	_slider_row(p, "LAUTSTÄRKE EFFEKTE", "vol_fx", 0.0, 1.0, 0.05, pct)
-	_slider_row(p, "LAUTSTÄRKE JUBEL", "vol_cheer", 0.0, 1.0, 0.05, pct)
-	_slider_row(p, "LAUTSTÄRKE FLUGZEUGE", "vol_planes", 0.0, 1.0, 0.05, pct)
-	_opt_row(p, "KAMERA", ["Verfolger", "Orbit", "Ufer"], "cam_mode", [0, 1, 2])
-	_slider_row(p, "KAMERA-ABSTAND", "cam_dist", 4.0, 14.0, 0.5, func(x: float) -> String: return "%.1f m" % x)
+	_slider_row(p, tr("LAUTSTÄRKE EFFEKTE"), "vol_fx", 0.0, 1.0, 0.05, pct)
+	_slider_row(p, tr("LAUTSTÄRKE JUBEL"), "vol_cheer", 0.0, 1.0, 0.05, pct)
+	_slider_row(p, tr("LAUTSTÄRKE FLUGZEUGE"), "vol_planes", 0.0, 1.0, 0.05, pct)
+	_opt_row(p, tr("KAMERA"), [tr("Verfolger"), tr("Orbit"), tr("Ufer")], "cam_mode", [0, 1, 2])
+	_slider_row(p, tr("KAMERA-ABSTAND"), "cam_dist", 4.0, 14.0, 0.5, func(x: float) -> String: return "%.1f m" % x)
 	if mobile:
-		_opt_row(p, "LENKUNG", ["Gyro (Handy neigen)", "Tasten (Steuerkreuz)"], "steer", [0, 1])
-		_opt_row(p, "NEIGUNG ZUM LENKEN", ["Wenig empfindlich", "Mittel", "Sehr empfindlich"], "tilt", [0, 1, 2])
-		_opt_row(p, "NEIGUNG UMKEHREN", ["Nein", "Ja"], "tilt_invert", [false, true])
+		_opt_row(p, tr("LENKUNG"), [tr("Gyro (Handy neigen)"), tr("Tasten (Steuerkreuz)")], "steer", [0, 1])
+		_opt_row(p, tr("NEIGUNG ZUM LENKEN"), [tr("Wenig empfindlich"), tr("Mittel"), tr("Sehr empfindlich")], "tilt", [0, 1, 2])
+		_opt_row(p, tr("NEIGUNG UMKEHREN"), [tr("Nein"), tr("Ja")], "tilt_invert", [false, true])
 
 
 ## Wasser-Effekte einzeln an/aus (zum Ausprobieren). Wirkt sofort, auch im Hintergrund der Startseite.
 func _page_water(p: VBoxContainer) -> void:
-	var info := _label("Die Grafikstufe stellt alle Wasser-Effekte passend ein. Einzelne Effekte lassen sich hier "
-		+ "an- und ausschalten (wirkt sofort) – weicht etwas von der Stufe ab, steht die Grafik auf „Custom“.", 16, Color(1, 1, 1, 0.8))
+	var info := _label(tr("Die Grafikstufe stellt alle Wasser-Effekte passend ein. Einzelne Effekte lassen sich hier "
+		+ "an- und ausschalten (wirkt sofort) – weicht etwas von der Stufe ab, steht die Grafik auf „Custom“."), 16, Color(1, 1, 1, 0.8))
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_child(info)
 	_quality_row(p)
-	var onoff := ["An", "Aus"]
-	_opt_row(p, "WASSERFARBE", ["Türkis  (bisher)", "Seeblau"], "w_color", [0, 1])
-	_opt_row(p, "OBERFLÄCHENSTRUKTUR   (gleitende Kräuselung statt Sinus)", onoff, "w_detail", [true, false])
-	_opt_row(p, "SPIEGELUNG JE NACH BLICKWINKEL   (flach: Himmel, von oben: ins Wasser)", onoff, "w_fresnel", [true, false])
-	_opt_row(p, "SONNENGLITZERN", onoff, "w_glitter", [true, false])
-	_opt_row(p, "LICHT DURCH DIE WELLENKÄMME", onoff, "w_crest", [true, false])
-	_opt_row(p, "SCHAUM MIT STRUKTUR   (fleckig, reißt auf)", onoff, "w_foam", [true, false])
-	_opt_row(p, "SPITZE WELLEN   (auch für die Physik)", onoff, "w_sharp", [true, false])
-	p.add_child(_small("MIT WASSERTIEFE   (etwas teurer; Wasser wird dafür transparent gezeichnet)"))
-	_opt_row(p, "DURCHSICHT IM FLACHEN", onoff, "w_clear", [true, false])
+	var onoff := [tr("An"), tr("Aus")]
+	_opt_row(p, tr("WASSERFARBE"), [tr("Türkis  (bisher)"), tr("Seeblau")], "w_color", [0, 1])
+	_opt_row(p, tr("OBERFLÄCHENSTRUKTUR   (gleitende Kräuselung statt Sinus)"), onoff, "w_detail", [true, false])
+	_opt_row(p, tr("SPIEGELUNG JE NACH BLICKWINKEL   (flach: Himmel, von oben: ins Wasser)"), onoff, "w_fresnel", [true, false])
+	_opt_row(p, tr("SONNENGLITZERN"), onoff, "w_glitter", [true, false])
+	_opt_row(p, tr("LICHT DURCH DIE WELLENKÄMME"), onoff, "w_crest", [true, false])
+	_opt_row(p, tr("SCHAUM MIT STRUKTUR   (fleckig, reißt auf)"), onoff, "w_foam", [true, false])
+	_opt_row(p, tr("SPITZE WELLEN   (auch für die Physik)"), onoff, "w_sharp", [true, false])
+	p.add_child(_small(tr("MIT WASSERTIEFE   (etwas teurer; Wasser wird dafür transparent gezeichnet)")))
+	_opt_row(p, tr("DURCHSICHT IM FLACHEN"), onoff, "w_clear", [true, false])
 	if RenderingServer.get_current_rendering_method() != "gl_compatibility":
-		_opt_row(p, "ECHTE SPIEGELBILDER   (nur Desktop, teuer; nur wenn die Durchsicht aus ist)",
+		_opt_row(p, tr("ECHTE SPIEGELBILDER   (nur Desktop, teuer; nur wenn die Durchsicht aus ist)"),
 			onoff, "w_ssr", [true, false])
 
 
 ## Musik: Spiel-Musik (lizenzfrei, Pixabay) und/oder eigene Titel des Spielers.
 func _page_music(p: VBoxContainer) -> void:
-	var info := _label("Spiel-Musik: lizenzfreie Titel von Pixabay. Dazu kannst du eigene Titel wählen (MP3, OGG, WAV) – sie bleiben "
-		+ "auf diesem Gerät bzw. in diesem Browser gespeichert. Alles läuft gemischt im Hintergrund.", 16, Color(1, 1, 1, 0.8))
+	var info := _label(tr("Spiel-Musik: lizenzfreie Titel von Pixabay. Dazu kannst du eigene Titel wählen (MP3, OGG, WAV) – sie bleiben "
+		+ "auf diesem Gerät bzw. in diesem Browser gespeichert. Alles läuft gemischt im Hintergrund."), 16, Color(1, 1, 1, 0.8))
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_child(info)
-	_opt_row(p, "MUSIK", ["An", "Aus"], "music", [true, false])
-	_opt_row(p, "QUELLE", ["Spiel-Musik", "Eigene Titel", "Beides"], "music_src", [0, 1, 2])
+	_opt_row(p, tr("MUSIK"), [tr("An"), tr("Aus")], "music", [true, false])
+	_opt_row(p, tr("QUELLE"), [tr("Spiel-Musik"), tr("Eigene Titel"), tr("Beides")], "music_src", [0, 1, 2])
 	var pct := func(x: float) -> String: return "%d %%" % roundi(x * 100.0)
-	_slider_row(p, "LAUTSTÄRKE MUSIK", "vol_music", 0.0, 1.0, 0.05, pct)
+	_slider_row(p, tr("LAUTSTÄRKE MUSIK"), "vol_music", 0.0, 1.0, 0.05, pct)
 	var status := _label("", 18)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_child(status)
@@ -885,11 +898,11 @@ func _page_music(p: VBoxContainer) -> void:
 	grid.add_theme_constant_override("h_separation", 8)
 	grid.add_theme_constant_override("v_separation", 8)
 	p.add_child(grid)
-	var add := _button("Titel hinzufügen", 18, true)
+	var add := _button(tr("Titel hinzufügen"), 18, true)
 	add.pressed.connect(music.pick_files)
-	var nxt := _button("Nächster Titel", 18)
+	var nxt := _button(tr("Nächster Titel"), 18)
 	nxt.pressed.connect(music.next)
-	var clr := _button("Eigene entfernen", 18)
+	var clr := _button(tr("Eigene entfernen"), 18)
 	clr.pressed.connect(music.clear_all)
 	for b: Button in [add, nxt, clr]:
 		b.clip_text = true
@@ -899,23 +912,23 @@ func _page_music(p: VBoxContainer) -> void:
 	credits.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var update := func() -> void:
 		var n := music.tracks.size()
-		status.text = "%d Spiel-Musik, %d eigene" % [music.game_tracks.size(), n]
+		status.text = tr("%d Spiel-Musik, %d eigene") % [music.game_tracks.size(), n]
 		if music.current != "":
 			status.text += "   ♪ " + music.current
 		elif music.loading != "":
-			status.text += "   lädt: " + music.loading
+			status.text += "   " + tr("lädt: %s") % music.loading
 		nxt.disabled = music.playlist().is_empty() or not music.enabled
 		clr.disabled = n == 0
 		credits.text = "" if music.game_tracks.is_empty() else \
-			"Danke für die Spiel-Musik (Pixabay): " + ", ".join(music.game_artists())
+			tr("Danke für die Spiel-Musik (Pixabay): %s") % ", ".join(music.game_artists())
 	music.changed.connect(update)
 	p.add_child(_label("", 4))
 	p.add_child(credits)
 	update.call()
-	var alt := _small("ODER NEBENHER HÖREN, z. B. mit Spotify (dann hier Musik aus)")
+	var alt := _small(tr("ODER NEBENHER HÖREN, z. B. mit Spotify (dann hier Musik aus)"))
 	alt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	p.add_child(alt)
-	var open := _button("Skate-Punk bei Spotify", 17)
+	var open := _button(tr("Skate-Punk bei Spotify"), 17)
 	open.pressed.connect(func() -> void: OS.shell_open(Music.PLAYLIST_URL))
 	p.add_child(open)
 
@@ -958,12 +971,12 @@ func _opt_row(p: VBoxContainer, title: String, labels: Array, key: String, value
 func _quality_row(p: VBoxContainer) -> void:
 	var sel := _select(18)
 	for n: String in GameSettings.QUALITY_NAMES:
-		sel.add_item(n)
+		sel.add_item(tr(n))
 	sel.item_selected.connect(func(i: int) -> void:
 		if i != GameSettings.QUALITY_CUSTOM:
 			settings.set_quality(i)
 		sync_settings())
-	_row(p, "GRAFIK   (niedrig = flüssiger, schont den Akku; stellt auch das Wasser ein)").add_child(sel)
+	_row(p, tr("GRAFIK   (niedrig = flüssiger, schont den Akku; stellt auch das Wasser ein)")).add_child(sel)
 	_syncers.append(func() -> void: sel.select(settings.quality_shown()))
 
 
@@ -979,7 +992,7 @@ func _swatch_row(p: VBoxContainer, title: String, colors: Array, key: String, na
 	var labels: Array = []
 	var icons: Array = []
 	for i in colors.size():
-		labels.append(names[i] if i < names.size() else "Nr. %d" % (i + 1))
+		labels.append(tr(names[i]) if i < names.size() else tr("Nr. %d") % (i + 1))
 		icons.append(_swatch(colors[i][0], colors[i][1]))
 	_opt_row(p, title, labels, key, [], icons)
 
@@ -1033,7 +1046,7 @@ func _slider(lo: float, hi: float, step: float) -> HSlider:
 
 ## Features & Hacks: Liste aller Features und Hacks aus allen Setups.
 func _build_browser() -> void:
-	var f := _popup_frame("FEATURES & HACKS")
+	var f := _popup_frame(tr("FEATURES & HACKS"))
 	_browser = f[0]
 	var v: VBoxContainer = f[1]
 	var scroll := ScrollContainer.new()
@@ -1068,7 +1081,7 @@ func _build_detail() -> void:
 
 ## Geheime Erfolge: SLOTS Zeilen, noch nicht erreichte ausgegraut und ohne Text.
 func _build_achievements() -> void:
-	var f := _popup_frame("GEHEIME ERFOLGE")
+	var f := _popup_frame(tr("GEHEIME ERFOLGE"))
 	_achieve = f[0]
 	var v: VBoxContainer = f[1]
 	_achieve_count = _small("")
@@ -1087,7 +1100,7 @@ func _open_achievements() -> void:
 	for c in _achieve_list.get_children():
 		c.queue_free()
 	var n := Achievements.count_unlocked()
-	_achieve_count.text = "%d von %d entdeckt – was es gibt, siehst du erst, wenn du es geschafft hast." 		% [n, Achievements.SLOTS]
+	_achieve_count.text = tr("%d von %d entdeckt – was es gibt, siehst du erst, wenn du es geschafft hast.") % [n, Achievements.SLOTS]
 	_achieve_count.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	for i in Achievements.SLOTS:
 		var a: Dictionary = Achievements.LIST[i] if i < Achievements.LIST.size() else {}
@@ -1101,7 +1114,7 @@ func _open_achievements() -> void:
 ## Rangliste: im Kopf eine Auswahl aller Disziplinen (Competition je Rundenlänge, Terminal und Setup, alle
 ## Challenges), vorgewählt ist das gerade gewählte Spiel; darunter die Liste und der eigene Name.
 func _build_ranking() -> void:
-	var f := _popup_frame("RANGLISTE")
+	var f := _popup_frame(tr("RANGLISTE"))
 	_rank_pop = f[0]
 	var v: VBoxContainer = f[1]
 	# Auswahl in Stufen unter dem Titel: Art (Competition/Challenge), dann Rundenlänge bzw. Modus, dann Disziplin
@@ -1139,11 +1152,11 @@ func _build_ranking() -> void:
 	var vis := HBoxContainer.new()
 	vis.add_theme_constant_override("separation", 8)
 	v.add_child(vis)
-	var vl := _small("IN DER RANGLISTE ERSCHEINEN")
+	var vl := _small(tr("IN DER RANGLISTE ERSCHEINEN"))
 	vl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	vl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vis.add_child(vl)
-	_rank_vis = _button("An", 18)
+	_rank_vis = _button(tr("An"), 18)
 	_rank_vis.custom_minimum_size = Vector2(110, 48)
 	_rank_vis.pressed.connect(_toggle_rank_visible)
 	vis.add_child(_rank_vis)
@@ -1151,11 +1164,11 @@ func _build_ranking() -> void:
 	row.add_theme_constant_override("separation", 8)
 	v.add_child(row)
 	_rank_name_row = row
-	var nl := _small("DEIN NAME")
+	var nl := _small(tr("DEIN NAME"))
 	nl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(nl)
 	_rank_name = LineEdit.new()
-	_rank_name.placeholder_text = "ohne Namen: anonym"
+	_rank_name.placeholder_text = tr("ohne Namen: anonym")
 	_rank_name.max_length = Leaderboard.NAME_MAX
 	_rank_name.custom_minimum_size = Vector2(160, 48)
 	_rank_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1166,13 +1179,13 @@ func _build_ranking() -> void:
 		_rank_name.editable = false
 		_rank_name.gui_input.connect(func(e: InputEvent) -> void:
 			if (e is InputEventMouseButton and e.pressed) or (e is InputEventScreenTouch and e.pressed):
-				var r: Variant = JavaScriptBridge.eval("prompt('Dein Name für die Rangliste (2 bis 16 Zeichen)', %s)"
-					% JSON.stringify(_rank_name.text), true)
+				var r: Variant = JavaScriptBridge.eval("prompt(%s, %s)" % [JSON.stringify(tr("Dein Name für die Rangliste (2 bis 16 Zeichen)")),
+					JSON.stringify(_rank_name.text)], true)
 				if r is String:
 					_rank_name.text = (r as String).substr(0, Leaderboard.NAME_MAX)
 					_save_rank_name())
 	row.add_child(_rank_name)
-	var sb := _button("Speichern", 18)
+	var sb := _button(tr("Speichern"), 18)
 	sb.pressed.connect(_save_rank_name)
 	row.add_child(sb)
 	_rank_msg = _label("", 14, Color(1, 1, 1, 0.55))
@@ -1183,14 +1196,14 @@ func _build_ranking() -> void:
 ## Schalter „In der Rangliste erscheinen“: Aus löscht alles auf dem Server (Name, Einträge), An sendet wieder.
 func _toggle_rank_visible() -> void:
 	var off := not leaderboard.hidden
-	_rank_msg.text = "Wird gelöscht …" if off else ""
+	_rank_msg.text = tr("Wird gelöscht …") if off else ""
 	var r := await leaderboard.set_hidden(off)
 	if off:
 		_rank_name.text = leaderboard.player_name
 	if not r.get("ok", false):
-		_update_rank_name(str(r.get("error", "Fehler")))
+		_update_rank_name(str(r.get("error", tr("Fehler"))))
 	else:
-		_update_rank_name("Gelöscht: Name und alle deine Einträge." if off else "")
+		_update_rank_name(tr("Gelöscht: Name und alle deine Einträge.") if off else "")
 	_fill_ranking()
 
 
@@ -1217,8 +1230,8 @@ func _rank_warning() -> Control:
 	bsb.set_corner_radius_all(18)
 	badge.add_theme_stylebox_override("normal", bsb)
 	h.add_child(badge)
-	var t := _label("Heads up! Das Game ist noch mitten im Shape – Physik und Punkte werden ständig nachgeschliffen. "
-		+ "Darum wird die Rangliste ab und zu gewiped. Kein Stress: einfach neu droppen und wieder ganz nach oben shredden.",
+	var t := _label(tr("Heads up! Das Game ist noch mitten im Shape – Physik und Punkte werden ständig nachgeschliffen. "
+		+ "Darum wird die Rangliste ab und zu gewiped. Kein Stress: einfach neu droppen und wieder ganz nach oben shredden."),
 		15, Color(1, 0.95, 0.8))
 	t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	t.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -1237,7 +1250,7 @@ func _open_ranking() -> void:
 	_rank_entries.clear()
 	for c in _rank_list.get_children():
 		c.queue_free()
-	_rank_info.text = "Lädt …"
+	_rank_info.text = tr("Lädt …")
 	_show_popup(_rank_pop)
 	var filled: Variant = await leaderboard.boards_with_entries()
 	if req != _rank_req:
@@ -1261,13 +1274,13 @@ func _fill_rank_select(filled: Variant) -> void:
 	for sec: int in lengths:
 		for t: String in terms:
 			for st: Dictionary in setups:
-				_rank_all.append({"kind": "comp", "gkey": str(sec), "glabel": "Runde " + _clock_text(sec),
-					"label": "%s · %s" % [_terminal_name(t), str(st.get("name", st["id"])).get_slice(" (", 0)],
+				_rank_all.append({"kind": "comp", "gkey": str(sec), "glabel": tr("Runde %s") % _clock_text(sec),
+					"label": "%s · %s" % [_terminal_name(t), Loc.setup_name(str(st.get("name", st["id"])), true)],
 					"e": {"sec": sec, "terminal": t, "setup": st}})
 	for m: Dictionary in Training.MODES:
 		var tasks: Array = m.get("tasks", [])
 		for i in tasks.size():
-			_rank_all.append({"kind": "ch", "gkey": m["id"], "glabel": m["name"], "label": tasks[i]["title"],
+			_rank_all.append({"kind": "ch", "gkey": m["id"], "glabel": tr(m["name"]), "label": tr(tasks[i]["title"]),
 				"e": {"mode": m["id"], "task": i}})
 	if filled is Dictionary:
 		_rank_all = _rank_all.filter(func(r: Dictionary) -> bool:
@@ -1299,10 +1312,10 @@ func _fill_rank_select(filled: Variant) -> void:
 	_rank_kinds.clear()
 	for k: String in ["comp", "ch"]:
 		if _rank_all.any(func(r: Dictionary) -> bool: return r["kind"] == k):
-			_rank_kind.add_item("Competition" if k == "comp" else "Challenge")
+			_rank_kind.add_item(tr("Competition") if k == "comp" else tr("Challenge"))
 			_rank_kinds.append(k)
 	if _rank_kinds.is_empty():
-		_rank_kind.text = "Noch keine Einträge"
+		_rank_kind.text = tr("Noch keine Einträge")
 		_rank_group.clear()
 		_rank_select.clear()
 		_rank_entries.clear()
@@ -1344,7 +1357,7 @@ func _fill_rank_items(want_idx: int) -> void:
 
 func _terminal_name(t: String) -> String:
 	var ti := _terminals.find(t)
-	return _terminal_names[ti] if ti >= 0 else t
+	return tr(_terminal_names[ti]) if ti >= 0 else t
 
 
 static func _clock_text(sec: int) -> String:
@@ -1372,8 +1385,8 @@ func _fill_ranking() -> void:
 	if a.is_empty():
 		for c in _rank_list.get_children():
 			c.queue_free()
-		_rank_info.text = "Noch niemand in der Rangliste – fahr den ersten Eintrag!" \
-			+ ("   ·   Test-Version: eigene Test-Rangliste" if leaderboard.dev else "")
+		_rank_info.text = tr("Noch niemand in der Rangliste – fahr den ersten Eintrag!") \
+			+ ("   ·   " + tr("Test-Version: eigene Test-Rangliste") if leaderboard.dev else "")
 		return
 	var b: Dictionary = a[0]
 	var why: String = a[1]
@@ -1382,12 +1395,12 @@ func _fill_ranking() -> void:
 		c.queue_free()
 	_rank_req += 1
 	var req := _rank_req
-	_rank_info.text = "Lädt …"
+	_rank_info.text = tr("Lädt …")
 	var r := await leaderboard.top(b, 20)
 	if req != _rank_req:
 		return
 	if not r.get("ok", false):
-		_rank_info.text = str(r.get("error", "Fehler"))
+		_rank_info.text = str(r.get("error", tr("Fehler")))
 		return
 	var entries: Array = r.get("entries", [])
 	var me: Variant = r.get("me")
@@ -1403,15 +1416,15 @@ func _fill_ranking() -> void:
 	var info: Array[String] = []
 	var n := int(r.get("total", 0))
 	if n == 0:
-		info.append("Noch kein Eintrag – fahr den ersten!")
+		info.append(tr("Noch kein Eintrag – fahr den ersten!"))
 	else:
-		info.append("%d Fahrer" % n)
+		info.append(tr_n("%d Fahrer", "%d Fahrer", n) % n)
 	if int(r.get("older", 0)) > 0:
-		info.append("Wertung geändert: ältere Ergebnisse stehen in einer früheren Rangliste")
+		info.append(tr("Wertung geändert: ältere Ergebnisse stehen in einer früheren Rangliste"))
 	if why != "":
 		info.append(why)
 	if leaderboard.dev:
-		info.append("Test-Version: eigene Test-Rangliste")
+		info.append(tr("Test-Version: eigene Test-Rangliste"))
 	_rank_info.text = "   ·   ".join(info)
 
 
@@ -1447,29 +1460,29 @@ func _save_rank_name() -> void:
 	if n == leaderboard.player_name:
 		return
 	if n == "":
-		_update_rank_name("Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles).")
+		_update_rank_name(tr("Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."))
 		_rank_name.text = leaderboard.player_name
 		return
-	_rank_msg.text = "Wird gespeichert …"
+	_rank_msg.text = tr("Wird gespeichert …")
 	var r := await leaderboard.set_player_name(n)
 	if r.get("ok", false):
-		_update_rank_name("Gespeichert. Deine Einträge stehen jetzt unter diesem Namen.")
+		_update_rank_name(tr("Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."))
 		_fill_ranking()
 	else:
-		_update_rank_name(str(r.get("error", "Fehler")))
+		_update_rank_name(str(r.get("error", tr("Fehler"))))
 
 
 ## Schalter und Hinweis unter dem Namen (was gespeichert wird); ohne Teilnahme kein Namensfeld.
 func _update_rank_name(msg: String) -> void:
 	var on := not leaderboard.hidden
-	_rank_vis.text = "An" if on else "Aus"
+	_rank_vis.text = tr("An") if on else tr("Aus")
 	_rank_vis.modulate = Color(1, 1, 1) if on else Color(1, 1, 1, 0.6)
 	_rank_vis.add_theme_color_override("font_color", Hud.ACCENT if on else Color(1, 1, 1, 0.7))
 	_rank_name_row.visible = on
-	var t := "Deine Bestwerte erscheinen öffentlich in der Rangliste – ohne Namen als „Anonym #…“. Gespeichert werden " \
-		+ "nur Name (falls angegeben), Bestwerte und Datum, dazu eine zufällige Geräte-Nummer als Prüfsumme. " \
-		+ "Aus = alles löschen." if on \
-		else "Du erscheinst nicht in der Rangliste, es wird nichts gesendet."
+	var t := tr("Deine Bestwerte erscheinen öffentlich in der Rangliste – ohne Namen als „Anonym #…“. Gespeichert werden "
+		+ "nur Name (falls angegeben), Bestwerte und Datum, dazu eine zufällige Geräte-Nummer als Prüfsumme. "
+		+ "Aus = alles löschen.") if on \
+		else tr("Du erscheinst nicht in der Rangliste, es wird nichts gesendet.")
 	_rank_msg.text = (msg + "\n" if msg != "" else "") + t
 
 
@@ -1497,14 +1510,14 @@ func _achievement_row(nr: int, a: Dictionary, date: String) -> Control:
 	v.add_theme_constant_override("separation", 0)
 	h.add_child(v)
 	if open:
-		v.add_child(_label(a["name"], 22, SEL))
-		var t := _label(a["text"], 16, Color(1, 1, 1, 0.85))
+		v.add_child(_label(tr(a["name"]), 22, SEL))
+		var t := _label(tr(a["text"]), 16, Color(1, 1, 1, 0.85))
 		t.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		v.add_child(t)
-		v.add_child(_label("erreicht am " + date, 14, Color(1, 1, 1, 0.5)))
+		v.add_child(_label(tr("erreicht am %s") % date, 14, Color(1, 1, 1, 0.5)))
 	else:
-		v.add_child(_label("Geheim", 22, Color(1, 1, 1, 0.35)))
-		v.add_child(_label("Noch nicht entdeckt", 16, Color(1, 1, 1, 0.25)))
+		v.add_child(_label(tr("Geheim"), 22, Color(1, 1, 1, 0.35)))
+		v.add_child(_label(tr("Noch nicht entdeckt"), 16, Color(1, 1, 1, 0.25)))
 	return p
 
 
@@ -1586,9 +1599,9 @@ func _open_detail(e: Dictionary, from_browser: bool) -> void:
 			h = 0.0
 			for pt: Array in p.profile:
 				h = maxf(h, float(pt[1]))
-		lines.append("%s   %.1f × %.1f m, Höhe %.2f m" % [p.display_name, p.length, p.width, h])
+		lines.append(tr("%s   %.1f × %.1f m, Höhe %.2f m") % [p.display_name, p.length, p.width, h])
 	var where: Array = e["where"]
-	lines.append("Im Setup: " + ", ".join(where))
+	lines.append(tr("Im Setup: %s") % ", ".join(where))
 	_detail_text.text = "\n".join(lines)
 
 

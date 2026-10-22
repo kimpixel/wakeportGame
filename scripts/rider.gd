@@ -881,7 +881,7 @@ func step(delta: float) -> void:
 	if attached and _getup < 1.0 and (tension_smooth > 250.0 or horizontal_speed() > 2.0):
 		_getup = minf(_getup + delta / 1.6, 1.0)
 	if mode == Mode.WATER and attached and tension_smooth > crash_tension:
-		let_go("Seil aus der Hand gerissen!")
+		let_go(tr("Seil aus der Hand gerissen!"))
 		rope_force = Vector3.ZERO
 	if mode == Mode.WATER:
 		_step_water(delta, rope_force)
@@ -1459,7 +1459,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 			last_exit_drift = true
 		else:
 			_prev_on_feature = false
-			crash("Quer abgefahren – Brett gerade stellen oder driften!")
+			crash(tr("Quer abgefahren – Brett gerade stellen oder driften!"))
 			return
 	_prev_on_feature = on_feature
 
@@ -1494,7 +1494,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var slick := slick_part != null and slick_part.is_slick_at(pos)
 	# Treppe (6-Stair Pool): nur im Drift (Strg) befahrbar, hoch wie runter – dann glatt wie die Ollie Box
 	if slick_part and slick_part.type == "stairs" and not autopilot and _release <= 0.5:
-		crash("Treppe nur im Drift!")
+		crash(tr("Treppe nur im Drift!"))
 		return
 	_track_stairs(slick_part)
 	var dir_before := Vector3(vel.x, 0.0, vel.z).normalized()
@@ -1517,7 +1517,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	var band := maxf(DPRESS_SPEED_BAND, 0.01)
 	dpress_allowed = lerpf(sweet_start, DPRESS_FALL_ANG, clampf((speed - (DPRESS_SPEED - band)) / band, 0.0, 1.0))
 	if dp_hold > 0.5 and dpress_angle > dpress_allowed and speed > DPRESS_CRASH_MIN:   # langsam verkantet nichts
-		crash("Drift-Press zu quer gedriftet!")
+		crash(tr("Drift-Press zu quer gedriftet!"))
 		return
 	# Sweet Spot: fest die letzten DPRESS_SWEET vor der Grenze DPRESS_FALL_ANG – dort bremst der Press nicht,
 	# darunter linear mehr. Er wandert nicht mit dem Tempo: wer zu langsam ist (erlaubt weniger), kommt nicht hinein.
@@ -1567,7 +1567,7 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	pos.x += vel.x * delta
 	pos.z += vel.z * delta
 	if _obstacle_height(pos.x, pos.z, true) > old_y + 0.15:
-		crash("Gegen den Steg!" if _in_dock(pos.x, pos.z) else "Gegen %s gefahren!" % _part_name(pos.x, pos.z))
+		crash(tr("Gegen den Steg!") if _in_dock(pos.x, pos.z) else tr("Gegen %s gefahren!") % _part_name(pos.x, pos.z))
 		return
 
 	# Höhe folgt der Oberfläche – fällt sie schneller weg als die Schwerkraft zieht
@@ -1827,8 +1827,8 @@ func is_sliding() -> bool:
 func _part_name(x: float, z: float) -> String:
 	var p := features.part_at(x, z) if features else null
 	if p == null:
-		return "das Hindernis"
-	return p.article + " " + p.display_name
+		return tr("das Hindernis")
+	return (p.article + " " if Loc.is_de() else "") + tr(p.display_name)     # Artikel nur im Deutschen
 
 
 ## Die gerade gedrückte Sprungtaste (Leertaste/Finger) startete etwas anderes -> kein Sprung daraus.
@@ -2043,7 +2043,7 @@ func _step_air(delta: float, rope: Vector3) -> void:
 	# wer schon darüber ist (z. B. seitlich vom Rail fällt), landet stattdessen.
 	var obstacle := _obstacle_height(pos.x, pos.z, true)
 	if obstacle > pos.y + 0.35 and old_obstacle < obstacle - 0.3:
-		crash("Gegen %s gefahren!" % _part_name(pos.x, pos.z))
+		crash(tr("Gegen %s gefahren!") % _part_name(pos.x, pos.z))
 		return
 	var surf := _board_surface()
 	if pos.y <= surf and vel.y <= 0.0:
@@ -2154,17 +2154,17 @@ func _land(surf: float) -> void:
 		if _release > 0.5 and not autopilot and attached:
 			last_exit_drift = true          # quer gelandet, aber mit Drift: rutscht weiter
 		else:
-			crash("Verkantet gelandet!")
+			crash(tr("Verkantet gelandet!"))
 			return
 	var landed_on := features.part_at(pos.x, pos.z) if (features and on_feature) else null
 	if landed_on and landed_on.type == "ball":
-		crash("Auf dem Ball gelandet!")      # auf dem runden Gummiball hält sich kein Brett
+		crash(tr("Auf dem Ball gelandet!"))      # auf dem runden Gummiball hält sich kein Brett
 		return
 	if vel.y < -11.0:
-		crash("Zu harte Landung!")
+		crash(tr("Zu harte Landung!"))
 		return
 	if absf(wrapf(_flip, -PI, PI)) > FLIP_LAND_TOL:
-		crash("Überschlag nicht geschafft!")
+		crash(tr("Überschlag nicht geschafft!"))
 		return
 	# Rail to Rail: aus dem Hop direkt auf einen anderen Slider = Transfer
 	_hop_landed = _hop_from != null and landed_on != null and landed_on.is_slide() and not landed_on.on_ramp(pos) \
@@ -2310,10 +2310,10 @@ func _check_bounds() -> void:
 	if _in_dock(pos.x, pos.z):
 		return
 	if not Lake.in_lake(pos.x, pos.z, 0.5):
-		crash("Ab ans Ufer!")
+		crash(tr("Ab ans Ufer!"))
 		return
 	if Vector2(pos.x - mast_b.x, pos.z - mast_b.z).length() < Lake.MAST_B_RADIUS and pos.y < 6.0:
-		crash("Gegen den Mast!")
+		crash(tr("Gegen den Mast!"))
 
 
 # ---------------------------------------------------------------- Grafik
@@ -2673,9 +2673,9 @@ func board_state_text() -> String:
 	if mode != Mode.WATER:
 		return ""
 	if absf(_dpress_vis) > 0.3 and drifting:
-		return "%s – Drift-Winkel %d°  (erlaubt bis %d°)" % ["NOSEPRESS" if _dpress_vis > 0.0 else "TAILPRESS", roundi(rad_to_deg(dpress_angle)), roundi(rad_to_deg(dpress_allowed))]
+		return tr("%s – Drift-Winkel %d°  (erlaubt bis %d°)") % ["NOSEPRESS" if _dpress_vis > 0.0 else "TAILPRESS", roundi(rad_to_deg(dpress_angle)), roundi(rad_to_deg(dpress_allowed))]
 	if _release > 0.3:
-		return "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)" % absf(slip)
+		return tr("DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)") % absf(slip)
 	return ""
 
 

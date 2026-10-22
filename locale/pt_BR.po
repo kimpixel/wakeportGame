@@ -1,0 +1,2753 @@
+# Portuguese (Brazil) – WakeTheHack
+msgid ""
+msgstr ""
+"Project-Id-Version: WakeTheHack\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pt_BR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Source-Language: de\n"
+
+msgid "Fischkontakt"
+msgstr "Contato com peixe"
+
+msgid "Mit einem springenden Hecht zusammengestoßen."
+msgstr "Bateu num lúcio pulando."
+
+msgid "Nass gespritzt"
+msgstr "Molhado"
+
+msgid "Einen SUP-Paddler mit voller Fahrt nass gespritzt."
+msgstr "Molhou um remador de SUP em velocidade máxima."
+
+msgid "Steg-Landung"
+msgstr "Pouso no deck"
+
+msgid "Aus der Luft auf dem Startsteg gelandet."
+msgstr "Pousou do ar no deck de largada."
+
+msgid "Insekten fressen"
+msgstr "Lanchinho de insetos"
+
+msgid "Am Waldrand von Terminal 1 durch einen Mückenschwarm gefahren. Mahlzeit!"
+msgstr "Passou por uma nuvem de mosquitos na beira da mata do Terminal 1. Bom apetite!"
+
+msgid "Boot crash"
+msgstr "Batida no barco"
+
+msgid "Ins rote Boot gefahren oder hineingefallen."
+msgstr "Bateu no barco vermelho ou caiu dentro dele."
+
+msgid "Ho ho ho!"
+msgstr "Ho ho ho!"
+
+msgid "Am Nikolaustag im Schnee eine Wende gefahren."
+msgstr "Fez uma virada na neve no dia de São Nicolau."
+
+msgid "Was ein Frechdachs"
+msgstr "Que danadinho"
+
+msgid "Ein Haubentaucher ist direkt unter dir durchgetaucht."
+msgstr "Um mergulhão-de-crista mergulhou bem debaixo de você."
+
+msgid "Schwanenliebe"
+msgstr "Amor de cisnes"
+
+msgid "Zwei Schwäne haben mit ihren Hälsen ein Herz geformt – und du warst dabei."
+msgstr "Dois cisnes formaram um coração com os pescoços – e você estava lá."
+
+msgid "Zugvogel"
+msgstr "Ave migratória"
+
+msgid "Einen Raley gesprungen, während die Kraniche über den See ziehen."
+msgstr "Pulou um Raley enquanto os grous cruzavam o lago."
+
+msgid "Blitzableiter"
+msgstr "Para-raios"
+
+msgid "Im Gewitter gefahren und vom Blitz getroffen. YOLO!"
+msgstr "Andou numa tempestade e foi atingido por um raio. YOLO!"
+
+msgid "Badegast"
+msgstr "Banhista"
+
+msgid "An einem heißen Tag einen Badegast auf der Luftmatratze nass gespritzt."
+msgstr "Num dia quente, molhou um banhista no colchão inflável."
+
+msgid "Arschbombe"
+msgstr "Bomba"
+
+msgid "Aus der Luft ins Becken des 6-Stair Pools gestürzt. Platsch!"
+msgstr "Caiu do ar na piscina do 6-Stair Pool. Tchibum!"
+
+msgid "Zeitung"
+msgstr "Jornal"
+
+msgid "Sunset"
+msgstr "Sunset"
+
+msgid "Ice"
+msgstr "Ice"
+
+msgid "Topo"
+msgstr "Topo"
+
+msgid "Dots"
+msgstr "Dots"
+
+msgid "Bereit"
+msgstr "Pronto"
+
+msgid "Anfahren"
+msgstr "Arrancando"
+
+msgid "Fahrt → Mast 2"
+msgstr "Em movimento → Torre 2"
+
+msgid "Fahrt → Ufer"
+msgstr "Em movimento → Margem"
+
+msgid "Bremst zur Wende"
+msgstr "Freando para a virada"
+
+msgid "Wende"
+msgstr "Virada"
+
+msgid "Operator bringt die Handle"
+msgstr "O operador traz o manete"
+
+msgid "Wartet auf den Fahrer"
+msgstr "Esperando o rider"
+
+msgid "Ende – zurück am Start"
+msgstr "Fim – de volta à largada"
+
+msgid "Abgesoffen"
+msgstr "Afundou"
+
+msgid "Gestürzt"
+msgstr "Queda"
+
+msgid "Seil verloren"
+msgstr "Cabo perdido"
+
+msgid "Nicht um die weiße Boje"
+msgstr "Não contornou a boia branca"
+
+msgid "Ohne Absprung fahren"
+msgstr "Passar sem pular"
+
+msgid "Kicker verpasst"
+msgstr "Kicker perdido"
+
+msgid "Slider verpasst"
+msgstr "Slider perdido"
+
+msgid "Ins Wasser – Transfer verpasst"
+msgstr "Na água – transfer perdido"
+
+msgid "Pipe verpasst"
+msgstr "Pipe perdido"
+
+msgid "Keine Kombination geschafft"
+msgstr "Nenhuma combinação feita"
+
+msgid "Kein Drift nach einem Feature"
+msgstr "Sem drift depois de um feature"
+
+msgid "Kein Sprung-Start – auf dem Steg ↓ halten, bis das Seil losreißt"
+msgstr "Sem largada do deck – segure ↓ no deck até o cabo te arrancar"
+
+msgid "Kein Raley – mehr Seilzug: weit raus, dann hart zur Mitte kanten (Marke RALEY)"
+msgstr "Sem Raley – mais tensão: vá bem para fora, depois cante forte para o meio (marca RALEY)"
+
+msgid "Zeit abgelaufen"
+msgstr "Tempo esgotado"
+
+msgid "Das war kein Raley Start – Brett quer zum Seil stellen"
+msgstr "Isso não foi um Raley Start – coloque a prancha atravessada ao cabo"
+
+msgid "Das war kein Nolli – Brett längs zum Seil lassen"
+msgstr "Isso não foi um Nolli – deixe a prancha alinhada com o cabo"
+
+msgid "Junge mach mal langsam! (%s)"
+msgstr "Calma aí, parceiro! (%s)"
+
+msgid "Das war %s – gefordert: %s"
+msgstr "Isso foi %s – pedido: %s"
+
+msgid "360 links im Drift!  (%d / %d)"
+msgstr "360 para a esquerda no drift!  (%d / %d)"
+
+msgid "360 rechts im Drift!  (%d / %d)"
+msgstr "360 para a direita no drift!  (%d / %d)"
+
+msgid "Kein 360 im Drift"
+msgstr "Nenhum 360 no drift"
+
+msgid "%s im Drift!  (%d Wechsel)"
+msgstr "%s no drift!  (%d trocas)"
+
+msgid "Kein Press im Drift"
+msgstr "Nenhum press no drift"
+
+msgid "%s Drift"
+msgstr "%s de drift"
+
+msgid "ausgelassen"
+msgstr "pulado"
+
+msgid "zu kurz auf dem Slider"
+msgstr "curto demais no slider"
+
+msgid "kein Ollie on (über die Auffahrt)"
+msgstr "sem ollie on (subiu pela rampa)"
+
+msgid "Aufspringen: %s statt %s"
+msgstr "Subida: %s em vez de %s"
+
+msgid "%s statt %s"
+msgstr "%s em vez de %s"
+
+msgid "kein Press"
+msgstr "sem press"
+
+msgid "Abgang: %s statt %s"
+msgstr "Saída: %s em vez de %s"
+
+msgid "gerade"
+msgstr "reto"
+
+msgid "%s geschafft!"
+msgstr "%s concluído!"
+
+msgid "Gerade abgefahren – hier quer mit Drift abgehen"
+msgstr "Saiu reto – aqui saia de lado com drift"
+
+msgid "noch keine Medaille"
+msgstr "ainda sem medalha"
+
+msgid "Rangliste nicht mit Seilzug-Grenze „Aus“"
+msgstr "Sem ranking com o limite de tensão “Off”"
+
+msgid "Rangliste: wird gesendet …"
+msgstr "Ranking: enviando …"
+
+msgid "Rangliste: Platz %d von %d"
+msgstr "Ranking: posição %d de %d"
+
+msgid "Rangliste: Platz %d von %d mit deinem Bestwert %s"
+msgstr "Ranking: posição %d de %d com seu recorde %s"
+
+msgid "als %s"
+msgstr "como %s"
+
+msgid "Rangliste: %s"
+msgstr "Ranking: %s"
+
+msgid "Fehler"
+msgstr "Erro"
+
+msgid "%d Punkt"
+msgid_plural "%d Punkte"
+msgstr[0] "%d ponto"
+msgstr[1] "%d pontos"
+
+msgid "Höhe %s"
+msgstr "Altura %s"
+
+msgid "Weite %s"
+msgstr "Distância %s"
+
+msgid "links %d / %d   rechts %d / %d"
+msgstr "esquerda %d / %d   direita %d / %d"
+
+msgid "Bester Drift %s"
+msgstr "Melhor drift %s"
+
+msgid "%d Wechsel   Bester %s"
+msgstr "%d trocas   melhor %s"
+
+msgid "Press am Stück %s"
+msgstr "Press seguido %s"
+
+msgid "%d geschafft"
+msgstr "%d concluídos"
+
+msgid "Bestwert %s"
+msgstr "Recorde %s"
+
+msgid "VERSUCH"
+msgstr "TENTATIVA"
+
+msgid "ZEIT"
+msgstr "TEMPO"
+
+msgid "Verpasst"
+msgstr "Perdido"
+
+msgid "Transfer verpasst"
+msgstr "Transfer perdido"
+
+msgid "Verfolger"
+msgstr "Perseguição"
+
+msgid "Orbit"
+msgstr "Órbita"
+
+msgid "Ufer"
+msgstr "Margem"
+
+msgid "Runde 7:30"
+msgstr "Rodada 7:30"
+
+msgid "Runde 10:00"
+msgstr "Rodada 10:00"
+
+msgid "Runde 15:00"
+msgstr "Rodada 15:00"
+
+msgid "Freies Fahren"
+msgstr "Ride livre"
+
+msgid "Niedrig"
+msgstr "Baixo"
+
+msgid "Mittel"
+msgstr "Médio"
+
+msgid "Hoch"
+msgstr "Alto"
+
+msgid "Custom"
+msgstr "Custom"
+
+msgid "H  Hilfe"
+msgstr "H  Ajuda"
+
+msgid "PUNKTE"
+msgstr "PONTOS"
+
+msgid "ZEIT UM"
+msgstr "ACABOU O TEMPO"
+
+msgid "GEHEIMER ERFOLG FREIGESCHALTET"
+msgstr "CONQUISTA SECRETA DESBLOQUEADA"
+
+msgid "TEMPO"
+msgstr "VELOCIDADE"
+
+msgid "SEILZUG"
+msgstr "TENSÃO"
+
+msgid ""
+"← / →   lenken   (in der Luft und beim Raley: drehen; auf dem Slider: Boardslide ↔ 50-50 umspringen; auf dem Slider Leertaste halten + ←/→: seitlich auf den Nachbar-Slider springen = Rail to Rail)\n"
+"↑ / ↓   in der Luft: Frontroll / Backroll (beim Invert gleich nach dem Absprung: ↑ S-Bend, ↓ Backroll)     auf dem Slider (schon im Anflug): Nosepress / Tailpress     im Drift: Drift-Press     Sprung-Start: auf dem Steg ↓ halten, bis das Seil losreißt (Brett längs: Nolli, quer: Raley Start)\n"
+"Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das Brett dreht frei, etwas schneller; quer vom Slider ins Wasser nur mit Drift; Treppe am Pool nur im Drift\n"
+"Leertaste halten + loslassen   Absprung (Ollie; voll aufgeladen mit Seilzug über der Marke RALEY und ohne Feature voraus: Invert = Raley – Höhe aus Seilzug + Tempo)\n"
+"Start mit Countdown 3 – 2 – 1 – GO (Runde 7:30)     R  zurück zum Steg (−2:00, dann Countdown), in den Spielmodi: neuer Versuch     + / -  Anlagentempo\n"
+"Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−1:00)     R = Steg (−2:00)\n"
+"C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause     O  Einstellungen\n"
+"Z  Szenario würfeln     P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus (aus: keine Rangliste)     H  Hilfe ein/aus     F11  Vollbild     F3  Hitboxen + Drift-Winkel (Debug)     F4  Parameter (Debug, nur lokal)\n"
+"Tab  Startseite (Terminal, Feature-Setup, Einstellungen)     Menüs: Tab / Pfeile wählen, Leertaste drücken, Enter Start, Esc zurück\n"
+"Gamepad: Stick/Steuerkreuz lenken, Kreuz oder R2 (analog) Sprung, Kreis Drift, L1/R1 Tempo (in der Luft: schnelle 180), rechter Stick umsehen (R3 halten: Zoom), Touchpad Steg, Share Szenario würfeln, PS Pause, Options Einstellungen"
+msgstr ""
+"← / →   direção   (no ar e no Raley: girar; no slider: trocar Boardslide ↔ 50-50; no slider segure Espaço + ←/→: pular de lado para o slider vizinho = Rail to Rail)\n"
+"↑ / ↓   no ar: Frontroll / Backroll (Invert logo após a decolagem: ↑ S-Bend, ↓ Backroll)     no slider (já na aproximação): Nosepress / Tailpress     no drift: Drift Press     Largada do deck: segure ↓ no deck até o cabo te arrancar (prancha alinhada: Nolli, atravessada: Raley Start)\n"
+"Ctrl (ou Alt)   Drift: você continua deslizando reto (sem direção), a prancha gira livre, um pouco mais rápido; sair do slider de lado na água só com drift; escada do pool só no drift\n"
+"Segurar Espaço + soltar   Pulo (Ollie; carregado ao máximo com tensão acima da marca RALEY e sem feature à frente: Invert = Raley – altura pela tensão + velocidade)\n"
+"Largada com contagem 3 – 2 – 1 – GO (rodada 7:30)     R  voltar ao deck (−2:00, depois contagem), nos modos de jogo: nova tentativa     + / -  velocidade do cabo\n"
+"Depois de uma queda:  segurar Espaço = nadar até o manete     Ctrl = seguir na hora (−1:00)     R = deck (−2:00)\n"
+"C  Câmera     Mouse: olhar em volta (clique captura o mouse), roda: zoom     Esc  Pausa     O  Configurações\n"
+"Z  Sortear cenário     P  Piloto automático     M  Som liga/desliga     G  Arrancar o cabo liga/desliga (desligado: sem ranking)     H  Ajuda liga/desliga     F11  Tela cheia     F3  Hitboxes + ângulo de drift (debug)     F4  Parâmetros (debug, só local)\n"
+"Tab  Tela inicial (terminal, setup, configurações)     Menus: Tab / setas escolher, Espaço apertar, Enter iniciar, Esc voltar\n"
+"Controle: analógico/direcional direção, X ou R2 (analógico) pulo, Bola drift, L1/R1 velocidade (no ar: 180 rápido), analógico direito olhar (segurar R3: zoom), touchpad deck, Share sortear cenário, PS pausa, Options configurações"
+
+msgid ""
+"Start mit Countdown          ← / → (bzw. Handy neigen mit Lenkung: Gyro)   lenken (auf dem Slider: Tipp bzw. deutlich neigen = Boardslide ↔ 50-50; SPRUNG halten + ← / → = seitlich auf den Nachbar-Slider, Rail to Rail)\n"
+"SPRUNG (links) halten + loslassen   Absprung (voll aufgeladen, Seilzug über RALEY: Raley)\n"
+"Pfeil ↑ / ↓   in der Luft Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), auf dem Slider (schon im Anflug) Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)\n"
+"DRIFT (links, über SPRUNG)   Kante lösen (Treppe am Pool nur im Drift)        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)\n"
+"☰   Menü (pausiert): Einstellungen, Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Szenario würfeln, Seil-Abreißen an/aus (aus: keine Rangliste)"
+msgstr ""
+"Largada com contagem          ← / → (ou inclinar o celular com direção: Gyro)   direção (no slider: toque ou inclinar bem = Boardslide ↔ 50-50; segurar PULO + ← / → = pular de lado para o slider vizinho, Rail to Rail)\n"
+"Segurar PULO (à esquerda) + soltar   Pulo (carregado ao máximo, tensão acima de RALEY: Raley)\n"
+"Seta ↑ / ↓   no ar Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), no slider (já na aproximação) Nose- / Tailpress, no drift Drift Press, no deck segurar ▼ = largada do deck (alinhada Nolli, atravessada Raley Start)\n"
+"DRIFT (à esquerda, acima de PULO)   soltar a borda (escada do pool só no drift)        Depois de uma queda: segurar NADAR = nadar, SKIP = seguir na hora (−1:00)\n"
+"☰   Menu (pausado): configurações, ajuda, voltar ao deck (modos: nova tentativa), tela inicial, som, sortear cenário, arrancar o cabo liga/desliga (desligado: sem ranking)"
+
+msgid "Runde %s"
+msgstr "Rodada %s"
+
+msgid "Freies Fahren hat keine Rangliste"
+msgstr "Ride livre não tem ranking"
+
+msgid "Eigene Setups haben keine Rangliste"
+msgstr "Setups próprios não têm ranking"
+
+msgid "Rangliste nur mit %d km/h und %d m Seil"
+msgstr "Ranking só com %d km/h e %d m de cabo"
+
+msgid "Du erscheinst nicht in der Rangliste (Startseite → Rangliste)"
+msgstr "Você não aparece no ranking (tela inicial → Ranking)"
+
+msgid "Aus"
+msgstr "Off"
+
+msgid "Keine Rangliste mit Seilzug-Grenze „Aus“"
+msgstr "Sem ranking com o limite de tensão “Off”"
+
+msgid "Seilzug aus"
+msgstr "Limite de tensão off"
+
+msgid "Frei"
+msgstr "Livre"
+
+msgid "Eigenes Setup"
+msgstr "Setup próprio"
+
+msgid "Tempo / Seil"
+msgstr "Velocidade / cabo"
+
+msgid "{t}.{m}.{j}"
+msgstr "{t}/{m}/{j}"
+
+msgid "Rangliste noch nicht eingerichtet"
+msgstr "Ranking ainda não configurado"
+
+msgid "Keine Verbindung"
+msgstr "Sem conexão"
+
+msgid "Serverfehler (%d)"
+msgstr "Erro do servidor (%d)"
+
+msgid "nur POST"
+msgstr "só POST"
+
+msgid "kein JSON"
+msgstr "sem JSON"
+
+msgid "kein Zugriff"
+msgstr "sem acesso"
+
+msgid "zu viele Anfragen, bitte später"
+msgstr "pedidos demais, tente mais tarde"
+
+msgid "Serverfehler"
+msgstr "Erro do servidor"
+
+msgid "Name schon vergeben"
+msgstr "Nome já em uso"
+
+msgid "ungültig"
+msgstr "inválido"
+
+msgid "Wert außerhalb der Grenzen"
+msgstr "Valor fora dos limites"
+
+msgid "Spieler unbekannt"
+msgstr "Jogador desconhecido"
+
+msgid "Name: 2 bis 16 Zeichen"
+msgstr "Nome: de 2 a 16 caracteres"
+
+msgid "Name: nur Buchstaben, Ziffern, Leerzeichen, . _ -"
+msgstr "Nome: só letras, números, espaços, . _ -"
+
+msgid "Diesen Namen bitte nicht"
+msgstr "Esse nome não, por favor"
+
+msgid "Abgesoffen!"
+msgstr "Afundou!"
+
+msgid "Was ein Frechdachs!"
+msgstr "Que danadinho!"
+
+msgid "Badegast nass gespritzt!"
+msgstr "Banhista molhado!"
+
+msgid "Zugvogel!"
+msgstr "Ave migratória!"
+
+msgid "Hecht erwischt!"
+msgstr "Acertou um lúcio!"
+
+msgid "SUP nass gespritzt!"
+msgstr "SUP molhado!"
+
+msgid "Igitt – Insekt verschluckt!"
+msgstr "Eca – engoliu um inseto!"
+
+msgid "Arschbombe!"
+msgstr "Bomba!"
+
+msgid "Steg-Landung!"
+msgstr "Pouso no deck!"
+
+msgid "Seil reißt ab: an"
+msgstr "Arrancar o cabo: on"
+
+msgid "Seil reißt ab: aus – keine Rangliste"
+msgstr "Arrancar o cabo: off – sem ranking"
+
+msgid "Setup: %s"
+msgstr "Setup: %s"
+
+msgid "Strafzeit −%d:%02d"
+msgstr "Penalidade −%d:%02d"
+
+msgid "Zeit um!  %d Punkte"
+msgstr "Acabou o tempo!  %d pontos"
+
+msgid "Letzte Runde: %d Punkte"
+msgstr "Última rodada: %d pontos"
+
+msgid "Rangliste …"
+msgstr "Ranking …"
+
+msgid "Platz %d von %d"
+msgstr "Posição %d de %d"
+
+msgid "Dein Bestwert: %s"
+msgstr "Seu recorde: %s"
+
+msgid "PLATZ %d von %d"
+msgstr "POSIÇÃO %d DE %d"
+
+msgid "FREI"
+msgstr "LIVRE"
+
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Wenden %d   ·   Kamera: %s%s"
+msgstr ""
+"Rider %d km/h   ·   Cabo %s: %s (velocidade %d km/h)\n"
+"Viradas %d   ·   Câmera: %s%s"
+
+msgid "STURZ  –  der Operator bringt dir die Handle"
+msgstr "QUEDA  –  o operador está trazendo o manete"
+
+msgid "STURZ  –  die Handle liegt bereit"
+msgstr "QUEDA  –  o manete está pronto"
+
+msgid "ca. %d s"
+msgstr "aprox. %d s"
+
+msgid "SCHWIMMEN halten"
+msgstr "Segurar NADAR"
+
+msgid "Zur Handle schwimmen"
+msgstr "Nadar até o manete"
+
+msgid "SKIP"
+msgstr "SKIP"
+
+msgid "Sofort weiterfahren"
+msgstr "Seguir na hora"
+
+msgid "keine Strafzeit"
+msgstr "sem penalidade"
+
+msgid "Zurück zum Steg"
+msgstr "Voltar ao deck"
+
+msgid "LEERTASTE halten"
+msgstr "Segurar ESPAÇO"
+
+msgid "STRG"
+msgstr "CTRL"
+
+msgid ""
+"Neigungssensor nicht verfügbar –\n"
+"Bewegungssensoren im Browser erlauben"
+msgstr ""
+"Sensor de inclinação indisponível –\n"
+"permita os sensores de movimento no navegador"
+
+msgid "SPRUNG-START  %d %%"
+msgstr "LARGADA DO DECK  %d %%"
+
+msgid "Hitboxen an"
+msgstr "Hitboxes on"
+
+msgid "Hitboxen aus"
+msgstr "Hitboxes off"
+
+msgid "Wende um die Boje"
+msgstr "Virada em volta da boia"
+
+msgid "Saubere Wende"
+msgstr "Virada limpa"
+
+msgid "Ins Boot gefahren!"
+msgstr "Bateu no barco!"
+
+msgid "Boot crash!"
+msgstr "Batida no barco!"
+
+msgid "Terminal 1"
+msgstr "Terminal 1"
+
+msgid "Terminal 2"
+msgstr "Terminal 2"
+
+msgid "MODUS"
+msgstr "MODO"
+
+msgid "Musik"
+msgstr "Música"
+
+msgid "Musik hinzufügen"
+msgstr "Adicionar música"
+
+msgid "Vom Blitz getroffen!"
+msgstr "Atingido por um raio!"
+
+msgid "Bodenpflanzen (Gräser, Schilf)"
+msgstr "Plantas rasteiras (gramíneas, juncos)"
+
+msgid "Gehölze (Sträucher, Bäume)"
+msgstr "Lenhosas (arbustos, árvores)"
+
+msgid "Schilf"
+msgstr "Junco"
+
+msgid "Ufergras"
+msgstr "Grama de margem"
+
+msgid "Wiesengras"
+msgstr "Grama de campo"
+
+msgid "Strauch"
+msgstr "Arbusto"
+
+msgid "Laubbaum"
+msgstr "Árvore caducifólia"
+
+msgid "Kiefer"
+msgstr "Pinheiro"
+
+msgid "Seil aus der Hand gerissen!"
+msgstr "Cabo arrancado das mãos!"
+
+msgid "Quer abgefahren – Brett gerade stellen oder driften!"
+msgstr "Saiu de lado – endireite a prancha ou faça drift!"
+
+msgid "Treppe nur im Drift!"
+msgstr "Escada só no drift!"
+
+msgid "Drift-Press zu quer gedriftet!"
+msgstr "Drift press – atravessado demais!"
+
+msgid "Gegen den Steg!"
+msgstr "No deck!"
+
+msgid "Gegen %s gefahren!"
+msgstr "Bateu em %s!"
+
+msgid "das Hindernis"
+msgstr "o obstáculo"
+
+msgid "Verkantet gelandet!"
+msgstr "Pousou na borda!"
+
+msgid "Auf dem Ball gelandet!"
+msgstr "Pousou na bola!"
+
+msgid "Zu harte Landung!"
+msgstr "Pouso duro demais!"
+
+msgid "Überschlag nicht geschafft!"
+msgstr "Giro não completado!"
+
+msgid "Ab ans Ufer!"
+msgstr "Para a margem!"
+
+msgid "Gegen den Mast!"
+msgstr "Na torre!"
+
+msgid "%s – Drift-Winkel %d°  (erlaubt bis %d°)"
+msgstr "%s – ângulo de drift %d°  (permitido até %d°)"
+
+msgid "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)"
+msgstr "DRIFT – borda solta, prancha desliza de lado (%.1f m/s)"
+
+msgid "{tag}. {monat}"
+msgstr "{tag} de {monat}"
+
+msgid "Januar"
+msgstr "janeiro"
+
+msgid "Februar"
+msgstr "fevereiro"
+
+msgid "März"
+msgstr "março"
+
+msgid "April"
+msgstr "abril"
+
+msgid "Mai"
+msgstr "maio"
+
+msgid "Juni"
+msgstr "junho"
+
+msgid "Juli"
+msgstr "julho"
+
+msgid "August"
+msgstr "agosto"
+
+msgid "September"
+msgstr "setembro"
+
+msgid "Oktober"
+msgstr "outubro"
+
+msgid "November"
+msgstr "novembro"
+
+msgid "Dezember"
+msgstr "dezembro"
+
+msgid "%d %% eingesunken"
+msgstr "%d %% afundado"
+
+msgid "%d %% im Press"
+msgstr "%d %% no press"
+
+msgid "%d Wechsel"
+msgid_plural "%d Wechsel"
+msgstr[0] "%d troca"
+msgstr[1] "%d trocas"
+
+msgid "%d Slider"
+msgid_plural "%d Slider"
+msgstr[0] "%d slider"
+msgstr[1] "%d sliders"
+
+msgid "%d Umdrehung"
+msgid_plural "%d Umdrehungen"
+msgstr[0] "%d volta"
+msgstr[1] "%d voltas"
+
+msgid "%d %% im Drift"
+msgstr "%d %% no drift"
+
+msgid "bis %d %%"
+msgstr "até %d %%"
+
+msgid "nicht einsinken"
+msgstr "não afundar"
+
+msgid "bis %s"
+msgstr "até %s"
+
+msgid "ab %s"
+msgstr "a partir de %s"
+
+msgid "Bronze"
+msgstr "Bronze"
+
+msgid "Silber"
+msgstr "Prata"
+
+msgid "Gold"
+msgstr "Ouro"
+
+msgid "Nosepress im Drift"
+msgstr "Nosepress no drift"
+
+msgid "Wie der Tailpress, nur über die Nose: das Brett im Drift erst um 90° quer drehen, dann ins vordere Ende drücken, das Tail steht hoch. Der Winkel zählt von der Querstellung. Gemessen: Anteil der Wende im vollen Nosepress – ohne einzusinken. Gold = die ganze Wende."
+msgstr "Como o tailpress, só que no nose: no drift, primeiro gire a prancha 90° atravessada, depois pressione a ponta da frente, o tail sobe. O ângulo conta a partir da posição atravessada. Medido: parte da virada em nosepress completo – sem afundar. Ouro = a virada inteira."
+
+msgid "Strg halten  driften     ↑ halten  Nosepress     ← / →  Drift-Winkel halten"
+msgstr "Segurar Ctrl  drift     segurar ↑  Nosepress     ← / →  manter o ângulo de drift"
+
+msgid "DRIFT halten  driften     ▲ halten  Nosepress     Neigen  Winkel halten"
+msgstr "Segurar DRIFT  drift     segurar ▲  Nosepress     inclinar  manter o ângulo"
+
+msgid "Erst quer drehen, dann drücken – mit der Nose vorne stehst du 90° falsch. Je schneller, desto querer darfst du driften. Den Drift nicht loslassen – dann ist der Press sofort vorbei."
+msgstr "Primeiro atravesse, depois pressione – com o nose na frente você está 90° errado. Quanto mais rápido, mais atravessado você pode derrapar. Não solte o drift – senão o press acaba na hora."
+
+msgid "Press-Wechsel"
+msgstr "Troca de press"
+
+msgid "Nose- und Tailpress im Wechsel"
+msgstr "Nose- e tailpress alternados"
+
+msgid "In einem Drift zwischen Nosepress und Tailpress hin und her wechseln. Gemessen: Wechsel in einem Drift (jeder volle Press auf das andere Ende zählt; Drift loslassen fängt neu an)."
+msgstr "Num mesmo drift, alterne entre nosepress e tailpress. Medido: trocas em um drift (cada press completo na outra ponta conta; soltar o drift recomeça)."
+
+msgid "Strg halten  driften     ↑ / ↓  Nose- / Tailpress"
+msgstr "Segurar Ctrl  drift     ↑ / ↓  Nose- / Tailpress"
+
+msgid "DRIFT halten  driften     ▲ / ▼  Nose- / Tailpress"
+msgstr "Segurar DRIFT  drift     ▲ / ▼  Nose- / Tailpress"
+
+msgid "Der Press braucht knapp eine Sekunde, bis er ganz drin ist – nicht zu hektisch wechseln."
+msgstr "O press precisa de quase um segundo para entrar por completo – não troque rápido demais."
+
+msgid "Competition"
+msgstr "Competition"
+
+msgid "Runde auf Zeit: so viele Punkte wie möglich. Terminal, Feature-Setup und Rundenlänge frei wählbar."
+msgstr "Rodada contra o relógio: o máximo de pontos possível. Terminal, setup e duração à escolha."
+
+msgid "Wenden"
+msgstr "Viradas"
+
+msgid "Wenden fahren, ohne einzusinken."
+msgstr "Fazer viradas sem afundar."
+
+msgid "Wende Endmast"
+msgstr "Virada na torre final"
+
+msgid "Wende am Endmast"
+msgstr "Virada na torre final"
+
+msgid "Fahr durch die Wende am Endmast, ohne einzusinken. Gemessen wird, wie tief du einsinkst."
+msgstr "Passe pela virada na torre final sem afundar. Medido: o quanto você afunda."
+
+msgid "← / →  lenken     Strg  driften"
+msgstr "← / →  direção     Ctrl  drift"
+
+msgid "Neigen  lenken     DRIFT  driften"
+msgstr "Inclinar  direção     DRIFT  drift"
+
+msgid "An der roten Boje nach außen rauskanten und Tempo aufbauen, dann um den Carrier pendeln – das Seil muss gespannt bleiben. Wird es locker, weiter nach außen ziehen."
+msgstr "Na boia vermelha cante para fora e ganhe velocidade, depois balance em volta do carrier – o cabo precisa continuar esticado. Se afrouxar, puxe mais para fora."
+
+msgid "Ufer-Wende"
+msgstr "Virada na margem"
+
+msgid "Wende am Ufer"
+msgstr "Virada junto à margem"
+
+msgid "Die Wende vor dem Startsteg: hier ist weniger Platz. Wieder ohne einzusinken."
+msgstr "A virada em frente ao deck de largada: aqui tem menos espaço. De novo sem afundar."
+
+msgid "Früh rauskanten – zum Ufer hin bleibt wenig Raum zum Ausschwingen."
+msgstr "Cante cedo – para o lado da margem sobra pouco espaço para abrir."
+
+msgid "Um die Boje"
+msgstr "Em volta da boia"
+
+msgid "Wende um die weiße Boje"
+msgstr "Virada em volta da boia branca"
+
+msgid "Fahr außen um eine der weißen Bojen und komm sauber aus der Wende. Ohne Boje gibt es keine Medaille."
+msgstr "Passe por fora de uma das boias brancas e saia limpo da virada. Sem boia, sem medalha."
+
+msgid "Schon vor der roten Boje weit nach außen ziehen, sonst reicht der Schwung nicht um die weiße Boje."
+msgstr "Puxe bem para fora já antes da boia vermelha, senão o embalo não basta para contornar a boia branca."
+
+msgid "Kicker"
+msgstr "Kicker"
+
+msgid "Über den Kicker – so hoch wie möglich."
+msgstr "Por cima do kicker – o mais alto possível."
+
+msgid "Kicker M"
+msgstr "Kicker M"
+
+msgid "Kicker M überfahren"
+msgstr "Passar pelo Kicker M"
+
+msgid "Fahr ohne Absprung gerade über den Kicker M (der kleinere, näher am Seil). Gemessen wird die größte Höhe über dem Wasser."
+msgstr "Passe reto pelo Kicker M sem pular (o menor, mais perto do cabo). Medido: maior altura acima da água."
+
+msgid "← / →  lenken     Leertaste halten + loslassen  Absprung"
+msgstr "← / →  direção     segurar Espaço + soltar  pulo"
+
+msgid "Neigen  lenken     SPRUNG halten + loslassen  Absprung"
+msgstr "Inclinar  direção     segurar PULO + soltar  pulo"
+
+msgid "Gerade und mit Tempo anfahren – schräg verliert man Höhe. Kurz vor dem Kicker nicht mehr lenken."
+msgstr "Chegue reto e com velocidade – de lado você perde altura. Pouco antes do kicker, pare de virar."
+
+msgid "M mit Absprung"
+msgstr "M com pulo"
+
+msgid "Kicker M mit Absprung"
+msgstr "Kicker M com pulo"
+
+msgid "Wie eben, aber an der Kante abspringen: Kicker-Steigung + Sprungkraft = Höhe."
+msgstr "Igual, mas pule na borda: inclinação do kicker + força do pulo = altura."
+
+msgid "Leertaste halten (auf dem Kicker) + an der Kante loslassen"
+msgstr "Segurar Espaço (no kicker) + soltar na borda"
+
+msgid "SPRUNG halten (auf dem Kicker) + an der Kante loslassen"
+msgstr "Segurar PULO (no kicker) + soltar na borda"
+
+msgid "Schon auf dem Kicker voll aufladen und genau an der Kante loslassen – zu früh verschenkt den Wurf der Rampe."
+msgstr "Carregue ao máximo já no kicker e solte exatamente na borda – cedo demais desperdiça o impulso da rampa."
+
+msgid "Kicker L"
+msgstr "Kicker L"
+
+msgid "Kicker L mit Absprung"
+msgstr "Kicker L com pulo"
+
+msgid "Der große Kicker L (rechts): höher, steiler – und härter bei der Landung."
+msgstr "O grande Kicker L (à direita): mais alto, mais íngreme – e mais duro no pouso."
+
+msgid "Leertaste halten + an der Kante loslassen"
+msgstr "Segurar Espaço + soltar na borda"
+
+msgid "SPRUNG halten + an der Kante loslassen"
+msgstr "Segurar PULO + soltar na borda"
+
+msgid "Bei der Landung gerade bleiben – wer quer aufkommt, stürzt."
+msgstr "Fique reto no pouso – quem cai de lado, cai."
+
+msgid "Slider"
+msgstr "Slider"
+
+msgid "Slider fahren: aufspringen, 50-50, Boardslide, Press."
+msgstr "Andar nos sliders: subir, 50-50, boardslide, press."
+
+msgid "Full Pipe"
+msgstr "Full Pipe"
+
+msgid "Rauf auf die Full Pipe"
+msgstr "Na Full Pipe"
+
+msgid "Fahr über die Auffahrt auf die Full Pipe und rutsch sie so weit wie möglich ab. Gemessen: gerutschte Meter."
+msgstr "Suba pela rampa na Full Pipe e deslize o mais longe possível. Medido: metros deslizados."
+
+msgid "← / →  lenken (auf dem Slider: Boardslide / 50-50)"
+msgstr "← / →  direção (no slider: Boardslide / 50-50)"
+
+msgid "Neigen  lenken (auf dem Slider deutlich neigen: Boardslide / 50-50)"
+msgstr "Inclinar  direção (no slider inclinar bem: Boardslide / 50-50)"
+
+msgid "Mittig auf die Auffahrt zielen. Auf dem Rohr hält dich das Einloggen in der Spur."
+msgstr "Mire no meio da rampa. No tubo, o encaixe te mantém na linha."
+
+msgid "Boardslide"
+msgstr "Boardslide"
+
+msgid "Boardslide auf der Pipe"
+msgstr "Boardslide no pipe"
+
+msgid "Quer über die Pipe: nur Meter im Boardslide zählen. Am Ende das Brett wieder gerade stellen – wer quer ins Wasser fährt, stürzt."
+msgstr "Atravessado no pipe: só contam os metros em boardslide. No fim, endireite a prancha – quem entra de lado na água, cai."
+
+msgid "Auf der Pipe ← / → tippen (Boardslide), vor dem Ende nochmal tippen (zurück auf 50-50)"
+msgstr "No pipe tocar ← / → (boardslide), antes do fim tocar de novo (volta ao 50-50)"
+
+msgid "Auf der Pipe deutlich neigen (Boardslide), vor dem Ende nochmal neigen (zurück auf 50-50)"
+msgstr "No pipe inclinar bem (boardslide), antes do fim inclinar de novo (volta ao 50-50)"
+
+msgid "Oder schon in der Luft quer drehen – das Brett rastet in die nächste Stellung ein. Kurz vor dem Ende umspringen oder auf der Abfahrt gerade drehen."
+msgstr "Ou atravesse já no ar – a prancha encaixa na posição mais próxima. Troque logo antes do fim ou endireite na descida."
+
+msgid "Drift"
+msgstr "Drift"
+
+msgid "Boardslide mit Drift-Abgang"
+msgstr "Boardslide com saída em drift"
+
+msgid "Boardslide über die Pipe und quer bleiben – beim Abgang Drift halten: dann rutscht das Brett quer weiter, ohne einzuhaken."
+msgstr "Boardslide no pipe e continue atravessado – na saída segure o drift: a prancha continua deslizando de lado sem enganchar."
+
+msgid "Auf der Pipe ← / → tippen (Boardslide), Strg (Drift) halten, wenn das Brett das Wasser berührt"
+msgstr "No pipe tocar ← / → (boardslide), segurar Ctrl (drift) quando a prancha tocar a água"
+
+msgid "Auf der Pipe deutlich neigen (Boardslide), DRIFT halten, wenn das Brett das Wasser berührt"
+msgstr "No pipe inclinar bem (boardslide), segurar DRIFT quando a prancha tocar a água"
+
+msgid "Drift rechtzeitig drücken – kurz vor dem Ende der Pipe. Wer das Brett gerade stellt, bekommt hier keinen Wert."
+msgstr "Aperte drift a tempo – logo antes do fim do pipe. Quem endireita a prancha não ganha valor aqui."
+
+msgid "Umspringen"
+msgstr "Trocar"
+
+msgid "Boardslide / 50-50 umspringen"
+msgstr "Trocar boardslide / 50-50"
+
+msgid "Auf dem Long Rail (links, 100 m) zwischen Boardslide und 50-50 wechseln. Gezählt werden die Wechsel."
+msgstr "No Long Rail (à esquerda, 100 m) alterne entre boardslide e 50-50. As trocas são contadas."
+
+msgid "Auf dem Slider: je Tipp ← / →  90° drehen"
+msgstr "No slider: cada toque ← / → gira 90°"
+
+msgid "Auf dem Slider: deutlich neigen, zurück, wieder neigen"
+msgstr "No slider: inclinar bem, voltar, inclinar de novo"
+
+msgid "Nach jedem Tipp loslassen – erst dann geht der nächste Wechsel."
+msgstr "Solte depois de cada toque – só então a próxima troca funciona."
+
+msgid "Press"
+msgstr "Press"
+
+msgid "Nose- oder Tailpress"
+msgstr "Nose- ou tailpress"
+
+msgid "Auf dem Long Rail Gewicht auf Nose oder Tail: gemessen werden die Sekunden im Press."
+msgstr "No Long Rail jogue o peso no nose ou no tail: são medidos os segundos no press."
+
+msgid "Auf dem Slider: ↑  Nosepress    ↓  Tailpress (halten)"
+msgstr "No slider: ↑  Nosepress    ↓  Tailpress (segurar)"
+
+msgid "Auf dem Slider: ▲  Nosepress    ▼  Tailpress (halten)"
+msgstr "No slider: ▲  Nosepress    ▼  Tailpress (segurar)"
+
+msgid "Erst sauber auf dem Rail stehen, dann ↑ oder ↓ halten. Beim Absprung loslassen, sonst gibt es keinen Überschlag."
+msgstr "Primeiro fique firme no rail, depois segure ↑ ou ↓. Solte ao pular, senão não sai giro."
+
+msgid "Long Rail"
+msgstr "Long Rail"
+
+msgid "Long Rail: 100 m"
+msgstr "Long Rail: 100 m"
+
+msgid "So weit wie möglich auf dem 100-m-Rail bleiben."
+msgstr "Fique o mais longe possível no rail de 100 m."
+
+msgid "← / →  lenken"
+msgstr "← / →  direção"
+
+msgid "Neigen  lenken"
+msgstr "Inclinar  direção"
+
+msgid "Der Seilzug zieht dich zur Seilmitte – auf dem Rail nicht gegenlenken, das Einloggen hält die Spur."
+msgstr "A tensão te puxa para o meio – não contra-esterce no rail, o encaixe segura a linha."
+
+msgid "Slider-Kette"
+msgstr "Corrente de sliders"
+
+msgid "Rechts stehen vier Slider hintereinander: Full Pipe, Rail, A-Frame, Pipe. Wie viele schaffst du in einer Fahrt?"
+msgstr "À direita há quatro sliders em sequência: Full Pipe, Rail, A-Frame, Pipe. Quantos você acerta numa passada?"
+
+msgid "← / →  lenken     Leertaste  Absprung"
+msgstr "← / →  direção     Espaço  pulo"
+
+msgid "Neigen  lenken     SPRUNG  Absprung"
+msgstr "Inclinar  direção     PULO  pulo"
+
+msgid "Nach jedem Slider zieht dich das Seil nach innen: sofort wieder nach außen auf Linie lenken – alle stehen auf derselben Spur."
+msgstr "Depois de cada slider o cabo te puxa para dentro: volte logo para fora na linha – todos estão na mesma linha."
+
+msgid "BS Nosepress"
+msgstr "BS Nosepress"
+
+msgid "Ollie in Boardslide Nosepress"
+msgstr "Ollie para Boardslide Nosepress"
+
+msgid "Mit einem Ollie aus dem Wasser direkt auf die Full Pipe, in der Luft quer drehen und im Boardslide mit Nosepress rutschen. Gemessen: gerutschte Meter – nur wenn Ollie on, Boardslide und Nosepress stimmen."
+msgstr "Com um ollie da água direto na Full Pipe, atravesse no ar e deslize em boardslide com nosepress. Medido: metros deslizados – só se ollie on, boardslide e nosepress estiverem certos."
+
+msgid "Leertaste  Ollie     in der Luft ← / → kurz tippen (Vierteldrehung)     auf der Pipe ↑ halten"
+msgstr "Espaço  Ollie     no ar tocar ← / → rapidinho (um quarto de volta)     no pipe segurar ↑"
+
+msgid "SPRUNG  Ollie     in der Luft kurz neigen (Vierteldrehung)     auf der Pipe ▲ halten"
+msgstr "PULO  Ollie     no ar inclinar rapidinho (um quarto de volta)     no pipe segurar ▲"
+
+msgid "Nicht über die Auffahrt fahren, sondern vor der Pipe abspringen. Eine Vierteldrehung reicht – das Brett rastet quer ein. Am Ende das Brett gerade stellen (← / →) oder Drift halten, sonst stürzt man quer ins Wasser."
+msgstr "Não suba pela rampa, pule na frente do pipe. Um quarto de volta basta – a prancha encaixa atravessada. No fim endireite a prancha (← / →) ou segure o drift, senão você cai de lado na água."
+
+msgid "Special"
+msgstr "Special"
+
+msgid "Slider Special"
+msgstr "Slider Special"
+
+msgid "Rail"
+msgstr "Rail"
+
+msgid "A-Frame"
+msgstr "A-Frame"
+
+msgid "Pipe"
+msgstr "Pipe"
+
+msgid "Die Slider-Kette rechts, an jedem Slider eine feste Kombination. Gezählt: geschaffte Slider."
+msgstr "A corrente de sliders à direita, cada slider com uma combinação fixa. Contado: sliders concluídos."
+
+msgid "Leertaste  Ollie on / out     ← / →  in der Luft drehen, auf dem Slider Boardslide / 50-50     ↑ / ↓  Nose- / Tailpress"
+msgstr "Espaço  Ollie on / out     ← / →  girar no ar, no slider Boardslide / 50-50     ↑ / ↓  Nose- / Tailpress"
+
+msgid "SPRUNG  Ollie on / out     Neigen  in der Luft drehen, auf dem Slider Boardslide / 50-50     ▲ / ▼  Nose- / Tailpress"
+msgstr "PULO  Ollie on / out     Inclinar  girar no ar, no slider Boardslide / 50-50     ▲ / ▼  Nose- / Tailpress"
+
+msgid "Ollie on heißt: aus dem Wasser direkt auf das Rohr springen, nicht über die Auffahrt fahren. Den Press mehr als die halbe Slide-Zeit halten."
+msgstr "Ollie on significa: pular da água direto no tubo, sem subir pela rampa. Segure o press por mais da metade do slide."
+
+msgid "Invert Training"
+msgstr "Invert Training"
+
+msgid "Inverts: Tricks aus dem Raley-Absprung nach der Wende."
+msgstr "Inverts: manobras a partir da decolagem do Raley depois da virada."
+
+msgid "Raley – Höhe"
+msgstr "Raley – altura"
+
+msgid "Höchster Raley"
+msgstr "Raley mais alto"
+
+msgid "Nach der Ufer-Wende Seilzug aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: größte Höhe."
+msgstr "Depois da virada na margem, gere tensão e acerte um Raley – sem giro, sem extras. Medido: maior altura."
+
+msgid "Leertaste lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist"
+msgstr "Segurar Espaço bastante (carregar ao máximo) + soltar quando a tensão estiver acima da marca RALEY"
+
+msgid "SPRUNG lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist"
+msgstr "Segurar PULO bastante (carregar ao máximo) + soltar quando a tensão estiver acima da marca RALEY"
+
+msgid "Nach der Wende weit nach außen fahren, dann hart gegen den Zug zur Seilmitte kanten – loslassen, solange der Seilzug über der Marke RALEY ist – je mehr Zug und Tempo, desto höher."
+msgstr "Depois da virada vá bem para fora, depois cante forte contra o puxão para o meio – solte enquanto a tensão estiver acima da marca RALEY – quanto mais tensão e velocidade, mais alto."
+
+msgid "Raley – Weite"
+msgstr "Raley – distância"
+
+msgid "Weitester Raley"
+msgstr "Raley mais longo"
+
+msgid "Nach der Ufer-Wende Seilzug aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: Weite vom Absprung bis zur Landung."
+msgstr "Depois da virada na margem, gere tensão e acerte um Raley – sem giro, sem extras. Medido: distância da decolagem ao pouso."
+
+msgid "Weit nach außen, dann hart zur Seilmitte kanten – je mehr Zug und Tempo, desto weiter."
+msgstr "Bem para fora, depois cante forte para o meio – quanto mais tensão e velocidade, mais longe."
+
+msgid "Krypt"
+msgstr "Krypt"
+
+msgid "Krypt (Raley 180 rechts)"
+msgstr "Krypt (Raley 180 para a direita)"
+
+msgid "Raley mit genau einer halben Drehung nach rechts. Gemessen: größte Höhe."
+msgstr "Raley com exatamente meia volta para a direita. Medido: maior altura."
+
+msgid "Raley, dann gegen Ende →  halten (180)"
+msgstr "Raley, depois perto do fim segurar →  (180)"
+
+msgid "Raley, dann gegen Ende nach rechts neigen (180)"
+msgstr "Raley, depois perto do fim inclinar para a direita (180)"
+
+msgid "Erst strecken lassen, dann ← / → : der Schwung bricht ab, du schwingst zurück und drehst aufrecht – rechtzeitig loslassen."
+msgstr "Primeiro deixe o corpo esticar, depois ← / → : o balanço é cortado, você volta e gira em pé – solte a tempo."
+
+msgid "Blind Judge"
+msgstr "Blind Judge"
+
+msgid "Blind Judge (Raley 180 links)"
+msgstr "Blind Judge (Raley 180 para a esquerda)"
+
+msgid "Raley mit genau einer halben Drehung nach links. Gemessen: größte Höhe."
+msgstr "Raley com exatamente meia volta para a esquerda. Medido: maior altura."
+
+msgid "Raley, dann gegen Ende ←  halten (180)"
+msgstr "Raley, depois perto do fim segurar ←  (180)"
+
+msgid "Raley, dann gegen Ende nach links neigen (180)"
+msgstr "Raley, depois perto do fim inclinar para a esquerda (180)"
+
+msgid "313 (Raley 360 links)"
+msgstr "313 (Raley 360 para a esquerda)"
+
+msgid "Raley mit genau einer ganzen Drehung nach links. Gemessen: größte Höhe."
+msgstr "Raley com exatamente uma volta completa para a esquerda. Medido: maior altura."
+
+msgid "Raley, dann gegen Ende ←  halten (360)"
+msgstr "Raley, depois perto do fim segurar ←  (360)"
+
+msgid "Raley, dann gegen Ende nach links neigen (360)"
+msgstr "Raley, depois perto do fim inclinar para a esquerda (360)"
+
+msgid "Viel Höhe holen – die ganze Drehung braucht die Zeit vom höchsten Punkt bis zur Landung."
+msgstr "Ganhe bastante altura – a volta completa precisa do tempo do ponto mais alto até o pouso."
+
+msgid "S-Bend"
+msgstr "S-Bend"
+
+msgid "Raley-Absprung und gestreckt einmal um die eigene Längsachse – ohne Drehung danach. Gemessen: größte Höhe."
+msgstr "Decolagem de Raley e, esticado, uma volta em torno do próprio eixo longitudinal – sem giro depois. Medido: maior altura."
+
+msgid "Raley, gleich nach dem Absprung ↑"
+msgstr "Raley, logo após a decolagem ↑"
+
+msgid "Raley, gleich nach dem Absprung ▲"
+msgstr "Raley, logo após a decolagem ▲"
+
+msgid "Die Taste nur ganz am Anfang drücken – später wird es ein normaler Raley."
+msgstr "Aperte a tecla só bem no começo – depois vira um Raley normal."
+
+msgid "Backroll (todo)"
+msgstr "Backroll (todo)"
+
+msgid "Backroll (Invert, todo)"
+msgstr "Backroll (Invert, todo)"
+
+msgid "Raley-Absprung und seitlich nach außen kopfüber rollen – ohne Drehung danach. Gemessen: größte Höhe."
+msgstr "Decolagem de Raley e rolar de lado para fora de cabeça para baixo – sem giro depois. Medido: maior altura."
+
+msgid "Raley, gleich nach dem Absprung ↓"
+msgstr "Raley, logo após a decolagem ↓"
+
+msgid "Raley, gleich nach dem Absprung ▼"
+msgstr "Raley, logo após a decolagem ▼"
+
+msgid "Special - S-Bend to Blind"
+msgstr "Special - S-Bend to Blind"
+
+msgid "Special: S-Bend to Blind"
+msgstr "Special: S-Bend to Blind"
+
+msgid "S-Bend und danach genau eine halbe Drehung nach links – blind landen. Gemessen: größte Höhe."
+msgstr "S-Bend e depois exatamente meia volta para a esquerda – pouso blind. Medido: maior altura."
+
+msgid "Raley, gleich nach dem Absprung ↑, nach der Drehung um die Handle ←  (180)"
+msgstr "Raley, logo após a decolagem ↑, depois do giro em volta do manete ←  (180)"
+
+msgid "Raley, gleich nach dem Absprung ▲, nach der Drehung um die Handle nach links neigen (180)"
+msgstr "Raley, logo após a decolagem ▲, depois do giro em volta do manete inclinar para a esquerda (180)"
+
+msgid "Viel Höhe holen: ← erst, wenn der S-Bend durch ist – dann schwingst du zurück und drehst aufrecht. Rechtzeitig loslassen."
+msgstr "Ganhe bastante altura: ← só quando o S-Bend terminar – aí você volta e gira em pé. Solte a tempo."
+
+msgid "Sprung-Start"
+msgstr "Largada do deck"
+
+msgid "Vom Startsteg: gegen das Seil stemmen, bis es dich losreißt."
+msgstr "Do deck de largada: segure contra o cabo até ele te arrancar."
+
+msgid "Nolli"
+msgstr "Nolli"
+
+msgid "Nolli vom Steg"
+msgstr "Nolli do deck"
+
+msgid "Bleib auf dem Startsteg mit dem Brett längs zum Seil (50-50) stehen und halte ↓: du stemmst dich gegen das anfahrende Seil, der Seilzug lädt sich auf. Bei maximaler Seilspannung reißt es dich nach vorne – ein Nolli. Gemessen: größte Höhe."
+msgstr "Fique no deck de largada com a prancha alinhada com o cabo (50-50) e segure ↓: você segura contra o cabo que arranca, a tensão aumenta. Na tensão máxima ele te puxa para a frente – um Nolli. Medido: maior altura."
+
+msgid "↓ halten (schon beim Countdown), bis das Seil losreißt"
+msgstr "Segurar ↓ (já na contagem) até o cabo te arrancar"
+
+msgid "▼ halten (schon beim Countdown), bis das Seil losreißt"
+msgstr "Segurar ▼ (já na contagem) até o cabo te arrancar"
+
+msgid "Je genauer das Brett längs zum Seil steht, desto mehr Power. Nicht vorher loslassen – sonst ist es ein normaler Start."
+msgstr "Quanto mais alinhada a prancha estiver com o cabo, mais força. Não solte antes – senão é uma largada normal."
+
+msgid "Nolli 180/360"
+msgstr "Nolli 180/360"
+
+msgid "Nolli mit Drehung"
+msgstr "Nolli com giro"
+
+msgid "Nolli vom Steg und in der Luft drehen: 180 = Bronze, 360 = Silber, 540 = Gold."
+msgstr "Nolli do deck e giro no ar: 180 = bronze, 360 = prata, 540 = ouro."
+
+msgid "↓ halten bis zum Riss, dann in der Luft ← / →  drehen"
+msgstr "Segurar ↓ até o puxão, depois girar no ar com ← / →"
+
+msgid "▼ halten bis zum Riss, dann in der Luft neigen = drehen"
+msgstr "Segurar ▼ até o puxão, depois inclinar no ar = girar"
+
+msgid "Gleich nach dem Riss drehen und rechtzeitig loslassen – das Brett muss zur Landung in Fahrtrichtung zeigen."
+msgstr "Gire logo depois do puxão e solte a tempo – no pouso a prancha precisa apontar na direção do movimento."
+
+msgid "Raley Start"
+msgstr "Raley Start"
+
+msgid "Raley Start vom Steg"
+msgstr "Raley Start do deck"
+
+msgid "Dreh dich auf dem Steg um 90°, sodass das Brett quer zum Seil steht, und halte ↓: du sitzt tief auf der Kante, Brust zum Seil. Reißt das Seil los, schwingt dein Körper um den Griff wie beim Raley. Gemessen: größte Höhe."
+msgstr "Gire 90° no deck para a prancha ficar atravessada ao cabo e segure ↓: você fica sentado baixo na borda, peito para o cabo. Quando o cabo te arranca, seu corpo balança em volta do manete como num Raley. Medido: maior altura."
+
+msgid "← / →  auf dem Steg quer drehen     ↓ halten, bis das Seil losreißt"
+msgstr "← / →  atravessar no deck     segurar ↓ até o cabo te arrancar"
+
+msgid "Neigen  auf dem Steg quer drehen     ▼ halten, bis das Seil losreißt"
+msgstr "Inclinar  atravessar no deck     segurar ▼ até o cabo te arrancar"
+
+msgid "Schon beim Countdown drehen – je genauer quer, desto höher. Ab 45° Abweichung wird es ein Nolli."
+msgstr "Gire já durante a contagem – quanto mais atravessado, mais alto. A partir de 45° de desvio vira um Nolli."
+
+msgid "Raley Start + Invert"
+msgstr "Raley Start + Invert"
+
+msgid "Raley Start mit Invert"
+msgstr "Raley Start com invert"
+
+msgid "Raley Start und in der Luft noch etwas dazu: 180 = Bronze, S-Bend oder Backroll = Silber, S-Bend/Backroll + 360 = Gold. Gemessen: Punkte des Sprungs."
+msgstr "Raley Start e mais alguma coisa no ar: 180 = bronze, S-Bend ou Backroll = prata, S-Bend/Backroll + 360 = ouro. Medido: pontos do pulo."
+
+msgid "Quer drehen, ↓ halten bis zum Riss, in der Luft loslassen, dann gleich ↑ S-Bend / ↓ Backroll, gegen Ende ← / →  drehen"
+msgstr "Atravessar, segurar ↓ até o puxão, soltar no ar, depois na hora ↑ S-Bend / ↓ Backroll, perto do fim girar com ← / →"
+
+msgid "Quer drehen, ▼ halten bis zum Riss, in der Luft loslassen, dann gleich ▲ S-Bend / ▼ Backroll, gegen Ende neigen  drehen"
+msgstr "Atravessar, segurar ▼ até o puxão, soltar no ar, depois na hora ▲ S-Bend / ▼ Backroll, perto do fim inclinar para girar"
+
+msgid "Das gehaltene ↓ zählt nicht – erst loslassen, dann sofort ↑ oder ↓ drücken: der Trick wird nur ganz am Anfang gewählt."
+msgstr "O ↓ segurado não conta – solte primeiro, depois aperte na hora ↑ ou ↓: a manobra só é escolhida bem no começo."
+
+msgid "Driften"
+msgstr "Drift"
+
+msgid "Kante lösen und gleiten: das Brett dreht frei, die Fahrtrichtung bleibt."
+msgstr "Soltar a borda e deslizar: a prancha gira livre, a direção continua."
+
+msgid "360 im Drift"
+msgstr "360 no drift"
+
+msgid "360er im Drift"
+msgstr "360s no drift"
+
+msgid "Driften heißt: die Kante lösen. Das Brett liegt flach und greift nicht mehr – Lenken ändert die Fahrtrichtung nicht, nur der Seilzug zieht dich, und das Brett lässt sich frei herumdrehen. Dreh so zwischen den roten Bojen (Ufer bis Endmast) fünf 360er in die eine und fünf in die andere Richtung – gezählt wird jede volle Umdrehung im Drift, höchstens fünf je Richtung."
+msgstr "Fazer drift é soltar a borda. A prancha fica plana e não agarra mais – virar não muda sua direção, só o cabo te puxa, e a prancha gira livremente. Entre as boias vermelhas (da margem até a torre final) faça cinco 360 para um lado e cinco para o outro – conta cada volta completa no drift, no máximo cinco por lado."
+
+msgid "Strg halten  driften     ← / →  Brett drehen"
+msgstr "Segurar Ctrl  drift     ← / →  girar a prancha"
+
+msgid "DRIFT halten  driften     Neigen  Brett drehen"
+msgstr "Segurar DRIFT  drift     inclinar  girar a prancha"
+
+msgid "Erst fünf in eine Richtung, dann umsteuern – die Strecke reicht nur knapp, also nicht trödeln. Wer den Drift loslässt, verliert die angefangene Umdrehung – und quer greift die Kante hart und bremst."
+msgstr "Primeiro cinco para um lado, depois troque – o percurso dá na conta, então nada de enrolar. Quem solta o drift perde a volta começada – e de lado a borda agarra forte e freia."
+
+msgid "Wende im Drift"
+msgstr "Virada no drift"
+
+msgid "Die Wende durchgleiten"
+msgstr "Deslizar a virada inteira"
+
+msgid "Vor der Wende am Endmast mächtig Schwung holen und dann die ganze Wende im Drift durchgleiten – ohne einzusinken. Gemessen: Anteil der Wende, in dem du im Drift gleitest, ohne einzusinken (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht)."
+msgstr "Antes da virada na torre final pegue muito embalo e deslize a virada inteira no drift – sem afundar. Medido: parte da virada em que você desliza no drift sem afundar (da frenagem do carrier até o cabo puxar de novo na nova direção)."
+
+msgid "← / →  lenken (Schwung holen)     Strg halten  driften"
+msgstr "← / →  direção (pegar embalo)     segurar Ctrl  drift"
+
+msgid "Neigen  lenken (Schwung holen)     DRIFT halten  driften"
+msgstr "Inclinar  direção (pegar embalo)     segurar DRIFT  drift"
+
+msgid "An der roten Boje weit rauskanten und Tempo aufbauen. Im Drift bremst das Wasser weniger – du gleitest weiter. Ist zu wenig Schwung da, sinkst du ein."
+msgstr "Na boia vermelha cante bem para fora e ganhe velocidade. No drift a água freia menos – você desliza mais longe. Com pouco embalo, você afunda."
+
+msgid "Drift nach Feature"
+msgstr "Drift depois do feature"
+
+msgid "Nach dem Feature driften"
+msgstr "Drift depois do feature"
+
+msgid "Terminal 2, Setup Juli & August: von der Mitte Richtung Steg über ein Feature deiner Wahl und gleich danach driften – mindestens 10 m. Gemessen: der längste Drift, der direkt nach einem Feature beginnt (auch nach dem Sprung davon)."
+msgstr "Terminal 2, setup Julho e agosto: do meio em direção ao deck, passe por um feature à sua escolha e faça drift logo em seguida – pelo menos 10 m. Medido: o drift mais longo que começa logo depois de um feature (também depois de pular dele)."
+
+msgid "Strg schon auf dem Feature halten und danach nicht loslassen"
+msgstr "Segurar Ctrl já no feature e não soltar depois"
+
+msgid "DRIFT schon auf dem Feature halten und danach nicht loslassen"
+msgstr "Segurar DRIFT já no feature e não soltar depois"
+
+msgid "Mit Drift darf das Brett beim Abgang auch quer stehen. Der Seilzug zieht dich im Drift zur Seilmitte – vorher weit außen auf das Feature fahren."
+msgstr "Com drift a prancha também pode sair atravessada. No drift o cabo te puxa para o meio – entre no feature bem por fora."
+
+msgid "Tailpress im Drift"
+msgstr "Tailpress no drift"
+
+msgid "Auf dem Weg zum vorderen Wendepunkt driften und dabei ins Tail drücken: das Brett kippt um das Tail, die Nose steht hoch, die freie Hand streift das Wasser. Du gleitest mit dem ganzen Schwung weiter. Driftest du querer, als es dein Tempo erlaubt (höchstens 86°, nach links wie nach rechts), stürzt du – mit ← / → den Winkel halten. Gemessen: Anteil der Wende im vollen Tailpress (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht) – ohne einzusinken. Gold = die ganze Wende."
+msgstr "A caminho do ponto de virada da frente, faça drift e pressione o tail: a prancha bascula sobre o tail, o nose sobe, a mão livre roça a água. Você desliza com todo o embalo. Se derrapar mais atravessado do que sua velocidade permite (no máximo 86°, para a esquerda e para a direita), você cai – mantenha o ângulo com ← / →. Medido: parte da virada em tailpress completo (da frenagem do carrier até o cabo puxar de novo na nova direção) – sem afundar. Ouro = a virada inteira."
+
+msgid "Strg halten  driften     ↓ halten  Tailpress     ← / →  Drift-Winkel halten"
+msgstr "Segurar Ctrl  drift     segurar ↓  Tailpress     ← / →  manter o ângulo de drift"
+
+msgid "DRIFT halten  driften     ▼ halten  Tailpress     Neigen  Winkel halten"
+msgstr "Segurar DRIFT  drift     segurar ▼  Tailpress     inclinar  manter o ângulo"
+
+msgid "Hart rauskanten, im Drift das Brett erst weit quer drehen (um 75°), dann ins Tail drücken – so bremst nichts. Im goldenen Bereich des Bogens (die letzten rund 45° vor der Grenze) bremst der Press gar nicht; querer als 86° reißt es dich um. Den Winkel mit ← / → halten, während dich das Seil um den Carrier schwingt."
+msgstr "Cante forte, no drift primeiro gire a prancha bem atravessada (uns 75°), depois pressione o tail – assim nada freia. Na zona dourada do arco (os últimos ~45° antes do limite) o press não freia nada; mais atravessado que 86° e você cai. Mantenha o ângulo com ← / → enquanto o cabo te balança em volta do carrier."
+
+msgid "Transfer"
+msgstr "Transfer"
+
+msgid "Von einem Feature auf ein anderes springen."
+msgstr "Pular de um feature para outro."
+
+msgid "Klein"
+msgstr "Pequeno"
+
+msgid "Pyramid auf Pyramid-Rail"
+msgstr "Pyramid para Pyramid Rail"
+
+msgid "Pyramid"
+msgstr "Pyramid"
+
+msgid "A-Frame Rail"
+msgstr "A-Frame Rail"
+
+msgid "Erst auf die Pyramid, dann aufs Rail springen"
+msgstr "Primeiro na Pyramid, depois pular para o rail"
+
+msgid "Terminal 2, Setup C: über die Pyramid fahren und oben seitlich auf das A-Frame Rail daneben springen. Gemessen: Sprunghöhe – so hoch wie möglich, aber das Rail noch erwischen."
+msgstr "Terminal 2, setup C: passe pela Pyramid e lá em cima pule de lado no A-Frame Rail ao lado. Medido: altura do pulo – o mais alto possível, mas ainda pegando o rail."
+
+msgid "Leertaste halten + loslassen  Absprung, in der Luft ← / →  Richtung Rail"
+msgstr "Segurar Espaço + soltar  pulo, no ar ← / →  em direção ao rail"
+
+msgid "SPRUNG halten + loslassen  Absprung, in der Luft neigen  Richtung Rail"
+msgstr "Segurar PULO + soltar  pulo, no ar inclinar  em direção ao rail"
+
+msgid "Auf der Pyramid nahe an der Rail-Seite fahren, dann kurz abspringen – das Einloggen zieht dich aufs Rail."
+msgstr "Na Pyramid vá perto do lado do rail, depois dê um pulinho – o encaixe te puxa para o rail."
+
+msgid "Groß"
+msgstr "Grande"
+
+msgid "Wedge auf Down Ledge"
+msgstr "Wedge para Down Ledge"
+
+msgid "Cheese Wedge"
+msgstr "Cheese Wedge"
+
+msgid "Down Ledge"
+msgstr "Down Ledge"
+
+msgid "Erst über den Wedge, dann auf die Down Ledge springen"
+msgstr "Primeiro pelo wedge, depois pular para a Down Ledge"
+
+msgid "Terminal 1, Setup A: über den Wedge (Kicker-Höhe wie Kicker M) und seitlich hoch auf die Down Ledge springen. Gemessen: Sprunghöhe – so hoch wie möglich, aber die Ledge noch erwischen."
+msgstr "Terminal 1, setup A: pelo wedge (altura de kicker como o Kicker M) e pule de lado para cima na Down Ledge. Medido: altura do pulo – o mais alto possível, mas ainda pegando a ledge."
+
+msgid "Leertaste halten (auf dem Wedge) + an der Kante loslassen, in der Luft ← / →  Richtung Ledge"
+msgstr "Segurar Espaço (no wedge) + soltar na borda, no ar ← / →  em direção à ledge"
+
+msgid "SPRUNG halten (auf dem Wedge) + an der Kante loslassen, in der Luft neigen"
+msgstr "Segurar PULO (no wedge) + soltar na borda, no ar inclinar"
+
+msgid "Die Ledge ist höher als die Kante des Wedges – voll aufladen und kräftig abspringen."
+msgstr "A ledge é mais alta que a borda do wedge – carregue ao máximo e pule com força."
+
+msgid "Curb auf Down Ledge"
+msgstr "Curb para Down Ledge"
+
+msgid "Transition Curb"
+msgstr "Transition Curb"
+
+msgid "Erst auf die Transition Curb, dann auf die Down Ledge springen"
+msgstr "Primeiro na Transition Curb, depois pular para a Down Ledge"
+
+msgid "Terminal 2, Setup D: mit einem Ollie auf die Transition Curb, darauf hoch und dann auf die Down Ledge daneben springen. Wie du slidest, ist egal. Gemessen: Sprunghöhe von der Curb – so hoch wie möglich, aber die Ledge noch erwischen."
+msgstr "Terminal 2, setup D: com um ollie na Transition Curb, suba por ela e depois pule na Down Ledge ao lado. Como você desliza, tanto faz. Medido: altura do pulo a partir da curb – o mais alto possível, mas ainda pegando a ledge."
+
+msgid "Leertaste: Ollie auf die Curb, auf der Curb nochmal abspringen, in der Luft ← / →"
+msgstr "Espaço: ollie na curb, pular de novo na curb, no ar ← / →"
+
+msgid "SPRUNG: Ollie auf die Curb, auf der Curb nochmal abspringen, in der Luft neigen"
+msgstr "PULO: ollie na curb, pular de novo na curb, no ar inclinar"
+
+msgid "Auf der Curb ist glattes Plastik – lenken geht nicht. Schon vor dem Ollie auf die richtige Linie gehen."
+msgstr "Na curb é plástico liso – não dá para virar. Entre na linha certa já antes do ollie."
+
+msgid "Special Press"
+msgstr "Special Press"
+
+msgid "Curb auf Down Ledge mit Nosepress"
+msgstr "Curb para Down Ledge com nosepress"
+
+msgid "Wie Transfer special, aber auf der Down Ledge einen Nosepress halten. Gemessen: Sekunden im Press."
+msgstr "Como o Transfer special, mas segure um nosepress na Down Ledge. Medido: segundos no press."
+
+msgid "Auf der Ledge ↑ halten (Nosepress)"
+msgstr "Na ledge segurar ↑ (nosepress)"
+
+msgid "Auf der Ledge ▲ halten (Nosepress)"
+msgstr "Na ledge segurar ▲ (nosepress)"
+
+msgid "Erst sauber auf der Ledge landen, dann ↑ drücken – beim Abgang loslassen."
+msgstr "Primeiro pouse limpo na ledge, depois aperte ↑ – solte na saída."
+
+msgid "Pool"
+msgstr "Pool"
+
+msgid "Der 6-Stair Pool: rein ins Becken, die Treppe im Drift, auf den Rand und die Ausgänge."
+msgstr "O 6-Stair Pool: para dentro da piscina, a escada no drift, na borda e nas saídas."
+
+msgid "Pool Drop"
+msgstr "Pool Drop"
+
+msgid "Pool Drop – Höhe"
+msgstr "Pool Drop – altura"
+
+msgid "Nicht über die Rampe ins Becken"
+msgstr "Não entrou na piscina pela rampa"
+
+msgid "Fahr über die Rampe des Pools und spring ins Becken. Gemessen: höchster Punkt über dem See."
+msgstr "Passe pela rampa do pool e pule na piscina. Medido: ponto mais alto acima do lago."
+
+msgid "← / →  lenken     Leertaste halten + an der Kante loslassen  Absprung"
+msgstr "← / →  direção     segurar Espaço + soltar na borda  pulo"
+
+msgid "Neigen  lenken     SPRUNG halten + an der Kante loslassen  Absprung"
+msgstr "Inclinar  direção     segurar PULO + soltar na borda  pulo"
+
+msgid "Mittig auf die Rampe zielen, voll aufladen und genau an der Kante loslassen. Nicht zu weit springen – hinter dem Becken kommt die Treppe."
+msgstr "Mire no meio da rampa, carregue ao máximo e solte exatamente na borda. Não pule longe demais – depois da piscina vem a escada."
+
+msgid "Pool Drop – Weite"
+msgstr "Pool Drop – distância"
+
+msgid "Wie eben, aber so weit wie möglich ins Becken. Gemessen: Weite vom Absprung bis zur Landung im Becken."
+msgstr "Igual, mas o mais longe possível dentro da piscina. Medido: distância da decolagem ao pouso na piscina."
+
+msgid "Mit vollem Tempo und voller Ladung – das Becken ist 15 m lang, die Landung muss im Wasser sein."
+msgstr "Com velocidade máxima e carga máxima – a piscina tem 15 m, o pouso tem que ser na água."
+
+msgid "Treppe runter"
+msgstr "Escada abaixo"
+
+msgid "Die Treppe im Drift hinunter"
+msgstr "Descer a escada no drift"
+
+msgid "Nicht über die Treppe"
+msgstr "Não pela escada"
+
+msgid "Rein ins Becken, durchfahren und die Treppe am Ende im Drift hinunter in den See. Gemessen: Tempo unten."
+msgstr "Entre na piscina, atravesse e desça a escada no fim em drift até o lago. Medido: velocidade embaixo."
+
+msgid "Strg (Drift) halten, bevor das Brett die Treppe erreicht"
+msgstr "Segurar Ctrl (drift) antes de a prancha chegar à escada"
+
+msgid "DRIFT halten, bevor das Brett die Treppe erreicht"
+msgstr "Segurar DRIFT antes de a prancha chegar à escada"
+
+msgid "Ohne Drift ist die Treppe ein Sturz. Gerade auf die Treppe zielen – die Stufen sind glatt, lenken geht dort nicht."
+msgstr "Sem drift a escada é queda. Mire reto na escada – os degraus são lisos, ali não dá para virar."
+
+msgid "Treppe hoch"
+msgstr "Escada acima"
+
+msgid "Die Treppe im Drift hinauf"
+msgstr "Subir a escada no drift"
+
+msgid "Nicht über die Treppe ins Becken"
+msgstr "Não subiu a escada para a piscina"
+
+msgid "Von hinten zwischen den Ausgängen auf die Treppe zu und im Drift hinauf ins Becken. Gemessen: Tempo oben."
+msgstr "Por trás, entre as saídas, rumo à escada e suba em drift para a piscina. Medido: velocidade em cima."
+
+msgid "Hinauf braucht Schwung: mit vollem Tempo und gespanntem Seil kommen. Im Becken vor der Rampe abspringen, sonst fährt man gegen die Wand."
+msgstr "Subir precisa de embalo: chegue com velocidade máxima e cabo esticado. Na piscina pule antes da rampa, senão você bate na parede."
+
+msgid "Coping"
+msgstr "Coping"
+
+msgid "Auf dem Rand sliden"
+msgstr "Deslizar na borda"
+
+msgid "Pool Coping"
+msgstr "Pool Coping"
+
+msgid "Fahr außen über die Rampe direkt auf den Rand des Beckens (Coping) und rutsch so weit wie möglich. Gemessen: Meter auf dem Rand."
+msgstr "Passe por fora da rampa direto para a borda da piscina (coping) e deslize o mais longe possível. Medido: metros na borda."
+
+msgid "← / →  lenken (auf dem Rand: Boardslide / 50-50)"
+msgstr "← / →  direção (na borda: Boardslide / 50-50)"
+
+msgid "Neigen  lenken (auf dem Rand deutlich neigen: Boardslide / 50-50)"
+msgstr "Inclinar  direção (na borda inclinar bem: Boardslide / 50-50)"
+
+msgid "Die Spur genau auf den Rand legen (ganz rechts auf der Rampe). Der Rand ist nur 40 cm breit – das Einloggen hilft."
+msgstr "Coloque sua linha exatamente na borda (bem à direita na rampa). A borda tem só 40 cm – o encaixe ajuda."
+
+msgid "Coping to Ledge"
+msgstr "Coping to Ledge"
+
+msgid "Rand und Ausgang in einem Zug"
+msgstr "Borda e saída de uma vez"
+
+msgid "Nicht vom Rand auf den Ausgang"
+msgstr "Não foi da borda para a saída"
+
+msgid "Auf dem Rand sliden und am Ende über die Safety ohne Absetzen auf die Down Ledge. Gemessen: Meter auf Rand und Ledge zusammen."
+msgstr "Deslize na borda e no fim passe pela safety para a Down Ledge sem encostar. Medido: metros na borda e na ledge juntos."
+
+msgid "Die Safety am Anfang der Ledge wirft dich ein Stück hoch – gerade bleiben, dann landest du wieder auf der Ledge."
+msgstr "A safety no início da ledge te joga um pouco para cima – fique reto e você pousa de novo na ledge."
+
+msgid "Stair Gap"
+msgstr "Stair Gap"
+
+msgid "Über die Treppe springen"
+msgstr "Pular por cima da escada"
+
+msgid "Kein Sprung aus dem Becken über die Treppe"
+msgstr "Nenhum pulo da piscina por cima da escada"
+
+msgid "Im Becken Anlauf nehmen und am Ende über die ganze Treppe in den See springen. Gemessen: Weite des Sprungs."
+msgstr "Pegue embalo na piscina e no fim pule por cima da escada inteira para o lago. Medido: distância do pulo."
+
+msgid "Leertaste halten + am Ende des Beckens loslassen"
+msgstr "Segurar Espaço + soltar no fim da piscina"
+
+msgid "SPRUNG halten + am Ende des Beckens loslassen"
+msgstr "Segurar PULO + soltar no fim da piscina"
+
+msgid "Erst kurz vor der Treppe loslassen. Landest du auf den Stufen, brauchst du Drift."
+msgstr "Solte só logo antes da escada. Se pousar nos degraus, você precisa de drift."
+
+msgid "Pool Special"
+msgstr "Pool Special"
+
+msgid "Pool Drop und Treppe im Drift nicht geschafft"
+msgstr "Pool Drop e escada no drift não concluídos"
+
+msgid "Die Pool-Linie in einem Zug: Pool Drop (gern mit Drehung) und dann die Treppe im Drift hinunter – als Kombination. Gemessen: Punkte der Pool-Tricks."
+msgstr "A linha do pool de uma vez: Pool Drop (com giro, se quiser) e depois descer a escada no drift – como combo. Medido: pontos das manobras do pool."
+
+msgid "Leertaste  Absprung an der Rampe     ← / →  in der Luft drehen     Strg  Drift auf der Treppe"
+msgstr "Espaço  pulo na rampa     ← / →  girar no ar     Ctrl  drift na escada"
+
+msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe"
+msgstr "PULO  pulo na rampa     Inclinar  girar no ar     DRIFT  na escada"
+
+msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgstr "O combo dura 3 s – não enrole depois do drop. Giros no drop dão mais pontos, a escada conta em dobro no combo."
+
+msgid "Donkey Rail"
+msgstr "Donkey Rail"
+
+msgid "Ausgang: Donkey Rail"
+msgstr "Saída: Donkey Rail"
+
+msgid "Pool B (hinten rechts): links über die Rampe auf den Rand und über die Safety auf das Donkey Rail. Gemessen: Meter auf dem Rail."
+msgstr "Pool B (atrás à direita): à esquerda pela rampa na borda e pela safety no Donkey Rail. Medido: metros no rail."
+
+msgid "Erst runter, dann flach: auf dem flachen Stück bremst es nicht mehr, dort ruhig bleiben."
+msgstr "Primeiro desce, depois é plano: na parte plana não freia mais, fique tranquilo ali."
+
+msgid "Low to High Ledge"
+msgstr "Low to High Ledge"
+
+msgid "Ausgang: Low to High Ledge"
+msgstr "Saída: Low to High Ledge"
+
+msgid "Pool B: rechts auf den Rand und auf die Low to High Ledge – sie steigt noch an. Gemessen: Meter auf der Ledge."
+msgstr "Pool B: à direita na borda e na Low to High Ledge – ela ainda sobe. Medido: metros na ledge."
+
+msgid "Bergauf kostet Tempo: mit gespanntem Seil auf den Rand kommen. Hinten ist sie 2 m hoch – gerade abspringen."
+msgstr "Subida custa velocidade: chegue na borda com o cabo esticado. No fim ela tem 2 m de altura – pule reto."
+
+msgid "Double Kinked Rail"
+msgstr "Double Kinked Rail"
+
+msgid "Ausgang: Double Kinked Rail"
+msgstr "Saída: Double Kinked Rail"
+
+msgid "Pool C (links): außen über die Rampe auf den Rand und auf das Double Kinked Rail mit zwei Knicken. Gemessen: Meter auf dem Rail."
+msgstr "Pool C (à esquerda): por fora da rampa na borda e no Double Kinked Rail com duas dobras. Medido: metros no rail."
+
+msgid "Außen zieht das Seil dich zur Mitte – auf dem Rand nicht gegenlenken, das Einloggen hält die Spur."
+msgstr "Por fora o cabo te puxa para o meio – não contra-esterce na borda, o encaixe segura a linha."
+
+msgid "Flat Down Ledge"
+msgstr "Flat Down Ledge"
+
+msgid "Ausgang: Flat Down Ledge"
+msgstr "Saída: Flat Down Ledge"
+
+msgid "Pool C: innen (zum Seil hin) auf den Rand und auf die Flat Down Ledge – erst flach, dann abwärts. Gemessen: Meter auf der Ledge."
+msgstr "Pool C: por dentro (do lado do cabo) na borda e na Flat Down Ledge – primeiro plana, depois descendo. Medido: metros na ledge."
+
+msgid "Die innere Seite liegt nah am Seil – das Seil zieht kaum quer, dafür ist die Spur schmal."
+msgstr "O lado de dentro fica perto do cabo – o cabo quase não puxa de lado, mas a linha é estreita."
+
+msgid "Rail to Rail"
+msgstr "Rail to Rail"
+
+msgid "Auf dem Slider seitlich auf den Nachbarn hinüberspringen."
+msgstr "No slider, pular de lado para o vizinho."
+
+msgid "Pipe to Pipe"
+msgstr "Pipe to Pipe"
+
+msgid "Rechts stehen zwei Pipes nebeneinander (0,8 m Lücke). Über die Auffahrt auf die äußere, kurze Pipe, dann seitlich auf die innere, lange Pipe hinüberspringen. Gemessen: gerutschte Meter auf der zweiten Pipe – je früher der Transfer, desto mehr."
+msgstr "À direita há dois pipes lado a lado (0,8 m de vão). Suba pela rampa no pipe de fora, curto, depois pule de lado para o pipe de dentro, longo. Medido: metros deslizados no segundo pipe – quanto mais cedo o transfer, mais."
+
+msgid "Auf der Pipe Leertaste halten, dabei ← (Seite), Leertaste loslassen = Hop"
+msgstr "No pipe segurar Espaço, junto ← (lado), soltar Espaço = hop"
+
+msgid "Auf der Pipe SPRUNG halten, dabei ← (Seite), SPRUNG loslassen = Hop"
+msgstr "No pipe segurar PULO, junto ← (lado), soltar PULO = hop"
+
+msgid "Schon auf der Auffahrt laden, auf der Pipe ← dazu und loslassen. Die Hop-Hilfe zielt auf die Mitte der Nachbar-Pipe. In der Luft dreht ←/→ erst wieder, wenn du es einmal losgelassen hast."
+msgstr "Carregue já na rampa, no pipe adicione ← e solte. A ajuda de hop mira no meio do pipe vizinho. No ar, ←/→ só volta a girar depois que você soltar uma vez."
+
+msgid "Pipe to Pipe to Pipe"
+msgstr "Pipe to Pipe to Pipe"
+
+msgid "Links stehen drei Pipes versetzt nebeneinander wie eine Treppe zur Seilmitte. Auf die erste, dann zweimal hinüber: Pipe 1 → Pipe 2 → Pipe 3. Gemessen: gerutschte Meter auf der dritten Pipe."
+msgstr "À esquerda há três pipes escalonados lado a lado como uma escada até o meio. No primeiro, depois duas vezes para o lado: Pipe 1 → Pipe 2 → Pipe 3. Medido: metros deslizados no terceiro pipe."
+
+msgid "Auf der Pipe Leertaste halten, dabei → (Seite), Leertaste loslassen = Hop – auf Pipe 2 gleich nochmal"
+msgstr "No pipe segurar Espaço, junto → (lado), soltar Espaço = hop – no pipe 2 logo de novo"
+
+msgid "Auf der Pipe SPRUNG halten, dabei → (Seite), SPRUNG loslassen = Hop – auf Pipe 2 gleich nochmal"
+msgstr "No pipe segurar PULO, junto → (lado), soltar PULO = hop – no pipe 2 logo de novo"
+
+msgid "Pipe 2 ist kurz: sofort nach der Landung wieder laden. Ein kurzer Druck reicht für den Hop – voll aufladen muss man nicht."
+msgstr "O pipe 2 é curto: carregue de novo logo depois do pouso. Um toque curto basta para o hop – não precisa carregar ao máximo."
+
+msgid "BOOT"
+msgstr "BARCO"
+
+msgid "DROHNE"
+msgstr "DRONE"
+
+msgid ""
+"RANG-\n"
+"LISTE\n"
+"AUS"
+msgstr ""
+"RAN-\n"
+"KING\n"
+"OFF"
+
+msgid "KEINE RANGLISTE"
+msgstr "SEM RANKING"
+
+msgid "DU"
+msgstr "VOCÊ"
+
+msgid "RANGLISTE"
+msgstr "RANKING"
+
+msgid "Noch frei – Platz 1 wartet"
+msgstr "Ainda livre – a posição 1 te espera"
+
+msgid "Neuer Rekord!"
+msgstr "Novo recorde!"
+
+msgid "%s überholt!"
+msgstr "%s ultrapassado!"
+
+msgid "%d überholt!"
+msgstr "%d ultrapassados!"
+
+msgid "DU · REKORD"
+msgstr "VOCÊ · RECORDE"
+
+msgid "dein Rekord"
+msgstr "seu recorde"
+
+msgid "noch %s bis %d."
+msgstr "faltam %s para o %d.º"
+
+msgid "dein Name"
+msgstr "seu nome"
+
+msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
+msgstr "Seu nome para o ranking (de 2 a 16 caracteres)"
+
+msgid "Wird gespeichert …"
+msgstr "Salvando …"
+
+msgid "PAUSE"
+msgstr "PAUSA"
+
+msgid "Weiter  (Esc)"
+msgstr "Continuar  (Esc)"
+
+msgid "Einstellungen"
+msgstr "Configurações"
+
+msgid "Hilfe ein/aus"
+msgstr "Ajuda liga/desliga"
+
+msgid "Nächster Titel"
+msgstr "Próxima música"
+
+msgid "Startseite"
+msgstr "Tela inicial"
+
+msgid "Zurück"
+msgstr "Voltar"
+
+msgid "SETUP-EDITOR"
+msgstr "EDITOR DE SETUP"
+
+msgid "Name des Setups"
+msgstr "Nome do setup"
+
+msgid "Terminal 2 (Strand)"
+msgstr "Terminal 2 (praia)"
+
+msgid "Terminal 1 (Lounge-Steg)"
+msgstr "Terminal 1 (deck lounge)"
+
+msgid "Rückgängig"
+msgstr "Desfazer"
+
+msgid "Strg+Z"
+msgstr "Ctrl+Z"
+
+msgid "Wiederholen"
+msgstr "Refazer"
+
+msgid "Strg+Y"
+msgstr "Ctrl+Y"
+
+msgid "SPEICHERN"
+msgstr "SALVAR"
+
+msgid "SPEICHERN & FAHREN"
+msgstr "SALVAR E ANDAR"
+
+msgid "Ganze Bahn zeigen"
+msgstr "Mostrar o percurso inteiro"
+
+msgid "Hacks werden beim Öffnen gesammelt …"
+msgstr "Os hacks são coletados ao abrir …"
+
+msgid "Antippen stellt das Teil in die Mitte der Karte. Danach ziehen, drehen, Richtung wählen."
+msgstr "Toque para colocar a peça no meio do mapa. Depois arraste, gire, escolha a direção."
+
+msgid "VORLAGE LADEN   (ersetzt beide Terminals)"
+msgstr "CARREGAR MODELO   (substitui os dois terminais)"
+
+msgid "TERMINAL"
+msgstr "TERMINAL"
+
+msgid "Terminal leeren"
+msgstr "Esvaziar terminal"
+
+msgid "Vom anderen Terminal"
+msgstr "Do outro terminal"
+
+msgid "Teile des anderen Terminals hierher kopieren (ersetzt dieses Terminal)"
+msgstr "Copiar para cá as peças do outro terminal (substitui este terminal)"
+
+msgid "JSON   (zum Weitergeben oder für setups/ im Projekt)"
+msgstr "JSON   (para compartilhar ou para setups/ no projeto)"
+
+msgid "Hier ein Setup-JSON einfügen und „Aus Text laden“ drücken"
+msgstr "Cole aqui um JSON de setup e aperte “Carregar do texto”"
+
+msgid "Als JSON kopieren"
+msgstr "Copiar como JSON"
+
+msgid "JSON in die Zwischenablage kopiert"
+msgstr "JSON copiado para a área de transferência"
+
+msgid "Aus Text laden"
+msgstr "Carregar do texto"
+
+msgid "Eigenes Setup löschen"
+msgstr "Excluir setup próprio"
+
+msgid "Leeres Setup"
+msgstr "Setup vazio"
+
+msgid "Nicht gespeichert! Nochmal „Zurück“ = trotzdem verlassen (bleibt bis zum Neuladen erhalten)"
+msgstr "Não salvo! De novo “Voltar” = sair mesmo assim (fica guardado até recarregar)"
+
+msgid "Mein %s"
+msgstr "Meu %s"
+
+msgid "verschieben   s %+.1f m   x %+.1f m"
+msgstr "mover   s %+.1f m   x %+.1f m"
+
+msgid "%s eingefügt"
+msgstr "%s inserido"
+
+msgid ""
+"Nichts ausgewählt. Ein Feature in der Karte antippen (doppelt = ganzer Hack), Umschalt/Strg + Klick wählt mehrere.\n"
+"\n"
+"Tasten: Pfeile verschieben (Umschalt 1 m), Q/E drehen, F Richtung, M spiegeln, Strg+D duplizieren, Entf löschen, Strg+Z rückgängig."
+msgstr ""
+"Nada selecionado. Toque num feature no mapa (duplo = hack inteiro), Shift/Ctrl + clique seleciona vários.\n"
+"\n"
+"Teclas: setas movem (Shift 1 m), Q/E giram, F direção, M espelhar, Ctrl+D duplicar, Del excluir, Ctrl+Z desfazer."
+
+msgid "POSITION ENTLANG DES SEILS  s (m)"
+msgstr "POSIÇÃO AO LONGO DO CABO  s (m)"
+
+msgid "SEITLICH  x (m)   + rechts, − links (Blick zum Endmast)"
+msgstr "LATERAL  x (m)   + direita, − esquerda (olhando para a torre final)"
+
+msgid "DREHUNG (Grad)"
+msgstr "ROTAÇÃO (graus)"
+
+msgid "RICHTUNG (Anfahrt)"
+msgstr "DIREÇÃO (aproximação)"
+
+msgid "%d Teile ausgewählt – sie werden gemeinsam verschoben, gedreht und gespiegelt."
+msgstr "%d peças selecionadas – elas são movidas, giradas e espelhadas juntas."
+
+msgid "%d Teil"
+msgid_plural "%d Teile"
+msgstr[0] "%d peça"
+msgstr[1] "%d peças"
+
+msgid "Antippen fügt den Hack in die Mitte der Karte ein (gleiche Anordnung, seitlich wie im Original)."
+msgstr "Toque para inserir o hack no meio do mapa (mesma disposição, lateral como no original)."
+
+msgid ""
+"%s\n"
+"Im Setup: %s"
+msgstr ""
+"%s\n"
+"No setup: %s"
+
+msgid "%s: %d Features/Hacks (%d Zeilen), davon %d Hacks.   %s: %d Zeilen."
+msgstr "%s: %d features/hacks (%d linhas), dos quais %d hacks.   %s: %d linhas."
+
+msgid "Achtung: %s bei s = %.0f m liegt außerhalb der Fahrstrecke."
+msgstr "Atenção: %s em s = %.0f m está fora do percurso."
+
+msgid "Eigenes Setup (gespeichert)"
+msgstr "Setup próprio (salvo)"
+
+msgid "Noch nicht gespeichert – „Speichern“ legt ein eigenes Setup an."
+msgstr "Ainda não salvo – “Salvar” cria um setup próprio."
+
+msgid "Pflanzen   ·   %s: %s   ·   linke Taste = Pinsel, rechte Taste ziehen = Karte bewegen, Rad / + − = Zoom"
+msgstr "Plantas   ·   %s: %s   ·   botão esquerdo = pincel, arrastar com o botão direito = mover o mapa, roda / + − = zoom"
+
+msgid "%s   ·   %d Teile   ·   Ziehen = verschieben, freie Fläche ziehen = Karte bewegen, Rad / + − = Zoom"
+msgstr "%s   ·   %d peças   ·   arrastar = mover, arrastar no vazio = mover o mapa, roda / + − = zoom"
+
+msgid "Kein gültiges Setup-JSON (braucht \"T2\" und/oder \"T1\")"
+msgstr "JSON de setup inválido (precisa de \"T2\" e/ou \"T1\")"
+
+msgid "Setup aus Text geladen"
+msgstr "Setup carregado do texto"
+
+msgid "Speichern fehlgeschlagen"
+msgstr "Falha ao salvar"
+
+msgid "Gespeichert: %s"
+msgstr "Salvo: %s"
+
+msgid "Eigenes Setup gelöscht (bleibt hier zum Weiterbearbeiten)"
+msgstr "Setup próprio excluído (continua aqui para editar mais)"
+
+msgid "Auf dem Luftbild malen. Wo du malst, radierst oder die Automatik zurückholst, übernimmst du die Stelle: dort setzt das Spiel nichts Automatisches mehr (Wiesengras, Schilf, Ufergras bzw. Sträucher und Bäume aus dem Wald) – getrennt für Bodenpflanzen und Gehölze. Rechte Maustaste ziehen = Karte bewegen."
+msgstr "Pinte na foto aérea. Onde você pinta, apaga ou devolve ao automático, você assume o lugar: o jogo não coloca mais nada automático ali (grama de campo, junco, grama de margem ou arbustos e árvores da mata) – separado para plantas rasteiras e lenhosas. Arrastar com o botão direito = mover o mapa."
+
+msgid "WERKZEUG"
+msgstr "FERRAMENTA"
+
+msgid "PFLANZE   (Radieren/Automatik wirken auf ihre Ebene)"
+msgstr "PLANTA   (apagar/automático agem na camada dela)"
+
+msgid "%s: %.1f–%.1f m hoch, Abstand %.1f m – %s"
+msgstr "%s: %.1f–%.1f m de altura, espaçamento %.1f m – %s"
+
+msgid "PINSEL"
+msgstr "PINCEL"
+
+msgid "DICHTE BEIM MALEN"
+msgstr "DENSIDADE AO PINTAR"
+
+msgid "PFLANZEN SPEICHERN"
+msgstr "SALVAR PLANTAS"
+
+msgid "Für setups/plants.json im Projekt"
+msgstr "Para setups/plants.json no projeto"
+
+msgid "Bepflanzung als JSON in die Zwischenablage kopiert"
+msgstr "Plantio copiado como JSON para a área de transferência"
+
+msgid "Zurücksetzen"
+msgstr "Redefinir"
+
+msgid "Eigene Bepflanzung löschen, wieder die aus dem Spiel"
+msgstr "Excluir seu plantio, voltar ao do jogo"
+
+msgid "Bepflanzung aus dem Spiel geladen"
+msgstr "Plantio do jogo carregado"
+
+msgid "Gemalt: %s"
+msgstr "Pintado: %s"
+
+msgid "noch nichts"
+msgstr "nada ainda"
+
+msgid "Von Hand gepflegt: %d m² Boden, %d m² Gehölz"
+msgstr "Cuidado à mão: %d m² solo, %d m² lenhosas"
+
+msgid "Ebene der Pflanze: %s"
+msgstr "Camada da planta: %s"
+
+msgid "Nicht gespeichert."
+msgstr "Não salvo."
+
+msgid "Bepflanzung gespeichert (%s), im Spiel neu aufgebaut"
+msgstr "Plantio salvo (%s), reconstruído no jogo"
+
+msgid "links (−x)"
+msgstr "esquerda (−x)"
+
+msgid "rechts (+x)"
+msgstr "direita (+x)"
+
+msgid "2 Ausgänge (wählbar)"
+msgstr "2 saídas (à escolha)"
+
+msgid "Modul: %s"
+msgstr "Módulo: %s"
+
+msgid "%s   %.1f × %.1f m, Höhe %.2f m"
+msgstr "%s   %.1f × %.1f m, altura %.2f m"
+
+msgid "KICKER & WEDGES"
+msgstr "KICKERS E WEDGES"
+
+msgid "BOXEN, LEDGES & CURBS"
+msgstr "BOXES, LEDGES E CURBS"
+
+msgid "RAILS & PIPES"
+msgstr "RAILS E PIPES"
+
+msgid "MODULE (MEHRERE TEILE)"
+msgstr "MÓDULOS (VÁRIAS PEÇAS)"
+
+msgid "SONSTIGES"
+msgstr "OUTROS"
+
+msgid "Malen"
+msgstr "Pintar"
+
+msgid "Radieren"
+msgstr "Apagar"
+
+msgid "Automatik"
+msgstr "Automático"
+
+msgid "Schieben"
+msgstr "Mover"
+
+msgid "Teile"
+msgstr "Peças"
+
+msgid "Hacks"
+msgstr "Hacks"
+
+msgid "Auswahl"
+msgstr "Seleção"
+
+msgid "Setup"
+msgstr "Setup"
+
+msgid "Pflanzen"
+msgstr "Plantas"
+
+msgid "Zum Endmast  →"
+msgstr "Para a torre final  →"
+
+msgid "←  Zum Steg"
+msgstr "←  Para o deck"
+
+msgid "AUSGANG LINKS (Blick von der Rampe)"
+msgstr "SAÍDA ESQUERDA (vista da rampa)"
+
+msgid "AUSGANG RECHTS (Blick von der Rampe)"
+msgstr "SAÍDA DIREITA (vista da rampa)"
+
+msgid "AUFFAHRT VORNE (m, 0 = ab)"
+msgstr "RAMPA DA FRENTE (m, 0 = sem)"
+
+msgid "AUFFAHRT HINTEN (m, 0 = ab)"
+msgstr "RAMPA DE TRÁS (m, 0 = sem)"
+
+msgid "Drehen +15°  (Q)"
+msgstr "Girar +15°  (Q)"
+
+msgid "Drehen −15°  (E)"
+msgstr "Girar −15°  (E)"
+
+msgid "Umdrehen  (F)"
+msgstr "Inverter  (F)"
+
+msgid "Spiegeln  (M)"
+msgstr "Espelhar  (M)"
+
+msgid "Duplizieren"
+msgstr "Duplicar"
+
+msgid "Ganzen Hack wählen"
+msgstr "Selecionar hack inteiro"
+
+msgid "Löschen"
+msgstr "Excluir"
+
+msgid "HACKS"
+msgstr "HACKS"
+
+msgid "GÄNGIGE KOMBINATIONEN"
+msgstr "COMBINAÇÕES COMUNS"
+
+msgid "Gewählte Pflanze setzen"
+msgstr "Colocar a planta escolhida"
+
+msgid "Pflanzen der Ebene entfernen (auch die automatischen)"
+msgstr "Remover plantas da camada (inclusive as automáticas)"
+
+msgid "Stellen wieder der Automatik überlassen (entfernt Gemaltes der Ebene)"
+msgstr "Devolver os lugares ao automático (remove o que foi pintado na camada)"
+
+msgid "Karte mit dem Finger bewegen"
+msgstr "Mover o mapa com o dedo"
+
+msgid "Startmast"
+msgstr "Torre de largada"
+
+msgid "rote Boje"
+msgstr "boia vermelha"
+
+msgid "Endmast"
+msgstr "Torre final"
+
+msgid "WAKE THE HACK"
+msgstr "WAKE THE HACK"
+
+msgid "Wakeport Raunheim"
+msgstr "Wakeport Raunheim"
+
+msgid "„%s“"
+msgstr "“%s”"
+
+msgid "SPIELMODUS"
+msgstr "MODO DE JOGO"
+
+msgid "COMMUNITY CHALLENGE"
+msgstr "COMMUNITY CHALLENGE"
+
+msgid "SZENARIO"
+msgstr "CENÁRIO"
+
+msgid "Zufällig"
+msgstr "Aleatório"
+
+msgid "Neues Szenario würfeln  (Z, Gamepad: Share)"
+msgstr "Sortear um novo cenário  (Z, controle: Share)"
+
+msgid "CHALLENGE"
+msgstr "CHALLENGE"
+
+msgid "FEATURE-SETUP"
+msgstr "SETUP DE FEATURES"
+
+msgid "Setup-Editor"
+msgstr "Editor de setup"
+
+msgid "Erfolge"
+msgstr "Conquistas"
+
+msgid "Rangliste"
+msgstr "Ranking"
+
+msgid "SPIEL STARTEN"
+msgstr "INICIAR JOGO"
+
+msgid "Kostenlos & Open Source – spendier mir einen Kaffee"
+msgstr "Grátis e open source – me pague um café"
+
+msgid "CHALLENGE STARTEN"
+msgstr "INICIAR CHALLENGE"
+
+msgid "Bestwert: %s"
+msgstr "Recorde: %s"
+
+msgid "EINSTELLUNGEN"
+msgstr "CONFIGURAÇÕES"
+
+msgid "Spiel"
+msgstr "Jogo"
+
+msgid "Fahrer"
+msgstr "Rider"
+
+msgid "Welt"
+msgstr "Mundo"
+
+msgid "Technik"
+msgstr "Técnica"
+
+msgid "Wasser"
+msgstr "Água"
+
+msgid "FERTIG"
+msgstr "PRONTO"
+
+msgid "Automatisch (System)"
+msgstr "Automático (sistema)"
+
+msgid "SPRACHE"
+msgstr "IDIOMA"
+
+msgid "COMPETITION: RUNDENLÄNGE"
+msgstr "COMPETITION: DURAÇÃO DA RODADA"
+
+msgid "HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"
+msgstr "AJUDAS   (cada ajuda desligada +15 % em todas as manobras)"
+
+msgid "Auf dem Slider einloggen"
+msgstr "Encaixar no slider"
+
+msgid "An"
+msgstr "On"
+
+msgid "Überschlag dreht von selbst zu Ende"
+msgstr "O giro termina sozinho"
+
+msgid "SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G; Aus = keine Rangliste)"
+msgstr "LIMITE DE TENSÃO   (puxão demais arranca o manete da mão; no jogo G; off = sem ranking)"
+
+msgid "BRETT"
+msgstr "PRANCHA"
+
+msgid "STANCE   (Regular: links vorne)"
+msgstr "STANCE   (Regular: pé esquerdo na frente)"
+
+msgid "Regular"
+msgstr "Regular"
+
+msgid "Goofy"
+msgstr "Goofy"
+
+msgid "HELM"
+msgstr "CAPACETE"
+
+msgid "WESTE"
+msgstr "COLETE"
+
+msgid "WETTER   (von Hand, bis zum Neustart; Szenario auf der Startseite)"
+msgstr "TEMPO   (manual, até reiniciar; cenário na tela inicial)"
+
+msgid "DATUM"
+msgstr "DATA"
+
+msgid "UHRZEIT"
+msgstr "HORA"
+
+msgid "Jetzt  (live)"
+msgstr "Agora  (ao vivo)"
+
+msgid "Heute, aktuelle Uhrzeit und Wetter am See"
+msgstr "Hoje, hora e tempo atuais no lago"
+
+msgid "SEILLÄNGE"
+msgstr "COMPRIMENTO DO CABO"
+
+msgid "ANLAGEN-TEMPO"
+msgstr "VELOCIDADE DO CABO"
+
+msgid "%d km/h"
+msgstr "%d km/h"
+
+msgid "Seil und Tempo: Standard  (16 m, 30 km/h)"
+msgstr "Cabo e velocidade: padrão  (16 m, 30 km/h)"
+
+msgid "FLUGZEUGE"
+msgstr "AVIÕES"
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Rush Hour"
+msgstr "Hora do rush"
+
+msgid "FAHRER AUF DER ANDEREN ANLAGE"
+msgstr "RIDER NO OUTRO CABO"
+
+msgid "CHALLENGE: FILMTEAM"
+msgstr "CHALLENGE: EQUIPE DE FILMAGEM"
+
+msgid "Zufall"
+msgstr "Aleatório"
+
+msgid "Boot"
+msgstr "Barco"
+
+msgid "Drohne"
+msgstr "Drone"
+
+msgid "LAUTSTÄRKE EFFEKTE"
+msgstr "VOLUME EFEITOS"
+
+msgid "LAUTSTÄRKE JUBEL"
+msgstr "VOLUME TORCIDA"
+
+msgid "LAUTSTÄRKE FLUGZEUGE"
+msgstr "VOLUME AVIÕES"
+
+msgid "KAMERA"
+msgstr "CÂMERA"
+
+msgid "KAMERA-ABSTAND"
+msgstr "DISTÂNCIA DA CÂMERA"
+
+msgid "LENKUNG"
+msgstr "DIREÇÃO"
+
+msgid "Gyro (Handy neigen)"
+msgstr "Gyro (inclinar o celular)"
+
+msgid "Tasten (Steuerkreuz)"
+msgstr "Botões (direcional)"
+
+msgid "NEIGUNG ZUM LENKEN"
+msgstr "INCLINAR PARA VIRAR"
+
+msgid "Wenig empfindlich"
+msgstr "Pouco sensível"
+
+msgid "Sehr empfindlich"
+msgstr "Muito sensível"
+
+msgid "NEIGUNG UMKEHREN"
+msgstr "INVERTER INCLINAÇÃO"
+
+msgid "Nein"
+msgstr "Não"
+
+msgid "Ja"
+msgstr "Sim"
+
+msgid "Die Grafikstufe stellt alle Wasser-Effekte passend ein. Einzelne Effekte lassen sich hier an- und ausschalten (wirkt sofort) – weicht etwas von der Stufe ab, steht die Grafik auf „Custom“."
+msgstr "O nível gráfico ajusta todos os efeitos de água. Aqui dá para ligar e desligar cada efeito (na hora) – se algo diferir do nível, os gráficos mostram “Custom”."
+
+msgid "WASSERFARBE"
+msgstr "COR DA ÁGUA"
+
+msgid "Türkis  (bisher)"
+msgstr "Turquesa  (anterior)"
+
+msgid "Seeblau"
+msgstr "Azul lago"
+
+msgid "OBERFLÄCHENSTRUKTUR   (gleitende Kräuselung statt Sinus)"
+msgstr "TEXTURA DA SUPERFÍCIE   (ondulação deslizante em vez de seno)"
+
+msgid "SPIEGELUNG JE NACH BLICKWINKEL   (flach: Himmel, von oben: ins Wasser)"
+msgstr "REFLEXO CONFORME O ÂNGULO   (rasante: céu, de cima: dentro da água)"
+
+msgid "SONNENGLITZERN"
+msgstr "BRILHO DO SOL"
+
+msgid "LICHT DURCH DIE WELLENKÄMME"
+msgstr "LUZ ATRAVÉS DAS CRISTAS"
+
+msgid "SCHAUM MIT STRUKTUR   (fleckig, reißt auf)"
+msgstr "ESPUMA COM TEXTURA   (manchada, se rompe)"
+
+msgid "SPITZE WELLEN   (auch für die Physik)"
+msgstr "ONDAS PONTIAGUDAS   (também para a física)"
+
+msgid "MIT WASSERTIEFE   (etwas teurer; Wasser wird dafür transparent gezeichnet)"
+msgstr "COM PROFUNDIDADE DA ÁGUA   (um pouco mais pesado; a água é desenhada transparente)"
+
+msgid "DURCHSICHT IM FLACHEN"
+msgstr "TRANSPARÊNCIA NO RASO"
+
+msgid "ECHTE SPIEGELBILDER   (nur Desktop, teuer; nur wenn die Durchsicht aus ist)"
+msgstr "REFLEXOS REAIS   (só desktop, pesado; só com a transparência desligada)"
+
+msgid "Spiel-Musik: lizenzfreie Titel von Pixabay. Dazu kannst du eigene Titel wählen (MP3, OGG, WAV) – sie bleiben auf diesem Gerät bzw. in diesem Browser gespeichert. Alles läuft gemischt im Hintergrund."
+msgstr "Música do jogo: faixas livres de royalties do Pixabay. Além disso você pode escolher suas próprias faixas (MP3, OGG, WAV) – elas ficam salvas neste aparelho ou neste navegador. Tudo toca misturado ao fundo."
+
+msgid "MUSIK"
+msgstr "MÚSICA"
+
+msgid "QUELLE"
+msgstr "FONTE"
+
+msgid "Spiel-Musik"
+msgstr "Música do jogo"
+
+msgid "Eigene Titel"
+msgstr "Minhas faixas"
+
+msgid "Beides"
+msgstr "Ambas"
+
+msgid "LAUTSTÄRKE MUSIK"
+msgstr "VOLUME MÚSICA"
+
+msgid "Titel hinzufügen"
+msgstr "Adicionar faixas"
+
+msgid "Eigene entfernen"
+msgstr "Remover as minhas"
+
+msgid "%d Spiel-Musik, %d eigene"
+msgstr "%d música do jogo, %d minhas"
+
+msgid "lädt: %s"
+msgstr "carregando: %s"
+
+msgid "Danke für die Spiel-Musik (Pixabay): %s"
+msgstr "Obrigado pela música do jogo (Pixabay): %s"
+
+msgid "ODER NEBENHER HÖREN, z. B. mit Spotify (dann hier Musik aus)"
+msgstr "OU OUÇA À PARTE, p. ex. no Spotify (então desligue a música aqui)"
+
+msgid "Skate-Punk bei Spotify"
+msgstr "Skate punk no Spotify"
+
+msgid "GRAFIK   (niedrig = flüssiger, schont den Akku; stellt auch das Wasser ein)"
+msgstr "GRÁFICOS   (baixo = mais fluido, poupa bateria; também ajusta a água)"
+
+msgid "Nr. %d"
+msgstr "N.º %d"
+
+msgid "FEATURES & HACKS"
+msgstr "FEATURES & HACKS"
+
+msgid "GEHEIME ERFOLGE"
+msgstr "CONQUISTAS SECRETAS"
+
+msgid "%d von %d entdeckt – was es gibt, siehst du erst, wenn du es geschafft hast."
+msgstr "%d de %d descobertas – você só vê o que existe depois de conseguir."
+
+msgid "IN DER RANGLISTE ERSCHEINEN"
+msgstr "APARECER NO RANKING"
+
+msgid "DEIN NAME"
+msgstr "SEU NOME"
+
+msgid "ohne Namen: anonym"
+msgstr "sem nome: anônimo"
+
+msgid "Speichern"
+msgstr "Salvar"
+
+msgid "Wird gelöscht …"
+msgstr "Excluindo …"
+
+msgid "Gelöscht: Name und alle deine Einträge."
+msgstr "Excluído: nome e todas as suas entradas."
+
+msgid "Heads up! Das Game ist noch mitten im Shape – Physik und Punkte werden ständig nachgeschliffen. Darum wird die Rangliste ab und zu gewiped. Kein Stress: einfach neu droppen und wieder ganz nach oben shredden."
+msgstr "Heads up! O jogo ainda está em pleno shape – física e pontos são ajustados o tempo todo. Por isso o ranking é zerado de vez em quando. Sem estresse: é só dropar de novo e shredar de volta até o topo."
+
+msgid "Lädt …"
+msgstr "Carregando …"
+
+msgid "Challenge"
+msgstr "Challenge"
+
+msgid "Noch keine Einträge"
+msgstr "Ainda sem entradas"
+
+msgid "Noch niemand in der Rangliste – fahr den ersten Eintrag!"
+msgstr "Ninguém no ranking ainda – faça a primeira entrada!"
+
+msgid "Test-Version: eigene Test-Rangliste"
+msgstr "Versão de teste: ranking de teste separado"
+
+msgid "Noch kein Eintrag – fahr den ersten!"
+msgstr "Ainda sem entrada – faça a primeira!"
+
+msgid "%d Fahrer"
+msgid_plural "%d Fahrer"
+msgstr[0] "%d rider"
+msgstr[1] "%d riders"
+
+msgid "Wertung geändert: ältere Ergebnisse stehen in einer früheren Rangliste"
+msgstr "Pontuação alterada: resultados antigos estão num ranking anterior"
+
+msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
+msgstr "O nome fica. Para sair de vez: chave acima em Off (exclui tudo)."
+
+msgid "Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."
+msgstr "Salvo. Suas entradas agora aparecem com este nome."
+
+msgid "Deine Bestwerte erscheinen öffentlich in der Rangliste – ohne Namen als „Anonym #…“. Gespeichert werden nur Name (falls angegeben), Bestwerte und Datum, dazu eine zufällige Geräte-Nummer als Prüfsumme. Aus = alles löschen."
+msgstr "Seus recordes aparecem publicamente no ranking – sem nome como “Anonym #…”. Só são salvos o nome (se informado), recordes e data, mais um número de aparelho aleatório como soma de verificação. Off = excluir tudo."
+
+msgid "Du erscheinst nicht in der Rangliste, es wird nichts gesendet."
+msgstr "Você não aparece no ranking, nada é enviado."
+
+msgid "erreicht am %s"
+msgstr "conquistado em %s"
+
+msgid "Geheim"
+msgstr "Secreto"
+
+msgid "Noch nicht entdeckt"
+msgstr "Ainda não descoberto"
+
+msgid "Im Setup: %s"
+msgstr "No setup: %s"
+
+msgid "Gelb / Grün"
+msgstr "Amarelo / Verde"
+
+msgid "Weiß / Schwarz"
+msgstr "Branco / Preto"
+
+msgid "Blau"
+msgstr "Azul"
+
+msgid "Orange"
+msgstr "Laranja"
+
+msgid "Schwarz glänzend"
+msgstr "Preto brilhante"
+
+msgid "Pink / Türkis"
+msgstr "Rosa / Turquesa"
+
+msgid "Oliv"
+msgstr "Oliva"
+
+msgid "Rot"
+msgstr "Vermelho"
+
+msgid "Grün"
+msgstr "Verde"
+
+msgid "Gelb"
+msgstr "Amarelo"
+
+msgid "Lila"
+msgstr "Roxo"
+
+msgid "Schwarz"
+msgstr "Preto"
+
+msgid "Weiß"
+msgstr "Branco"
+
+msgid "Gespeichert – du stehst jetzt als „%s“ in der Rangliste."
+msgstr "Salvo – agora você aparece no ranking como “%s”."
+
+msgid "LOS"
+msgstr "VAI"
+
+msgid "Nächste Challenge"
+msgstr "Próximo challenge"
+
+msgid "Steuerung:"
+msgstr "Controles:"
+
+msgid "Tipp:"
+msgstr "Dica:"
+
+msgid "Leertaste"
+msgstr "Espaço"
+
+msgid "Neue Bestleistung!"
+msgstr "Novo recorde pessoal!"
+
+msgid "NOCHMAL"
+msgstr "DE NOVO"
+
+msgid "RUNDE BEENDET"
+msgstr "RODADA ENCERRADA"
+
+msgid "ERNEUT SPIELEN"
+msgstr "JOGAR DE NOVO"
+
+msgid "Trag deinen Namen ein – sonst stehst du als „Anonym“ in der Rangliste."
+msgstr "Digite seu nome – senão você aparece no ranking como “Anonym”."
+
+msgid "DRIFT"
+msgstr "DRIFT"
+
+msgid "SPRUNG"
+msgstr "PULO"
+
+msgid "SCHWIMMEN"
+msgstr "NADAR"
+
+msgid "Weiter"
+msgstr "Continuar"
+
+msgid "Zurück zum Steg  (−2:00)"
+msgstr "Voltar ao deck  (−2:00)"
+
+msgid "Ton aus/an"
+msgstr "Som liga/desliga"
+
+msgid "Szenario würfeln"
+msgstr "Sortear cenário"
+
+msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
+msgstr "Arrancar o cabo liga/desliga  (desligado: sem ranking)"
+
+msgid "Sonnig"
+msgstr "Ensolarado"
+
+msgid "Heiter"
+msgstr "Céu limpo"
+
+msgid "Bewölkt"
+msgstr "Nublado"
+
+msgid "Bedeckt"
+msgstr "Encoberto"
+
+msgid "Schauer"
+msgstr "Pancadas"
+
+msgid "Regen"
+msgstr "Chuva"
+
+msgid "Dunst"
+msgstr "Névoa"
+
+msgid "Schnee"
+msgstr "Neve"
+
+msgid "Gewitter"
+msgstr "Tempestade"
+
+msgid "After Hour Raley Session"
+msgstr "After Hour Raley Session"
+
+msgid "Early Bird Session"
+msgstr "Early Bird Session"
+
+msgid "Hochsommer. Was für eine Hitze"
+msgstr "Alto verão. Que calor"
+
+msgid "Schöne Regen-Session"
+msgstr "Bela sessão na chuva"
+
+msgid "Night Session"
+msgstr "Night Session"
+
+msgid "Sonne hinter den Bäumen"
+msgstr "Sol atrás das árvores"
+
+msgid "Nach dem Schauer"
+msgstr "Depois da pancada"
+
+msgid "Blaue Stunde"
+msgstr "Hora azul"
+
+msgid "Goldener Oktober"
+msgstr "Outubro dourado"
+
+msgid "Chemtrails, oder Kondensstreifen? ;-)"
+msgstr "Chemtrails ou rastros de condensação? ;-)"
+
+msgid "Gewitter – YOLO"
+msgstr "Tempestade – YOLO"
+
+msgid "Nikolaus-Session"
+msgstr "Sessão de São Nicolau"
+
+msgid "2026 September"
+msgstr "Setembro 2026"
+
+msgid "Juli & August"
+msgstr "Julho e agosto"
+
+msgid "(Jahr ?)"
+msgstr "(ano ?)"
+
+msgid "Setup A"
+msgstr "Setup A"
+
+msgid "(Datum ?)"
+msgstr "(data ?)"
+
+msgid "Setup B"
+msgstr "Setup B"
+
+msgid "Setup C"
+msgstr "Setup C"
+
+msgid "Setup D"
+msgstr "Setup D"
+
+msgid "Setup E"
+msgstr "Setup E"
+
+msgid "Pool Party"
+msgstr "Pool Party"
+
+msgid "Utopia"
+msgstr "Utopia"
+
+msgid "Raildorado"
+msgstr "Raildorado"
+
+msgid "Kicker S"
+msgstr "Kicker S"
+
+msgid "Spine Kicker"
+msgstr "Spine Kicker"
+
+msgid "Pyramid Series"
+msgstr "Pyramid Series"
+
+msgid "Ollie Box"
+msgstr "Ollie Box"
+
+msgid "Ollie Box 1/2"
+msgstr "Ollie Box 1/2"
+
+msgid "Ledge"
+msgstr "Ledge"
+
+msgid "Ollie Box Ledge"
+msgstr "Ollie Box Ledge"
+
+msgid "Up Rail"
+msgstr "Up Rail"
+
+msgid "Transition Rail"
+msgstr "Transition Rail"
+
+msgid "1/2 Transition Rail"
+msgstr "1/2 Transition Rail"
+
+msgid "Pro Rail"
+msgstr "Pro Rail"
+
+msgid "Port Plaza"
+msgstr "Port Plaza"
+
+msgid "Plaza Rail"
+msgstr "Plaza Rail"
+
+msgid "Plaza Safety"
+msgstr "Plaza Safety"
+
+msgid "Plaza Rampe"
+msgstr "Rampa Plaza"
+
+msgid "Pipe 1/2"
+msgstr "Pipe 1/2"
+
+msgid "Pipe lang"
+msgstr "Pipe longo"
+
+msgid "6-Stair Pool"
+msgstr "6-Stair Pool"
+
+msgid "Pool Rampe"
+msgstr "Rampa do pool"
+
+msgid "Treppe"
+msgstr "Escada"
+
+msgid "Down Rail"
+msgstr "Down Rail"
+
+msgid "Low to High Rail"
+msgstr "Low to High Rail"
+
+msgid "Double Kinked Ledge"
+msgstr "Double Kinked Ledge"
+
+msgid "Flat Down Rail"
+msgstr "Flat Down Rail"
+
+msgid "Ball"
+msgstr "Bola"
+
+msgid "Bump"
+msgstr "Bump"
+

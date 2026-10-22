@@ -10,7 +10,7 @@ extends Camera3D
 
 enum CamMode { CHASE, ORBIT, SIDE }
 
-const MODE_NAMES := ["Verfolger", "Orbit", "Ufer"]
+const MODE_NAMES := ["Verfolger", "Orbit", "Ufer"]  # i18n
 const BASE_PITCH := -0.3
 const SLIDE_ZOOM := 0.7          # Abstand auf dem Slider (Anteil)
 const PRESS_ZOOM := 0.5          # Abstand beim Press (Anteil)
@@ -61,7 +61,7 @@ func snap() -> void:
 
 
 func mode_name() -> String:
-	return MODE_NAMES[cam_mode]
+	return tr(MODE_NAMES[cam_mode])
 
 
 func _unhandled_input(event: InputEvent) -> void:

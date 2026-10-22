@@ -1,0 +1,3742 @@
+# WakeTheHack – Vorlage (Ausgangstext Deutsch)
+msgid ""
+msgstr ""
+"Project-Id-Version: WakeTheHack\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Source-Language: de\n"
+
+#: scripts/achievements.gd:12
+msgid "Fischkontakt"
+msgstr ""
+
+#: scripts/achievements.gd:12
+msgid "Mit einem springenden Hecht zusammengestoßen."
+msgstr ""
+
+#: scripts/achievements.gd:13
+msgid "Nass gespritzt"
+msgstr ""
+
+#: scripts/achievements.gd:13
+msgid "Einen SUP-Paddler mit voller Fahrt nass gespritzt."
+msgstr ""
+
+#: scripts/achievements.gd:14
+msgid "Steg-Landung"
+msgstr ""
+
+#: scripts/achievements.gd:14
+msgid "Aus der Luft auf dem Startsteg gelandet."
+msgstr ""
+
+#: scripts/achievements.gd:15
+msgid "Insekten fressen"
+msgstr ""
+
+#: scripts/achievements.gd:15
+msgid "Am Waldrand von Terminal 1 durch einen Mückenschwarm gefahren. Mahlzeit!"
+msgstr ""
+
+#: scripts/achievements.gd:16
+msgid "Boot crash"
+msgstr ""
+
+#: scripts/achievements.gd:16
+msgid "Ins rote Boot gefahren oder hineingefallen."
+msgstr ""
+
+#: scripts/achievements.gd:17
+msgid "Ho ho ho!"
+msgstr ""
+
+#: scripts/achievements.gd:17
+msgid "Am Nikolaustag im Schnee eine Wende gefahren."
+msgstr ""
+
+#: scripts/achievements.gd:18
+msgid "Was ein Frechdachs"
+msgstr ""
+
+#: scripts/achievements.gd:18
+msgid "Ein Haubentaucher ist direkt unter dir durchgetaucht."
+msgstr ""
+
+#: scripts/achievements.gd:19
+#: scripts/main.gd:389
+msgid "Schwanenliebe"
+msgstr ""
+
+#: scripts/achievements.gd:19
+msgid "Zwei Schwäne haben mit ihren Hälsen ein Herz geformt – und du warst dabei."
+msgstr ""
+
+#: scripts/achievements.gd:20
+msgid "Zugvogel"
+msgstr ""
+
+#: scripts/achievements.gd:20
+msgid "Einen Raley gesprungen, während die Kraniche über den See ziehen."
+msgstr ""
+
+#: scripts/achievements.gd:21
+msgid "Blitzableiter"
+msgstr ""
+
+#: scripts/achievements.gd:21
+msgid "Im Gewitter gefahren und vom Blitz getroffen. YOLO!"
+msgstr ""
+
+#: scripts/achievements.gd:22
+msgid "Badegast"
+msgstr ""
+
+#: scripts/achievements.gd:22
+msgid "An einem heißen Tag einen Badegast auf der Luftmatratze nass gespritzt."
+msgstr ""
+
+#: scripts/achievements.gd:23
+msgid "Arschbombe"
+msgstr ""
+
+#: scripts/achievements.gd:23
+msgid "Aus der Luft ins Becken des 6-Stair Pools gestürzt. Platsch!"
+msgstr ""
+
+#: scripts/board_library.gd:16
+msgid "Zeitung"
+msgstr ""
+
+#: scripts/board_library.gd:21
+msgid "Sunset"
+msgstr ""
+
+#: scripts/board_library.gd:27
+msgid "Ice"
+msgstr ""
+
+#: scripts/board_library.gd:33
+msgid "Topo"
+msgstr ""
+
+#: scripts/board_library.gd:40
+msgid "Dots"
+msgstr ""
+
+#: scripts/cable_system.gd:345
+msgid "Bereit"
+msgstr ""
+
+#: scripts/cable_system.gd:346
+msgid "Anfahren"
+msgstr ""
+
+#: scripts/cable_system.gd:347
+msgid "Fahrt → Mast 2"
+msgstr ""
+
+#: scripts/cable_system.gd:347
+msgid "Fahrt → Ufer"
+msgstr ""
+
+#: scripts/cable_system.gd:348
+msgid "Bremst zur Wende"
+msgstr ""
+
+#: scripts/cable_system.gd:349
+#: scripts/ui/setup_editor.gd:1798
+#: scripts/ui/setup_editor.gd:1799
+msgid "Wende"
+msgstr ""
+
+#: scripts/cable_system.gd:350
+msgid "Operator bringt die Handle"
+msgstr ""
+
+#: scripts/cable_system.gd:351
+msgid "Wartet auf den Fahrer"
+msgstr ""
+
+#: scripts/cable_system.gd:352
+msgid "Ende – zurück am Start"
+msgstr ""
+
+#: scripts/challenge.gd:84
+msgid "Abgesoffen"
+msgstr ""
+
+#: scripts/challenge.gd:316
+msgid "Gestürzt"
+msgstr ""
+
+#: scripts/challenge.gd:316
+msgid "Seil verloren"
+msgstr ""
+
+#: scripts/challenge.gd:330
+msgid "Nicht um die weiße Boje"
+msgstr ""
+
+#: scripts/challenge.gd:348
+msgid "Ohne Absprung fahren"
+msgstr ""
+
+#: scripts/challenge.gd:355
+msgid "Kicker verpasst"
+msgstr ""
+
+#: scripts/challenge.gd:366
+msgid "Slider verpasst"
+msgstr ""
+
+#: scripts/challenge.gd:372
+msgid "Ins Wasser – Transfer verpasst"
+msgstr ""
+
+#: scripts/challenge.gd:375
+msgid "Pipe verpasst"
+msgstr ""
+
+#: scripts/challenge.gd:386
+msgid "Keine Kombination geschafft"
+msgstr ""
+
+#: scripts/challenge.gd:404
+msgid "Kein Drift nach einem Feature"
+msgstr ""
+
+#: scripts/challenge.gd:418
+msgid "Kein Sprung-Start – auf dem Steg ↓ halten, bis das Seil losreißt"
+msgstr ""
+
+#: scripts/challenge.gd:434
+msgid "Kein Raley – mehr Seilzug: weit raus, dann hart zur Mitte kanten (Marke RALEY)"
+msgstr ""
+
+#: scripts/challenge.gd:444
+msgid "Zeit abgelaufen"
+msgstr ""
+
+#: scripts/challenge.gd:478
+msgid "Das war kein Raley Start – Brett quer zum Seil stellen"
+msgstr ""
+
+#: scripts/challenge.gd:479
+msgid "Das war kein Nolli – Brett längs zum Seil lassen"
+msgstr ""
+
+#: scripts/challenge.gd:499
+msgid "Junge mach mal langsam! (%s)"
+msgstr ""
+
+#: scripts/challenge.gd:501
+msgid "Das war %s – gefordert: %s"
+msgstr ""
+
+#: scripts/challenge.gd:571
+msgid "360 links im Drift!  (%d / %d)"
+msgstr ""
+
+#: scripts/challenge.gd:571
+msgid "360 rechts im Drift!  (%d / %d)"
+msgstr ""
+
+#: scripts/challenge.gd:582
+msgid "Kein 360 im Drift"
+msgstr ""
+
+#: scripts/challenge.gd:620
+msgid "%s im Drift!  (%d Wechsel)"
+msgstr ""
+
+#: scripts/challenge.gd:642
+msgid "Kein Press im Drift"
+msgstr ""
+
+#: scripts/challenge.gd:670
+msgid "%s Drift"
+msgstr ""
+
+#: scripts/challenge.gd:686
+msgid "ausgelassen"
+msgstr ""
+
+#: scripts/challenge.gd:693
+msgid "zu kurz auf dem Slider"
+msgstr ""
+
+#: scripts/challenge.gd:715
+msgid "kein Ollie on (über die Auffahrt)"
+msgstr ""
+
+#: scripts/challenge.gd:717
+msgid "Aufspringen: %s statt %s"
+msgstr ""
+
+#: scripts/challenge.gd:719
+#: scripts/challenge.gd:721
+msgid "%s statt %s"
+msgstr ""
+
+#: scripts/challenge.gd:721
+msgid "kein Press"
+msgstr ""
+
+#: scripts/challenge.gd:724
+msgid "Abgang: %s statt %s"
+msgstr ""
+
+#: scripts/challenge.gd:752
+msgid "gerade"
+msgstr ""
+
+#: scripts/challenge.gd:762
+msgid "%s geschafft!"
+msgstr ""
+
+#: scripts/challenge.gd:854
+msgid "Gerade abgefahren – hier quer mit Drift abgehen"
+msgstr ""
+
+#: scripts/challenge.gd:865
+msgid "noch keine Medaille"
+msgstr ""
+
+#: scripts/challenge.gd:898
+#: scripts/leaderboard.gd:177
+msgid "Rangliste nicht mit Seilzug-Grenze „Aus“"
+msgstr ""
+
+#: scripts/challenge.gd:900
+msgid "Rangliste: wird gesendet …"
+msgstr ""
+
+#: scripts/challenge.gd:908
+msgid "Rangliste: Platz %d von %d"
+msgstr ""
+
+#: scripts/challenge.gd:909
+msgid "Rangliste: Platz %d von %d mit deinem Bestwert %s"
+msgstr ""
+
+#: scripts/challenge.gd:912
+msgid "als %s"
+msgstr ""
+
+#: scripts/challenge.gd:917
+#: scripts/main.gd:1320
+#: scripts/main.gd:1325
+#: scripts/main.gd:1326
+msgid "Rangliste: %s"
+msgstr ""
+
+#: scripts/challenge.gd:917
+#: scripts/ui/name_field.gd:79
+#: scripts/ui/start_screen.gd:1204
+#: scripts/ui/start_screen.gd:1403
+msgid "Fehler"
+msgstr ""
+
+#: scripts/challenge.gd:942
+#: scripts/leaderboard.gd:244
+#: scripts/training.gd:542
+#: scripts/ui/task_panel.gd:239
+msgid "%d Punkt"
+msgid_plural "%d Punkte"
+msgstr[0] ""
+msgstr[1] ""
+
+#: scripts/challenge.gd:944
+#: scripts/challenge.gd:949
+#: scripts/challenge.gd:958
+msgid "Höhe %s"
+msgstr ""
+
+#: scripts/challenge.gd:951
+msgid "Weite %s"
+msgstr ""
+
+#: scripts/challenge.gd:960
+msgid "links %d / %d   rechts %d / %d"
+msgstr ""
+
+#: scripts/challenge.gd:965
+msgid "Bester Drift %s"
+msgstr ""
+
+#: scripts/challenge.gd:968
+msgid "%d Wechsel   Bester %s"
+msgstr ""
+
+#: scripts/challenge.gd:970
+#: scripts/challenge.gd:972
+msgid "Press am Stück %s"
+msgstr ""
+
+#: scripts/challenge.gd:977
+msgid "%d geschafft"
+msgstr ""
+
+#: scripts/challenge.gd:982
+msgid "Bestwert %s"
+msgstr ""
+
+#: scripts/challenge.gd:111
+#: scripts/main.gd:1464
+msgid "VERSUCH"
+msgstr ""
+
+#: scripts/challenge.gd:129
+#: scripts/hud.gd:263
+#: scripts/main.gd:1464
+msgid "ZEIT"
+msgstr ""
+
+#: scripts/challenge.gd:410
+msgid "Verpasst"
+msgstr ""
+
+#: scripts/challenge.gd:822
+msgid "Transfer verpasst"
+msgstr ""
+
+#: scripts/chase_camera.gd:13
+#: scripts/ui/start_screen.gd:853
+msgid "Verfolger"
+msgstr ""
+
+#: scripts/chase_camera.gd:13
+#: scripts/ui/start_screen.gd:853
+msgid "Orbit"
+msgstr ""
+
+#: scripts/chase_camera.gd:13
+#: scripts/ui/start_screen.gd:853
+msgid "Ufer"
+msgstr ""
+
+#: scripts/game_settings.gd:14
+msgid "Runde 7:30"
+msgstr ""
+
+#: scripts/game_settings.gd:14
+msgid "Runde 10:00"
+msgstr ""
+
+#: scripts/game_settings.gd:14
+msgid "Runde 15:00"
+msgstr ""
+
+#: scripts/game_settings.gd:14
+msgid "Freies Fahren"
+msgstr ""
+
+#: scripts/game_settings.gd:29
+msgid "Niedrig"
+msgstr ""
+
+#: scripts/game_settings.gd:29
+#: scripts/ui/start_screen.gd:857
+msgid "Mittel"
+msgstr ""
+
+#: scripts/game_settings.gd:29
+msgid "Hoch"
+msgstr ""
+
+#: scripts/game_settings.gd:29
+msgid "Custom"
+msgstr ""
+
+#: scripts/hud.gd:106
+msgid "H  Hilfe"
+msgstr ""
+
+#: scripts/hud.gd:280
+msgid "PUNKTE"
+msgstr ""
+
+#: scripts/hud.gd:376
+msgid "ZEIT UM"
+msgstr ""
+
+#: scripts/hud.gd:459
+msgid "GEHEIMER ERFOLG FREIGESCHALTET"
+msgstr ""
+
+#: scripts/hud.gd:693
+msgid "TEMPO"
+msgstr ""
+
+#: scripts/hud.gd:737
+msgid "SEILZUG"
+msgstr ""
+
+#: scripts/hud.gd:7
+msgid ""
+"← / →   lenken   (in der Luft und beim Raley: drehen; auf dem Slider: Boardslide ↔ 50-50 umspringen; auf dem Slider Leertaste halten + ←/→: seitlich auf den Nachbar-Slider springen = Rail to Rail)\n"
+"↑ / ↓   in der Luft: Frontroll / Backroll (beim Invert gleich nach dem Absprung: ↑ S-Bend, ↓ Backroll)     auf dem Slider (schon im Anflug): Nosepress / Tailpress     im Drift: Drift-Press     Sprung-Start: auf dem Steg ↓ halten, bis das Seil losreißt (Brett längs: Nolli, quer: Raley Start)\n"
+"Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das Brett dreht frei, etwas schneller; quer vom Slider ins Wasser nur mit Drift; Treppe am Pool nur im Drift\n"
+"Leertaste halten + loslassen   Absprung (Ollie; voll aufgeladen mit Seilzug über der Marke RALEY und ohne Feature voraus: Invert = Raley – Höhe aus Seilzug + Tempo)\n"
+"Start mit Countdown 3 – 2 – 1 – GO (Runde 7:30)     R  zurück zum Steg (−2:00, dann Countdown), in den Spielmodi: neuer Versuch     + / -  Anlagentempo\n"
+"Nach Sturz:  Leertaste halten = zur Handle schwimmen     Strg = sofort weiter (−1:00)     R = Steg (−2:00)\n"
+"C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause     O  Einstellungen\n"
+"Z  Szenario würfeln     P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus (aus: keine Rangliste)     H  Hilfe ein/aus     F11  Vollbild     F3  Hitboxen + Drift-Winkel (Debug)     F4  Parameter (Debug, nur lokal)\n"
+"Tab  Startseite (Terminal, Feature-Setup, Einstellungen)     Menüs: Tab / Pfeile wählen, Leertaste drücken, Enter Start, Esc zurück\n"
+"Gamepad: Stick/Steuerkreuz lenken, Kreuz oder R2 (analog) Sprung, Kreis Drift, L1/R1 Tempo (in der Luft: schnelle 180), rechter Stick umsehen (R3 halten: Zoom), Touchpad Steg, Share Szenario würfeln, PS Pause, Options Einstellungen"
+msgstr ""
+
+#: scripts/hud.gd:18
+msgid ""
+"Start mit Countdown          ← / → (bzw. Handy neigen mit Lenkung: Gyro)   lenken (auf dem Slider: Tipp bzw. deutlich neigen = Boardslide ↔ 50-50; SPRUNG halten + ← / → = seitlich auf den Nachbar-Slider, Rail to Rail)\n"
+"SPRUNG (links) halten + loslassen   Absprung (voll aufgeladen, Seilzug über RALEY: Raley)\n"
+"Pfeil ↑ / ↓   in der Luft Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), auf dem Slider (schon im Anflug) Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)\n"
+"DRIFT (links, über SPRUNG)   Kante lösen (Treppe am Pool nur im Drift)        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)\n"
+"☰   Menü (pausiert): Einstellungen, Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Szenario würfeln, Seil-Abreißen an/aus (aus: keine Rangliste)"
+msgstr ""
+
+#: scripts/leaderboard.gd:164
+#: scripts/ui/start_screen.gd:1277
+msgid "Runde %s"
+msgstr ""
+
+#: scripts/leaderboard.gd:170
+#: scripts/leaderboard.gd:193
+msgid "Freies Fahren hat keine Rangliste"
+msgstr ""
+
+#: scripts/leaderboard.gd:172
+#: scripts/leaderboard.gd:195
+msgid "Eigene Setups haben keine Rangliste"
+msgstr ""
+
+#: scripts/leaderboard.gd:175
+msgid "Rangliste nur mit %d km/h und %d m Seil"
+msgstr ""
+
+#: scripts/leaderboard.gd:187
+msgid "Du erscheinst nicht in der Rangliste (Startseite → Rangliste)"
+msgstr ""
+
+#: scripts/leaderboard.gd:187
+#: scripts/ui/start_screen.gd:777
+#: scripts/ui/start_screen.gd:778
+#: scripts/ui/start_screen.gd:780
+msgid "Aus"
+msgstr ""
+
+#: scripts/leaderboard.gd:189
+msgid "Keine Rangliste mit Seilzug-Grenze „Aus“"
+msgstr ""
+
+#: scripts/leaderboard.gd:189
+msgid "Seilzug aus"
+msgstr ""
+
+#: scripts/leaderboard.gd:193
+msgid "Frei"
+msgstr ""
+
+#: scripts/leaderboard.gd:195
+msgid "Eigenes Setup"
+msgstr ""
+
+#: scripts/leaderboard.gd:198
+msgid "Tempo / Seil"
+msgstr ""
+
+#: scripts/leaderboard.gd:266
+msgid "{t}.{m}.{j}"
+msgstr ""
+
+#: scripts/leaderboard.gd:288
+#: scripts/leaderboard.gd:311
+msgid "Rangliste noch nicht eingerichtet"
+msgstr ""
+
+#: scripts/leaderboard.gd:339
+#: scripts/leaderboard.gd:343
+msgid "Keine Verbindung"
+msgstr ""
+
+#: scripts/leaderboard.gd:346
+msgid "Serverfehler (%d)"
+msgstr ""
+
+#: scripts/leaderboard.gd:32
+msgid "nur POST"
+msgstr ""
+
+#: scripts/leaderboard.gd:32
+msgid "kein JSON"
+msgstr ""
+
+#: scripts/leaderboard.gd:32
+msgid "kein Zugriff"
+msgstr ""
+
+#: scripts/leaderboard.gd:32
+msgid "zu viele Anfragen, bitte später"
+msgstr ""
+
+#: scripts/leaderboard.gd:33
+msgid "Serverfehler"
+msgstr ""
+
+#: scripts/leaderboard.gd:33
+msgid "Name schon vergeben"
+msgstr ""
+
+#: scripts/leaderboard.gd:33
+msgid "ungültig"
+msgstr ""
+
+#: scripts/leaderboard.gd:33
+msgid "Wert außerhalb der Grenzen"
+msgstr ""
+
+#: scripts/leaderboard.gd:33
+msgid "Spieler unbekannt"
+msgstr ""
+
+#: scripts/leaderboard.gd:34
+msgid "Name: 2 bis 16 Zeichen"
+msgstr ""
+
+#: scripts/leaderboard.gd:34
+msgid "Name: nur Buchstaben, Ziffern, Leerzeichen, . _ -"
+msgstr ""
+
+#: scripts/leaderboard.gd:34
+msgid "Diesen Namen bitte nicht"
+msgstr ""
+
+#: scripts/main.gd:305
+msgid "Abgesoffen!"
+msgstr ""
+
+#: scripts/main.gd:386
+msgid "Was ein Frechdachs!"
+msgstr ""
+
+#: scripts/main.gd:394
+msgid "Badegast nass gespritzt!"
+msgstr ""
+
+#: scripts/main.gd:398
+msgid "Zugvogel!"
+msgstr ""
+
+#: scripts/main.gd:413
+msgid "Hecht erwischt!"
+msgstr ""
+
+#: scripts/main.gd:419
+msgid "SUP nass gespritzt!"
+msgstr ""
+
+#: scripts/main.gd:422
+msgid "Igitt – Insekt verschluckt!"
+msgstr ""
+
+#: scripts/main.gd:428
+msgid "Arschbombe!"
+msgstr ""
+
+#: scripts/main.gd:431
+msgid "Steg-Landung!"
+msgstr ""
+
+#: scripts/main.gd:938
+msgid "Seil reißt ab: an"
+msgstr ""
+
+#: scripts/main.gd:938
+msgid "Seil reißt ab: aus – keine Rangliste"
+msgstr ""
+
+#: scripts/main.gd:1052
+msgid "Setup: %s"
+msgstr ""
+
+#: scripts/main.gd:1259
+msgid "Strafzeit −%d:%02d"
+msgstr ""
+
+#: scripts/main.gd:1273
+msgid "Zeit um!  %d Punkte"
+msgstr ""
+
+#: scripts/main.gd:1282
+#: scripts/main.gd:1319
+msgid "Letzte Runde: %d Punkte"
+msgstr ""
+
+#: scripts/main.gd:1312
+msgid "Rangliste …"
+msgstr ""
+
+#: scripts/main.gd:1318
+msgid "Platz %d von %d"
+msgstr ""
+
+#: scripts/main.gd:1320
+#: scripts/main.gd:1323
+msgid "Dein Bestwert: %s"
+msgstr ""
+
+#: scripts/main.gd:1321
+msgid "PLATZ %d von %d"
+msgstr ""
+
+#: scripts/main.gd:1462
+msgid "FREI"
+msgstr ""
+
+#: scripts/main.gd:1468
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Wenden %d   ·   Kamera: %s%s"
+msgstr ""
+
+#: scripts/main.gd:1498
+msgid "STURZ  –  der Operator bringt dir die Handle"
+msgstr ""
+
+#: scripts/main.gd:1499
+msgid "STURZ  –  die Handle liegt bereit"
+msgstr ""
+
+#: scripts/main.gd:1501
+msgid "ca. %d s"
+msgstr ""
+
+#: scripts/main.gd:1503
+msgid "SCHWIMMEN halten"
+msgstr ""
+
+#: scripts/main.gd:1503
+#: scripts/main.gd:1507
+msgid "Zur Handle schwimmen"
+msgstr ""
+
+#: scripts/main.gd:1504
+#: scripts/ui/touch_pad.gd:230
+msgid "SKIP"
+msgstr ""
+
+#: scripts/main.gd:1504
+#: scripts/main.gd:1508
+msgid "Sofort weiterfahren"
+msgstr ""
+
+#: scripts/main.gd:1504
+#: scripts/main.gd:1505
+#: scripts/main.gd:1508
+#: scripts/main.gd:1509
+msgid "keine Strafzeit"
+msgstr ""
+
+#: scripts/main.gd:1505
+#: scripts/main.gd:1509
+msgid "Zurück zum Steg"
+msgstr ""
+
+#: scripts/main.gd:1507
+msgid "LEERTASTE halten"
+msgstr ""
+
+#: scripts/main.gd:1508
+msgid "STRG"
+msgstr ""
+
+#: scripts/main.gd:1520
+msgid ""
+"Neigungssensor nicht verfügbar –\n"
+"Bewegungssensoren im Browser erlauben"
+msgstr ""
+
+#: scripts/main.gd:1525
+msgid "SPRUNG-START  %d %%"
+msgstr ""
+
+#: scripts/main.gd:1594
+msgid "Hitboxen an"
+msgstr ""
+
+#: scripts/main.gd:1594
+msgid "Hitboxen aus"
+msgstr ""
+
+#: scripts/main.gd:1624
+msgid "Wende um die Boje"
+msgstr ""
+
+#: scripts/main.gd:1624
+msgid "Saubere Wende"
+msgstr ""
+
+#: scripts/main.gd:1773
+msgid "Ins Boot gefahren!"
+msgstr ""
+
+#: scripts/main.gd:1774
+msgid "Boot crash!"
+msgstr ""
+
+#: scripts/main.gd:109
+msgid "Terminal 1"
+msgstr ""
+
+#: scripts/main.gd:109
+msgid "Terminal 2"
+msgstr ""
+
+#: scripts/main.gd:1464
+msgid "MODUS"
+msgstr ""
+
+#: scripts/music.gd:249
+#: scripts/ui/start_screen.gd:724
+msgid "Musik"
+msgstr ""
+
+#: scripts/music.gd:252
+msgid "Musik hinzufügen"
+msgstr ""
+
+#: scripts/npcs/storm.gd:80
+msgid "Vom Blitz getroffen!"
+msgstr ""
+
+#: scripts/plants.gd:18
+msgid "Bodenpflanzen (Gräser, Schilf)"
+msgstr ""
+
+#: scripts/plants.gd:18
+msgid "Gehölze (Sträucher, Bäume)"
+msgstr ""
+
+#: scripts/plants.gd:24
+msgid "Schilf"
+msgstr ""
+
+#: scripts/plants.gd:26
+msgid "Ufergras"
+msgstr ""
+
+#: scripts/plants.gd:28
+msgid "Wiesengras"
+msgstr ""
+
+#: scripts/plants.gd:30
+msgid "Strauch"
+msgstr ""
+
+#: scripts/plants.gd:32
+msgid "Laubbaum"
+msgstr ""
+
+#: scripts/plants.gd:34
+msgid "Kiefer"
+msgstr ""
+
+#: scripts/rider.gd:884
+msgid "Seil aus der Hand gerissen!"
+msgstr ""
+
+#: scripts/rider.gd:1462
+msgid "Quer abgefahren – Brett gerade stellen oder driften!"
+msgstr ""
+
+#: scripts/rider.gd:1497
+msgid "Treppe nur im Drift!"
+msgstr ""
+
+#: scripts/rider.gd:1520
+msgid "Drift-Press zu quer gedriftet!"
+msgstr ""
+
+#: scripts/rider.gd:1570
+msgid "Gegen den Steg!"
+msgstr ""
+
+#: scripts/rider.gd:1570
+#: scripts/rider.gd:2046
+msgid "Gegen %s gefahren!"
+msgstr ""
+
+#: scripts/rider.gd:1830
+msgid "das Hindernis"
+msgstr ""
+
+#: scripts/rider.gd:2157
+msgid "Verkantet gelandet!"
+msgstr ""
+
+#: scripts/rider.gd:2161
+msgid "Auf dem Ball gelandet!"
+msgstr ""
+
+#: scripts/rider.gd:2164
+msgid "Zu harte Landung!"
+msgstr ""
+
+#: scripts/rider.gd:2167
+msgid "Überschlag nicht geschafft!"
+msgstr ""
+
+#: scripts/rider.gd:2313
+msgid "Ab ans Ufer!"
+msgstr ""
+
+#: scripts/rider.gd:2316
+msgid "Gegen den Mast!"
+msgstr ""
+
+#: scripts/rider.gd:2676
+msgid "%s – Drift-Winkel %d°  (erlaubt bis %d°)"
+msgstr ""
+
+#: scripts/rider.gd:2678
+msgid "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)"
+msgstr ""
+
+#: scripts/sun_calc.gd:42
+msgid "{tag}. {monat}"
+msgstr ""
+
+#: scripts/sun_calc.gd:9
+msgid "Januar"
+msgstr ""
+
+#: scripts/sun_calc.gd:9
+msgid "Februar"
+msgstr ""
+
+#: scripts/sun_calc.gd:9
+msgid "März"
+msgstr ""
+
+#: scripts/sun_calc.gd:9
+msgid "April"
+msgstr ""
+
+#: scripts/sun_calc.gd:9
+msgid "Mai"
+msgstr ""
+
+#: scripts/sun_calc.gd:9
+msgid "Juni"
+msgstr ""
+
+#: scripts/sun_calc.gd:9
+msgid "Juli"
+msgstr ""
+
+#: scripts/sun_calc.gd:9
+msgid "August"
+msgstr ""
+
+#: scripts/sun_calc.gd:10
+msgid "September"
+msgstr ""
+
+#: scripts/sun_calc.gd:10
+msgid "Oktober"
+msgstr ""
+
+#: scripts/sun_calc.gd:10
+msgid "November"
+msgstr ""
+
+#: scripts/sun_calc.gd:10
+msgid "Dezember"
+msgstr ""
+
+#: scripts/training.gd:522
+msgid "%d %% eingesunken"
+msgstr ""
+
+#: scripts/training.gd:530
+msgid "%d %% im Press"
+msgstr ""
+
+#: scripts/training.gd:532
+msgid "%d Wechsel"
+msgid_plural "%d Wechsel"
+msgstr[0] ""
+msgstr[1] ""
+
+#: scripts/training.gd:534
+msgid "%d Slider"
+msgid_plural "%d Slider"
+msgstr[0] ""
+msgstr[1] ""
+
+#: scripts/training.gd:536
+msgid "%d Umdrehung"
+msgid_plural "%d Umdrehungen"
+msgstr[0] ""
+msgstr[1] ""
+
+#: scripts/training.gd:538
+msgid "%d %% im Drift"
+msgstr ""
+
+#: scripts/training.gd:551
+msgid "bis %d %%"
+msgstr ""
+
+#: scripts/training.gd:551
+msgid "nicht einsinken"
+msgstr ""
+
+#: scripts/training.gd:553
+msgid "bis %s"
+msgstr ""
+
+#: scripts/training.gd:553
+msgid "ab %s"
+msgstr ""
+
+#: scripts/training.gd:31
+msgid "Bronze"
+msgstr ""
+
+#: scripts/training.gd:31
+msgid "Silber"
+msgstr ""
+
+#: scripts/training.gd:31
+msgid "Gold"
+msgstr ""
+
+#: scripts/training.gd:48
+msgid "Nosepress im Drift"
+msgstr ""
+
+#: scripts/training.gd:51
+msgid "Wie der Tailpress, nur über die Nose: das Brett im Drift erst um 90° quer drehen, dann ins vordere Ende drücken, das Tail steht hoch. Der Winkel zählt von der Querstellung. Gemessen: Anteil der Wende im vollen Nosepress – ohne einzusinken. Gold = die ganze Wende."
+msgstr ""
+
+#: scripts/training.gd:52
+msgid "Strg halten  driften     ↑ halten  Nosepress     ← / →  Drift-Winkel halten"
+msgstr ""
+
+#: scripts/training.gd:53
+msgid "DRIFT halten  driften     ▲ halten  Nosepress     Neigen  Winkel halten"
+msgstr ""
+
+#: scripts/training.gd:54
+msgid "Erst quer drehen, dann drücken – mit der Nose vorne stehst du 90° falsch. Je schneller, desto querer darfst du driften. Den Drift nicht loslassen – dann ist der Press sofort vorbei."
+msgstr ""
+
+#: scripts/training.gd:55
+msgid "Press-Wechsel"
+msgstr ""
+
+#: scripts/training.gd:55
+msgid "Nose- und Tailpress im Wechsel"
+msgstr ""
+
+#: scripts/training.gd:58
+msgid "In einem Drift zwischen Nosepress und Tailpress hin und her wechseln. Gemessen: Wechsel in einem Drift (jeder volle Press auf das andere Ende zählt; Drift loslassen fängt neu an)."
+msgstr ""
+
+#: scripts/training.gd:59
+msgid "Strg halten  driften     ↑ / ↓  Nose- / Tailpress"
+msgstr ""
+
+#: scripts/training.gd:60
+msgid "DRIFT halten  driften     ▲ / ▼  Nose- / Tailpress"
+msgstr ""
+
+#: scripts/training.gd:61
+msgid "Der Press braucht knapp eine Sekunde, bis er ganz drin ist – nicht zu hektisch wechseln."
+msgstr ""
+
+#: scripts/training.gd:65
+#: scripts/ui/start_screen.gd:1315
+msgid "Competition"
+msgstr ""
+
+#: scripts/training.gd:66
+msgid "Runde auf Zeit: so viele Punkte wie möglich. Terminal, Feature-Setup und Rundenlänge frei wählbar."
+msgstr ""
+
+#: scripts/training.gd:67
+msgid "Wenden"
+msgstr ""
+
+#: scripts/training.gd:67
+msgid "Wenden fahren, ohne einzusinken."
+msgstr ""
+
+#: scripts/training.gd:68
+msgid "Wende Endmast"
+msgstr ""
+
+#: scripts/training.gd:68
+msgid "Wende am Endmast"
+msgstr ""
+
+#: scripts/training.gd:71
+msgid "Fahr durch die Wende am Endmast, ohne einzusinken. Gemessen wird, wie tief du einsinkst."
+msgstr ""
+
+#: scripts/training.gd:72
+#: scripts/training.gd:79
+#: scripts/training.gd:86
+msgid "← / →  lenken     Strg  driften"
+msgstr ""
+
+#: scripts/training.gd:73
+#: scripts/training.gd:80
+#: scripts/training.gd:87
+msgid "Neigen  lenken     DRIFT  driften"
+msgstr ""
+
+#: scripts/training.gd:74
+msgid "An der roten Boje nach außen rauskanten und Tempo aufbauen, dann um den Carrier pendeln – das Seil muss gespannt bleiben. Wird es locker, weiter nach außen ziehen."
+msgstr ""
+
+#: scripts/training.gd:75
+msgid "Ufer-Wende"
+msgstr ""
+
+#: scripts/training.gd:75
+msgid "Wende am Ufer"
+msgstr ""
+
+#: scripts/training.gd:78
+msgid "Die Wende vor dem Startsteg: hier ist weniger Platz. Wieder ohne einzusinken."
+msgstr ""
+
+#: scripts/training.gd:81
+msgid "Früh rauskanten – zum Ufer hin bleibt wenig Raum zum Ausschwingen."
+msgstr ""
+
+#: scripts/training.gd:82
+msgid "Um die Boje"
+msgstr ""
+
+#: scripts/training.gd:82
+msgid "Wende um die weiße Boje"
+msgstr ""
+
+#: scripts/training.gd:85
+msgid "Fahr außen um eine der weißen Bojen und komm sauber aus der Wende. Ohne Boje gibt es keine Medaille."
+msgstr ""
+
+#: scripts/training.gd:88
+msgid "Schon vor der roten Boje weit nach außen ziehen, sonst reicht der Schwung nicht um die weiße Boje."
+msgstr ""
+
+#: scripts/training.gd:90
+msgid "Kicker"
+msgstr ""
+
+#: scripts/training.gd:90
+msgid "Über den Kicker – so hoch wie möglich."
+msgstr ""
+
+#: scripts/training.gd:91
+#: setups/parts.json
+msgid "Kicker M"
+msgstr ""
+
+#: scripts/training.gd:91
+msgid "Kicker M überfahren"
+msgstr ""
+
+#: scripts/training.gd:95
+msgid "Fahr ohne Absprung gerade über den Kicker M (der kleinere, näher am Seil). Gemessen wird die größte Höhe über dem Wasser."
+msgstr ""
+
+#: scripts/training.gd:96
+msgid "← / →  lenken     Leertaste halten + loslassen  Absprung"
+msgstr ""
+
+#: scripts/training.gd:97
+msgid "Neigen  lenken     SPRUNG halten + loslassen  Absprung"
+msgstr ""
+
+#: scripts/training.gd:98
+msgid "Gerade und mit Tempo anfahren – schräg verliert man Höhe. Kurz vor dem Kicker nicht mehr lenken."
+msgstr ""
+
+#: scripts/training.gd:99
+msgid "M mit Absprung"
+msgstr ""
+
+#: scripts/training.gd:99
+msgid "Kicker M mit Absprung"
+msgstr ""
+
+#: scripts/training.gd:103
+msgid "Wie eben, aber an der Kante abspringen: Kicker-Steigung + Sprungkraft = Höhe."
+msgstr ""
+
+#: scripts/training.gd:104
+msgid "Leertaste halten (auf dem Kicker) + an der Kante loslassen"
+msgstr ""
+
+#: scripts/training.gd:105
+msgid "SPRUNG halten (auf dem Kicker) + an der Kante loslassen"
+msgstr ""
+
+#: scripts/training.gd:106
+msgid "Schon auf dem Kicker voll aufladen und genau an der Kante loslassen – zu früh verschenkt den Wurf der Rampe."
+msgstr ""
+
+#: scripts/training.gd:107
+#: setups/parts.json
+msgid "Kicker L"
+msgstr ""
+
+#: scripts/training.gd:107
+msgid "Kicker L mit Absprung"
+msgstr ""
+
+#: scripts/training.gd:111
+msgid "Der große Kicker L (rechts): höher, steiler – und härter bei der Landung."
+msgstr ""
+
+#: scripts/training.gd:112
+#: scripts/training.gd:376
+msgid "Leertaste halten + an der Kante loslassen"
+msgstr ""
+
+#: scripts/training.gd:113
+#: scripts/training.gd:377
+msgid "SPRUNG halten + an der Kante loslassen"
+msgstr ""
+
+#: scripts/training.gd:114
+msgid "Bei der Landung gerade bleiben – wer quer aufkommt, stürzt."
+msgstr ""
+
+#: scripts/training.gd:116
+msgid "Slider"
+msgstr ""
+
+#: scripts/training.gd:116
+msgid "Slider fahren: aufspringen, 50-50, Boardslide, Press."
+msgstr ""
+
+#: scripts/training.gd:117
+#: scripts/training.gd:177
+#: scripts/training.gd:187
+msgid "Full Pipe"
+msgstr ""
+
+#: scripts/training.gd:117
+msgid "Rauf auf die Full Pipe"
+msgstr ""
+
+#: scripts/training.gd:121
+msgid "Fahr über die Auffahrt auf die Full Pipe und rutsch sie so weit wie möglich ab. Gemessen: gerutschte Meter."
+msgstr ""
+
+#: scripts/training.gd:122
+msgid "← / →  lenken (auf dem Slider: Boardslide / 50-50)"
+msgstr ""
+
+#: scripts/training.gd:123
+msgid "Neigen  lenken (auf dem Slider deutlich neigen: Boardslide / 50-50)"
+msgstr ""
+
+#: scripts/training.gd:124
+msgid "Mittig auf die Auffahrt zielen. Auf dem Rohr hält dich das Einloggen in der Spur."
+msgstr ""
+
+#: scripts/training.gd:125
+msgid "Boardslide"
+msgstr ""
+
+#: scripts/training.gd:125
+msgid "Boardslide auf der Pipe"
+msgstr ""
+
+#: scripts/training.gd:129
+msgid "Quer über die Pipe: nur Meter im Boardslide zählen. Am Ende das Brett wieder gerade stellen – wer quer ins Wasser fährt, stürzt."
+msgstr ""
+
+#: scripts/training.gd:130
+msgid "Auf der Pipe ← / → tippen (Boardslide), vor dem Ende nochmal tippen (zurück auf 50-50)"
+msgstr ""
+
+#: scripts/training.gd:131
+msgid "Auf der Pipe deutlich neigen (Boardslide), vor dem Ende nochmal neigen (zurück auf 50-50)"
+msgstr ""
+
+#: scripts/training.gd:132
+msgid "Oder schon in der Luft quer drehen – das Brett rastet in die nächste Stellung ein. Kurz vor dem Ende umspringen oder auf der Abfahrt gerade drehen."
+msgstr ""
+
+#: scripts/training.gd:133
+msgid "Drift"
+msgstr ""
+
+#: scripts/training.gd:133
+msgid "Boardslide mit Drift-Abgang"
+msgstr ""
+
+#: scripts/training.gd:137
+msgid "Boardslide über die Pipe und quer bleiben – beim Abgang Drift halten: dann rutscht das Brett quer weiter, ohne einzuhaken."
+msgstr ""
+
+#: scripts/training.gd:138
+msgid "Auf der Pipe ← / → tippen (Boardslide), Strg (Drift) halten, wenn das Brett das Wasser berührt"
+msgstr ""
+
+#: scripts/training.gd:139
+msgid "Auf der Pipe deutlich neigen (Boardslide), DRIFT halten, wenn das Brett das Wasser berührt"
+msgstr ""
+
+#: scripts/training.gd:140
+msgid "Drift rechtzeitig drücken – kurz vor dem Ende der Pipe. Wer das Brett gerade stellt, bekommt hier keinen Wert."
+msgstr ""
+
+#: scripts/training.gd:141
+msgid "Umspringen"
+msgstr ""
+
+#: scripts/training.gd:141
+msgid "Boardslide / 50-50 umspringen"
+msgstr ""
+
+#: scripts/training.gd:145
+msgid "Auf dem Long Rail (links, 100 m) zwischen Boardslide und 50-50 wechseln. Gezählt werden die Wechsel."
+msgstr ""
+
+#: scripts/training.gd:146
+msgid "Auf dem Slider: je Tipp ← / →  90° drehen"
+msgstr ""
+
+#: scripts/training.gd:147
+msgid "Auf dem Slider: deutlich neigen, zurück, wieder neigen"
+msgstr ""
+
+#: scripts/training.gd:148
+msgid "Nach jedem Tipp loslassen – erst dann geht der nächste Wechsel."
+msgstr ""
+
+#: scripts/training.gd:149
+msgid "Press"
+msgstr ""
+
+#: scripts/training.gd:149
+msgid "Nose- oder Tailpress"
+msgstr ""
+
+#: scripts/training.gd:153
+msgid "Auf dem Long Rail Gewicht auf Nose oder Tail: gemessen werden die Sekunden im Press."
+msgstr ""
+
+#: scripts/training.gd:154
+msgid "Auf dem Slider: ↑  Nosepress    ↓  Tailpress (halten)"
+msgstr ""
+
+#: scripts/training.gd:155
+msgid "Auf dem Slider: ▲  Nosepress    ▼  Tailpress (halten)"
+msgstr ""
+
+#: scripts/training.gd:156
+msgid "Erst sauber auf dem Rail stehen, dann ↑ oder ↓ halten. Beim Absprung loslassen, sonst gibt es keinen Überschlag."
+msgstr ""
+
+#: scripts/training.gd:157
+msgid "Long Rail"
+msgstr ""
+
+#: scripts/training.gd:157
+msgid "Long Rail: 100 m"
+msgstr ""
+
+#: scripts/training.gd:161
+msgid "So weit wie möglich auf dem 100-m-Rail bleiben."
+msgstr ""
+
+#: scripts/training.gd:162
+msgid "← / →  lenken"
+msgstr ""
+
+#: scripts/training.gd:163
+msgid "Neigen  lenken"
+msgstr ""
+
+#: scripts/training.gd:164
+msgid "Der Seilzug zieht dich zur Seilmitte – auf dem Rail nicht gegenlenken, das Einloggen hält die Spur."
+msgstr ""
+
+#: scripts/training.gd:165
+msgid "Slider-Kette"
+msgstr ""
+
+#: scripts/training.gd:169
+msgid "Rechts stehen vier Slider hintereinander: Full Pipe, Rail, A-Frame, Pipe. Wie viele schaffst du in einer Fahrt?"
+msgstr ""
+
+#: scripts/training.gd:170
+#: scripts/training.gd:408
+#: scripts/training.gd:432
+#: scripts/training.gd:440
+msgid "← / →  lenken     Leertaste  Absprung"
+msgstr ""
+
+#: scripts/training.gd:171
+#: scripts/training.gd:409
+#: scripts/training.gd:433
+#: scripts/training.gd:441
+msgid "Neigen  lenken     SPRUNG  Absprung"
+msgstr ""
+
+#: scripts/training.gd:172
+msgid "Nach jedem Slider zieht dich das Seil nach innen: sofort wieder nach außen auf Linie lenken – alle stehen auf derselben Spur."
+msgstr ""
+
+#: scripts/training.gd:173
+msgid "BS Nosepress"
+msgstr ""
+
+#: scripts/training.gd:173
+msgid "Ollie in Boardslide Nosepress"
+msgstr ""
+
+#: scripts/training.gd:178
+msgid "Mit einem Ollie aus dem Wasser direkt auf die Full Pipe, in der Luft quer drehen und im Boardslide mit Nosepress rutschen. Gemessen: gerutschte Meter – nur wenn Ollie on, Boardslide und Nosepress stimmen."
+msgstr ""
+
+#: scripts/training.gd:179
+msgid "Leertaste  Ollie     in der Luft ← / → kurz tippen (Vierteldrehung)     auf der Pipe ↑ halten"
+msgstr ""
+
+#: scripts/training.gd:180
+msgid "SPRUNG  Ollie     in der Luft kurz neigen (Vierteldrehung)     auf der Pipe ▲ halten"
+msgstr ""
+
+#: scripts/training.gd:181
+msgid "Nicht über die Auffahrt fahren, sondern vor der Pipe abspringen. Eine Vierteldrehung reicht – das Brett rastet quer ein. Am Ende das Brett gerade stellen (← / →) oder Drift halten, sonst stürzt man quer ins Wasser."
+msgstr ""
+
+#: scripts/training.gd:182
+#: scripts/training.gd:339
+msgid "Special"
+msgstr ""
+
+#: scripts/training.gd:182
+msgid "Slider Special"
+msgstr ""
+
+#: scripts/training.gd:188
+msgid "Rail"
+msgstr ""
+
+#: scripts/training.gd:189
+msgid "A-Frame"
+msgstr ""
+
+#: scripts/training.gd:190
+msgid "Pipe"
+msgstr ""
+
+#: scripts/training.gd:192
+msgid "Die Slider-Kette rechts, an jedem Slider eine feste Kombination. Gezählt: geschaffte Slider."
+msgstr ""
+
+#: scripts/training.gd:193
+msgid "Leertaste  Ollie on / out     ← / →  in der Luft drehen, auf dem Slider Boardslide / 50-50     ↑ / ↓  Nose- / Tailpress"
+msgstr ""
+
+#: scripts/training.gd:194
+msgid "SPRUNG  Ollie on / out     Neigen  in der Luft drehen, auf dem Slider Boardslide / 50-50     ▲ / ▼  Nose- / Tailpress"
+msgstr ""
+
+#: scripts/training.gd:195
+msgid "Ollie on heißt: aus dem Wasser direkt auf das Rohr springen, nicht über die Auffahrt fahren. Den Press mehr als die halbe Slide-Zeit halten."
+msgstr ""
+
+#: scripts/training.gd:199
+msgid "Invert Training"
+msgstr ""
+
+#: scripts/training.gd:199
+msgid "Inverts: Tricks aus dem Raley-Absprung nach der Wende."
+msgstr ""
+
+#: scripts/training.gd:200
+msgid "Raley – Höhe"
+msgstr ""
+
+#: scripts/training.gd:200
+msgid "Höchster Raley"
+msgstr ""
+
+#: scripts/training.gd:203
+msgid "Nach der Ufer-Wende Seilzug aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: größte Höhe."
+msgstr ""
+
+#: scripts/training.gd:204
+#: scripts/training.gd:211
+msgid "Leertaste lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist"
+msgstr ""
+
+#: scripts/training.gd:205
+#: scripts/training.gd:212
+msgid "SPRUNG lange halten (voll aufladen) + loslassen, wenn der Seilzug über der Marke RALEY ist"
+msgstr ""
+
+#: scripts/training.gd:206
+msgid "Nach der Wende weit nach außen fahren, dann hart gegen den Zug zur Seilmitte kanten – loslassen, solange der Seilzug über der Marke RALEY ist – je mehr Zug und Tempo, desto höher."
+msgstr ""
+
+#: scripts/training.gd:207
+msgid "Raley – Weite"
+msgstr ""
+
+#: scripts/training.gd:207
+msgid "Weitester Raley"
+msgstr ""
+
+#: scripts/training.gd:210
+msgid "Nach der Ufer-Wende Seilzug aufbauen und einen Raley stehen – ohne Drehung, ohne Extras. Gemessen: Weite vom Absprung bis zur Landung."
+msgstr ""
+
+#: scripts/training.gd:213
+msgid "Weit nach außen, dann hart zur Seilmitte kanten – je mehr Zug und Tempo, desto weiter."
+msgstr ""
+
+#: scripts/training.gd:214
+msgid "Krypt"
+msgstr ""
+
+#: scripts/training.gd:214
+msgid "Krypt (Raley 180 rechts)"
+msgstr ""
+
+#: scripts/training.gd:217
+msgid "Raley mit genau einer halben Drehung nach rechts. Gemessen: größte Höhe."
+msgstr ""
+
+#: scripts/training.gd:218
+msgid "Raley, dann gegen Ende →  halten (180)"
+msgstr ""
+
+#: scripts/training.gd:219
+msgid "Raley, dann gegen Ende nach rechts neigen (180)"
+msgstr ""
+
+#: scripts/training.gd:220
+#: scripts/training.gd:227
+msgid "Erst strecken lassen, dann ← / → : der Schwung bricht ab, du schwingst zurück und drehst aufrecht – rechtzeitig loslassen."
+msgstr ""
+
+#: scripts/training.gd:221
+msgid "Blind Judge"
+msgstr ""
+
+#: scripts/training.gd:221
+msgid "Blind Judge (Raley 180 links)"
+msgstr ""
+
+#: scripts/training.gd:224
+msgid "Raley mit genau einer halben Drehung nach links. Gemessen: größte Höhe."
+msgstr ""
+
+#: scripts/training.gd:225
+msgid "Raley, dann gegen Ende ←  halten (180)"
+msgstr ""
+
+#: scripts/training.gd:226
+msgid "Raley, dann gegen Ende nach links neigen (180)"
+msgstr ""
+
+#: scripts/training.gd:228
+msgid "313 (Raley 360 links)"
+msgstr ""
+
+#: scripts/training.gd:231
+msgid "Raley mit genau einer ganzen Drehung nach links. Gemessen: größte Höhe."
+msgstr ""
+
+#: scripts/training.gd:232
+msgid "Raley, dann gegen Ende ←  halten (360)"
+msgstr ""
+
+#: scripts/training.gd:233
+msgid "Raley, dann gegen Ende nach links neigen (360)"
+msgstr ""
+
+#: scripts/training.gd:234
+msgid "Viel Höhe holen – die ganze Drehung braucht die Zeit vom höchsten Punkt bis zur Landung."
+msgstr ""
+
+#: scripts/training.gd:235
+msgid "S-Bend"
+msgstr ""
+
+#: scripts/training.gd:238
+msgid "Raley-Absprung und gestreckt einmal um die eigene Längsachse – ohne Drehung danach. Gemessen: größte Höhe."
+msgstr ""
+
+#: scripts/training.gd:239
+msgid "Raley, gleich nach dem Absprung ↑"
+msgstr ""
+
+#: scripts/training.gd:240
+msgid "Raley, gleich nach dem Absprung ▲"
+msgstr ""
+
+#: scripts/training.gd:241
+#: scripts/training.gd:248
+msgid "Die Taste nur ganz am Anfang drücken – später wird es ein normaler Raley."
+msgstr ""
+
+#: scripts/training.gd:242
+msgid "Backroll (todo)"
+msgstr ""
+
+#: scripts/training.gd:242
+msgid "Backroll (Invert, todo)"
+msgstr ""
+
+#: scripts/training.gd:245
+msgid "Raley-Absprung und seitlich nach außen kopfüber rollen – ohne Drehung danach. Gemessen: größte Höhe."
+msgstr ""
+
+#: scripts/training.gd:246
+msgid "Raley, gleich nach dem Absprung ↓"
+msgstr ""
+
+#: scripts/training.gd:247
+msgid "Raley, gleich nach dem Absprung ▼"
+msgstr ""
+
+#: scripts/training.gd:249
+msgid "Special - S-Bend to Blind"
+msgstr ""
+
+#: scripts/training.gd:249
+msgid "Special: S-Bend to Blind"
+msgstr ""
+
+#: scripts/training.gd:252
+msgid "S-Bend und danach genau eine halbe Drehung nach links – blind landen. Gemessen: größte Höhe."
+msgstr ""
+
+#: scripts/training.gd:253
+msgid "Raley, gleich nach dem Absprung ↑, nach der Drehung um die Handle ←  (180)"
+msgstr ""
+
+#: scripts/training.gd:254
+msgid "Raley, gleich nach dem Absprung ▲, nach der Drehung um die Handle nach links neigen (180)"
+msgstr ""
+
+#: scripts/training.gd:255
+msgid "Viel Höhe holen: ← erst, wenn der S-Bend durch ist – dann schwingst du zurück und drehst aufrecht. Rechtzeitig loslassen."
+msgstr ""
+
+#: scripts/training.gd:257
+msgid "Sprung-Start"
+msgstr ""
+
+#: scripts/training.gd:257
+msgid "Vom Startsteg: gegen das Seil stemmen, bis es dich losreißt."
+msgstr ""
+
+#: scripts/training.gd:258
+msgid "Nolli"
+msgstr ""
+
+#: scripts/training.gd:258
+msgid "Nolli vom Steg"
+msgstr ""
+
+#: scripts/training.gd:261
+msgid "Bleib auf dem Startsteg mit dem Brett längs zum Seil (50-50) stehen und halte ↓: du stemmst dich gegen das anfahrende Seil, der Seilzug lädt sich auf. Bei maximaler Seilspannung reißt es dich nach vorne – ein Nolli. Gemessen: größte Höhe."
+msgstr ""
+
+#: scripts/training.gd:262
+msgid "↓ halten (schon beim Countdown), bis das Seil losreißt"
+msgstr ""
+
+#: scripts/training.gd:263
+msgid "▼ halten (schon beim Countdown), bis das Seil losreißt"
+msgstr ""
+
+#: scripts/training.gd:264
+msgid "Je genauer das Brett längs zum Seil steht, desto mehr Power. Nicht vorher loslassen – sonst ist es ein normaler Start."
+msgstr ""
+
+#: scripts/training.gd:265
+msgid "Nolli 180/360"
+msgstr ""
+
+#: scripts/training.gd:265
+msgid "Nolli mit Drehung"
+msgstr ""
+
+#: scripts/training.gd:268
+msgid "Nolli vom Steg und in der Luft drehen: 180 = Bronze, 360 = Silber, 540 = Gold."
+msgstr ""
+
+#: scripts/training.gd:269
+msgid "↓ halten bis zum Riss, dann in der Luft ← / →  drehen"
+msgstr ""
+
+#: scripts/training.gd:270
+msgid "▼ halten bis zum Riss, dann in der Luft neigen = drehen"
+msgstr ""
+
+#: scripts/training.gd:271
+msgid "Gleich nach dem Riss drehen und rechtzeitig loslassen – das Brett muss zur Landung in Fahrtrichtung zeigen."
+msgstr ""
+
+#: scripts/training.gd:272
+msgid "Raley Start"
+msgstr ""
+
+#: scripts/training.gd:272
+msgid "Raley Start vom Steg"
+msgstr ""
+
+#: scripts/training.gd:275
+msgid "Dreh dich auf dem Steg um 90°, sodass das Brett quer zum Seil steht, und halte ↓: du sitzt tief auf der Kante, Brust zum Seil. Reißt das Seil los, schwingt dein Körper um den Griff wie beim Raley. Gemessen: größte Höhe."
+msgstr ""
+
+#: scripts/training.gd:276
+msgid "← / →  auf dem Steg quer drehen     ↓ halten, bis das Seil losreißt"
+msgstr ""
+
+#: scripts/training.gd:277
+msgid "Neigen  auf dem Steg quer drehen     ▼ halten, bis das Seil losreißt"
+msgstr ""
+
+#: scripts/training.gd:278
+msgid "Schon beim Countdown drehen – je genauer quer, desto höher. Ab 45° Abweichung wird es ein Nolli."
+msgstr ""
+
+#: scripts/training.gd:279
+msgid "Raley Start + Invert"
+msgstr ""
+
+#: scripts/training.gd:279
+msgid "Raley Start mit Invert"
+msgstr ""
+
+#: scripts/training.gd:282
+msgid "Raley Start und in der Luft noch etwas dazu: 180 = Bronze, S-Bend oder Backroll = Silber, S-Bend/Backroll + 360 = Gold. Gemessen: Punkte des Sprungs."
+msgstr ""
+
+#: scripts/training.gd:283
+msgid "Quer drehen, ↓ halten bis zum Riss, in der Luft loslassen, dann gleich ↑ S-Bend / ↓ Backroll, gegen Ende ← / →  drehen"
+msgstr ""
+
+#: scripts/training.gd:284
+msgid "Quer drehen, ▼ halten bis zum Riss, in der Luft loslassen, dann gleich ▲ S-Bend / ▼ Backroll, gegen Ende neigen  drehen"
+msgstr ""
+
+#: scripts/training.gd:285
+msgid "Das gehaltene ↓ zählt nicht – erst loslassen, dann sofort ↑ oder ↓ drücken: der Trick wird nur ganz am Anfang gewählt."
+msgstr ""
+
+#: scripts/training.gd:287
+msgid "Driften"
+msgstr ""
+
+#: scripts/training.gd:287
+msgid "Kante lösen und gleiten: das Brett dreht frei, die Fahrtrichtung bleibt."
+msgstr ""
+
+#: scripts/training.gd:288
+msgid "360 im Drift"
+msgstr ""
+
+#: scripts/training.gd:288
+msgid "360er im Drift"
+msgstr ""
+
+#: scripts/training.gd:291
+msgid "Driften heißt: die Kante lösen. Das Brett liegt flach und greift nicht mehr – Lenken ändert die Fahrtrichtung nicht, nur der Seilzug zieht dich, und das Brett lässt sich frei herumdrehen. Dreh so zwischen den roten Bojen (Ufer bis Endmast) fünf 360er in die eine und fünf in die andere Richtung – gezählt wird jede volle Umdrehung im Drift, höchstens fünf je Richtung."
+msgstr ""
+
+#: scripts/training.gd:292
+msgid "Strg halten  driften     ← / →  Brett drehen"
+msgstr ""
+
+#: scripts/training.gd:293
+msgid "DRIFT halten  driften     Neigen  Brett drehen"
+msgstr ""
+
+#: scripts/training.gd:294
+msgid "Erst fünf in eine Richtung, dann umsteuern – die Strecke reicht nur knapp, also nicht trödeln. Wer den Drift loslässt, verliert die angefangene Umdrehung – und quer greift die Kante hart und bremst."
+msgstr ""
+
+#: scripts/training.gd:295
+msgid "Wende im Drift"
+msgstr ""
+
+#: scripts/training.gd:295
+msgid "Die Wende durchgleiten"
+msgstr ""
+
+#: scripts/training.gd:298
+msgid "Vor der Wende am Endmast mächtig Schwung holen und dann die ganze Wende im Drift durchgleiten – ohne einzusinken. Gemessen: Anteil der Wende, in dem du im Drift gleitest, ohne einzusinken (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht)."
+msgstr ""
+
+#: scripts/training.gd:299
+msgid "← / →  lenken (Schwung holen)     Strg halten  driften"
+msgstr ""
+
+#: scripts/training.gd:300
+msgid "Neigen  lenken (Schwung holen)     DRIFT halten  driften"
+msgstr ""
+
+#: scripts/training.gd:301
+msgid "An der roten Boje weit rauskanten und Tempo aufbauen. Im Drift bremst das Wasser weniger – du gleitest weiter. Ist zu wenig Schwung da, sinkst du ein."
+msgstr ""
+
+#: scripts/training.gd:302
+msgid "Drift nach Feature"
+msgstr ""
+
+#: scripts/training.gd:302
+msgid "Nach dem Feature driften"
+msgstr ""
+
+#: scripts/training.gd:306
+msgid "Terminal 2, Setup Juli & August: von der Mitte Richtung Steg über ein Feature deiner Wahl und gleich danach driften – mindestens 10 m. Gemessen: der längste Drift, der direkt nach einem Feature beginnt (auch nach dem Sprung davon)."
+msgstr ""
+
+#: scripts/training.gd:307
+msgid "Strg schon auf dem Feature halten und danach nicht loslassen"
+msgstr ""
+
+#: scripts/training.gd:308
+msgid "DRIFT schon auf dem Feature halten und danach nicht loslassen"
+msgstr ""
+
+#: scripts/training.gd:309
+msgid "Mit Drift darf das Brett beim Abgang auch quer stehen. Der Seilzug zieht dich im Drift zur Seilmitte – vorher weit außen auf das Feature fahren."
+msgstr ""
+
+#: scripts/training.gd:310
+msgid "Tailpress im Drift"
+msgstr ""
+
+#: scripts/training.gd:313
+msgid "Auf dem Weg zum vorderen Wendepunkt driften und dabei ins Tail drücken: das Brett kippt um das Tail, die Nose steht hoch, die freie Hand streift das Wasser. Du gleitest mit dem ganzen Schwung weiter. Driftest du querer, als es dein Tempo erlaubt (höchstens 86°, nach links wie nach rechts), stürzt du – mit ← / → den Winkel halten. Gemessen: Anteil der Wende im vollen Tailpress (vom Bremsen des Carriers, bis das Seil in der neuen Richtung wieder zieht) – ohne einzusinken. Gold = die ganze Wende."
+msgstr ""
+
+#: scripts/training.gd:314
+msgid "Strg halten  driften     ↓ halten  Tailpress     ← / →  Drift-Winkel halten"
+msgstr ""
+
+#: scripts/training.gd:315
+msgid "DRIFT halten  driften     ▼ halten  Tailpress     Neigen  Winkel halten"
+msgstr ""
+
+#: scripts/training.gd:316
+msgid "Hart rauskanten, im Drift das Brett erst weit quer drehen (um 75°), dann ins Tail drücken – so bremst nichts. Im goldenen Bereich des Bogens (die letzten rund 45° vor der Grenze) bremst der Press gar nicht; querer als 86° reißt es dich um. Den Winkel mit ← / → halten, während dich das Seil um den Carrier schwingt."
+msgstr ""
+
+#: scripts/training.gd:318
+msgid "Transfer"
+msgstr ""
+
+#: scripts/training.gd:318
+msgid "Von einem Feature auf ein anderes springen."
+msgstr ""
+
+#: scripts/training.gd:319
+msgid "Klein"
+msgstr ""
+
+#: scripts/training.gd:319
+msgid "Pyramid auf Pyramid-Rail"
+msgstr ""
+
+#: scripts/training.gd:322
+#: setups/parts.json
+msgid "Pyramid"
+msgstr ""
+
+#: scripts/training.gd:322
+#: setups/parts.json
+msgid "A-Frame Rail"
+msgstr ""
+
+#: scripts/training.gd:323
+msgid "Erst auf die Pyramid, dann aufs Rail springen"
+msgstr ""
+
+#: scripts/training.gd:325
+msgid "Terminal 2, Setup C: über die Pyramid fahren und oben seitlich auf das A-Frame Rail daneben springen. Gemessen: Sprunghöhe – so hoch wie möglich, aber das Rail noch erwischen."
+msgstr ""
+
+#: scripts/training.gd:326
+msgid "Leertaste halten + loslassen  Absprung, in der Luft ← / →  Richtung Rail"
+msgstr ""
+
+#: scripts/training.gd:327
+msgid "SPRUNG halten + loslassen  Absprung, in der Luft neigen  Richtung Rail"
+msgstr ""
+
+#: scripts/training.gd:328
+msgid "Auf der Pyramid nahe an der Rail-Seite fahren, dann kurz abspringen – das Einloggen zieht dich aufs Rail."
+msgstr ""
+
+#: scripts/training.gd:329
+msgid "Groß"
+msgstr ""
+
+#: scripts/training.gd:329
+msgid "Wedge auf Down Ledge"
+msgstr ""
+
+#: scripts/training.gd:332
+#: setups/parts.json
+msgid "Cheese Wedge"
+msgstr ""
+
+#: scripts/training.gd:332
+#: scripts/training.gd:342
+#: scripts/training.gd:352
+#: setups/parts.json
+msgid "Down Ledge"
+msgstr ""
+
+#: scripts/training.gd:333
+msgid "Erst über den Wedge, dann auf die Down Ledge springen"
+msgstr ""
+
+#: scripts/training.gd:335
+msgid "Terminal 1, Setup A: über den Wedge (Kicker-Höhe wie Kicker M) und seitlich hoch auf die Down Ledge springen. Gemessen: Sprunghöhe – so hoch wie möglich, aber die Ledge noch erwischen."
+msgstr ""
+
+#: scripts/training.gd:336
+msgid "Leertaste halten (auf dem Wedge) + an der Kante loslassen, in der Luft ← / →  Richtung Ledge"
+msgstr ""
+
+#: scripts/training.gd:337
+msgid "SPRUNG halten (auf dem Wedge) + an der Kante loslassen, in der Luft neigen"
+msgstr ""
+
+#: scripts/training.gd:338
+msgid "Die Ledge ist höher als die Kante des Wedges – voll aufladen und kräftig abspringen."
+msgstr ""
+
+#: scripts/training.gd:339
+msgid "Curb auf Down Ledge"
+msgstr ""
+
+#: scripts/training.gd:342
+#: scripts/training.gd:352
+#: setups/parts.json
+msgid "Transition Curb"
+msgstr ""
+
+#: scripts/training.gd:343
+#: scripts/training.gd:353
+msgid "Erst auf die Transition Curb, dann auf die Down Ledge springen"
+msgstr ""
+
+#: scripts/training.gd:345
+msgid "Terminal 2, Setup D: mit einem Ollie auf die Transition Curb, darauf hoch und dann auf die Down Ledge daneben springen. Wie du slidest, ist egal. Gemessen: Sprunghöhe von der Curb – so hoch wie möglich, aber die Ledge noch erwischen."
+msgstr ""
+
+#: scripts/training.gd:346
+msgid "Leertaste: Ollie auf die Curb, auf der Curb nochmal abspringen, in der Luft ← / →"
+msgstr ""
+
+#: scripts/training.gd:347
+msgid "SPRUNG: Ollie auf die Curb, auf der Curb nochmal abspringen, in der Luft neigen"
+msgstr ""
+
+#: scripts/training.gd:348
+msgid "Auf der Curb ist glattes Plastik – lenken geht nicht. Schon vor dem Ollie auf die richtige Linie gehen."
+msgstr ""
+
+#: scripts/training.gd:349
+msgid "Special Press"
+msgstr ""
+
+#: scripts/training.gd:349
+msgid "Curb auf Down Ledge mit Nosepress"
+msgstr ""
+
+#: scripts/training.gd:355
+msgid "Wie Transfer special, aber auf der Down Ledge einen Nosepress halten. Gemessen: Sekunden im Press."
+msgstr ""
+
+#: scripts/training.gd:356
+msgid "Auf der Ledge ↑ halten (Nosepress)"
+msgstr ""
+
+#: scripts/training.gd:357
+msgid "Auf der Ledge ▲ halten (Nosepress)"
+msgstr ""
+
+#: scripts/training.gd:358
+msgid "Erst sauber auf der Ledge landen, dann ↑ drücken – beim Abgang loslassen."
+msgstr ""
+
+#: scripts/training.gd:362
+#: setups/parts.json
+msgid "Pool"
+msgstr ""
+
+#: scripts/training.gd:362
+msgid "Der 6-Stair Pool: rein ins Becken, die Treppe im Drift, auf den Rand und die Ausgänge."
+msgstr ""
+
+#: scripts/training.gd:363
+msgid "Pool Drop"
+msgstr ""
+
+#: scripts/training.gd:363
+msgid "Pool Drop – Höhe"
+msgstr ""
+
+#: scripts/training.gd:365
+#: scripts/training.gd:373
+msgid "Nicht über die Rampe ins Becken"
+msgstr ""
+
+#: scripts/training.gd:367
+msgid "Fahr über die Rampe des Pools und spring ins Becken. Gemessen: höchster Punkt über dem See."
+msgstr ""
+
+#: scripts/training.gd:368
+msgid "← / →  lenken     Leertaste halten + an der Kante loslassen  Absprung"
+msgstr ""
+
+#: scripts/training.gd:369
+msgid "Neigen  lenken     SPRUNG halten + an der Kante loslassen  Absprung"
+msgstr ""
+
+#: scripts/training.gd:370
+msgid "Mittig auf die Rampe zielen, voll aufladen und genau an der Kante loslassen. Nicht zu weit springen – hinter dem Becken kommt die Treppe."
+msgstr ""
+
+#: scripts/training.gd:371
+msgid "Pool Drop – Weite"
+msgstr ""
+
+#: scripts/training.gd:375
+msgid "Wie eben, aber so weit wie möglich ins Becken. Gemessen: Weite vom Absprung bis zur Landung im Becken."
+msgstr ""
+
+#: scripts/training.gd:378
+msgid "Mit vollem Tempo und voller Ladung – das Becken ist 15 m lang, die Landung muss im Wasser sein."
+msgstr ""
+
+#: scripts/training.gd:379
+msgid "Treppe runter"
+msgstr ""
+
+#: scripts/training.gd:379
+msgid "Die Treppe im Drift hinunter"
+msgstr ""
+
+#: scripts/training.gd:381
+msgid "Nicht über die Treppe"
+msgstr ""
+
+#: scripts/training.gd:383
+msgid "Rein ins Becken, durchfahren und die Treppe am Ende im Drift hinunter in den See. Gemessen: Tempo unten."
+msgstr ""
+
+#: scripts/training.gd:384
+#: scripts/training.gd:392
+msgid "Strg (Drift) halten, bevor das Brett die Treppe erreicht"
+msgstr ""
+
+#: scripts/training.gd:385
+#: scripts/training.gd:393
+msgid "DRIFT halten, bevor das Brett die Treppe erreicht"
+msgstr ""
+
+#: scripts/training.gd:386
+msgid "Ohne Drift ist die Treppe ein Sturz. Gerade auf die Treppe zielen – die Stufen sind glatt, lenken geht dort nicht."
+msgstr ""
+
+#: scripts/training.gd:387
+msgid "Treppe hoch"
+msgstr ""
+
+#: scripts/training.gd:387
+msgid "Die Treppe im Drift hinauf"
+msgstr ""
+
+#: scripts/training.gd:389
+msgid "Nicht über die Treppe ins Becken"
+msgstr ""
+
+#: scripts/training.gd:391
+msgid "Von hinten zwischen den Ausgängen auf die Treppe zu und im Drift hinauf ins Becken. Gemessen: Tempo oben."
+msgstr ""
+
+#: scripts/training.gd:394
+msgid "Hinauf braucht Schwung: mit vollem Tempo und gespanntem Seil kommen. Im Becken vor der Rampe abspringen, sonst fährt man gegen die Wand."
+msgstr ""
+
+#: scripts/training.gd:395
+msgid "Coping"
+msgstr ""
+
+#: scripts/training.gd:395
+msgid "Auf dem Rand sliden"
+msgstr ""
+
+#: scripts/training.gd:397
+#: setups/parts.json
+msgid "Pool Coping"
+msgstr ""
+
+#: scripts/training.gd:399
+msgid "Fahr außen über die Rampe direkt auf den Rand des Beckens (Coping) und rutsch so weit wie möglich. Gemessen: Meter auf dem Rand."
+msgstr ""
+
+#: scripts/training.gd:400
+msgid "← / →  lenken (auf dem Rand: Boardslide / 50-50)"
+msgstr ""
+
+#: scripts/training.gd:401
+msgid "Neigen  lenken (auf dem Rand deutlich neigen: Boardslide / 50-50)"
+msgstr ""
+
+#: scripts/training.gd:402
+msgid "Die Spur genau auf den Rand legen (ganz rechts auf der Rampe). Der Rand ist nur 40 cm breit – das Einloggen hilft."
+msgstr ""
+
+#: scripts/training.gd:403
+msgid "Coping to Ledge"
+msgstr ""
+
+#: scripts/training.gd:403
+msgid "Rand und Ausgang in einem Zug"
+msgstr ""
+
+#: scripts/training.gd:405
+msgid "Nicht vom Rand auf den Ausgang"
+msgstr ""
+
+#: scripts/training.gd:407
+msgid "Auf dem Rand sliden und am Ende über die Safety ohne Absetzen auf die Down Ledge. Gemessen: Meter auf Rand und Ledge zusammen."
+msgstr ""
+
+#: scripts/training.gd:410
+msgid "Die Safety am Anfang der Ledge wirft dich ein Stück hoch – gerade bleiben, dann landest du wieder auf der Ledge."
+msgstr ""
+
+#: scripts/training.gd:411
+msgid "Stair Gap"
+msgstr ""
+
+#: scripts/training.gd:411
+msgid "Über die Treppe springen"
+msgstr ""
+
+#: scripts/training.gd:413
+msgid "Kein Sprung aus dem Becken über die Treppe"
+msgstr ""
+
+#: scripts/training.gd:415
+msgid "Im Becken Anlauf nehmen und am Ende über die ganze Treppe in den See springen. Gemessen: Weite des Sprungs."
+msgstr ""
+
+#: scripts/training.gd:416
+msgid "Leertaste halten + am Ende des Beckens loslassen"
+msgstr ""
+
+#: scripts/training.gd:417
+msgid "SPRUNG halten + am Ende des Beckens loslassen"
+msgstr ""
+
+#: scripts/training.gd:418
+msgid "Erst kurz vor der Treppe loslassen. Landest du auf den Stufen, brauchst du Drift."
+msgstr ""
+
+#: scripts/training.gd:419
+msgid "Pool Special"
+msgstr ""
+
+#: scripts/training.gd:421
+msgid "Pool Drop und Treppe im Drift nicht geschafft"
+msgstr ""
+
+#: scripts/training.gd:423
+msgid "Die Pool-Linie in einem Zug: Pool Drop (gern mit Drehung) und dann die Treppe im Drift hinunter – als Kombination. Gemessen: Punkte der Pool-Tricks."
+msgstr ""
+
+#: scripts/training.gd:424
+msgid "Leertaste  Absprung an der Rampe     ← / →  in der Luft drehen     Strg  Drift auf der Treppe"
+msgstr ""
+
+#: scripts/training.gd:425
+msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe"
+msgstr ""
+
+#: scripts/training.gd:426
+msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgstr ""
+
+#: scripts/training.gd:427
+#: scripts/training.gd:429
+#: setups/parts.json
+msgid "Donkey Rail"
+msgstr ""
+
+#: scripts/training.gd:427
+msgid "Ausgang: Donkey Rail"
+msgstr ""
+
+#: scripts/training.gd:431
+msgid "Pool B (hinten rechts): links über die Rampe auf den Rand und über die Safety auf das Donkey Rail. Gemessen: Meter auf dem Rail."
+msgstr ""
+
+#: scripts/training.gd:434
+msgid "Erst runter, dann flach: auf dem flachen Stück bremst es nicht mehr, dort ruhig bleiben."
+msgstr ""
+
+#: scripts/training.gd:435
+#: scripts/training.gd:437
+#: setups/parts.json
+msgid "Low to High Ledge"
+msgstr ""
+
+#: scripts/training.gd:435
+msgid "Ausgang: Low to High Ledge"
+msgstr ""
+
+#: scripts/training.gd:439
+msgid "Pool B: rechts auf den Rand und auf die Low to High Ledge – sie steigt noch an. Gemessen: Meter auf der Ledge."
+msgstr ""
+
+#: scripts/training.gd:442
+msgid "Bergauf kostet Tempo: mit gespanntem Seil auf den Rand kommen. Hinten ist sie 2 m hoch – gerade abspringen."
+msgstr ""
+
+#: scripts/training.gd:443
+#: scripts/training.gd:445
+#: setups/parts.json
+msgid "Double Kinked Rail"
+msgstr ""
+
+#: scripts/training.gd:443
+msgid "Ausgang: Double Kinked Rail"
+msgstr ""
+
+#: scripts/training.gd:447
+msgid "Pool C (links): außen über die Rampe auf den Rand und auf das Double Kinked Rail mit zwei Knicken. Gemessen: Meter auf dem Rail."
+msgstr ""
+
+#: scripts/training.gd:450
+msgid "Außen zieht das Seil dich zur Mitte – auf dem Rand nicht gegenlenken, das Einloggen hält die Spur."
+msgstr ""
+
+#: scripts/training.gd:451
+#: scripts/training.gd:453
+#: setups/parts.json
+msgid "Flat Down Ledge"
+msgstr ""
+
+#: scripts/training.gd:451
+msgid "Ausgang: Flat Down Ledge"
+msgstr ""
+
+#: scripts/training.gd:455
+msgid "Pool C: innen (zum Seil hin) auf den Rand und auf die Flat Down Ledge – erst flach, dann abwärts. Gemessen: Meter auf der Ledge."
+msgstr ""
+
+#: scripts/training.gd:458
+msgid "Die innere Seite liegt nah am Seil – das Seil zieht kaum quer, dafür ist die Spur schmal."
+msgstr ""
+
+#: scripts/training.gd:462
+msgid "Rail to Rail"
+msgstr ""
+
+#: scripts/training.gd:462
+msgid "Auf dem Slider seitlich auf den Nachbarn hinüberspringen."
+msgstr ""
+
+#: scripts/training.gd:463
+msgid "Pipe to Pipe"
+msgstr ""
+
+#: scripts/training.gd:466
+msgid "Rechts stehen zwei Pipes nebeneinander (0,8 m Lücke). Über die Auffahrt auf die äußere, kurze Pipe, dann seitlich auf die innere, lange Pipe hinüberspringen. Gemessen: gerutschte Meter auf der zweiten Pipe – je früher der Transfer, desto mehr."
+msgstr ""
+
+#: scripts/training.gd:467
+msgid "Auf der Pipe Leertaste halten, dabei ← (Seite), Leertaste loslassen = Hop"
+msgstr ""
+
+#: scripts/training.gd:468
+msgid "Auf der Pipe SPRUNG halten, dabei ← (Seite), SPRUNG loslassen = Hop"
+msgstr ""
+
+#: scripts/training.gd:469
+msgid "Schon auf der Auffahrt laden, auf der Pipe ← dazu und loslassen. Die Hop-Hilfe zielt auf die Mitte der Nachbar-Pipe. In der Luft dreht ←/→ erst wieder, wenn du es einmal losgelassen hast."
+msgstr ""
+
+#: scripts/training.gd:470
+msgid "Pipe to Pipe to Pipe"
+msgstr ""
+
+#: scripts/training.gd:473
+msgid "Links stehen drei Pipes versetzt nebeneinander wie eine Treppe zur Seilmitte. Auf die erste, dann zweimal hinüber: Pipe 1 → Pipe 2 → Pipe 3. Gemessen: gerutschte Meter auf der dritten Pipe."
+msgstr ""
+
+#: scripts/training.gd:474
+msgid "Auf der Pipe Leertaste halten, dabei → (Seite), Leertaste loslassen = Hop – auf Pipe 2 gleich nochmal"
+msgstr ""
+
+#: scripts/training.gd:475
+msgid "Auf der Pipe SPRUNG halten, dabei → (Seite), SPRUNG loslassen = Hop – auf Pipe 2 gleich nochmal"
+msgstr ""
+
+#: scripts/training.gd:476
+msgid "Pipe 2 ist kurz: sofort nach der Landung wieder laden. Ein kurzer Druck reicht für den Hop – voll aufladen muss man nicht."
+msgstr ""
+
+#: scripts/ui/film_cam.gd:119
+msgid "BOOT"
+msgstr ""
+
+#: scripts/ui/film_cam.gd:119
+msgid "DROHNE"
+msgstr ""
+
+#: scripts/ui/mini_rank.gd:154
+msgid ""
+"RANG-\n"
+"LISTE\n"
+"AUS"
+msgstr ""
+
+#: scripts/ui/mini_rank.gd:154
+msgid "KEINE RANGLISTE"
+msgstr ""
+
+#: scripts/ui/mini_rank.gd:185
+#: scripts/ui/mini_rank.gd:190
+#: scripts/ui/mini_rank.gd:192
+#: scripts/ui/mini_rank.gd:207
+msgid "DU"
+msgstr ""
+
+#: scripts/ui/mini_rank.gd:265
+#: scripts/ui/start_screen.gd:1117
+msgid "RANGLISTE"
+msgstr ""
+
+#: scripts/ui/mini_rank.gd:273
+msgid "Noch frei – Platz 1 wartet"
+msgstr ""
+
+#: scripts/ui/mini_rank.gd:298
+msgid "Neuer Rekord!"
+msgstr ""
+
+#: scripts/ui/mini_rank.gd:300
+msgid "%s überholt!"
+msgstr ""
+
+#: scripts/ui/mini_rank.gd:300
+msgid "%d überholt!"
+msgstr ""
+
+#: scripts/ui/mini_rank.gd:366
+msgid "DU · REKORD"
+msgstr ""
+
+#: scripts/ui/mini_rank.gd:375
+msgid "dein Rekord"
+msgstr ""
+
+#: scripts/ui/mini_rank.gd:379
+msgid "noch %s bis %d."
+msgstr ""
+
+#: scripts/ui/name_field.gd:33
+msgid "dein Name"
+msgstr ""
+
+#: scripts/ui/name_field.gd:44
+#: scripts/ui/start_screen.gd:1182
+msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
+msgstr ""
+
+#: scripts/ui/name_field.gd:73
+#: scripts/ui/start_screen.gd:1466
+msgid "Wird gespeichert …"
+msgstr ""
+
+#: scripts/ui/pause_menu.gd:47
+msgid "PAUSE"
+msgstr ""
+
+#: scripts/ui/pause_menu.gd:52
+msgid "Weiter  (Esc)"
+msgstr ""
+
+#: scripts/ui/pause_menu.gd:53
+#: scripts/ui/start_screen.gd:283
+#: scripts/ui/touch_pad.gd:108
+msgid "Einstellungen"
+msgstr ""
+
+#: scripts/ui/pause_menu.gd:54
+#: scripts/ui/touch_pad.gd:108
+msgid "Hilfe ein/aus"
+msgstr ""
+
+#: scripts/ui/pause_menu.gd:55
+#: scripts/ui/pause_menu.gd:79
+#: scripts/ui/start_screen.gd:903
+msgid "Nächster Titel"
+msgstr ""
+
+#: scripts/ui/pause_menu.gd:58
+#: scripts/ui/task_panel.gd:156
+#: scripts/ui/touch_pad.gd:109
+msgid "Startseite"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:206
+#: scripts/ui/task_panel.gd:250
+msgid "Zurück"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:209
+msgid "SETUP-EDITOR"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:214
+msgid "Name des Setups"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:227
+msgid "Terminal 2 (Strand)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:227
+msgid "Terminal 1 (Lounge-Steg)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:231
+msgid "Rückgängig"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:232
+msgid "Strg+Z"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:235
+msgid "Wiederholen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:236
+msgid "Strg+Y"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:251
+msgid "SPEICHERN"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:254
+msgid "SPEICHERN & FAHREN"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:294
+msgid "Ganze Bahn zeigen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:340
+msgid "Hacks werden beim Öffnen gesammelt …"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:376
+msgid "Antippen stellt das Teil in die Mitte der Karte. Danach ziehen, drehen, Richtung wählen."
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:407
+msgid "VORLAGE LADEN   (ersetzt beide Terminals)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:414
+#: scripts/ui/start_screen.gd:266
+msgid "TERMINAL"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:418
+msgid "Terminal leeren"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:426
+msgid "Vom anderen Terminal"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:428
+msgid "Teile des anderen Terminals hierher kopieren (ersetzt dieses Terminal)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:435
+msgid "JSON   (zum Weitergeben oder für setups/ im Projekt)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:438
+msgid "Hier ein Setup-JSON einfügen und „Aus Text laden“ drücken"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:445
+#: scripts/ui/setup_editor.gd:1577
+msgid "Als JSON kopieren"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:451
+msgid "JSON in die Zwischenablage kopiert"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:453
+msgid "Aus Text laden"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:457
+msgid "Eigenes Setup löschen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:466
+msgid "Leeres Setup"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:512
+msgid "Nicht gespeichert! Nochmal „Zurück“ = trotzdem verlassen (bleibt bis zum Neuladen erhalten)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:522
+msgid "Mein %s"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:823
+msgid "verschieben   s %+.1f m   x %+.1f m"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1020
+#: scripts/ui/setup_editor.gd:1040
+msgid "%s eingefügt"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1183
+msgid ""
+"Nichts ausgewählt. Ein Feature in der Karte antippen (doppelt = ganzer Hack), Umschalt/Strg + Klick wählt mehrere.\n"
+"\n"
+"Tasten: Pfeile verschieben (Umschalt 1 m), Q/E drehen, F Richtung, M spiegeln, Strg+D duplizieren, Entf löschen, Strg+Z rückgängig."
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1200
+msgid "POSITION ENTLANG DES SEILS  s (m)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1202
+msgid "SEITLICH  x (m)   + rechts, − links (Blick zum Endmast)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1204
+msgid "DREHUNG (Grad)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1207
+msgid "RICHTUNG (Anfahrt)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1239
+msgid "%d Teile ausgewählt – sie werden gemeinsam verschoben, gedreht und gespiegelt."
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1268
+msgid "%d Teil"
+msgid_plural "%d Teile"
+msgstr[0] ""
+msgstr[1] ""
+
+#: scripts/ui/setup_editor.gd:1374
+msgid "Antippen fügt den Hack in die Mitte der Karte ein (gleiche Anordnung, seitlich wie im Original)."
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1384
+msgid ""
+"%s\n"
+"Im Setup: %s"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1401
+msgid "%s: %d Features/Hacks (%d Zeilen), davon %d Hacks.   %s: %d Zeilen."
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1408
+msgid "Achtung: %s bei s = %.0f m liegt außerhalb der Fahrstrecke."
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1409
+msgid "Eigenes Setup (gespeichert)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1409
+msgid "Noch nicht gespeichert – „Speichern“ legt ein eigenes Setup an."
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1413
+msgid "Pflanzen   ·   %s: %s   ·   linke Taste = Pinsel, rechte Taste ziehen = Karte bewegen, Rad / + − = Zoom"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1416
+msgid "%s   ·   %d Teile   ·   Ziehen = verschieben, freie Fläche ziehen = Karte bewegen, Rad / + − = Zoom"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1445
+msgid "Kein gültiges Setup-JSON (braucht \"T2\" und/oder \"T1\")"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1449
+msgid "Setup aus Text geladen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1457
+#: scripts/ui/setup_editor.gd:1723
+msgid "Speichern fehlgeschlagen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1463
+msgid "Gespeichert: %s"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1478
+msgid "Eigenes Setup gelöscht (bleibt hier zum Weiterbearbeiten)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1486
+msgid "Auf dem Luftbild malen. Wo du malst, radierst oder die Automatik zurückholst, übernimmst du die Stelle: dort setzt das Spiel nichts Automatisches mehr (Wiesengras, Schilf, Ufergras bzw. Sträucher und Bäume aus dem Wald) – getrennt für Bodenpflanzen und Gehölze. Rechte Maustaste ziehen = Karte bewegen."
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1490
+msgid "WERKZEUG"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1510
+msgid "PFLANZE   (Radieren/Automatik wirken auf ihre Ebene)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1525
+msgid "%s: %.1f–%.1f m hoch, Abstand %.1f m – %s"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1534
+msgid "PINSEL"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1552
+msgid "DICHTE BEIM MALEN"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1571
+msgid "PFLANZEN SPEICHERN"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1579
+msgid "Für setups/plants.json im Projekt"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1582
+msgid "Bepflanzung als JSON in die Zwischenablage kopiert"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1584
+msgid "Zurücksetzen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1586
+msgid "Eigene Bepflanzung löschen, wieder die aus dem Spiel"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1593
+msgid "Bepflanzung aus dem Spiel geladen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1612
+msgid "Gemalt: %s"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1612
+msgid "noch nichts"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1613
+msgid "Von Hand gepflegt: %d m² Boden, %d m² Gehölz"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1616
+msgid "Ebene der Pflanze: %s"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1618
+msgid "Nicht gespeichert."
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1729
+msgid "Bepflanzung gespeichert (%s), im Spiel neu aufgebaut"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1804
+msgid "links (−x)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1806
+msgid "rechts (+x)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1861
+msgid "2 Ausgänge (wählbar)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1862
+msgid "Modul: %s"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1867
+#: scripts/ui/start_screen.gd:1602
+msgid "%s   %.1f × %.1f m, Höhe %.2f m"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:25
+msgid "KICKER & WEDGES"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:26
+msgid "BOXEN, LEDGES & CURBS"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:27
+msgid "RAILS & PIPES"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:28
+msgid "MODULE (MEHRERE TEILE)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:29
+msgid "SONSTIGES"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:102
+msgid "Malen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:102
+msgid "Radieren"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:102
+msgid "Automatik"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:102
+msgid "Schieben"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:320
+msgid "Teile"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:320
+msgid "Hacks"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:320
+msgid "Auswahl"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:320
+msgid "Setup"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:320
+msgid "Pflanzen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1212
+msgid "Zum Endmast  →"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1212
+msgid "←  Zum Steg"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1228
+msgid "AUSGANG LINKS (Blick von der Rampe)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1228
+msgid "AUSGANG RECHTS (Blick von der Rampe)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1232
+msgid "AUFFAHRT VORNE (m, 0 = ab)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1232
+msgid "AUFFAHRT HINTEN (m, 0 = ab)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1245
+msgid "Drehen +15°  (Q)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1246
+msgid "Drehen −15°  (E)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1247
+msgid "Umdrehen  (F)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1248
+msgid "Spiegeln  (M)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1249
+msgid "Duplizieren"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1250
+msgid "Ganzen Hack wählen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1251
+msgid "Löschen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1375
+msgid "HACKS"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1375
+msgid "GÄNGIGE KOMBINATIONEN"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1503
+msgid "Gewählte Pflanze setzen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1503
+msgid "Pflanzen der Ebene entfernen (auch die automatischen)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1504
+msgid "Stellen wieder der Automatik überlassen (entfernt Gemaltes der Ebene)"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1504
+msgid "Karte mit dem Finger bewegen"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1798
+msgid "Startmast"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1798
+#: scripts/ui/setup_editor.gd:1799
+msgid "rote Boje"
+msgstr ""
+
+#: scripts/ui/setup_editor.gd:1799
+msgid "Endmast"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:158
+msgid "WAKE THE HACK"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:161
+msgid "Wakeport Raunheim"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:169
+msgid "„%s“"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:203
+msgid "SPIELMODUS"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:210
+msgid "COMMUNITY CHALLENGE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:215
+msgid "SZENARIO"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:218
+msgid "Zufällig"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:231
+msgid "Neues Szenario würfeln  (Z, Gamepad: Share)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:258
+msgid "CHALLENGE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:272
+msgid "FEATURE-SETUP"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:287
+msgid "Setup-Editor"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:291
+msgid "Erfolge"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:295
+msgid "Rangliste"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:299
+#: scripts/ui/start_screen.gd:350
+msgid "SPIEL STARTEN"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:304
+msgid "Kostenlos & Open Source – spendier mir einen Kaffee"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:350
+msgid "CHALLENGE STARTEN"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:363
+#: scripts/ui/task_panel.gd:224
+msgid "Bestwert: %s"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:708
+msgid "EINSTELLUNGEN"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:724
+msgid "Spiel"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:724
+msgid "Fahrer"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:724
+msgid "Welt"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:724
+msgid "Technik"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:724
+msgid "Wasser"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:755
+msgid "FERTIG"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:763
+msgid "Automatisch (System)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:768
+msgid "SPRACHE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:775
+msgid "COMPETITION: RUNDENLÄNGE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:776
+msgid "HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:777
+msgid "Auf dem Slider einloggen"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:777
+#: scripts/ui/start_screen.gd:778
+#: scripts/ui/start_screen.gd:780
+#: scripts/ui/start_screen.gd:843
+msgid "An"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:778
+msgid "Überschlag dreht von selbst zu Ende"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:779
+msgid "SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G; Aus = keine Rangliste)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:787
+msgid "BRETT"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:788
+msgid "STANCE   (Regular: links vorne)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:788
+msgid "Regular"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:788
+msgid "Goofy"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:792
+msgid "HELM"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:796
+msgid "WESTE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:806
+msgid "WETTER   (von Hand, bis zum Neustart; Szenario auf der Startseite)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:807
+#: scripts/ui/start_screen.gd:827
+msgid "DATUM"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:813
+#: scripts/ui/start_screen.gd:828
+msgid "UHRZEIT"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:819
+msgid "Jetzt  (live)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:820
+msgid "Heute, aktuelle Uhrzeit und Wetter am See"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:834
+msgid "SEILLÄNGE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:835
+msgid "ANLAGEN-TEMPO"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:835
+msgid "%d km/h"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:836
+msgid "Seil und Tempo: Standard  (16 m, 30 km/h)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:842
+msgid "FLUGZEUGE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:842
+msgid "Normal"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:842
+msgid "Rush Hour"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:843
+msgid "FAHRER AUF DER ANDEREN ANLAGE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:844
+msgid "CHALLENGE: FILMTEAM"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:844
+msgid "Zufall"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:844
+msgid "Boot"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:844
+msgid "Drohne"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:850
+msgid "LAUTSTÄRKE EFFEKTE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:851
+msgid "LAUTSTÄRKE JUBEL"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:852
+msgid "LAUTSTÄRKE FLUGZEUGE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:853
+msgid "KAMERA"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:854
+msgid "KAMERA-ABSTAND"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:856
+msgid "LENKUNG"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:856
+msgid "Gyro (Handy neigen)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:856
+msgid "Tasten (Steuerkreuz)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:857
+msgid "NEIGUNG ZUM LENKEN"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:857
+msgid "Wenig empfindlich"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:857
+msgid "Sehr empfindlich"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:858
+msgid "NEIGUNG UMKEHREN"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:858
+msgid "Nein"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:858
+msgid "Ja"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:863
+msgid "Die Grafikstufe stellt alle Wasser-Effekte passend ein. Einzelne Effekte lassen sich hier an- und ausschalten (wirkt sofort) – weicht etwas von der Stufe ab, steht die Grafik auf „Custom“."
+msgstr ""
+
+#: scripts/ui/start_screen.gd:869
+msgid "WASSERFARBE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:869
+msgid "Türkis  (bisher)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:869
+msgid "Seeblau"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:870
+msgid "OBERFLÄCHENSTRUKTUR   (gleitende Kräuselung statt Sinus)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:871
+msgid "SPIEGELUNG JE NACH BLICKWINKEL   (flach: Himmel, von oben: ins Wasser)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:872
+msgid "SONNENGLITZERN"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:873
+msgid "LICHT DURCH DIE WELLENKÄMME"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:874
+msgid "SCHAUM MIT STRUKTUR   (fleckig, reißt auf)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:875
+msgid "SPITZE WELLEN   (auch für die Physik)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:876
+msgid "MIT WASSERTIEFE   (etwas teurer; Wasser wird dafür transparent gezeichnet)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:877
+msgid "DURCHSICHT IM FLACHEN"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:879
+msgid "ECHTE SPIEGELBILDER   (nur Desktop, teuer; nur wenn die Durchsicht aus ist)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:885
+msgid "Spiel-Musik: lizenzfreie Titel von Pixabay. Dazu kannst du eigene Titel wählen (MP3, OGG, WAV) – sie bleiben auf diesem Gerät bzw. in diesem Browser gespeichert. Alles läuft gemischt im Hintergrund."
+msgstr ""
+
+#: scripts/ui/start_screen.gd:889
+msgid "MUSIK"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:890
+msgid "QUELLE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:890
+msgid "Spiel-Musik"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:890
+msgid "Eigene Titel"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:890
+msgid "Beides"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:892
+msgid "LAUTSTÄRKE MUSIK"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:901
+msgid "Titel hinzufügen"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:905
+msgid "Eigene entfernen"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:915
+msgid "%d Spiel-Musik, %d eigene"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:919
+msgid "lädt: %s"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:923
+msgid "Danke für die Spiel-Musik (Pixabay): %s"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:928
+msgid "ODER NEBENHER HÖREN, z. B. mit Spotify (dann hier Musik aus)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:931
+msgid "Skate-Punk bei Spotify"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:979
+msgid "GRAFIK   (niedrig = flüssiger, schont den Akku; stellt auch das Wasser ein)"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:995
+msgid "Nr. %d"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1049
+msgid "FEATURES & HACKS"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1084
+msgid "GEHEIME ERFOLGE"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1103
+msgid "%d von %d entdeckt – was es gibt, siehst du erst, wenn du es geschafft hast."
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1155
+msgid "IN DER RANGLISTE ERSCHEINEN"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1167
+#: scripts/ui/task_panel.gd:115
+msgid "DEIN NAME"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1171
+msgid "ohne Namen: anonym"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1188
+#: scripts/ui/task_panel.gd:112
+msgid "Speichern"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1199
+msgid "Wird gelöscht …"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1206
+msgid "Gelöscht: Name und alle deine Einträge."
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1233
+msgid "Heads up! Das Game ist noch mitten im Shape – Physik und Punkte werden ständig nachgeschliffen. Darum wird die Rangliste ab und zu gewiped. Kein Stress: einfach neu droppen und wieder ganz nach oben shredden."
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1253
+#: scripts/ui/start_screen.gd:1398
+msgid "Lädt …"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1315
+msgid "Challenge"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1318
+msgid "Noch keine Einträge"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1388
+msgid "Noch niemand in der Rangliste – fahr den ersten Eintrag!"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1389
+#: scripts/ui/start_screen.gd:1427
+msgid "Test-Version: eigene Test-Rangliste"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1419
+msgid "Noch kein Eintrag – fahr den ersten!"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1421
+msgid "%d Fahrer"
+msgid_plural "%d Fahrer"
+msgstr[0] ""
+msgstr[1] ""
+
+#: scripts/ui/start_screen.gd:1423
+msgid "Wertung geändert: ältere Ergebnisse stehen in einer früheren Rangliste"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1463
+msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1469
+msgid "Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1482
+msgid "Deine Bestwerte erscheinen öffentlich in der Rangliste – ohne Namen als „Anonym #…“. Gespeichert werden nur Name (falls angegeben), Bestwerte und Datum, dazu eine zufällige Geräte-Nummer als Prüfsumme. Aus = alles löschen."
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1485
+msgid "Du erscheinst nicht in der Rangliste, es wird nichts gesendet."
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1517
+msgid "erreicht am %s"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1519
+msgid "Geheim"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1520
+msgid "Noch nicht entdeckt"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:1604
+msgid "Im Setup: %s"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:32
+msgid "Gelb / Grün"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:32
+msgid "Weiß / Schwarz"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:32
+#: scripts/ui/start_screen.gd:33
+msgid "Blau"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:32
+#: scripts/ui/start_screen.gd:33
+msgid "Orange"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:32
+msgid "Schwarz glänzend"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:32
+msgid "Pink / Türkis"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:32
+msgid "Oliv"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:33
+msgid "Rot"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:33
+msgid "Grün"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:33
+msgid "Gelb"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:33
+msgid "Lila"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:33
+msgid "Schwarz"
+msgstr ""
+
+#: scripts/ui/start_screen.gd:33
+msgid "Weiß"
+msgstr ""
+
+#: scripts/ui/task_panel.gd:120
+msgid "Gespeichert – du stehst jetzt als „%s“ in der Rangliste."
+msgstr ""
+
+#: scripts/ui/task_panel.gd:150
+#: scripts/ui/task_panel.gd:211
+msgid "LOS"
+msgstr ""
+
+#: scripts/ui/task_panel.gd:153
+#: scripts/ui/task_panel.gd:309
+msgid "Nächste Challenge"
+msgstr ""
+
+#: scripts/ui/task_panel.gd:210
+msgid "Steuerung:"
+msgstr ""
+
+#: scripts/ui/task_panel.gd:210
+msgid "Tipp:"
+msgstr ""
+
+#: scripts/ui/task_panel.gd:211
+#: scripts/ui/task_panel.gd:228
+#: scripts/ui/task_panel.gd:249
+msgid "Leertaste"
+msgstr ""
+
+#: scripts/ui/task_panel.gd:226
+msgid "Neue Bestleistung!"
+msgstr ""
+
+#: scripts/ui/task_panel.gd:228
+msgid "NOCHMAL"
+msgstr ""
+
+#: scripts/ui/task_panel.gd:236
+msgid "RUNDE BEENDET"
+msgstr ""
+
+#: scripts/ui/task_panel.gd:249
+msgid "ERNEUT SPIELEN"
+msgstr ""
+
+#: scripts/ui/task_panel.gd:273
+msgid "Trag deinen Namen ein – sonst stehst du als „Anonym“ in der Rangliste."
+msgstr ""
+
+#: scripts/ui/touch_pad.gd:89
+#: scripts/ui/touch_pad.gd:230
+msgid "DRIFT"
+msgstr ""
+
+#: scripts/ui/touch_pad.gd:92
+#: scripts/ui/touch_pad.gd:225
+msgid "SPRUNG"
+msgstr ""
+
+#: scripts/ui/touch_pad.gd:225
+msgid "SCHWIMMEN"
+msgstr ""
+
+#: scripts/ui/touch_pad.gd:108
+msgid "Weiter"
+msgstr ""
+
+#: scripts/ui/touch_pad.gd:108
+msgid "Zurück zum Steg  (−2:00)"
+msgstr ""
+
+#: scripts/ui/touch_pad.gd:109
+msgid "Ton aus/an"
+msgstr ""
+
+#: scripts/ui/touch_pad.gd:109
+msgid "Szenario würfeln"
+msgstr ""
+
+#: scripts/ui/touch_pad.gd:109
+msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
+msgstr ""
+
+#: scripts/weather.gd:14
+msgid "Sonnig"
+msgstr ""
+
+#: scripts/weather.gd:15
+msgid "Heiter"
+msgstr ""
+
+#: scripts/weather.gd:16
+msgid "Bewölkt"
+msgstr ""
+
+#: scripts/weather.gd:17
+msgid "Bedeckt"
+msgstr ""
+
+#: scripts/weather.gd:18
+msgid "Schauer"
+msgstr ""
+
+#: scripts/weather.gd:19
+msgid "Regen"
+msgstr ""
+
+#: scripts/weather.gd:20
+msgid "Dunst"
+msgstr ""
+
+#: scripts/weather.gd:21
+msgid "Schnee"
+msgstr ""
+
+#: scripts/weather.gd:22
+msgid "Gewitter"
+msgstr ""
+
+#: scripts/weather.gd:33
+msgid "After Hour Raley Session"
+msgstr ""
+
+#: scripts/weather.gd:34
+msgid "Early Bird Session"
+msgstr ""
+
+#: scripts/weather.gd:36
+msgid "Hochsommer. Was für eine Hitze"
+msgstr ""
+
+#: scripts/weather.gd:38
+msgid "Schöne Regen-Session"
+msgstr ""
+
+#: scripts/weather.gd:39
+msgid "Night Session"
+msgstr ""
+
+#: scripts/weather.gd:40
+msgid "Sonne hinter den Bäumen"
+msgstr ""
+
+#: scripts/weather.gd:41
+msgid "Nach dem Schauer"
+msgstr ""
+
+#: scripts/weather.gd:43
+msgid "Blaue Stunde"
+msgstr ""
+
+#: scripts/weather.gd:44
+msgid "Goldener Oktober"
+msgstr ""
+
+#: scripts/weather.gd:45
+msgid "Chemtrails, oder Kondensstreifen? ;-)"
+msgstr ""
+
+#: scripts/weather.gd:47
+msgid "Gewitter – YOLO"
+msgstr ""
+
+#: scripts/weather.gd:48
+msgid "Nikolaus-Session"
+msgstr ""
+
+#: setups/index.json
+msgid "2026 September"
+msgstr ""
+
+#: setups/index.json
+msgid "Juli & August"
+msgstr ""
+
+#: setups/index.json
+msgid "(Jahr ?)"
+msgstr ""
+
+#: setups/index.json
+msgid "Setup A"
+msgstr ""
+
+#: setups/index.json
+msgid "(Datum ?)"
+msgstr ""
+
+#: setups/index.json
+msgid "Setup B"
+msgstr ""
+
+#: setups/index.json
+msgid "Setup C"
+msgstr ""
+
+#: setups/index.json
+msgid "Setup D"
+msgstr ""
+
+#: setups/index.json
+msgid "Setup E"
+msgstr ""
+
+#: setups/index.json
+msgid "Pool Party"
+msgstr ""
+
+#: setups/index.json
+msgid "Utopia"
+msgstr ""
+
+#: setups/index.json
+msgid "Raildorado"
+msgstr ""
+
+#: setups/parts.json
+msgid "Kicker S"
+msgstr ""
+
+#: setups/parts.json
+msgid "Spine Kicker"
+msgstr ""
+
+#: setups/parts.json
+msgid "Pyramid Series"
+msgstr ""
+
+#: setups/parts.json
+msgid "Ollie Box"
+msgstr ""
+
+#: setups/parts.json
+msgid "Ollie Box 1/2"
+msgstr ""
+
+#: setups/parts.json
+msgid "Ledge"
+msgstr ""
+
+#: setups/parts.json
+msgid "Ollie Box Ledge"
+msgstr ""
+
+#: setups/parts.json
+msgid "Up Rail"
+msgstr ""
+
+#: setups/parts.json
+msgid "Transition Rail"
+msgstr ""
+
+#: setups/parts.json
+msgid "1/2 Transition Rail"
+msgstr ""
+
+#: setups/parts.json
+msgid "Pro Rail"
+msgstr ""
+
+#: setups/parts.json
+msgid "Port Plaza"
+msgstr ""
+
+#: setups/parts.json
+msgid "Plaza Rail"
+msgstr ""
+
+#: setups/parts.json
+msgid "Plaza Safety"
+msgstr ""
+
+#: setups/parts.json
+msgid "Plaza Rampe"
+msgstr ""
+
+#: setups/parts.json
+msgid "Pipe 1/2"
+msgstr ""
+
+#: setups/parts.json
+msgid "Pipe lang"
+msgstr ""
+
+#: setups/parts.json
+msgid "6-Stair Pool"
+msgstr ""
+
+#: setups/parts.json
+msgid "Pool Rampe"
+msgstr ""
+
+#: setups/parts.json
+msgid "Treppe"
+msgstr ""
+
+#: setups/parts.json
+msgid "Down Rail"
+msgstr ""
+
+#: setups/parts.json
+msgid "Low to High Rail"
+msgstr ""
+
+#: setups/parts.json
+msgid "Double Kinked Ledge"
+msgstr ""
+
+#: setups/parts.json
+msgid "Flat Down Rail"
+msgstr ""
+
+#: setups/parts.json
+msgid "Ball"
+msgstr ""
+
+#: setups/parts.json
+msgid "Bump"
+msgstr ""
+

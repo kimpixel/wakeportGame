@@ -3,6 +3,7 @@ extends CanvasLayer
 ## Anzeige im Spiel. Oben in der Mitte die wichtigen Werte: Zeit, Seilzug (groß, mit
 ## Warnbereich) und Punkte. Unten rechts klein die Technik-Angaben, unten links die Hilfe.
 
+# i18n-begin
 const HELP := """← / →   lenken   (in der Luft und beim Raley: drehen; auf dem Slider: Boardslide ↔ 50-50 umspringen; auf dem Slider Leertaste halten + ←/→: seitlich auf den Nachbar-Slider springen = Rail to Rail)
 ↑ / ↓   in der Luft: Frontroll / Backroll (beim Invert gleich nach dem Absprung: ↑ S-Bend, ↓ Backroll)     auf dem Slider (schon im Anflug): Nosepress / Tailpress     im Drift: Drift-Press     Sprung-Start: auf dem Steg ↓ halten, bis das Seil losreißt (Brett längs: Nolli, quer: Raley Start)
 Strg (oder Alt)   Driften: man rutscht geradeaus weiter (lenken geht nicht), das Brett dreht frei, etwas schneller; quer vom Slider ins Wasser nur mit Drift; Treppe am Pool nur im Drift
@@ -19,6 +20,7 @@ SPRUNG (links) halten + loslassen   Absprung (voll aufgeladen, Seilzug über RAL
 Pfeil ↑ / ↓   in der Luft Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), auf dem Slider (schon im Anflug) Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)
 DRIFT (links, über SPRUNG)   Kante lösen (Treppe am Pool nur im Drift)        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)
 ☰   Menü (pausiert): Einstellungen, Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Szenario würfeln, Seil-Abreißen an/aus (aus: keine Rangliste)"""
+# i18n-end
 
 const ACCENT := Color(0.55, 0.82, 0.22)          # Wakeport-Grün
 const PANEL := Color(0.05, 0.07, 0.09, 0.66)
@@ -46,7 +48,7 @@ var _ach_name: Label
 var _ach_time := 0.0
 
 var _time_label: Label
-var time_title := "ZEIT"          # Spielmodi: "VERSUCH"
+var time_title := "ZEIT"          # Spielmodi: "VERSUCH" (Ausgangstext, übersetzt beim Anzeigen)
 var _count: Label                 # Countdown 3 – 2 – 1 – GO
 var _task: Label                  # Spielmodi: Aufgabe und Messwert unter der Leiste
 var _time_value: Label
@@ -92,7 +94,7 @@ func _ready() -> void:
 	_trick.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
 
 	_help = _label(16)
-	_help.text = HELP
+	_help.text = tr(HELP)
 	_help.anchor_top = 1.0
 	_help.anchor_bottom = 1.0
 	_help.offset_left = 16
@@ -101,7 +103,7 @@ func _ready() -> void:
 	_help.add_theme_color_override("font_color", Color(1, 1, 1, 0.85))
 	_help.visible = false                       # beim Start aus, H blendet ein
 	_help_hint = _label(16)
-	_help_hint.text = "H  Hilfe"
+	_help_hint.text = tr("H  Hilfe")
 	_help_hint.anchor_top = 1.0
 	_help_hint.anchor_bottom = 1.0
 	_help_hint.offset_left = 16
@@ -258,7 +260,7 @@ func _build_top_bar() -> void:
 	_top_bar = bar
 
 	var tp := _panel(bar, 170)
-	_time_label = _small(tp, "ZEIT")
+	_time_label = _small(tp, tr("ZEIT"))
 	_time_value = _big(tp, "7:30")
 
 	var gp := _panel(bar, 440)
@@ -275,7 +277,7 @@ func _build_top_bar() -> void:
 	vp.add_child(_speed)
 
 	var sp := _panel(bar, 170)
-	_small(sp, "PUNKTE")
+	_small(sp, tr("PUNKTE"))
 	_score_value = _big(sp, "0")
 	_score_value.pivot_offset = Vector2(75, 24)
 	_bar_panels = [tp.get_parent(), gp.get_parent(), vp.get_parent(), sp.get_parent()]
@@ -371,7 +373,7 @@ func _label(size: int) -> Label:
 func set_stats(time_text: String, time_state: TimeState, score: int, tension_n: float, tension_limit: float) -> void:
 	_time_value.text = time_text
 	_time_state = time_state
-	_time_label.text = "ZEIT UM" if time_state == TimeState.OVER else time_title
+	_time_label.text = tr("ZEIT UM") if time_state == TimeState.OVER else tr(time_title)
 	if score > _score_target:
 		_score_gain.text = "+%d" % (score - _score_target)
 		_gain_time = 1.6
@@ -454,7 +456,7 @@ func _build_achievement() -> void:
 	var vb := VBoxContainer.new()
 	vb.add_theme_constant_override("separation", -2)
 	_ach.add_child(vb)
-	var head := _small(vb, "GEHEIMER ERFOLG FREIGESCHALTET")
+	var head := _small(vb, tr("GEHEIMER ERFOLG FREIGESCHALTET"))
 	head.add_theme_color_override("font_color", Color(1.0, 0.82, 0.2))
 	_ach_name = _big(vb, "")
 	_ach_name.add_theme_font_size_override("font_size", 34)
@@ -473,13 +475,13 @@ func add_menu_choice(title_text: String, names: Array, current: int, on_select: 
 		_setup_box = vb
 	var box := _setup_box
 	var title := _label(18)
-	title.text = title_text
+	title.text = tr(title_text)
 	title.reparent(box)
 	var opt := OptionButton.new()
 	opt.add_theme_font_size_override("font_size", 20)
 	opt.custom_minimum_size = Vector2(300, 44)
 	for n: String in names:
-		opt.add_item(n)
+		opt.add_item(tr(n))
 	opt.select(current)
 	opt.item_selected.connect(on_select)
 	opt.focus_mode = Control.FOCUS_NONE         # Tastatur bleibt beim Spiel
@@ -494,7 +496,7 @@ func show_setup_menu(on: bool) -> void:
 
 ## Handy: eigener Hilfetext, ein-/ausblenden übers Menü (☰) statt H.
 func set_help(text: String) -> void:
-	_help.text = text
+	_help.text = tr(text)
 	_help.visible = false
 	_help_hint.visible = false
 	_mobile_help = true
@@ -688,7 +690,7 @@ class SpeedGauge extends Control:
 	func _draw() -> void:
 		var w := size.x
 		var f := font if font else get_theme_default_font()
-		draw_string(f, Vector2(2, 18), "TEMPO", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.6))
+		draw_string(f, Vector2(2, 18), tr("TEMPO"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.6))
 		draw_string(f, Vector2(0, 22), "%d km/h" % roundi(_kmh), HORIZONTAL_ALIGNMENT_RIGHT, w - 2, 26, Color.WHITE)
 		var top := 36.0
 		var h := 12.0
@@ -732,8 +734,8 @@ class TensionGauge extends Control:
 		var w := size.x
 		# Kopfzeile: Titel links, Wert rechts
 		var f := font if font else get_theme_default_font()
-		draw_string(f, Vector2(2, 18), "SEILZUG", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.6))
-		var val := "%s N" % _thousands(roundi(_n))
+		draw_string(f, Vector2(2, 18), tr("SEILZUG"), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.6))
+		var val := "%s N" % Loc.thousands(roundi(_n))
 		var col := _color(_ratio)
 		draw_string(f, Vector2(0, 22), val, HORIZONTAL_ALIGNMENT_RIGHT, w - 2, 26, Color.WHITE.lerp(col, clampf(_ratio * 1.2, 0.0, 1.0)))
 		# Segmente
@@ -771,10 +773,4 @@ class TensionGauge extends Control:
 			return ACCENT.lerp(Color(0.95, 0.85, 0.2), frac / 0.55)
 		return Color(0.95, 0.85, 0.2).lerp(DANGER, clampf((frac - 0.55) / 0.35, 0.0, 1.0))
 
-	static func _thousands(v: int) -> String:
-		var s := str(v)
-		var out := ""
-		while s.length() > 3:
-			out = "." + s.substr(s.length() - 3) + out
-			s = s.substr(0, s.length() - 3)
-		return s + out
+

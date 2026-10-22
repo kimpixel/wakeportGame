@@ -15,23 +15,23 @@ const FILE := "res://setups/plants.json"
 const USER_FILE := "user://plants.json"
 const CELL := 2.0            # m Raster der von Hand gepflegten Stellen
 const LAYERS := ["boden", "gehoelz"]
-const LAYER_NAMES := {"boden": "Bodenpflanzen (Gräser, Schilf)", "gehoelz": "Gehölze (Sträucher, Bäume)"}
+const LAYER_NAMES := {"boden": "Bodenpflanzen (Gräser, Schilf)", "gehoelz": "Gehölze (Sträucher, Bäume)"}  # i18n
 
 ## Arten in Reihenfolge des Editors. spacing = Abstand beim Malen (m), h = Höhe von/bis (m),
 ## ground = erlaubte Geländehöhe über dem See von/bis (Schilf steht im flachen Wasser),
 ## r = Radius in der Draufsicht (Anteil der Höhe), color = Punkt im Editor.
 const SPECIES := [
-	{"id": "schilf", "name": "Schilf", "layer": "boden", "spacing": 0.5, "h": [1.2, 2.4],
+	{"id": "schilf", "name": "Schilf", "layer": "boden", "spacing": 0.5, "h": [1.2, 2.4],  # i18n
 		"ground": [-1.1, 0.25], "r": 0.12, "color": Color(0.75, 0.68, 0.35)},
-	{"id": "ufergras", "name": "Ufergras", "layer": "boden", "spacing": 0.7, "h": [0.7, 1.15],
+	{"id": "ufergras", "name": "Ufergras", "layer": "boden", "spacing": 0.7, "h": [0.7, 1.15],  # i18n
 		"ground": [0.0, 6.0], "r": 0.4, "color": Color(0.6, 0.8, 0.3)},
-	{"id": "gras", "name": "Wiesengras", "layer": "boden", "spacing": 0.9, "h": [0.45, 0.8],
+	{"id": "gras", "name": "Wiesengras", "layer": "boden", "spacing": 0.9, "h": [0.45, 0.8],  # i18n
 		"ground": [0.1, 9.0], "r": 0.45, "color": Color(0.35, 0.75, 0.25)},
-	{"id": "strauch", "name": "Strauch", "layer": "gehoelz", "spacing": 2.2, "h": [1.2, 2.8],
+	{"id": "strauch", "name": "Strauch", "layer": "gehoelz", "spacing": 2.2, "h": [1.2, 2.8],  # i18n
 		"ground": [0.05, 20.0], "r": 0.45, "color": Color(0.2, 0.55, 0.2)},
-	{"id": "laubbaum", "name": "Laubbaum", "layer": "gehoelz", "spacing": 5.0, "h": [6.0, 14.0],
+	{"id": "laubbaum", "name": "Laubbaum", "layer": "gehoelz", "spacing": 5.0, "h": [6.0, 14.0],  # i18n
 		"ground": [0.2, 30.0], "r": 0.3, "color": Color(0.45, 0.65, 0.15)},
-	{"id": "kiefer", "name": "Kiefer", "layer": "gehoelz", "spacing": 5.0, "h": [8.0, 18.0],
+	{"id": "kiefer", "name": "Kiefer", "layer": "gehoelz", "spacing": 5.0, "h": [8.0, 18.0],  # i18n
 		"ground": [0.2, 30.0], "r": 0.22, "color": Color(0.12, 0.38, 0.2)},
 ]
 
