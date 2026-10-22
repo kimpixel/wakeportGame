@@ -51,6 +51,11 @@ Ledge, „cheesewedge“ = Cheese Wedge, „Transitionrail“ = Transition Rail.
 ## Zusammenarbeit
 
 - Sprache mit dem Nutzer: **Deutsch**. Code-Kommentare und Doku ebenfalls Deutsch.
+- **Physik nie selbständig ändern**: In diesem Stadium keine Änderung an der Spielphysik/Spielmechanik (Seilzug, Absprung, Flugbahn,
+  Wasser, Abreißen, Sturzregeln, Timing auf dem Wasser …) ohne vorher zu fragen – auch nicht „nebenbei“, um eine Animation/Pose
+  passend zu machen. Das hat immer Nebeneffekte (Beispiel: Raley-Backroll mit eigener Wasser-Phase vor dem Absprung → Seilzug bis zum
+  Anschlag, Sprung in die falsche Richtung). Optik/Posen an die bestehende Physik anpassen; ist eine Physik-Änderung nötig, erst
+  vorschlagen und auf Freigabe warten.
 - Nach jeder fertigen Änderung: kurzer Smoke-Test, **commit und push** (Nutzer testet im Browser).
   Commit-Nachricht auf Deutsch, endet mit `Co-Authored-By: Claude …`.
 - **Prüfung macht der Nutzer selbst** (visuell und funktional): er startet das Spiel über den Button
@@ -98,6 +103,10 @@ Wichtige Test-Argumente (vollständig im Kopf von `scripts/main.gd`): `--autotes
 `--terminal=T1|T2`, `--setup=ID`, `--screen[=NAME|@liste|@einstellungen]`, `--no-screen`,
 `--mobile --tilt=GRAD`, `--jump-at=S`, `--pitch=±1`, `--hold=AKTION@T0-T1`, `--crash-at=S`, `--letgo-at=S`,
 `--game-time=S`, `--scenario=ID`, `--weather=ID --hour=H --day=T`, `--plane=S`, `--passive`.
+Mit `--hold` wird die Gamepad-Belegung entfernt (`main.gd _drop_pad_input`): Godot liest Gamepads auch ohne Fensterfokus, wer
+nebenher am Controller spielt, fuhr sonst in Testläufe mit Fenster hinein.
+Video zur Kontrolle (z. B. für den Nutzer Bild für Bild): `--write-movie PFAD.avi --fixed-fps 60` (MJPEG); Einzelbilder aus Videos
+zieht Blender im Hintergrund (VSE-Filmstreifen rendern), auch aus MP4.
 
 **Grafik-Aufwand messen**: jedes `--shot` schreibt `RENDER draw calls …, dreiecke …` ins Log; wie im Web mit
 `--rendering-method gl_compatibility` und `--set=quality=0|1|2` vergleichen (Handy: Niedrig/Mittel).
@@ -302,8 +311,23 @@ Tricks/Optik:
 - **Inverts** (`Rider._invert`): aus dem Raley-Absprung gibt es keinen Frontroll/Backroll. ↑/↓ nur ganz am Anfang
   (`INVERT_PICK`, gehaltene Taste vom Steg zählt erst nach Loslassen) wählen den Trick, sonst Raley:
   **↑ = S-Bend** (Anfang/Ende wie Raley; gestreckt oben eine ganze Drehung um die Achse **Handle → Brett**: Drehpunkt ist
-  die Handle, die Hände bleiben dort, der ganze Körper dreht sich darum – `_sbend_pivot`; langsam, `SBEND_FROM/TO` ca. halbe Flugzeit), **↓ = Backroll** als Invert (ganz anders als vom Kicker: kein Schwung um den Griff, seitlich nach
-  außen kopfüber um die eigene Achse, `IBACK_*`, noch grob – wird später verfeinert). Je +300 (`INVERT_POINTS`) zum Raley.
+  die Handle, die Hände bleiben dort, der ganze Körper dreht sich darum – `_sbend_pivot`; langsam, `SBEND_FROM/TO` ca. halbe Flugzeit), **↓ = Backroll** als Invert (ganz anders als vom Kicker: kein Raley-Schwung) aus dem **Mocap-Clip**
+  `assets/poses/raley_backroll.json`: Rokoko-Aufnahme `blender/raley_backroll_mocap.fbx` aus einem Zeitlupen-Video einer echten
+  Fahrt (goofy, 30 fps, Bildnummern Video = FBX), Bild 23 (Startpose ≈ ausgefahren mit geladenem Sprung) bis 130 (wieder waagrecht),
+  umgerechnet mit `tools/retarget_mocap.py` (Knochen-Zuordnung, T-/A-Pose-Ausgleich über Gelenk-Richtungen, ausgerichtet an der Brust).
+  **Drehung wie in der Aufnahme** (Nutzer: dort ist sie richtig): eine volle Drehung (ca. 340°) um eine **schräge Achse** zwischen Brust
+  und Senkrechter – erst zur Seite, dann über Kopf. Die Füße der Aufnahme sind ungenau (hintereinander), darum dreht das **Brett mit dem
+  ganzen Körper** (je Bild `board` = Drehung gegenüber Bild 23 aus Becken→Hals und Hüftlinie). Nicht in eine gerade Rolle um die
+  Brust-Achse zwingen (früher per ROLL-Stützpunkten aus dem Video: sah nur noch „gerade über Kopf“ aus). **Ablauf**: ↓ beim Loslassen eines Raley-Sprungs
+  (`_backroll_wanted`) = **Absprung sofort, physikalisch genau wie ein Raley** (Höhe, Richtung, Seilzug), der Clip beginnt bei der
+  Startpose: Brett durchs Wasser drücken und herausreißen (bis Bild 58, `pop`) läuft schnell am Anfang des Flugs. **Keine Phase auf dem
+  Wasser** (früher `_iback_pre`: ca. 0,6 s weiter auf dem Wasser – Seilzug lief bis zum Anschlag, das Seil drehte den Schwung nach innen
+  und man sprang in die falsche Richtung); ↓ erst in der Luft (`INVERT_PICK`) = Clip ab dem
+  Absprung-Bild. `Rider._apply_backroll_clip`: Körper aus dem Clip, Schwerpunkt bleibt im Fahrer (Höhe/Flugbahn = Raley-Physik), Brett
+  nach `board`, Füße in die Bindungen, Knie und Ellbogen wie im Clip, **beide Hände immer an der Handle**. Clip läuft **immer gleich
+  schnell** (`IBACK_SPEED` 2: Zeitlupe; **erste Hälfte** – rausreißen bis kopfüber – geht am schnellsten: × `IBACK_FAST` 2; zusammen ca.
+  0,45 s + 0,9 s), Drehen (←/→) ab `INVERT_SPIN_BACK` 70 % des Clips (Nutzer); Landung vor `IBACK_LAND_OK` 93 %
+  (Bild ca. 124) = Sturz „Backroll nicht geschafft!“. Je +300 (`INVERT_POINTS`) zum Raley.
   **Regel: erst wenn ein Invert fast fertig ist, kann ein weiterer Trick folgen** – Drehen (←/→) erst ab
   `INVERT_SPIN_RALEY` (Körper halb zur Landung zurück) bzw. `INVERT_SPIN_BACK`. **←/→ nach der Streckung** (`RALEY_STRETCH`;
   S-Bend: nach der Längsdrehung) **bricht den Raley-Schwung ab** (`_raley_cut`, schnell zurück mit `RALEY_CUT_RATE`), gedreht wird

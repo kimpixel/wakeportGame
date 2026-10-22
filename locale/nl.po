@@ -661,6 +661,9 @@ msgstr "Te harde landing!"
 msgid "Überschlag nicht geschafft!"
 msgstr "Rotatie niet afgemaakt!"
 
+msgid "Backroll nicht geschafft!"
+msgstr "Backroll niet afgemaakt!"
+
 msgid "Ab ans Ufer!"
 msgstr "Naar de oever!"
 

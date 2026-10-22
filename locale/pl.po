@@ -662,6 +662,9 @@ msgstr "Za twarde lądowanie!"
 msgid "Überschlag nicht geschafft!"
 msgstr "Obrót nieukończony!"
 
+msgid "Backroll nicht geschafft!"
+msgstr "Backroll nieukończony!"
+
 msgid "Ab ans Ufer!"
 msgstr "Na brzeg!"
 

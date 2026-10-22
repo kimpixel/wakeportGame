@@ -661,6 +661,9 @@ msgstr "¡Aterrizaje demasiado duro!"
 msgid "Überschlag nicht geschafft!"
 msgstr "¡Vuelta sin terminar!"
 
+msgid "Backroll nicht geschafft!"
+msgstr "¡Backroll no completado!"
+
 msgid "Ab ans Ufer!"
 msgstr "¡A la orilla!"
 

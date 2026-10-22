@@ -662,6 +662,9 @@ msgstr "Moc tvrdé přistání!"
 msgid "Überschlag nicht geschafft!"
 msgstr "Rotace nedokončena!"
 
+msgid "Backroll nicht geschafft!"
+msgstr "Backroll nedokončen!"
+
 msgid "Ab ans Ufer!"
 msgstr "Hurá na břeh!"
 

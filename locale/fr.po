@@ -661,6 +661,9 @@ msgstr "Atterrissage trop dur !"
 msgid "Überschlag nicht geschafft!"
 msgstr "Rotation pas terminée !"
 
+msgid "Backroll nicht geschafft!"
+msgstr "Backroll pas terminé !"
+
 msgid "Ab ans Ufer!"
 msgstr "Direction la rive !"
 

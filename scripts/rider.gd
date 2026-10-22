@@ -117,17 +117,21 @@ static var RALEY_MAX := 2.8          # rad: so weit schwingen Beine und Brett um
 const RALEY_TORSO := 0.55       # Anteil davon für Becken/Oberkörper – der Rest wird Hohlkreuz
 static var RALEY_POINTS := 150
 # Inverts = alle Tricks aus dem Raley-Absprung. Ohne Taste: Raley; ↑ = S-Bend (gestreckt um die
-# eigene Längsachse am höchsten Punkt), ↓ = Backroll (seitlich nach außen kopfüber, anders als die
-# Backroll vom Kicker/Ollie). Wählbar nur ganz am Anfang; Drehen erst, wenn der Invert fast fertig ist.
+# eigene Längsachse am höchsten Punkt), ↓ = Backroll (Mocap-Clip ab dem Absprung, ohne Raley-Schwung; anders
+# als die Backroll vom Kicker/Ollie). Wählbar nur ganz am Anfang; Drehen erst, wenn der Invert fast fertig ist.
 const INVERT_PICK := 0.2            # bis zu diesem Anteil der Flugzeit lässt sich S-Bend/Backroll wählen
 const SBEND_FROM := 0.22            # S-Bend: Drehung um die Achse Handle -> Brett von ... (Anteil der Flugzeit)
 const SBEND_TO := 0.72              # ... bis (so lange bleibt der Körper oben gestreckt)
 static var SBEND_CUT := 0.62          # S-Bend: ab hier (Drehung um die Handle ca. 90 % fertig) bricht ←/→ ab, der Rest läuft beim Zurückschwingen
-const IBACK_FROM := 0.05            # Invert-Backroll: Rolle von ... bis
-const IBACK_TO := 0.75
-const IBACK_TILT := 0.45            # Rollachse gekippt Richtung Körperachse (seitlich um die eigene Achse)
+static var INVERT_SPIN_BACK := 0.7   # Invert-Backroll: drehen (←/→) ab diesem Anteil des Clips (kurz vor Ende der Rolle)
 static var INVERT_SPIN_RALEY := 0.75  # Raley/S-Bend: drehen (180/360) erst, wenn der Körper halb zur Landung zurückgeschwungen ist (Anteil der Flugzeit)
-const INVERT_SPIN_BACK := 0.7       # Invert-Backroll: erst kurz vor Ende der Rolle
+# Invert-Backroll aus der Rokoko-Aufnahme (tools/retarget_mocap.py, blender/raley_backroll_mocap.fbx ab Sekunde 1):
+# läuft immer gleich schnell, unabhängig von der Sprunghöhe – ist er vor der Landung durch, bleibt Zeit zum Drehen (←/→)
+const BACKROLL_CLIP := "res://assets/poses/raley_backroll.json"
+static var IBACK_SPEED := 2.0         # Abspieltempo des Backroll-Clips (1 = wie aufgenommen; am Boden war die Bewegung langsamer)
+static var IBACK_FAST := 2.0          # erste Hälfte des Clips (rausreißen, hoch bis kopfüber) so viel schneller – geht am schnellsten
+static var IBACK_LAND_OK := 0.93      # Landung erst ab diesem Anteil des Clips (Bild ca. 124 von 23–130; sonst noch in der Rolle = Sturz)
+const IBACK_BLEND := 0.15           # s: Clip ein-/ausblenden
 # ←/→ nach der Streckung bricht den Raley-Schwung ab: der Körper schwingt schnell zurück, gedreht wird erst aufrecht
 static var RALEY_STRETCH := 0.35     # ab diesem Anteil der Flugzeit ist der Körper gestreckt (Schwung ganz oben)
 static var RALEY_CUT_RATE := 14.0    # so schnell schwingt der abgebrochene Raley zurück (1/s)
@@ -352,6 +356,8 @@ var _invert := ""              # Invert aus dem Raley: "" (Raley), "sbend", "bac
 var _raley_cut := false        # Raley-Schwung per ←/→ abgebrochen (schnell zurück, dann drehen)
 var _sbend_pivot := Vector3.INF   # S-Bend: Handle im Raley-Rahmen (_swing_frame), Drehpunkt der Längsdrehung
 var _invert_ang := 0.0         # sichtbarer Drehwinkel des Inverts (S-Bend: Längsachse, Backroll: Rolle)
+var _iback_t := -1.0              # Invert-Backroll: Zeit im Clip (s, mit IBACK_SPEED), -1 = keiner
+var _iback_vis := 0.0             # Gewicht des Clips in der Pose (weich ein/aus)
 var _hpass_free := Vector2.ZERO   # Handle Pass: wie weit linke (x) / rechte (y) Hand vom Griff gelöst ist (zeitlich geglättet)
 var _hpass_on := 0.0              # Handle Pass erlaubt (0 bei Raley, Inverts, Wasserstart)
 var _hpass_yaw := 0.0             # Körper-Gierwinkel im letzten Bild (Drehtempo für die Vorausschau)
@@ -1203,7 +1209,13 @@ func _read_input(delta: float) -> void:
 				_hop_side = signf(_steer)
 	else:
 		if _jump_held and mode == Mode.WATER and _load > 0.0:
+			var backroll := _backroll_wanted()
 			_pop()
+			if backroll and _raley:
+				# Raley-Backroll: Absprung wie ein Raley (sofort, Schwung nach außen bleibt), der Clip beginnt bei der
+				# Startpose – Brett durchs Wasser drücken und herausreißen läuft schnell am Anfang des Flugs
+				_invert = "backroll"
+				_iback_t = 0.0
 		_load = 0.0
 		_hop_side = 0.0
 	_jump_held = held
@@ -1890,6 +1902,8 @@ func _clear_air_pose() -> void:
 	_raley = false
 	_raley_ang = 0.0
 	_invert = ""
+	_iback_t = -1.0
+	_iback_vis = 0.0
 	_raley_cut = false
 	_sbend_pivot = Vector3.INF
 	_invert_ang = 0.0
@@ -1956,6 +1970,7 @@ func _enter_air() -> void:
 	_spin_accum = 0.0
 	_raley = false
 	_invert = ""
+	_iback_t = -1.0
 	_raley_cut = false
 	_sbend_pivot = Vector3.INF
 	_popped = false
@@ -1988,13 +2003,18 @@ func _step_air(delta: float, rope: Vector3) -> void:
 		_flip_lock = false
 	if _raley and _invert == "" and phase < INVERT_PICK and absf(_pitch_in) > 0.1 and not _flip_lock:
 		_invert = "sbend" if _pitch_in > 0.0 else "backroll"
+		if _invert == "backroll":
+			_iback_t = _iback_pop_t()          # erst in der Luft gewählt: Clip ab dem Absprung-Bild (kein Raley-Schwung)
+	if _invert == "backroll" and _iback_t >= 0.0:
+		_iback_t += delta * IBACK_SPEED * (IBACK_FAST if _iback_t < _iback_len() * 0.5 else 1.0)
 	# ←/→ nach der Streckung (S-Bend: nach der Längsdrehung) bricht den Schwung ab, gedreht wird erst aufrecht
 	var stretched := phase >= (SBEND_CUT if _invert == "sbend" else RALEY_STRETCH)
 	if _raley and _invert != "backroll" and (absf(_steer) > 0.1 or _quick_spin != 0.0) and stretched:
 		_raley_cut = true
-	var spin_from := INVERT_SPIN_BACK if _invert == "backroll" else INVERT_SPIN_RALEY
 	var upright := _raley_ang < RALEY_SPIN_ANG and (_invert != "sbend" or _invert_ang > TAU - 0.3)   # S-Bend erst ganz herumgedreht
-	var can_spin := not _raley or phase >= spin_from or (_raley_cut and upright)
+	var can_spin := not _raley or phase >= INVERT_SPIN_RALEY or (_raley_cut and upright)
+	if _invert == "backroll":
+		can_spin = _iback_t >= _iback_len() * INVERT_SPIN_BACK
 	if _hop_steer_lock and absf(_steer) < 0.3:
 		_hop_steer_lock = false             # ←/→ vom Hop losgelassen: ab jetzt dreht es wieder
 	if _hop_steer_lock:
@@ -2172,6 +2192,9 @@ func _land(surf: float) -> void:
 		return
 	if absf(wrapf(_flip, -PI, PI)) > FLIP_LAND_TOL:
 		crash(tr("Überschlag nicht geschafft!"))
+		return
+	if _invert == "backroll" and _iback_t >= 0.0 and _iback_t < _iback_len() * IBACK_LAND_OK:
+		crash(tr("Backroll nicht geschafft!"))      # noch mitten in der Rolle aufs Wasser
 		return
 	# Rail to Rail: aus dem Hop direkt auf einen anderen Slider = Transfer
 	_hop_landed = _hop_from != null and landed_on != null and landed_on.is_slide() and not landed_on.on_ramp(pos) \
@@ -2419,8 +2442,7 @@ func _process(delta: float) -> void:
 	if mode == Mode.AIR and _raley:
 		var s := _air_phase()
 		if _invert == "backroll":
-			# Invert-Backroll: kein Schwung um den Griff, sondern eine ganze Rolle nach außen
-			invert_target = TAU * smoothstep(IBACK_FROM, IBACK_TO, s)
+			pass          # Invert-Backroll: kein Schwung um den Griff, der ganze Körper kommt aus dem Mocap-Clip
 		else:
 			raley_target = RALEY_MAX * smoothstep(0.0, 0.35, s) * (1.0 - smoothstep(0.6, 0.9, s))
 			if _invert == "sbend":
@@ -2435,8 +2457,9 @@ func _process(delta: float) -> void:
 			invert_target = TAU            # S-Bend abgebrochen: Drehung um die Handle zügig fertig
 	_raley_ang = lerpf(_raley_ang, raley_target, 1.0 - exp(-delta * (RALEY_CUT_RATE if _raley_cut else 10.0)))
 	_invert_ang = lerpf(_invert_ang, invert_target, 1.0 - exp(-delta * 14.0))
-	if _invert == "backroll" and mode == Mode.AIR:
-		target_crouch = maxf(target_crouch, 0.45 * sin(_invert_ang * 0.5))   # in der Rolle etwas angehockt
+	# Invert-Backroll: Clip ein- und ausblenden (aus, sobald er durch ist oder man nicht mehr fliegt)
+	var clip_on := mode == Mode.AIR and _invert == "backroll" and _iback_t >= 0.0 and _iback_t < _iback_len()
+	_iback_vis = move_toward(_iback_vis, 1.0 if clip_on else 0.0, delta / IBACK_BLEND)
 	# Frontroll kompakt: während der Drehung eingerollt, kurz vor dem Ende wieder öffnen
 	var tuck_target := 0.0
 	if mode == Mode.AIR and _flip > 0.2:
@@ -2522,12 +2545,9 @@ func _process(delta: float) -> void:
 				# vor dem Gesicht: über den Kopf hinaus (Körperachse) und zur Bauchseite, Arme angewinkelt
 				var front := head + (head - chest).normalized() * 0.2 + _raley_chest * 0.3
 				handle_pos = handle_pos.lerp(front, smoothstep(0.0, 0.5, _raley_ang / RALEY_MAX))
-			if _invert == "backroll" and _invert_w() > 0.001:
-				# Invert-Backroll: Griff rollt mit dem Körper (vor der vorderen Hüfte, zur Brust)
-				var grip := _pose_frame() * Vector3(0.2 * _facing(), 0.86 - 0.34 * minf(_crouch, 1.0), -0.2) + _raley_chest * 0.2
-				handle_pos = handle_pos.lerp(grip, _invert_w())
 			# Raley, Inverts, Wasserstart: Griff mit beiden Händen vor dem Körper, kein Handle Pass
-			var keep := smoothstep(0.0, 1.0, _getup) * (1.0 - smoothstep(0.0, 0.3, _raley_ang / RALEY_MAX)) * (1.0 - _invert_w())
+			var keep := smoothstep(0.0, 1.0, _getup) * (1.0 - smoothstep(0.0, 0.3, _raley_ang / RALEY_MAX)) * (1.0 - _invert_w()) \
+				* (1.0 - _iback_vis)
 			_hpass_on *= keep
 			_hpass_back *= keep
 	else:
@@ -2557,6 +2577,13 @@ func _process(delta: float) -> void:
 		else:
 			_pose_t = 0.0
 			press_body = Vector3.ZERO
+		# Invert-Backroll: ganzer Körper aus dem Mocap-Clip, Brett an den Füßen, Handle zwischen den Händen
+		if _iback_vis > 0.001:
+			var cw := smoothstep(0.0, 1.0, _iback_vis)
+			var grip := _apply_backroll_clip(cw, bar_axis)
+			if grip != Vector3.INF:
+				handle_pos = handle_pos.lerp(grip, cw)
+				_flex_boots()
 	Util.place_beam(_handle, handle_pos - bar_axis * 0.2, handle_pos + bar_axis * 0.2)
 	if attached and _rig == null:     # Ersatzarme nur ohne Figur (place_beam macht sichtbar!)
 		var body := _body_pivot.global_transform
@@ -2971,9 +2998,6 @@ func _swing_frame() -> Transform3D:
 func _invert_basis() -> Basis:
 	if absf(_invert_ang) < 0.001:
 		return Basis.IDENTITY
-	if _invert == "backroll":
-		var axis := (Vector3.BACK + Vector3.UP * IBACK_TILT * _raley_side).normalized()
-		return Basis(axis, _raley_side * _invert_ang)
 	# S-Bend: gestreckt um die Achse von der Handle durch den Körper zum Brett
 	var axis := Vector3.UP
 	if _sbend_pivot != Vector3.INF:
@@ -3271,8 +3295,15 @@ static func _load_pose(path: String) -> Array:
 					var q: Array = fr["bones"][b]
 					bones[b] = Basis(Quaternion(q[0], q[1], q[2], q[3]))
 				var p: Array = fr["pelvis"]
-				frames.append({"bones": bones, "pelvis": Vector3(p[0], p[1], p[2])})
+				var bq: Array = fr.get("board", [0.0, 0.0, 0.0, 1.0])
+				frames.append({"bones": bones, "pelvis": Vector3(p[0], p[1], p[2]),
+					"board": Quaternion(bq[0], bq[1], bq[2], bq[3]).normalized()})
 			_pose_cache[path + ":fps"] = float(data.get("fps", 24))
+			# Mocap-Clip (tools/retarget_mocap.py): so aufgenommen, Schwerpunkt, Absprung-Bild
+			_pose_cache[path + ":goofy"] = data.get("stance", "regular") == "goofy"
+			var pv: Array = data.get("pivot", [0.0, 0.9, 0.0])
+			_pose_cache[path + ":pivot"] = Vector3(pv[0], pv[1], pv[2])
+			_pose_cache[path + ":pop"] = int(data.get("pop", 0))
 	_pose_cache[path] = frames
 	return frames
 
@@ -3342,6 +3373,123 @@ func _apply_press_pose(w: float, delta: float) -> Vector3:
 	if pl < 0.0 and _press_bs_vis < 0.5:
 		hold = "hand_r" if g else "hand_l"
 	return skel.global_transform * skel.get_bone_global_pose(_rig.idx(hold)).origin
+
+
+## Raley-Backroll gewünscht: ↓ beim Loslassen eines Sprungs, der ein Raley würde (Seilzug, Ladung, kein Feature voraus).
+func _backroll_wanted() -> bool:
+	return not autopilot and not is_npc and _pitch_in < -0.1 and not _flip_lock and attached \
+		and tension_smooth >= RALEY_TENSION and _load >= RALEY_LOAD and not (features and _feature_ahead()) \
+		and not _load_pose(BACKROLL_CLIP).is_empty()
+
+
+## Zeitpunkt im Backroll-Clip, an dem das Brett aus dem Wasser reißt (= Absprung).
+func _iback_pop_t() -> float:
+	_load_pose(BACKROLL_CLIP)
+	return float(_pose_cache.get(BACKROLL_CLIP + ":pop", 0)) / float(_pose_cache.get(BACKROLL_CLIP + ":fps", 30.0))
+
+
+## Länge des Backroll-Clips in Sekunden (Spielzeit bei IBACK_SPEED 1).
+func _iback_len() -> float:
+	var frames := _load_pose(BACKROLL_CLIP)
+	return maxf(frames.size() - 1, 1) / float(_pose_cache.get(BACKROLL_CLIP + ":fps", 30.0))
+
+
+## Invert-Backroll: Körper aus dem Mocap-Clip (w 0..1 überblendet). Der Schwerpunkt bleibt im Fahrer stehen
+## (die Flugbahn macht die Physik). Das Brett dreht mit dem ganzen Körper ("board" des Clips) um den Schwerpunkt
+## (die Füße der Aufnahme sind zu ungenau), die Füße sitzen in den Bindungen, die
+## Knie zeigen wie in der Aufnahme; beide Hände bleiben an der Handle (bar_axis = Griffrichtung).
+## Aufgenommen mit einem Fuß vorne (Stance im Clip); anders stehend oder switch = gespiegelt wie beim Press.
+## Liefert die Griffmitte (Welt), oder INF ohne Clip.
+func _apply_backroll_clip(w: float, bar_axis: Vector3) -> Vector3:
+	var frames := _load_pose(BACKROLL_CLIP)
+	if frames.is_empty():
+		return Vector3.INF
+	var fps: float = _pose_cache.get(BACKROLL_CLIP + ":fps", 30.0)
+	var ft := clampf(maxf(_iback_t, 0.0) * fps, 0.0, frames.size() - 1.0)
+	var i0 := int(ft)
+	var i1 := mini(i0 + 1, frames.size() - 1)
+	var k := ft - i0
+	var a: Dictionary = frames[i0]
+	var b: Dictionary = frames[i1]
+	_press_local()                       # Fahrtrichtung beim Absprung (switch)
+	var g := goofy != (_press_lead < 0.0)
+	var mirror := g != bool(_pose_cache.get(BACKROLL_CLIP + ":goofy", false))
+	var before := _rig.snapshot()
+	var skel := _rig.skeleton
+	var s_b := (_human.global_transform.affine_inverse() * skel.global_transform).basis.orthonormalized()
+	var m := Basis(Vector3(-1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1))      # Spiegel an der Ebene x = 0
+	var ba: Dictionary = a["bones"]
+	var bb: Dictionary = b["bones"]
+	# Eltern vor Kindern: die Reihenfolge der Knochen im Skelett
+	for i in skel.get_bone_count():
+		var bone := skel.get_bone_name(i)
+		var src := bone
+		if mirror and bone.ends_with("_l"):
+			src = bone.trim_suffix("_l") + "_r"
+		elif mirror and bone.ends_with("_r"):
+			src = bone.trim_suffix("_r") + "_l"
+		if not ba.has(src):
+			continue
+		var d := Basis((ba[src] as Basis).get_rotation_quaternion().slerp((bb[src] as Basis).get_rotation_quaternion(), k))
+		if mirror:
+			d = m * d * m
+		var want := s_b.inverse() * d * s_b * _rig.rest_global(bone).basis
+		var parent := skel.get_bone_parent(i)
+		var pb := skel.get_bone_global_pose(parent).basis if parent >= 0 else Basis.IDENTITY
+		skel.set_bone_pose_rotation(i, (pb.inverse() * want).get_rotation_quaternion())
+	# Becken: im Modellraum (Schwerpunkt fest über der Stelle der Füße beim Absprung)
+	var p: Vector3 = (a["pelvis"] as Vector3).lerp(b["pelvis"], k)
+	if mirror:
+		p.x = -p.x
+	var pelvis_world := _human.global_transform * p
+	var pel := _rig.idx("pelvis")
+	var pp := skel.get_bone_parent(pel)
+	var parent_t := skel.get_bone_global_pose(pp) if pp >= 0 else Transform3D.IDENTITY
+	skel.set_bone_pose_position(pel, parent_t.affine_inverse() * (skel.global_transform.affine_inverse() * pelvis_world))
+	# Brett: beim Startbild flach unter den Füßen (Modellraum: lokal -Z zum linken Fuß = Modell +X), dann dreht es
+	# mit dem ganzen Körper der Aufnahme um den Schwerpunkt (schräge Achse: erst zur Seite, dann über Kopf)
+	var r := Basis((a["board"] as Quaternion).slerp(b["board"], k))
+	if mirror:
+		r = m * r * m
+	var piv: Vector3 = _pose_cache.get(BACKROLL_CLIP + ":pivot", Vector3(0.0, 0.5, 0.0))
+	var b0 := Basis(Vector3(0, 0, 1), Vector3(0, 1, 0), Vector3(-1, 0, 0))
+	var ank := (Wakeboard.ankle_local(true) + Wakeboard.ankle_local(false)) * 0.5
+	var board_model := Transform3D(r, piv - r * piv) * Transform3D(b0, Vector3(0.0, 0.08, 0.0) - b0 * ank)
+	_board_xf = _board_xf.interpolate_with(_human.global_transform * board_model, w)
+	_board_pivot.global_transform = _board_xf
+	# erst mischen, dann die Füße in die Bindungen des (gemischten) Bretts – sonst rutschen sie beim Ein-/Ausblenden heraus
+	_rig.blend_from(before, 1.0 - w)
+	# Knie zeigen wie in der Aufnahme (Pol = Knie, vom Bein weg verlängert), nicht wie im Stehen
+	var xf := skel.global_transform
+	var skel_inv := xf.affine_inverse()
+	var bb_ := _board_xf.basis.orthonormalized()
+	if goofy:
+		bb_ = bb_ * Basis(Vector3.UP, PI)
+	var rb0 := global_transform.basis.orthonormalized()
+	var board_rel := bb_ * rb0.inverse()
+	for side: String in ["l", "r"]:
+		var hip := xf * _rig.global_pose("thigh_" + side).origin
+		var knee := xf * _rig.global_pose("calf_" + side).origin
+		var ankle := xf * _rig.global_pose("foot_" + side).origin
+		var pole := knee + (knee - (hip + ankle) * 0.5) * 2.0
+		_rig.leg(side, skel_inv * (_board_xf * Wakeboard.ankle_local(side == "l")), skel_inv * pole)
+		var fw := board_rel * Basis(rb0 * Vector3.UP, Wakeboard.foot_yaw(side == "l"))
+		_rig.set_end_basis("foot_" + side, xf.basis.orthonormalized().inverse() * fw * xf.basis.orthonormalized() * _rig.rest_global("foot_" + side).basis)
+	# Hände: beide an die Handle (Mitte zwischen den Händen der Aufnahme), Ellbogen wie in der Aufnahme
+	var hl := xf * _rig.global_pose("hand_l").origin
+	var hr := xf * _rig.global_pose("hand_r").origin
+	var grip := (hl + hr) * 0.5
+	var ends := [grip - bar_axis * 0.1, grip + bar_axis * 0.1]
+	if hl.distance_to(ends[0]) + hr.distance_to(ends[1]) > hl.distance_to(ends[1]) + hr.distance_to(ends[0]):
+		ends.reverse()
+	for j in 2:
+		var s := "l" if j == 0 else "r"
+		var sh := xf * _rig.global_pose("upperarm_" + s).origin
+		var el := xf * _rig.global_pose("lowerarm_" + s).origin
+		var hand: Vector3 = ends[j]
+		var pole := el + (el - (sh + hand) * 0.5) * 2.0
+		_rig.grip(s, skel_inv * hand, skel_inv.basis * (grip - hand), skel_inv * pole)
+	return grip
 
 
 ## Brett-Design wechseln (Einstellungen).

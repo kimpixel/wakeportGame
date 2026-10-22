@@ -661,6 +661,9 @@ msgstr "Pouso duro demais!"
 msgid "Überschlag nicht geschafft!"
 msgstr "Giro não completado!"
 
+msgid "Backroll nicht geschafft!"
+msgstr "Backroll não concluído!"
+
 msgid "Ab ans Ufer!"
 msgstr "Para a margem!"
 

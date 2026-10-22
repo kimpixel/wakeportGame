@@ -661,6 +661,9 @@ msgstr "Landing too hard!"
 msgid "Überschlag nicht geschafft!"
 msgstr "Didn't finish the flip!"
 
+msgid "Backroll nicht geschafft!"
+msgstr "Didn't finish the backroll!"
+
 msgid "Ab ans Ufer!"
 msgstr "Off to the shore!"
 

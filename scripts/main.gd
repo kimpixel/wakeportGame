@@ -1675,6 +1675,15 @@ func _on_trick(trick_name: String, points: int) -> void:
 
 # ---------------------------------------------------------------- Eingabe
 
+## Test mit --hold: Gamepad-Belegung entfernen – Godot liest Gamepads auch ohne Fensterfokus, ein Spieler am
+## Controller nebenher fuhr sonst in die Testläufe hinein (zusätzliche Sprünge, Drehungen).
+func _drop_pad_input() -> void:
+	for action in InputMap.get_actions():
+		for ev in InputMap.action_get_events(action):
+			if ev is InputEventJoypadButton or ev is InputEventJoypadMotion:
+				InputMap.action_erase_event(action, ev)
+
+
 func _setup_input() -> void:
 	# Gamepad (Namen wie PS4): Kreuz = A, Kreis = B, Dreieck = Y, Options = START, Share = BACK, PS = GUIDE
 	_bind("steer_left", [KEY_A, KEY_LEFT], [JOY_BUTTON_DPAD_LEFT], [[JOY_AXIS_LEFT_X, -1.0]])
@@ -1923,6 +1932,7 @@ func _parse_args() -> void:
 				var a := h.split("@")
 				var tt := a[1].split("-")
 				_hold.append([a[0], tt[0].to_float(), tt[1].to_float()])
+			_drop_pad_input.call_deferred()
 		elif arg.begins_with("--dpress-hold="):
 			_test_dpress_hold = deg_to_rad(arg.substr(14).to_float())
 		elif arg.begins_with("--dpress="):
