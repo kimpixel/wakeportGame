@@ -215,15 +215,23 @@ func say_count(text: String) -> void:
 		Music.duck(a.get_length() + 0.3)
 
 
-## Competition: Zeit um – Signal über die ganze Anlage (eigener Player, läuft auch nach Neustart/Pause weiter).
-var _timeout_player: AudioStreamPlayer
+## Competition: Zeit um – Signal vom Start der eigenen Anlage (beim Operator, über den See hörbar; eigener Player,
+## läuft auch nach Neustart/Pause weiter).
+var _timeout_player: AudioStreamPlayer3D
 
 func time_up() -> void:
 	if _timeout_player == null:
-		_timeout_player = _player(linear_to_db(0.7))   # 30 % leiser als die Aufnahme
+		_timeout_player = AudioStreamPlayer3D.new()
+		_timeout_player.bus = BUS_FX
+		_timeout_player.volume_db = linear_to_db(0.7) + 6.0   # 30 % leiser als die Aufnahme, dazu Ausgleich für die Entfernung
+		_timeout_player.max_db = 6.0
+		_timeout_player.unit_size = 60.0                     # auch am Endmast (ca. 270 m) noch gut zu hören
 		_timeout_player.process_mode = Node.PROCESS_MODE_ALWAYS
 		_timeout_player.stream = load(TIMEOUT_SOUND) as AudioStream
+		add_child(_timeout_player)
 	if _timeout_player.stream:
+		var at := operator.global_position if operator else rider.global_position
+		_timeout_player.global_position = at + Vector3.UP * 1.6
 		_timeout_player.play()
 		Music.duck(_timeout_player.stream.get_length() + 0.3)
 
