@@ -314,6 +314,9 @@ func _ready() -> void:
 	cam.water = water
 	add_child(cam)
 	cam.current = true
+	# Zoom im Spiel = Einstellung „Kamera-Abstand“ (Mausrad, R3 + rechter Stick; R3 kurz = Standard)
+	cam.zoom_changed.connect(func(d: float) -> void: _set_cam_dist(snappedf(d, ChaseCamera.DIST_STEP)))
+	cam.zoom_reset.connect(func() -> void: _set_cam_dist(float(settings.default_of("cam_dist"))))
 	if _cam_arg == "side":
 		cam.cycle_mode()
 		cam.cycle_mode()
@@ -882,6 +885,15 @@ func _change_lang(code: String) -> void:
 	_lang_reload = true
 	get_tree().paused = false
 	get_tree().reload_current_scene.call_deferred()
+
+
+## Kamera-Abstand aus dem Zoom im Spiel übernehmen: Kamera, Einstellung (gespeichert) und Schieber im Menü.
+func _set_cam_dist(d: float) -> void:
+	d = clampf(d, ChaseCamera.DIST_MIN, ChaseCamera.DIST_MAX)
+	cam.distance = d
+	settings.set_v("cam_dist", d)
+	if start_screen:
+		start_screen.sync_settings()
 
 
 ## Eine Einstellung anwenden (beim Start alle, danach bei jeder Änderung).
@@ -1597,9 +1609,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		challenge.start_attempt()            # Spielmodus: neuer Versuch
 	elif (event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down")) and challenge.active:
 		pass                                 # Spielmodus: festes Tempo
-	elif (event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down")) and event is InputEventJoypadButton \
-			and rider.mode == Rider.Mode.AIR:
-		pass                                 # L1/R1 in der Luft: schnelle Drehung, nicht Tempo
 	elif event.is_action_pressed("reset"):
 		_reset_to_dock()
 	elif event.is_action_pressed("speed_up") or event.is_action_pressed("speed_down"):
@@ -1699,10 +1708,10 @@ func _setup_input() -> void:
 	_bind("rope_rip", [KEY_G], [], [])  # Seil-Abreißen an/aus
 	_bind("start", [KEY_SPACE], [JOY_BUTTON_A], [])
 	_bind("reset", [KEY_R], [JOY_BUTTON_TOUCHPAD], [])   # Touchpad im Spiel = Neustart (Share würfelt das Szenario)
-	_bind("speed_up", [KEY_PAGEUP], [JOY_BUTTON_RIGHT_SHOULDER], [], [KEY_PLUS, KEY_KP_ADD])
-	_bind("speed_down", [KEY_PAGEDOWN], [JOY_BUTTON_LEFT_SHOULDER], [], [KEY_MINUS, KEY_KP_SUBTRACT])
+	_bind("speed_up", [KEY_PAGEUP], [], [], [KEY_PLUS, KEY_KP_ADD])        # Anlagen-Tempo nur Tastatur
+	_bind("speed_down", [KEY_PAGEDOWN], [], [], [KEY_MINUS, KEY_KP_SUBTRACT])
 	_bind("jump_analog", [], [], [[JOY_AXIS_TRIGGER_RIGHT, 1.0]])   # R2: Sprung analog aufladen
-	# L1/R1 in der Luft: schnelle halbe Drehung (auf dem Wasser Tempo), im Menü Reiter wechseln
+	# L1/R1 in der Luft: schnelle halbe Drehung, im Menü Reiter wechseln
 	_bind("spin_left", [], [JOY_BUTTON_LEFT_SHOULDER], [])
 	_bind("spin_right", [], [JOY_BUTTON_RIGHT_SHOULDER], [])
 	_bind("tab_prev", [], [JOY_BUTTON_LEFT_SHOULDER], [])

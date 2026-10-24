@@ -45,11 +45,11 @@ Gamepad-Namen wie beim PS4-Controller (Xbox: ✕ = A, ○ = B, △ = Y, Options 
 | R | Touchpad | zurück zum Startsteg (kostet 2:00 Spielzeit) |
 | Z | Share | neues **Szenario** würfeln (auch auf der Startseite; Handy: ☰ → Szenario würfeln) |
 | Leertaste halten | ✕ | nach Sturz oder Seilverlust: zur Handle schwimmen (Bauchlage, Brett hinten oben). Wer nach 5 s noch nicht schwimmt und nichts gedrückt hat, bekommt ein Panel, das zeigt, was geht und was es kostet |
-| + / − (oder Bild ↑ / Bild ↓) | R1 / L1 (auf dem Wasser) | Tempo der Anlage (16–40 km/h) |
+| + / − (oder Bild ↑ / Bild ↓) | – | Tempo der Anlage (16–40 km/h) |
 | – | L1 / R1 (in der Luft) | schnelle halbe Drehung nach links / rechts (mehrmals tippen = 360, 540 …; beim Invert im normalen Drehtempo) |
 | C | – | Kamera: Verfolger, Orbit oder Ufer |
 | Tab | – | zurück zur Startseite (mit ihr beginnt das Spiel). Im Hintergrund die echte Szene, die Kamera schwenkt langsam von der Seeseite über die gewählte Anlage. Darüber das Menü: Spielmodus, Terminal und Feature-Setup bzw. die Aufgaben, **Einstellungen** (Wetter, Datum, Uhrzeit, Jetzt) und **Spiel starten**. Passt sich an Handy (hoch und quer) und Desktop an |
-| Maus / Mausrad | rechter Stick | Umsehen / Zoom. Mit dem Stick: loslassen = Kamera geht gleich wieder hinter den Fahrer; R3 halten + rechter Stick ↕ = Zoom. Auf der Startseite: Stick ↔ schwenkt die Kamera, ↕ Höhe (R3: Abstand), nach 4 s läuft der Schwenk weiter |
+| Maus / Mausrad | rechter Stick | Umsehen / Zoom. Mit dem Stick: loslassen = Kamera geht gleich wieder hinter den Fahrer; R3 halten + rechter Stick ↕ = Zoom (verstellt die Einstellung „Kamera-Abstand“, wie das Mausrad), R3 kurz tippen = Zoom zurück auf den Standard. Auf der Startseite: Stick ↔ schwenkt die Kamera, ↕ Höhe (R3: Abstand), nach 4 s läuft der Schwenk weiter |
 | P | – | Autopilot (fährt auch Features) |
 | Esc | PS | **Pause** (Fenster mit Weiter, Einstellungen, Hilfe, Startseite); am Handy pausiert das ☰-Menü |
 | O | Options | **Einstellungen** direkt über dem pausierten Spiel (danach geht es weiter); auf der Startseite das Einstellungs-Fenster |

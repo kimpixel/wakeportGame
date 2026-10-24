@@ -20,6 +20,15 @@ const PRESS_FOCUS := 1.0         # beim Press so weit den Blick vom Fahrer auf d
 const PRESS_TIP := 0.4           # Press-Blickpunkt: zwischen Becken (0) und gedrücktem Brett-Ende (1)
 const PRESS_PORTRAIT := 1.35     # Handy hochkant: beim Press weiter weg (schmales Bild)
 const PRESS_LIFT := 0.3          # m über dem Brett-Ende
+const DIST_MIN := 4.0            # Zoom-Grenzen = Schieber „Kamera-Abstand“ in den Einstellungen
+const DIST_MAX := 14.0
+const DIST_STEP := 0.5           # Mausrad je Raste, gespeichert wird auf diese Schritte gerundet
+const R3_TAP := 0.35             # s: R3 kürzer gedrückt (ohne Zoomen) = Zoom zurück auf den Standard
+
+## Zoom (Mausrad, R3 + rechter Stick) fertig: main.gd übernimmt den Abstand in die Einstellung „Kamera-Abstand“
+signal zoom_changed(dist: float)
+## R3 kurz gedrückt: Abstand auf den Standard zurück
+signal zoom_reset
 
 var rider: Rider
 var water: Water
@@ -37,6 +46,8 @@ var _initialized := false
 var _slide_k := 0.0              # 0..1 weich: Fahrer auf dem Slider
 var _press_k := 0.0              # 0..1 weich: Nose-/Tailpress
 var _press_focus := Vector3.ZERO # Press: Blickpunkt am gedrückten Brett-Ende (weich nachgeführt)
+var _r3_time := -1.0             # s seit R3 gedrückt (-1 = nicht gedrückt)
+var _r3_zoomed := false          # während R3 gehalten mit dem Stick gezoomt
 
 
 func cycle_mode() -> void:
@@ -65,12 +76,16 @@ func mode_name() -> String:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not current:
+		return
 	var mb := event as InputEventMouseButton
 	if mb and mb.pressed:
 		if mb.button_index == MOUSE_BUTTON_WHEEL_UP:
-			distance = maxf(distance - 0.6, 3.0)
+			distance = clampf(snappedf(distance - DIST_STEP, DIST_STEP), DIST_MIN, DIST_MAX)
+			zoom_changed.emit(distance)
 		elif mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			distance = minf(distance + 0.6, 30.0)
+			distance = clampf(snappedf(distance + DIST_STEP, DIST_STEP), DIST_MIN, DIST_MAX)
+			zoom_changed.emit(distance)
 		elif mb.button_index == MOUSE_BUTTON_LEFT:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
@@ -96,10 +111,25 @@ func _process(delta: float) -> void:
 	_focus = (_focus + move).lerp(target, 1.0 - exp(-delta * 12.0))
 
 	var look := Input.get_vector("cam_left", "cam_right", "cam_up", "cam_down")
-	if Input.is_action_pressed("cam_zoom"):
+	if not current:
+		look = Vector2.ZERO                # Startseite hat ihre eigene Kamera (R3/Stick bewegen dort die)
+		_r3_time = -1.0
+		_r3_zoomed = false
+	elif Input.is_action_pressed("cam_zoom"):
 		# R3 gedrückt halten: rechter Stick ↕ zoomt (wie das Mausrad), dreht nicht
-		distance = clampf(distance + look.y * 8.0 * delta, 3.0, 30.0)
+		_r3_time = maxf(_r3_time, 0.0) + delta
+		if absf(look.y) > 0.1:
+			_r3_zoomed = true
+			distance = clampf(distance + look.y * 8.0 * delta, DIST_MIN, DIST_MAX)
 		look = Vector2.ZERO
+	elif _r3_time >= 0.0:
+		# R3 losgelassen: gezoomt = Abstand übernehmen, nur kurz getippt = zurück auf den Standard
+		if _r3_zoomed:
+			zoom_changed.emit(distance)
+		elif _r3_time < R3_TAP:
+			zoom_reset.emit()
+		_r3_time = -1.0
+		_r3_zoomed = false
 	if look.length() > 0.1:
 		_off_yaw -= look.x * 2.5 * delta
 		_off_pitch -= look.y * 1.5 * delta

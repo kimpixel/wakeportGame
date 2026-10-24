@@ -52,11 +52,11 @@ Gamepad names as on the PS4 controller (Xbox: ✕ = A, ○ = B, Options = Start,
 | R | Touchpad | back to the start dock (costs 2:00) |
 | Z | Share | shuffle a new **scenario** |
 | Hold Space | ✕ | after a crash: swim to the handle |
-| + / − | R1 / L1 (on the water) | cable speed (16–40 km/h) |
+| + / − | – | cable speed (16–40 km/h) |
 | – | L1 / R1 (in the air) | quick 180 left / right |
 | C | – | camera: chase, orbit or shore |
 | Tab | – | back to the home screen |
-| Mouse / wheel | right stick | look around / zoom |
+| Mouse / wheel | right stick | look around / zoom (hold R3 + right stick ↕; sets the camera distance setting, tap R3 = reset) |
 | P | – | autopilot |
 | Esc | PS | **pause** |
 | O | Options | **settings** |
