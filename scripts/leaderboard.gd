@@ -22,6 +22,7 @@ extends Node
 const URL := "https://wakethehack-rangliste.kimpixel.workers.dev"   # Adresse des Workers (siehe server/README.md)
 const HOST := "kimpixel.github.io"
 const RULES := 2                # erhöhen = alle Ranglisten beginnen neu
+const POINTS := 2               # Punkte-Regeln der Competition: erhöhen = nur die Competition-Ranglisten beginnen neu (2: Kombination nur auf Features)
 const SECTION := "rangliste"
 const TIMEOUT := 8.0             # s
 const NAME_MAX := 16
@@ -157,7 +158,7 @@ func challenge_board(mode_id: String, task: Dictionary) -> Dictionary:
 
 ## Rangliste der Competition: {board, ver, lower, title}. setup: Eintrag aus FeatureSet.list_setups().
 func competition_board(seconds: int, terminal: String, setup: Dictionary, terminal_name := "") -> Dictionary:
-	var ver := "%d-c-%s" % [RULES, setup_fp(setup.get("file", ""), terminal)]
+	var ver := "%d-c%d-%s" % [RULES, POINTS, setup_fp(setup.get("file", ""), terminal)]
 	var sname := Loc.setup_name(str(setup.get("name", setup.get("id", "?"))), true)
 	return {"board": "comp/%d/%s/%s" % [seconds, terminal, setup.get("id", "?")], "ver": _ver(ver), "lower": false,
 		"title": "Competition · %s · %s · %s" % [tr(terminal_name) if terminal_name != "" else terminal, sname,

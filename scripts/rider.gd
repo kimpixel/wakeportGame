@@ -90,14 +90,13 @@ static var AIR_ASSIST := 5.0         # Brett dreht in der Luft langsam zur Flugr
 const AIR_ASSIST_SLIDER := 8.0  # m: liegt ein Slider so weit voraus auf dem Flugweg, dreht nichts zurück
 static var POP_BASE := 2.46
 static var SLIDE_FRICTION := 0.1     # Reibung Brett auf Feature-Oberfläche
-# Punkte: Slides sind mehr wert als Drehungen, Kombinationen am meisten
+# Punkte: Slides sind mehr wert als Drehungen, Kombinationen am meisten (Kombination nur auf Features, siehe _tick_combo)
 static var SLIDE_BASE := 150.0
 static var SLIDE_PER_S := 150.0
 static var BOARDSLIDE_BONUS := 100.0
 const SLIDE_FACTOR := {"rail": 1.5, "pipe": 1.5, "transition": 1.3, "block": 1.0}
 static var AIR_PER_S := 50.0
 const SPIN_PER_180 := 50
-static var COMBO_WINDOW := 3.0       # s Zeit für den nächsten Trick, damit die Kombination weiterläuft
 static var POP_LOAD := 2.8
 static var POP_ROPE := 0.8           # Ollie: Anteil aus dem Seilzug (der steigt mit dem Tempo) – klein, damit der Ollie kaum mit dem Tempo wächst
 static var POP_SCALE := 0.93         # Sprunghöhe insgesamt (Ollie): Verhältnis Tempo/Höhe
@@ -383,7 +382,9 @@ var _stairs_from := ""            # dort draufgekommen: "top" (aus dem Becken) /
 var _last_slide := {}             # zuletzt gewerteter Slide: part, dist, t (Coping -> Ausgang)
 var _crash_air := false           # Sturz aus der Luft (für die Arschbombe)
 var _bombed := false
-var _combo_t := 0.0             # Restzeit bis die Kombination verfällt
+var _combo_feat := false          # seit dem letzten Wasserkontakt auf einem Feature gewesen (Kombination darf im Drift weiterlaufen)
+var _water_seen := 0             # dieser Schritt auf dem Wasser: 0 keiner, 1 auf einem Feature, 2 Wasser im Drift, 3 Wasser, 4 im Pool-Becken
+var _via_pool := false           # Kombination lief durchs Pool-Becken: der nächste Trick heißt „Pool Ride to …“
 var _slide_part: FeaturePart
 var _line: FeaturePart          # Feature, das der Autopilot gerade anfährt
 var _line_popped := false
@@ -903,7 +904,7 @@ func step(delta: float) -> void:
 	if mode != Mode.CRASHED:
 		_check_bounds()
 	_check_sink(delta)
-	_tick_combo(delta)
+	_tick_combo()
 	if not attached:
 		# ohne Seil gleitet man aus und sinkt dann ins Wasser
 		if mode == Mode.WATER and horizontal_speed() < SINK_SPEED:
@@ -1523,6 +1524,9 @@ func _step_water(delta: float, rope: Vector3) -> void:
 	# es flach aufliegt, bremst das Wasser weniger (leicht schneller).
 	var drift := _release > 0.5 and not autopilot and attached and not on_feature and not on_dock and speed > 2.0
 	drifting = drift
+	# das Becken eines Pools zählt wie ein Feature: dort läuft die Kombination auch ohne Drift weiter
+	var in_pool := water.pool_level(pos.x, pos.z) > FeaturePart.NONE
+	_water_seen = 1 if on_feature else (4 if in_pool else (2 if drift else 3))
 	var force := Vector3(rope.x, 0.0, rope.z) + f * f_long + r * f_lat
 	# Drift-Press: weiter Drift (Momentum bleibt), das Brett lässt sich drehen. Das Ende im Wasser
 	# bremst (DPRESS_DRAG) – je weiter das Brett quer zur Fahrtrichtung steht (Drift-Winkel), desto weniger; ab
@@ -1756,14 +1760,16 @@ func _finish_slide() -> void:
 
 
 ## Punkte von außen vergeben (z. B. für eine saubere Wende) – löst auch den Jubel aus.
-## Trick werten: innerhalb einer Kombination (nächster Trick, bevor COMBO_WINDOW abläuft)
+## Trick werten: innerhalb einer Kombination (siehe _tick_combo)
 ## zählt jeder Trick mehrfach – der 2. doppelt, der 3. dreifach …
 func _score_trick(trick_name: String, base: int) -> int:
 	_combo += 1
-	_combo_t = COMBO_WINDOW
 	var pts := roundi(base * _combo * trick_bonus)
 	if _combo > 1:
+		if _via_pool:
+			trick_name = "Pool Ride to " + trick_name     # durchs Becken weiter in der Kombination
 		trick_name += "   Combo x%d" % _combo
+	_via_pool = false
 	score += pts
 	trick_landed.emit(trick_name, pts)
 	return pts
@@ -1824,13 +1830,24 @@ func _pool_jump(on_feature: bool) -> String:
 	return ""
 
 
-## Die Kombination läuft nur ab, während man normal im Wasser fährt (nicht in der Luft / auf dem Feature).
-func _tick_combo(delta: float) -> void:
-	if _combo == 0 or mode != Mode.WATER or _slide_part != null:
-		return
-	_combo_t -= delta
-	if _combo_t <= 0.0:
-		_combo = 0
+## Kombination nur auf Features: sobald man normal aufs Wasser kommt, ist sie vorbei (der Trick davor ist
+## schon gewertet, auch der Sprung vom Feature ins Wasser). Auf dem Wasser springen gibt also nur einzelne
+## Tricks; ein Sprung aus dem Wasser auf ein Feature beginnt eine Kombination. Ausnahme: vom Feature im Drift
+## aufs Wasser (gelandet oder abgefahren) – solange man ohne Absetzen weiterdriftet, läuft sie bis zum
+## nächsten Feature weiter.
+func _tick_combo() -> void:
+	var seen := _water_seen
+	_water_seen = 0
+	if seen == 1:
+		_combo_feat = true
+	elif seen == 4:
+		_combo_feat = true
+		_via_pool = _combo > 0
+	elif seen == 3 or (seen == 2 and (not _combo_feat or _combo == 0)):
+		_combo_feat = false
+		_via_pool = false
+		if _slide_part == null:
+			_combo = 0
 
 
 func award(trick_name: String, points: int) -> void:

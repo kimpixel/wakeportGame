@@ -1613,8 +1613,8 @@ msgstr "Spacja  wybicie na rampie     ← / →  obrót w powietrzu     Ctrl  dr
 msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe"
 msgstr "SKOK  wybicie na rampie     Przechył  obrót w powietrzu     DRIFT  na schodach"
 
-msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
-msgstr "Kombinacja trwa 3 s – po dropie się nie ociągaj. Obroty w dropie dają więcej punktów, schody liczą się w kombinacji podwójnie."
+msgid "Im Becken läuft die Kombination weiter, auch ohne Drift. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgstr "W basenie kombinacja trwa dalej, nawet bez driftu. Obroty w dropie dają więcej punktów, schody liczą się w kombinacji podwójnie."
 
 msgid "Donkey Rail"
 msgstr "Donkey Rail"

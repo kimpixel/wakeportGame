@@ -38,8 +38,7 @@ const GROUPS := [
 	["Sprung-Start", [["rider", "DOCK_BRACE_MAX", 0.1, 1.0], ["rider", "DOCK_YANK_LIFT"], ["rider", "NOLLI_ANG", 0.0, 1.6]]],
 	["Punkte", [
 		["rider", "SLIDE_BASE"], ["rider", "SLIDE_PER_S"], ["rider", "BOARDSLIDE_BONUS"], ["rider", "PRESS_BONUS"], ["rider", "TRANSFER_BONUS"],
-		["rider", "SWITCH_BONUS"], ["rider", "AIR_PER_S"], ["rider", "RALEY_POINTS"], ["rider", "INVERT_POINTS"], ["rider", "FLIP_POINTS"],
-		["rider", "COMBO_WINDOW"]]],
+		["rider", "SWITCH_BONUS"], ["rider", "AIR_PER_S"], ["rider", "RALEY_POINTS"], ["rider", "INVERT_POINTS"], ["rider", "FLIP_POINTS"]]],
 	["Features", [["feature", "WET_DARK", 0.0, 1.0], ["feature", "WET_FRESNEL", 0.0, 1.0], ["feature", "WET_ROUGH", 0.0, 0.5],
 		["feature", "WET_COAT", 0.0, 1.0], ["feature", "REFLECT", 0.0, 2.0]]],
 ]

@@ -1609,8 +1609,8 @@ msgstr "Espacio  salto en la rampa     ← / →  girar en el aire     Ctrl  dri
 msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe"
 msgstr "SALTO  salto en la rampa     Inclinar  girar en el aire     DRIFT  en la escalera"
 
-msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
-msgstr "La combinación dura 3 s – no te entretengas tras el drop. Los giros en el drop dan más puntos, la escalera cuenta doble en la combinación."
+msgid "Im Becken läuft die Kombination weiter, auch ohne Drift. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgstr "En la piscina el combo sigue, incluso sin derrapar. Los giros en el drop dan más puntos, la escalera cuenta doble en el combo."
 
 msgid "Donkey Rail"
 msgstr "Donkey Rail"
