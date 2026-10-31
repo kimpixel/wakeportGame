@@ -64,7 +64,7 @@ msgid "Ein Haubentaucher ist direkt unter dir durchgetaucht."
 msgstr ""
 
 #: scripts/achievements.gd:19
-#: scripts/main.gd:390
+#: scripts/main.gd:393
 msgid "Schwanenliebe"
 msgstr ""
 
@@ -325,9 +325,9 @@ msgid "als %s"
 msgstr ""
 
 #: scripts/challenge.gd:917
-#: scripts/main.gd:1344
-#: scripts/main.gd:1349
-#: scripts/main.gd:1350
+#: scripts/main.gd:1356
+#: scripts/main.gd:1361
+#: scripts/main.gd:1362
 msgid "Rangliste: %s"
 msgstr ""
 
@@ -383,13 +383,13 @@ msgid "Bestwert %s"
 msgstr ""
 
 #: scripts/challenge.gd:111
-#: scripts/main.gd:1488
+#: scripts/main.gd:1500
 msgid "VERSUCH"
 msgstr ""
 
 #: scripts/challenge.gd:129
 #: scripts/hud.gd:263
-#: scripts/main.gd:1488
+#: scripts/main.gd:1500
 msgid "ZEIT"
 msgstr ""
 
@@ -484,7 +484,7 @@ msgid ""
 "C  Kamera     Maus: umsehen (Klick fängt Maus), Rad: Zoom     Esc  Pause     O  Einstellungen\n"
 "Z  Szenario würfeln     P  Autopilot     M  Ton aus/an     G  Seil-Abreißen an/aus (aus: keine Rangliste)     H  Hilfe ein/aus     F11  Vollbild     F3  Hitboxen + Drift-Winkel (Debug)     F4  Parameter (Debug, nur lokal)\n"
 "Tab  Startseite (Terminal, Feature-Setup, Einstellungen)     Menüs: Tab / Pfeile wählen, Leertaste drücken, Enter Start, Esc zurück\n"
-"Gamepad: Stick/Steuerkreuz lenken, Kreuz oder R2 (analog) Sprung, Kreis Drift, L1/R1 Tempo (in der Luft: schnelle 180), rechter Stick umsehen (R3 halten: Zoom), Touchpad Steg, Share Szenario würfeln, PS Pause, Options Einstellungen"
+"Gamepad: Stick/Steuerkreuz lenken, Kreuz oder R2 (analog) Sprung, Kreis Drift, L1/R1 in der Luft: schnelle 180, rechter Stick umsehen (R3 halten + ↕: Zoom = Kamera-Abstand, R3 tippen: Zoom zurück), Touchpad Steg, Share Szenario würfeln, PS Pause, Options Einstellungen"
 msgstr ""
 
 #: scripts/hud.gd:18
@@ -616,172 +616,172 @@ msgstr ""
 msgid "Abgesoffen!"
 msgstr ""
 
-#: scripts/main.gd:387
+#: scripts/main.gd:390
 msgid "Was ein Frechdachs!"
 msgstr ""
 
-#: scripts/main.gd:395
+#: scripts/main.gd:398
 msgid "Badegast nass gespritzt!"
 msgstr ""
 
-#: scripts/main.gd:399
+#: scripts/main.gd:402
 msgid "Zugvogel!"
 msgstr ""
 
-#: scripts/main.gd:414
+#: scripts/main.gd:417
 msgid "Hecht erwischt!"
 msgstr ""
 
-#: scripts/main.gd:420
+#: scripts/main.gd:423
 msgid "SUP nass gespritzt!"
 msgstr ""
 
-#: scripts/main.gd:423
+#: scripts/main.gd:426
 msgid "Igitt – Insekt verschluckt!"
 msgstr ""
 
-#: scripts/main.gd:429
+#: scripts/main.gd:432
 msgid "Arschbombe!"
 msgstr ""
 
-#: scripts/main.gd:432
+#: scripts/main.gd:435
 msgid "Steg-Landung!"
 msgstr ""
 
-#: scripts/main.gd:962
+#: scripts/main.gd:974
 msgid "Seil reißt ab: an"
 msgstr ""
 
-#: scripts/main.gd:962
+#: scripts/main.gd:974
 msgid "Seil reißt ab: aus – keine Rangliste"
 msgstr ""
 
-#: scripts/main.gd:1076
+#: scripts/main.gd:1088
 msgid "Setup: %s"
 msgstr ""
 
-#: scripts/main.gd:1283
+#: scripts/main.gd:1295
 msgid "Strafzeit −%d:%02d"
 msgstr ""
 
-#: scripts/main.gd:1297
+#: scripts/main.gd:1309
 msgid "Zeit um!  %d Punkte"
 msgstr ""
 
-#: scripts/main.gd:1306
-#: scripts/main.gd:1343
+#: scripts/main.gd:1318
+#: scripts/main.gd:1355
 msgid "Letzte Runde: %d Punkte"
 msgstr ""
 
-#: scripts/main.gd:1336
+#: scripts/main.gd:1348
 msgid "Rangliste …"
 msgstr ""
 
-#: scripts/main.gd:1342
+#: scripts/main.gd:1354
 msgid "Platz %d von %d"
 msgstr ""
 
-#: scripts/main.gd:1344
-#: scripts/main.gd:1347
+#: scripts/main.gd:1356
+#: scripts/main.gd:1359
 msgid "Dein Bestwert: %s"
 msgstr ""
 
-#: scripts/main.gd:1345
+#: scripts/main.gd:1357
 msgid "PLATZ %d von %d"
 msgstr ""
 
-#: scripts/main.gd:1486
+#: scripts/main.gd:1498
 msgid "FREI"
 msgstr ""
 
-#: scripts/main.gd:1492
+#: scripts/main.gd:1504
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
 "Wenden %d   ·   Kamera: %s%s"
 msgstr ""
 
-#: scripts/main.gd:1522
+#: scripts/main.gd:1534
 msgid "STURZ  –  der Operator bringt dir die Handle"
 msgstr ""
 
-#: scripts/main.gd:1523
+#: scripts/main.gd:1535
 msgid "STURZ  –  die Handle liegt bereit"
 msgstr ""
 
-#: scripts/main.gd:1525
+#: scripts/main.gd:1537
 msgid "ca. %d s"
 msgstr ""
 
-#: scripts/main.gd:1527
+#: scripts/main.gd:1539
 msgid "SCHWIMMEN halten"
 msgstr ""
 
-#: scripts/main.gd:1527
-#: scripts/main.gd:1531
+#: scripts/main.gd:1539
+#: scripts/main.gd:1543
 msgid "Zur Handle schwimmen"
 msgstr ""
 
-#: scripts/main.gd:1528
+#: scripts/main.gd:1540
 #: scripts/ui/touch_pad.gd:230
 msgid "SKIP"
 msgstr ""
 
-#: scripts/main.gd:1528
-#: scripts/main.gd:1532
+#: scripts/main.gd:1540
+#: scripts/main.gd:1544
 msgid "Sofort weiterfahren"
 msgstr ""
 
-#: scripts/main.gd:1528
-#: scripts/main.gd:1529
-#: scripts/main.gd:1532
-#: scripts/main.gd:1533
+#: scripts/main.gd:1540
+#: scripts/main.gd:1541
+#: scripts/main.gd:1544
+#: scripts/main.gd:1545
 msgid "keine Strafzeit"
 msgstr ""
 
-#: scripts/main.gd:1529
-#: scripts/main.gd:1533
+#: scripts/main.gd:1541
+#: scripts/main.gd:1545
 msgid "Zurück zum Steg"
 msgstr ""
 
-#: scripts/main.gd:1531
+#: scripts/main.gd:1543
 msgid "LEERTASTE halten"
 msgstr ""
 
-#: scripts/main.gd:1532
+#: scripts/main.gd:1544
 msgid "STRG"
 msgstr ""
 
-#: scripts/main.gd:1544
+#: scripts/main.gd:1556
 msgid ""
 "Neigungssensor nicht verfügbar –\n"
 "Bewegungssensoren im Browser erlauben"
 msgstr ""
 
-#: scripts/main.gd:1549
+#: scripts/main.gd:1561
 msgid "SPRUNG-START  %d %%"
 msgstr ""
 
-#: scripts/main.gd:1618
+#: scripts/main.gd:1627
 msgid "Hitboxen an"
 msgstr ""
 
-#: scripts/main.gd:1618
+#: scripts/main.gd:1627
 msgid "Hitboxen aus"
 msgstr ""
 
-#: scripts/main.gd:1648
+#: scripts/main.gd:1657
 msgid "Wende um die Boje"
 msgstr ""
 
-#: scripts/main.gd:1648
+#: scripts/main.gd:1657
 msgid "Saubere Wende"
 msgstr ""
 
-#: scripts/main.gd:1806
+#: scripts/main.gd:1815
 msgid "Ins Boot gefahren!"
 msgstr ""
 
-#: scripts/main.gd:1807
+#: scripts/main.gd:1816
 msgid "Boot crash!"
 msgstr ""
 
@@ -793,7 +793,7 @@ msgstr ""
 msgid "Terminal 2"
 msgstr ""
 
-#: scripts/main.gd:1488
+#: scripts/main.gd:1500
 msgid "MODUS"
 msgstr ""
 
@@ -842,68 +842,68 @@ msgstr ""
 msgid "Kiefer"
 msgstr ""
 
-#: scripts/rider.gd:897
+#: scripts/rider.gd:898
 msgid "Seil aus der Hand gerissen!"
 msgstr ""
 
-#: scripts/rider.gd:1481
+#: scripts/rider.gd:1482
 msgid "Quer abgefahren – Brett gerade stellen oder driften!"
 msgstr ""
 
-#: scripts/rider.gd:1516
+#: scripts/rider.gd:1517
 msgid "Treppe nur im Drift!"
 msgstr ""
 
-#: scripts/rider.gd:1542
+#: scripts/rider.gd:1543
 msgid "Drift-Press zu quer gedriftet!"
 msgstr ""
 
-#: scripts/rider.gd:1592
+#: scripts/rider.gd:1593
 msgid "Gegen den Steg!"
 msgstr ""
 
-#: scripts/rider.gd:1592
-#: scripts/rider.gd:2082
+#: scripts/rider.gd:1593
+#: scripts/rider.gd:2090
 msgid "Gegen %s gefahren!"
 msgstr ""
 
-#: scripts/rider.gd:1858
+#: scripts/rider.gd:1866
 msgid "das Hindernis"
 msgstr ""
 
-#: scripts/rider.gd:2193
+#: scripts/rider.gd:2201
 msgid "Verkantet gelandet!"
 msgstr ""
 
-#: scripts/rider.gd:2197
+#: scripts/rider.gd:2205
 msgid "Auf dem Ball gelandet!"
 msgstr ""
 
-#: scripts/rider.gd:2200
+#: scripts/rider.gd:2208
 msgid "Zu harte Landung!"
 msgstr ""
 
-#: scripts/rider.gd:2203
+#: scripts/rider.gd:2211
 msgid "Überschlag nicht geschafft!"
 msgstr ""
 
-#: scripts/rider.gd:2206
+#: scripts/rider.gd:2214
 msgid "Backroll nicht geschafft!"
 msgstr ""
 
-#: scripts/rider.gd:2352
+#: scripts/rider.gd:2360
 msgid "Ab ans Ufer!"
 msgstr ""
 
-#: scripts/rider.gd:2355
+#: scripts/rider.gd:2363
 msgid "Gegen den Mast!"
 msgstr ""
 
-#: scripts/rider.gd:2739
+#: scripts/rider.gd:2747
 msgid "%s – Drift-Winkel %d°  (erlaubt bis %d°)"
 msgstr ""
 
-#: scripts/rider.gd:2741
+#: scripts/rider.gd:2749
 msgid "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)"
 msgstr ""
 
