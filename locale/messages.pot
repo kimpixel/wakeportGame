@@ -304,7 +304,7 @@ msgid "noch keine Medaille"
 msgstr ""
 
 #: scripts/challenge.gd:898
-#: scripts/leaderboard.gd:177
+#: scripts/leaderboard.gd:178
 msgid "Rangliste nicht mit Seilzug-Grenze „Aus“"
 msgstr ""
 
@@ -339,7 +339,7 @@ msgid "Fehler"
 msgstr ""
 
 #: scripts/challenge.gd:942
-#: scripts/leaderboard.gd:244
+#: scripts/leaderboard.gd:245
 #: scripts/training.gd:542
 #: scripts/ui/task_panel.gd:239
 msgid "%d Punkt"
@@ -496,119 +496,119 @@ msgid ""
 "☰   Menü (pausiert): Einstellungen, Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Szenario würfeln, Seil-Abreißen an/aus (aus: keine Rangliste)"
 msgstr ""
 
-#: scripts/leaderboard.gd:164
+#: scripts/leaderboard.gd:165
 #: scripts/ui/start_screen.gd:1277
 msgid "Runde %s"
 msgstr ""
 
-#: scripts/leaderboard.gd:170
-#: scripts/leaderboard.gd:193
+#: scripts/leaderboard.gd:171
+#: scripts/leaderboard.gd:194
 msgid "Freies Fahren hat keine Rangliste"
 msgstr ""
 
-#: scripts/leaderboard.gd:172
-#: scripts/leaderboard.gd:195
+#: scripts/leaderboard.gd:173
+#: scripts/leaderboard.gd:196
 msgid "Eigene Setups haben keine Rangliste"
 msgstr ""
 
-#: scripts/leaderboard.gd:175
+#: scripts/leaderboard.gd:176
 msgid "Rangliste nur mit %d km/h und %d m Seil"
 msgstr ""
 
-#: scripts/leaderboard.gd:187
+#: scripts/leaderboard.gd:188
 msgid "Du erscheinst nicht in der Rangliste (Startseite → Rangliste)"
 msgstr ""
 
-#: scripts/leaderboard.gd:187
+#: scripts/leaderboard.gd:188
 #: scripts/ui/start_screen.gd:777
 #: scripts/ui/start_screen.gd:778
 #: scripts/ui/start_screen.gd:780
 msgid "Aus"
 msgstr ""
 
-#: scripts/leaderboard.gd:189
+#: scripts/leaderboard.gd:190
 msgid "Keine Rangliste mit Seilzug-Grenze „Aus“"
 msgstr ""
 
-#: scripts/leaderboard.gd:189
+#: scripts/leaderboard.gd:190
 msgid "Seilzug aus"
 msgstr ""
 
-#: scripts/leaderboard.gd:193
+#: scripts/leaderboard.gd:194
 msgid "Frei"
 msgstr ""
 
-#: scripts/leaderboard.gd:195
+#: scripts/leaderboard.gd:196
 msgid "Eigenes Setup"
 msgstr ""
 
-#: scripts/leaderboard.gd:198
+#: scripts/leaderboard.gd:199
 msgid "Tempo / Seil"
 msgstr ""
 
-#: scripts/leaderboard.gd:266
+#: scripts/leaderboard.gd:267
 msgid "{t}.{m}.{j}"
 msgstr ""
 
-#: scripts/leaderboard.gd:288
-#: scripts/leaderboard.gd:311
+#: scripts/leaderboard.gd:289
+#: scripts/leaderboard.gd:312
 msgid "Rangliste noch nicht eingerichtet"
 msgstr ""
 
-#: scripts/leaderboard.gd:339
-#: scripts/leaderboard.gd:343
+#: scripts/leaderboard.gd:340
+#: scripts/leaderboard.gd:344
 msgid "Keine Verbindung"
 msgstr ""
 
-#: scripts/leaderboard.gd:346
+#: scripts/leaderboard.gd:347
 msgid "Serverfehler (%d)"
 msgstr ""
 
-#: scripts/leaderboard.gd:32
+#: scripts/leaderboard.gd:33
 msgid "nur POST"
 msgstr ""
 
-#: scripts/leaderboard.gd:32
+#: scripts/leaderboard.gd:33
 msgid "kein JSON"
 msgstr ""
 
-#: scripts/leaderboard.gd:32
+#: scripts/leaderboard.gd:33
 msgid "kein Zugriff"
 msgstr ""
 
-#: scripts/leaderboard.gd:32
+#: scripts/leaderboard.gd:33
 msgid "zu viele Anfragen, bitte später"
 msgstr ""
 
-#: scripts/leaderboard.gd:33
+#: scripts/leaderboard.gd:34
 msgid "Serverfehler"
 msgstr ""
 
-#: scripts/leaderboard.gd:33
+#: scripts/leaderboard.gd:34
 msgid "Name schon vergeben"
 msgstr ""
 
-#: scripts/leaderboard.gd:33
+#: scripts/leaderboard.gd:34
 msgid "ungültig"
 msgstr ""
 
-#: scripts/leaderboard.gd:33
+#: scripts/leaderboard.gd:34
 msgid "Wert außerhalb der Grenzen"
 msgstr ""
 
-#: scripts/leaderboard.gd:33
+#: scripts/leaderboard.gd:34
 msgid "Spieler unbekannt"
 msgstr ""
 
-#: scripts/leaderboard.gd:34
+#: scripts/leaderboard.gd:35
 msgid "Name: 2 bis 16 Zeichen"
 msgstr ""
 
-#: scripts/leaderboard.gd:34
+#: scripts/leaderboard.gd:35
 msgid "Name: nur Buchstaben, Ziffern, Leerzeichen, . _ -"
 msgstr ""
 
-#: scripts/leaderboard.gd:34
+#: scripts/leaderboard.gd:35
 msgid "Diesen Namen bitte nicht"
 msgstr ""
 
@@ -842,68 +842,68 @@ msgstr ""
 msgid "Kiefer"
 msgstr ""
 
-#: scripts/rider.gd:897
+#: scripts/rider.gd:898
 msgid "Seil aus der Hand gerissen!"
 msgstr ""
 
-#: scripts/rider.gd:1481
+#: scripts/rider.gd:1482
 msgid "Quer abgefahren – Brett gerade stellen oder driften!"
 msgstr ""
 
-#: scripts/rider.gd:1516
+#: scripts/rider.gd:1517
 msgid "Treppe nur im Drift!"
 msgstr ""
 
-#: scripts/rider.gd:1539
+#: scripts/rider.gd:1543
 msgid "Drift-Press zu quer gedriftet!"
 msgstr ""
 
-#: scripts/rider.gd:1589
+#: scripts/rider.gd:1593
 msgid "Gegen den Steg!"
 msgstr ""
 
-#: scripts/rider.gd:1589
-#: scripts/rider.gd:2073
+#: scripts/rider.gd:1593
+#: scripts/rider.gd:2090
 msgid "Gegen %s gefahren!"
 msgstr ""
 
-#: scripts/rider.gd:1849
+#: scripts/rider.gd:1866
 msgid "das Hindernis"
 msgstr ""
 
-#: scripts/rider.gd:2184
+#: scripts/rider.gd:2201
 msgid "Verkantet gelandet!"
 msgstr ""
 
-#: scripts/rider.gd:2188
+#: scripts/rider.gd:2205
 msgid "Auf dem Ball gelandet!"
 msgstr ""
 
-#: scripts/rider.gd:2191
+#: scripts/rider.gd:2208
 msgid "Zu harte Landung!"
 msgstr ""
 
-#: scripts/rider.gd:2194
+#: scripts/rider.gd:2211
 msgid "Überschlag nicht geschafft!"
 msgstr ""
 
-#: scripts/rider.gd:2197
+#: scripts/rider.gd:2214
 msgid "Backroll nicht geschafft!"
 msgstr ""
 
-#: scripts/rider.gd:2343
+#: scripts/rider.gd:2360
 msgid "Ab ans Ufer!"
 msgstr ""
 
-#: scripts/rider.gd:2346
+#: scripts/rider.gd:2363
 msgid "Gegen den Mast!"
 msgstr ""
 
-#: scripts/rider.gd:2730
+#: scripts/rider.gd:2747
 msgid "%s – Drift-Winkel %d°  (erlaubt bis %d°)"
 msgstr ""
 
-#: scripts/rider.gd:2732
+#: scripts/rider.gd:2749
 msgid "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)"
 msgstr ""
 
@@ -2186,7 +2186,7 @@ msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  a
 msgstr ""
 
 #: scripts/training.gd:426
-msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgid "Im Becken läuft die Kombination weiter, auch ohne Drift. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
 msgstr ""
 
 #: scripts/training.gd:427

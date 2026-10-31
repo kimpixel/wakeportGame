@@ -1609,8 +1609,8 @@ msgstr "Space  pop at the ramp     ← / →  spin in the air     Ctrl  drift on
 msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe"
 msgstr "JUMP  pop at the ramp     Tilt  spin in the air     DRIFT  on the stairs"
 
-msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
-msgstr "The combo runs for 3 s – don't dawdle after the drop. Spins in the drop give more points, the stairs count double in the combo."
+msgid "Im Becken läuft die Kombination weiter, auch ohne Drift. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgstr "In the pool the combo keeps running, even without a drift. Spins in the drop earn more points, the stairs count double in the combo."
 
 msgid "Donkey Rail"
 msgstr "Donkey Rail"

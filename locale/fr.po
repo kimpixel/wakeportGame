@@ -1609,8 +1609,8 @@ msgstr "Espace  appel à la rampe     ← / →  tourner en l'air     Ctrl  drif
 msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe"
 msgstr "SAUT  appel à la rampe     Incliner  tourner en l'air     DRIFT  dans l'escalier"
 
-msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
-msgstr "Le combo dure 3 s – ne traîne pas après le drop. Les rotations dans le drop rapportent plus, l'escalier compte double dans le combo."
+msgid "Im Becken läuft die Kombination weiter, auch ohne Drift. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgstr "Dans le bassin, le combo continue, même sans drift. Les rotations pendant le drop rapportent plus de points, l’escalier compte double dans le combo."
 
 msgid "Donkey Rail"
 msgstr "Donkey Rail"

@@ -1613,8 +1613,8 @@ msgstr "Mezerník  odraz na rampě     ← / →  točení ve vzduchu     Ctrl  
 msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe"
 msgstr "SKOK  odraz na rampě     Náklon  točení ve vzduchu     DRIFT  na schodech"
 
-msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
-msgstr "Kombinace trvá 3 s – po dropu se neloudej. Otočky v dropu dávají víc bodů, schody se v kombinaci počítají dvakrát."
+msgid "Im Becken läuft die Kombination weiter, auch ohne Drift. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgstr "V bazénu kombinace pokračuje i bez driftu. Otočky při dropu dávají víc bodů, schody se v kombinaci počítají dvojnásobně."
 
 msgid "Donkey Rail"
 msgstr "Donkey Rail"

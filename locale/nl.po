@@ -1609,8 +1609,8 @@ msgstr "Spatie  afzet aan de schans     ← / →  draaien in de lucht     Ctrl 
 msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe"
 msgstr "SPRONG  afzet aan de schans     Kantelen  draaien in de lucht     DRIFT  op de trap"
 
-msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
-msgstr "De combinatie loopt 3 s – na de drop niet treuzelen. Draaien in de drop leveren meer punten op, de trap telt in de combinatie dubbel."
+msgid "Im Becken läuft die Kombination weiter, auch ohne Drift. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgstr "In het bassin loopt de combo door, ook zonder drift. Draaien in de drop levert meer punten op, de trap telt dubbel in de combo."
 
 msgid "Donkey Rail"
 msgstr "Donkey Rail"

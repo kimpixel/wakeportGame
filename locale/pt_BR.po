@@ -1609,8 +1609,8 @@ msgstr "Espaço  pulo na rampa     ← / →  girar no ar     Ctrl  drift na esc
 msgid "SPRUNG  Absprung an der Rampe     Neigen  in der Luft drehen     DRIFT  auf der Treppe"
 msgstr "PULO  pulo na rampa     Inclinar  girar no ar     DRIFT  na escada"
 
-msgid "Die Kombination läuft 3 s – nach dem Drop nicht trödeln. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
-msgstr "O combo dura 3 s – não enrole depois do drop. Giros no drop dão mais pontos, a escada conta em dobro no combo."
+msgid "Im Becken läuft die Kombination weiter, auch ohne Drift. Drehungen im Drop bringen mehr Punkte, die Treppe zählt in der Kombination doppelt."
+msgstr "Na piscina o combo continua, mesmo sem drift. Giros no drop dão mais pontos, a escada vale o dobro no combo."
 
 msgid "Donkey Rail"
 msgstr "Donkey Rail"
