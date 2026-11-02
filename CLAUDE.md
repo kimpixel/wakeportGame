@@ -71,7 +71,8 @@ Ledge, „cheesewedge“ = Cheese Wedge, „Transitionrail“ = Transition Rail.
   **nicht committen**, bis er nach eigenem Test „passt so“ sagt.
 - „passt so“ = Freigabe, dann commit.
 - **Im Worktree** (nicht auf main): vor jedem Push auf die Freigabe des Nutzers warten (er testet über den
-  Button im Band), erst dann pushen.- README.md und die Hilfe im HUD (`scripts/hud.gd`, `HELP`/`HELP_MOBILE`) bei Steuerungs- und
+  Button im Band), erst dann pushen.
+- README.md und die Hilfe im HUD (`scripts/hud.gd`, `HELP`/`HELP_MOBILE`) bei Steuerungs- und
   Regeländerungen mitpflegen.
 - **Sprachen**: Das Spiel gibt es auf Deutsch, Englisch, Französisch, Spanisch, Niederländisch, Polnisch, Tschechisch
   und Portugiesisch (Brasilien) (`Loc.LANGS`). **Jeden neuen oder geänderten sichtbaren Text** mit `tr("…")` (in Nodes)
