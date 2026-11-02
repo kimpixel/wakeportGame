@@ -72,6 +72,11 @@ Ledge, „cheesewedge“ = Cheese Wedge, „Transitionrail“ = Transition Rail.
 - „passt so“ = Freigabe, dann commit.
 - **Im Worktree** (nicht auf main): vor jedem Push auf die Freigabe des Nutzers warten (er testet über den
   Button im Band), erst dann pushen.
+- **Keine Pull Requests**: Der Nutzer ist Maintainer und arbeitet zurzeit nicht über PRs; es gibt keine
+  Contributor oder anderen Beteiligten. Nach der Freigabe **immer direkt in main mergen und pushen**
+  (Worktree: `git fetch`, bei Bedarf `origin/main` hereinmergen, `git push origin HEAD:main`) – kein
+  `gh pr create`, kein Auto-Merge, nicht nachfragen. Die GitHub-Regel „Changes must be made through a pull
+  request“ überspringt GitHub für ihn beim Push.
 - README.md und die Hilfe im HUD (`scripts/hud.gd`, `HELP`/`HELP_MOBILE`) bei Steuerungs- und
   Regeländerungen mitpflegen.
 - **Sprachen**: Das Spiel gibt es auf Deutsch, Englisch, Französisch, Spanisch, Niederländisch, Polnisch, Tschechisch
