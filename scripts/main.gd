@@ -74,6 +74,7 @@ var hud: Hud
 var mobile: MobileInput
 var pause_menu: PauseMenu
 var drift_debug: DriftDebug     # Balance-Bogen im Drift-Press, F3: Winkel-Linien am Brett
+var trick_log: TrickLog         # F3: Liveprotokoll der Tricks
 var debug_params: DebugParams   # F4, nur lokal (null in der Web-Version)
 var touch_pad: TouchPad         # nur am Handy
 var _setups: Array = []          # aus setups/index.json
@@ -233,6 +234,8 @@ func _ready() -> void:
 	drift_debug = DriftDebug.new()
 	drift_debug.rider = rider
 	add_child(drift_debug)
+	trick_log = TrickLog.new()              # F3: Liveprotokoll der Tricks links in der Mitte
+	add_child(trick_log)
 	water.follow = rider
 
 	# Hindernisse beider Terminals aus den Setup-Dateien (modular, siehe setups/)
@@ -522,6 +525,7 @@ func _ready() -> void:
 	if _hitbox_arg:
 		features.show_hitboxes = true
 		drift_debug.show_lines = true
+		trick_log.visible = true
 	for a: String in _set_args:
 		var kv := a.split("=", true, 1)
 		if kv.size() == 2 and settings.values.has(kv[0]):
@@ -1624,6 +1628,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("hitbox"):
 		features.show_hitboxes = not features.show_hitboxes
 		drift_debug.show_lines = features.show_hitboxes
+		trick_log.visible = features.show_hitboxes
 		hud.show_trick(tr("Hitboxen an") if features.show_hitboxes else tr("Hitboxen aus"))
 	elif event.is_action_pressed("help"):
 		hud.toggle_help()
@@ -1672,12 +1677,14 @@ func _reset() -> void:
 
 func _on_crashed(reason: String) -> void:
 	hud.show_trick(reason)
+	TrickLog.add("STURZ: " + reason)
 	if _test_log:
 		print("CRASH: ", reason, " at ", rider.pos)
 
 
 func _on_trick(trick_name: String, points: int) -> void:
 	hud.show_trick("%s   +%d" % [trick_name, points])
+	TrickLog.add("TRICK %s +%d" % [trick_name, points])
 	if _test_log:
 		print("TRICK: ", trick_name, " +", points)
 

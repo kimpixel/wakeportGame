@@ -808,9 +808,10 @@ func _on_slide(info: Dictionary) -> void:
 			_cur["out_air"] = _since_air < 0.3 and game.rider.mode != Rider.Mode.AIR    # vom Slider abgesprungen, eben gelandet
 		return
 	if task["kind"] == "r2r":
-		# Rail to Rail: Slider zählen, die per Transfer aneinanderhängen (der erste darf kurz sein)
-		var xfer: bool = info.get("transfer", false)
-		_count = maxi(_count, 1) + 1 if xfer else 1
+		# Rail to Rail: Slider zählen, die per Transfer aneinanderhängen – zählt der Fahrer, auch ganz kurze
+		# Slides dazwischen (die melden sich nicht: schnell von Pipe 2 weg = Pipe 3 ist trotzdem die dritte)
+		_count = int(info.get("chain", 1))
+		TrickLog.add("Challenge: Kette %d / %d" % [_count, int(task["chain"])])
 		if _count >= int(task["chain"]):
 			_value = float(info.get(task["metric"], 0.0))
 			_hit = true
@@ -838,6 +839,7 @@ func _on_slide(info: Dictionary) -> void:
 func _fail(text: String) -> void:
 	if _fail_t >= 0.0:
 		return
+	TrickLog.add("Challenge fehlgeschlagen: " + text)
 	_fail_text = text
 	_fail_t = FAIL_DELAY
 

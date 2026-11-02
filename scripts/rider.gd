@@ -293,6 +293,7 @@ var _hop_dir := Vector3.ZERO    # Rail to Rail: Richtung des Hops (Welt, waagrec
 var _hop_steer_lock := false    # ←/→ vom Hop noch gedrückt: dreht in der Luft erst nach dem Loslassen
 var _hop_landed := false        # aus dem Hop direkt auf einem anderen Slider gelandet
 var _slide_hop := false         # laufender Slide begann mit einem Transfer
+var _xfer_chain := 0            # so viele Slider hängen bis zum laufenden per Transfer aneinander (auch ganz kurze Slides)
 var test_hop := 0.0             # Test (--hop=±1): Autopilot springt auf jedem Slider gleich seitlich ab (+1 rechts)
 var test_hops := 99             # Test: so viele Hops je Versuch (--hop=±1,N)
 var _test_hop_part: FeaturePart
@@ -604,8 +605,10 @@ func reset() -> void:
 	_hop_dir = Vector3.ZERO
 	_hop_landed = false
 	_slide_hop = false
+	_xfer_chain = 0
 	_test_hop_part = null
 	_test_hop_n = 0
+	_log("—— neuer Start ——")
 	restarted.emit()
 
 
@@ -1688,6 +1691,8 @@ func _track_slide(delta: float, on_feature: bool) -> void:
 			_finish_slide()                    # direkt auf einen anderen Slider (Transfer): eigener Slide
 		if _slide_time == 0.0:
 			_slide_hop = _hop_landed           # Slide beginnt: kam man per Hop von einem anderen Slider?
+			_xfer_chain = _xfer_chain + 1 if _slide_hop else 1
+			_log("Slide-Beginn %s%s, Kette %d" % [part.display_name, " (Transfer)" if _slide_hop else "", _xfer_chain])
 			_hop_landed = false
 		_slide_time += delta
 		_slide_part = part
@@ -1747,7 +1752,11 @@ func _finish_slide() -> void:
 		slide_ended.emit({"part": _slide_part, "time": _slide_time, "dist": _slide_dist,
 			"dist_bs": _bs_dist, "dist_5050": _slide_dist - _bs_dist, "switches": switches,
 			"press": maxf(_press_nose_t, _press_tail_t), "press_nose": _press_nose_t,
-			"press_tail": _press_tail_t, "bs_share": bs_share, "transfer": _slide_hop})
+			"press_tail": _press_tail_t, "bs_share": bs_share, "transfer": _slide_hop, "chain": _xfer_chain})
+		_log("Slide-Ende %s %.2f s, %.1f m%s, Kette %d" % [_slide_part.display_name, _slide_time, _slide_dist,
+			" (Transfer)" if _slide_hop else "", _xfer_chain])
+	elif _slide_part:
+		_log("Slide-Ende %s %.2f s – zu kurz für Punkte (zählt in der Kette %d)" % [_slide_part.display_name, _slide_time, _xfer_chain])
 	_slide_seq.clear()
 	_bs_time = 0.0
 	_slide_dist = 0.0
@@ -1905,6 +1914,10 @@ func _pop() -> void:
 	_prepress = false                 # abgesprungen: ↑/↓ heißt wieder Rolle (oder Press vormerken, s. _step_air)
 	if _hop_side != 0.0 and _slide_part != null and (not autopilot or test_hop != 0.0) and not fast:
 		_hop(_hop_side)
+	elif _slide_part != null:
+		_log("Absprung vom Slide %s ohne Seite (←/→ beim Laden) = kein Hop" % _slide_part.display_name)
+	else:
+		_log("Absprung" + ((" von " + _launch_feat.display_name + " (nicht im Slide)") if _launch_feat else ""))
 	if fast:
 		_raley = true
 		var side := rope_dir.dot(right())
@@ -1934,6 +1947,12 @@ func _clear_air_pose() -> void:
 	_nolli_vis = 0.0
 
 
+## Debug-Protokoll (F3, `TrickLog`), nur der Spieler.
+func _log(text: String) -> void:
+	if not is_npc:
+		TrickLog.add(text)
+
+
 ## Rail to Rail: seitlicher Absprung vom Slider (←/→ beim Laden). Steht auf dieser Seite ein Nachbar-Slider,
 ## wird die Seitwärtsgeschwindigkeit so gewählt, dass man bei der Landung auf seiner Linie ankommt
 ## (Hop-Hilfe wie das Einloggen); sonst ein kleiner Hop. Die Fangzone des eigenen Sliders zählt in diesem Flug nicht.
@@ -1951,6 +1970,8 @@ func _hop(side: float) -> void:
 	_hop_dir = dir
 	_hop_from = _slide_part
 	_hop_steer_lock = true
+	_log("Hop von %s nach %s, %s, quer %.1f m/s" % [_slide_part.display_name, "rechts" if side > 0.0 else "links",
+		"Ziel-Slider gefunden" if target != Vector3.INF else "kein Ziel in Reichweite", v])
 
 
 ## Nächster Slider auf der Hop-Seite (Punkt auf seiner Slide-Linie etwa dort, wo man herunterkommt), sonst INF.
@@ -2172,6 +2193,7 @@ func _catch_glide(delta: float) -> bool:
 		if hit.is_empty():
 			return false
 		_catch_part = hit[0]
+		_log("Fangzone %s%s" % [_catch_part.display_name, " (Auffahrt)" if _catch_part.on_ramp(pos) else ""])
 	var target := _catch_part.catch_target(pos)
 	if target == Vector3.INF:
 		# aus der Zone heraus (z. B. Ende des Rails überflogen): normal weiterfliegen
@@ -2216,6 +2238,11 @@ func _land(surf: float) -> void:
 	# Rail to Rail: aus dem Hop direkt auf einen anderen Slider = Transfer
 	_hop_landed = _hop_from != null and landed_on != null and landed_on.is_slide() and not landed_on.on_ramp(pos) \
 		and not landed_on.same_module(_hop_from)
+	if landed_on:
+		_log("Landung auf %s%s, %s" % [landed_on.display_name, " (Auffahrt)" if landed_on.on_ramp(pos) else "",
+			"Transfer vorgemerkt" if _hop_landed else ("Hop vom selben Modul" if _hop_from else "kein Hop")])
+	else:
+		_log("Landung im Wasser" + (" – Hop ohne Ziel" if _hop_from else ""))
 	_hop_from = null
 	_hop_dir = Vector3.ZERO
 	_hop_steer_lock = false
