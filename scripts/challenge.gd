@@ -100,9 +100,9 @@ func begin(mode: String, idx: int) -> void:
 	active = true
 	running = false
 	attempt = 0
-	var term: String = task.get("terminal", "T2")
+	var term: String = task.get("terminal", Park.default_system())
 	game._training_terminal(term)
-	game.features.load_setup(task["setup"], {"T1": game.cable_t1, "T2": game.cable}, game._s_offset())
+	game.features.load_setup(task["setup"], game.cables, game._s_offset())
 	game.rider.forget_features()
 	game.npc.forget_features()
 	_off = float(game._s_offset()[term])

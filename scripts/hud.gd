@@ -21,6 +21,8 @@ Pfeil ↑ / ↓   in der Luft Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Back
 DRIFT (links, über SPRUNG)   Kante lösen (Treppe am Pool nur im Drift)        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)
 ☰   Menü (pausiert): Einstellungen, Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Szenario würfeln, Seil-Abreißen an/aus (aus: keine Rangliste)"""
 # i18n-end
+## Zusatz in der Hilfe an einer Rundanlage (set_help_full).
+const HELP_FULL := "Rundanlage: das Seil läuft im Kreis über alle Masten, keine Wenden – um die Ecken zieht es dich herum. Nach einem Sturz geht es kurz darauf zurück zum Startsteg (−1:00)."  # i18n
 
 const ACCENT := Color(0.55, 0.82, 0.22)          # Wakeport-Grün
 const PANEL := Color(0.05, 0.07, 0.09, 0.66)
@@ -495,8 +497,13 @@ func show_setup_menu(on: bool) -> void:
 
 
 ## Handy: eigener Hilfetext, ein-/ausblenden übers Menü (☰) statt H.
+var _help_key := HELP
+var _help_full := false
+
+
 func set_help(text: String) -> void:
-	_help.text = tr(text)
+	_help_key = text
+	_help.text = tr(text) + ("\n" + tr(HELP_FULL) if _help_full else "")
 	_help.visible = false
 	_help_hint.visible = false
 	_mobile_help = true
@@ -774,3 +781,7 @@ class TensionGauge extends Control:
 		return Color(0.95, 0.85, 0.2).lerp(DANGER, clampf((frac - 0.55) / 0.35, 0.0, 1.0))
 
 
+## Hilfe an einer Rundanlage um deren Regeln ergänzen (main.gd _apply_terminal).
+func set_help_full(on: bool) -> void:
+	_help_full = on
+	_help.text = tr(_help_key) + ("\n" + tr(HELP_FULL) if on else "")

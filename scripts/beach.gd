@@ -30,6 +30,22 @@ var waiting_spots: Array[Dictionary] = []
 var obstacles: Array[Dictionary] = []
 
 
+
+## Andere Parks (park.json "scenery" nicht "wakeport"): Leute je Anlage an den einfachen Startstegen (build_docks).
+var _people_by := {}
+
+
+## Leute im Startblock der Anlage (Jubel, Sturzruf), Anlagen-id wie in park.json.
+func people_of(t: String) -> Array[Dictionary]:
+	if _people_by.has(t):
+		return _people_by[t]
+	if t == "T2":
+		return people
+	if t == "T1":
+		return people_t1
+	var none: Array[Dictionary] = []
+	return none
+
 func _ready() -> void:
 	Geo.ensure_loaded()
 	_north_yaw = Geo.north_yaw()
@@ -40,6 +56,8 @@ func _ready() -> void:
 	_white = Util.mat(Color(0.93, 0.93, 0.92), 0.7)
 	_black = Util.mat(Color(0.08, 0.08, 0.09), 0.6)
 	_blue = Util.mat(Color(0.15, 0.45, 0.8), 0.5)
+	if Park.scenery() != "wakeport":
+		return                          # andere Parks: nur einfache Startstege (build_docks, nach den Anlagen)
 
 	_build_t2_start()
 	_build_t1_start()
@@ -883,3 +901,62 @@ func _build_water_items() -> void:
 			mi.transform = t
 			add_child(mi)
 			Util.sphere(self, 0.07, Vector3(p1.x, 0.03, p1.y), link_mat)    # Kettenglied
+
+
+# ---------------------------------------------------------------- Einfache Startstege (andere Parks)
+
+## Für Parks ohne eigene Kulisse: je Anlage ein schwimmender Holzsteg (Fläche = Startplatz-Rechteck aus main.gd
+## _build_cables, ausgerichtet am Seil), am Ufer eine kleine Holzhütte (Startblock), darauf der Steuermann mit
+## Laufweg und ein wartender Fahrer. starts: Anlagen-id -> {pos, dock, …}, cables: Anlagen-id -> CableSystem.
+func build_docks(starts: Dictionary, cables: Dictionary) -> void:
+	if Park.scenery() == "wakeport":
+		return
+	for t: String in cables:
+		var c: CableSystem = cables[t]
+		var st: Dictionary = starts[t]
+		var start: Vector3 = st["pos"]
+		var sl := c.transform.affine_inverse() * start
+		var lz := sl.z                                               # Startplatz entlang des Seils (lokal)
+		var sx := sl.x - 1.7                                         # Steg seitlich versetzt (Rundanlage: außen)
+		var dock := Node3D.new()
+		dock.transform = c.transform
+		add_child(dock)
+		# Steg: lokal x -1,2 … 4,6, z vom Ufer (lz + 4) bis 2 m hinter den Startplatz (lz - 2)
+		var y := Lake.DOCK_Y - 0.15
+		var len := 6.0
+		var mid := Vector3(1.7 + sx, y, lz + 1.0)
+		_b(dock, Vector3(5.8, 0.3, len), mid, _wood)
+		_b(dock, Vector3(5.8, 0.32, 0.25), mid + Vector3(0, -0.02, -len * 0.5), _blue)
+		for side: float in [-1.0, 1.0]:
+			_b(dock, Vector3(0.25, 0.32, len), mid + Vector3(side * 2.9, -0.02, 0), _blue)
+		# Hütte am Ufer rechts neben dem Steg, Boden auf dem Gelände
+		var hut_l := Vector3(6.2 + sx, 0.0, lz + 6.5)
+		if c is FullCable:
+			# Rundanlage: der Startplatz liegt draußen unter dem Seil – Laufsteg seitlich zum Ufer, Hütte an seinem Ende
+			var x0 := sx + 4.6
+			var x1 := x0
+			while x1 < x0 + 60.0:
+				var w := c.transform * Vector3(x1, 0.0, lz + 1.0)
+				if not Lake.in_lake(w.x, w.z, 0.0):
+					break
+				x1 += 0.5
+			if x1 > x0 + 0.5:
+				_b(dock, Vector3(x1 - x0 + 1.0, 0.25, 1.6), Vector3((x0 + x1) * 0.5, y, lz + 1.0), _wood)
+			hut_l = Vector3(x1 + 2.5, 0.0, lz + 1.0)
+		var hw := c.transform * hut_l
+		var gy := maxf(Geo.height(hw.x, hw.z), 0.2)
+		var hut := Node3D.new()
+		hut.transform = Transform3D(c.transform.basis, Vector3(hw.x, gy, hw.z))
+		add_child(hut)
+		_b(hut, Vector3(2.4, 2.3, 2.4), Vector3(0, 1.15, 0), _wood)
+		_b(hut, Vector3(1.0, 1.0, 0.06), Vector3(0, 1.4, -1.22), Util.mat(Color(0.12, 0.16, 0.2), 0.3))   # Fenster zum See
+		_b(hut, Vector3(2.9, 0.12, 2.9), Vector3(0, 2.36, 0), _roof)
+		# Steuermann am landseitigen Ende des Stegs, Laufweg quer über den Steg
+		var dw := func(l: Vector3) -> Vector3: return dock.global_transform * l
+		var crowd: Array[Dictionary] = []
+		_operator(t, [dw.call(Vector3(3.6 + sx, y + 0.15, lz + 3.2)), dw.call(Vector3(2.8 + sx, y + 0.15, lz + 2.4)),
+			dw.call(Vector3(0.4 + sx, y + 0.15, lz + 2.6)), dw.call(Vector3(3.9 + sx, y + 0.15, lz + 1.4))], crowd)
+		_people_by[t] = crowd
+		# wartender Fahrer sitzt an der Stegkante (Seite weg vom Seil)
+		waiting_spots.append({"pos": dw.call(Vector3(4.4 + sx, y + 0.15, lz + 0.6)), "face": dock.global_basis.x, "kind": "wait_sit"})
+

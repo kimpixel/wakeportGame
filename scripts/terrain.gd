@@ -35,9 +35,9 @@ func _ready() -> void:
 	var compat := RenderingServer.get_current_rendering_method() == "gl_compatibility"
 	_material = ShaderMaterial.new()
 	_material.shader = preload("res://shaders/terrain.gdshader")
-	var wide: Texture2D = load(Geo.DIR + "dop_wide.jpg")
+	var wide: Texture2D = load(Geo.dir() + "dop_wide.jpg")
 	_material.set_shader_parameter("dop_wide", wide)
-	_material.set_shader_parameter("dop_core", load(Geo.DIR + "dop_core.jpg"))
+	_material.set_shader_parameter("dop_core", load(Geo.dir() + "dop_core.jpg"))
 	_material.set_shader_parameter("area_rect", Vector4(Geo.area.position.x, Geo.area.position.y, Geo.area.end.x, Geo.area.end.y))
 	_material.set_shader_parameter("core_rect", Vector4(Geo.core.position.x, Geo.core.position.y, Geo.core.end.x, Geo.core.end.y))
 	_material.set_shader_parameter("dir_u", Geo.dir_u)
@@ -61,7 +61,7 @@ func _ready() -> void:
 ## Wald, Gras und Uferpflanzen (Automatik + von Hand gemalt, siehe Plants).
 func _build_vegetation() -> void:
 	Plants.ensure_loaded()
-	_dop_core = (load(Geo.DIR + "dop_core.jpg") as Texture2D).get_image()
+	_dop_core = (load(Geo.dir() + "dop_core.jpg") as Texture2D).get_image()
 	if _dop_core and _dop_core.is_compressed():
 		_dop_core.decompress()
 	_build_trees()
@@ -746,7 +746,10 @@ func _forest_near(x: float, z: float) -> bool:
 ## Nachgebauter Strand an den Startmasten (Sand, Hütten, Stege): kein Waldmantel, kein Gras.
 func _at_beach(x: float, z: float) -> bool:
 	var p := Vector3(x, 0.0, z)
-	return p.distance_to(Geo.masts["t1_start"]) < 18.0 or p.distance_to(Geo.masts["t2_start"]) < 18.0
+	for pair: Array in Park.lanes():
+		if p.distance_to(Geo.masts[pair[0]]) < 18.0:
+			return true
+	return false
 
 
 func _chunk_add(chunks: Dictionary, x: float, z: float, art: int, t: Transform3D, c: Color) -> void:
@@ -822,9 +825,9 @@ func _build_grass() -> void:
 	rng.seed = 23
 	var chunks := {}
 	var done := {}   # Rasterpunkte, die schon geprüft sind (Bereiche beider Anlagen überlappen)
-	for t: String in ["t1", "t2"]:
-		var a: Vector3 = Geo.masts[t + "_start"]
-		var e: Vector3 = Geo.masts[t + "_end"]
+	for pair: Array in Park.lanes():
+		var a: Vector3 = Geo.masts[pair[0]]
+		var e: Vector3 = Geo.masts[pair[1]]
 		var along := (e - a).normalized()
 		var side := Vector3(-along.z, 0.0, along.x)
 		var length := a.distance_to(e)

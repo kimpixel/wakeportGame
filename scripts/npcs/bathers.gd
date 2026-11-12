@@ -35,8 +35,12 @@ const COLORS := [Color(0.95, 0.35, 0.55), Color(0.98, 0.82, 0.15), Color(0.2, 0.
 
 
 ## Weather.changed: Anzahl nach Hitze, Tageslicht und Regen.
+## Nur am Wakeport (Liegewiese am Nordstrand, Badebereich): andere Parks ohne Badegäste.
+var enabled := true
+
+
 func apply_season(w: Weather) -> void:
-	var on := w.heat > 0.05 and w.rain_now < 0.2 and w.daylight > 0.5
+	var on := enabled and w.heat > 0.05 and w.rain_now < 0.2 and w.daylight > 0.5
 	if on and not _built:
 		_build()
 	var n := int(round(FLOATERS[clampi(quality, 0, 2)] * w.heat)) if on else 0

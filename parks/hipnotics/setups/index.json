@@ -1,0 +1,7 @@
+{
+  "_info": "Feature-Setups von Hip-Notics (Format wie setups/index.json; L2 = Rundanlage, s entlang des Seils ab dem Startmast). Oben = Standard.",
+  "setups": [
+    { "id": "foto-2025", "name": "L2 nach Luftbild", "file": "res://parks/hipnotics/setups/setup_foto_2025.json" },
+    { "id": "leer", "name": "Ohne Features", "file": "res://parks/hipnotics/setups/setup_leer.json" }
+  ]
+}

@@ -151,7 +151,7 @@ func challenge_board(mode_id: String, task: Dictionary) -> Dictionary:
 	var t := task.duplicate(true)
 	for k: String in COSMETIC:
 		t.erase(k)
-	var ver := "%d-%s-%s" % [RULES, _hash(t), setup_fp(task.get("setup", ""), task.get("terminal", "T2"))]
+	var ver := "%d-%s-%s" % [RULES, _hash(t), setup_fp(task.get("setup", ""), task.get("terminal", Park.default_system()))]
 	return {"board": "ch/%s/%s" % [mode_id, task["id"]], "ver": _ver(ver), "lower": task.get("lower", false),
 		"task": task, "title": "%s · %s" % [tr(Training.MODES[Training.mode_index(mode_id)]["name"]), tr(task["title"])]}
 
@@ -160,7 +160,7 @@ func challenge_board(mode_id: String, task: Dictionary) -> Dictionary:
 func competition_board(seconds: int, terminal: String, setup: Dictionary, terminal_name := "") -> Dictionary:
 	var ver := "%d-c%d-%s" % [RULES, POINTS, setup_fp(setup.get("file", ""), terminal)]
 	var sname := Loc.setup_name(str(setup.get("name", setup.get("id", "?"))), true)
-	return {"board": "comp/%d/%s/%s" % [seconds, terminal, setup.get("id", "?")], "ver": _ver(ver), "lower": false,
+	return {"board": "comp/%d/%s%s/%s" % [seconds, Park.board_prefix(), terminal, setup.get("id", "?")], "ver": _ver(ver), "lower": false,
 		"title": "Competition · %s · %s · %s" % [tr(terminal_name) if terminal_name != "" else terminal, sname,
 			tr("Runde %s") % ("%d:%02d" % [seconds / 60, seconds % 60])]}
 

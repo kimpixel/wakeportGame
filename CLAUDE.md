@@ -5,7 +5,18 @@ Frankfurt mit zwei 2-Mast-Seilanlagen (T1, T2). Web-Version auf GitHub Pages:
 https://kimpixel.github.io/wakeportGame/ (Repo `kimpixel/wakeportGame`, Build per
 `.github/workflows/web.yml` bei jedem Push auf `main`, dauert ca. 1 min).
 
-Spielerdoku: `README.md`. Feature-Setups und Bauteile: `setups/README.md`.
+Spielerdoku: `README.md`. Feature-Setups und Bauteile: `setups/README.md`. Wakeparks: `parks/README.md`.
+
+**Mehrere Wakeparks** (Branch `claude/multi-park-wakeboard-xtkris`, in Arbeit): je Park `parks/<id>/park.json` (Lage, Zeitzone,
+Geodaten, Setups, Anlagen mit id/Name/Typ), Liste `parks/index.json`, geladen von `scripts/park.gd` (`Park`). Phasen: 1 Umbau
+(Wakeport als park.json, ohne sichtbare Änderung – erledigt), 2 World Map + Anlagen-Auswahl (erledigt: `scripts/ui/world_map.gd`,
+Startseite WAKEPARK, Park-Wechsel = Szene neu aufbauen `main.gd _change_park`, Test `--screen=@weltkarte[:zoom=F][:park=ID][:waehlen]`), 3 Hip-Notics (Antalya) mit den
+2.0-Anlagen (erledigt: System 1/2 auf L3, Geodaten aus `tools/park_geo.mjs`, Startsteg automatisch, einfache Kulisse
+`Beach.build_docks`; Raunheimer Leben nur bei `scenery: wakeport`), 4 Rundanlage (erledigt: `scripts/full_cable.gd` `FullCable`, L2 bei Hip-Notics,
+Setup „L2 nach Luftbild“), 5 Feinschliff. Recherche Hip-Notics: `parks/hipnotics/NOTIZEN.md`.
+Anlagen-ids des Wakeports bleiben `T1`/`T2` (Setup-Dateien, Ranglisten unverändert); andere Parks: Ranglisten
+`comp/SEK/<park>.<anlage>/…` (`Park.board_prefix`). Nie `"T1"`/`"T2"` fest in neuen Code schreiben – `Park.system_ids()`,
+`Park.default_system()`, `main.gd cables`.
 
 ## Begriffe und Kurzformen des Nutzers (immer so verstehen)
 
@@ -100,7 +111,7 @@ Godot liegt im Repo-Root: `./Godot_v4.7.2-stable_win64_console.exe`. Kein ffmpeg
 
 Wichtige Test-Argumente (vollständig im Kopf von `scripts/main.gd`): `--autotest`, `--quit=S`,
 `--shot=P --shot-time=S`, `--view=x,y,z,lx,ly,lz`, `--closeup=x,y,z[,lx,ly,lz]` (relativ zum Fahrer),
-`--terminal=T1|T2`, `--setup=ID`, `--screen[=NAME|@liste|@einstellungen]`, `--no-screen`,
+`--park=ID`, `--terminal=T1|T2`, `--setup=ID`, `--screen[=NAME|@liste|@einstellungen]`, `--no-screen`,
 `--mobile --tilt=GRAD`, `--jump-at=S`, `--pitch=±1`, `--hold=AKTION@T0-T1`, `--crash-at=S`, `--letgo-at=S`,
 `--game-time=S`, `--scenario=ID`, `--weather=ID --hour=H --day=T`, `--plane=S`, `--passive`.
 Mit `--hold` wird die Gamepad-Belegung entfernt (`main.gd _drop_pad_input`): Godot liest Gamepads auch ohne Fensterfokus, wer
@@ -139,13 +150,16 @@ Fallstricke:
 
 | Datei | Inhalt |
 |---|---|
+| `scripts/park.gd`, `parks/` | gewählter Wakepark aus `parks/<id>/park.json`: Lage (`Park.lat/lon` → Sonnenstand, Live-Wetter), Zeitzone (`Park.utc_offset`, Wakeport MEZ/MESZ), Geodaten-Ordner (`Geo.dir()`), Setup-Liste (`FeatureSet.index_file()`), Anlagen (`system_ids`, `system_name`, `default_system`, `origin_system`); main.gd baut daraus alle Anlagen (`_build_cables`, `cables`: id → CableSystem; `cable` = Anlage im Ursprung, `cable_t1` = Nachbaranlage des NPC). `tools/cog_crop.mjs`: Ausschnitt aus Sentinel-2/Copernicus-DEM (freie Geodaten für neue Parks) |
 | `scripts/main.gd` | Szene aufbauen, Eingabe (`_setup_input`), Spielablauf (Runde, Strafzeiten, Wenden-Wertung), Startseite öffnen/schließen, Test-Argumente |
 | `scripts/rider.gd` | Fahrer: Physik (Wasser, Luft, Slider), Seilzug, Tricks und Punkte, Posen (IK am Menschen-Rig), Raley/Überschlag/Press, Sturz/Schwimmen/Deep-Water-Start, Autopilot/NPC |
 | `scripts/training.gd`, `scripts/challenge.gd`, `scripts/ui/task_panel.gd` | Spielmodi: Aufgaben/Medaillen (Daten), Ablauf eines Versuchs (Platzieren, Countdown, Messen), Aufgaben-Fenster |
-| `scripts/cable_system.gd` | Carrier/Seilbahn einer Anlage (Zustände IDLE, START, RUN, BRAKE, PAUSE, FETCH, HOLD, DONE) |
+| `scripts/cable_system.gd` | Carrier/Seilbahn einer Anlage (Zustände IDLE, START, RUN, BRAKE, PAUSE, FETCH, HOLD, DONE); `place_xf`/`to_lane` = Bahn (s, x) ↔ Welt (Features) |
+| `scripts/full_cable.gd` | **Rundanlage** (`FullCable extends CableSystem`, park.json `type: "full"`): Masten wie Rixen „Big Bro“ (Nutzer: Kranform) **an Land**, 13–15 m (`MAST_H`), Fachwerk-Ausleger weit übers Wasser (Motormast am Start mit Antriebshaus); **Ecken des Seilwegs = Auslegerspitzen**, automatisch so, dass jede Strecke **mittig zwischen Ufer und Insel** liegt (`centered_tips`; Nutzer: das Seil hängt in der Mitte), gerundet (`CORNER_R` 10 m), mehrere Carrier im Abstand `CARRIER_GAP`, einer zieht den Spieler (`u` entlang des Wegs). Für den Fahrer gleiche Schnittstelle (`get_anchor`, `get_velocity`, `local_vz`, IDLE/START/RUN/DONE) – **Fahrphysik unverändert**; keine Wenden/Bojen (turn_a/b weit weg), Setups: `s` = Meter entlang des Seils ab dem Startmast (`path_frame`, kein FEATURE_SHIFT). **Sturz = nach `main.gd FULL_RETURN` 3,5 s zurück zum Startsteg, −1:00** (Nutzer: Schwimmen und Zurücklaufen dauert zu lange, also Skip); Startsteg draußen unter dem Seil kurz hinter der Ecke am Startmast (`FULL_START_S`, seitlich `FULL_DOCK_X`), Laufsteg zum Ufer, Hütte am Ufer; **Start mit Blick zur Insel, Brett quer zum Seil** (Nutzer); Autopilot folgt nur dem Seil (kein Pendeln, keine Spur-Planung); Hilfe-Zusatz `Hud.HELP_FULL` |
 | `scripts/features/` | `feature_set.gd` (Setups laden), `feature_part.gd` (Form = Physik = Grafik), `hacks.gd` (Hack-Erkennung/-Namen) |
 | `shaders/feature.gdshader`, `feature_rail.gdshader`, `feature_common.gdshaderinc` | Optik der Features: weißer Kunststoff, **nass glänzend** (Wasserfilm: Klarlack, nass dunkler, Fresnel wie der See; Kratzer und Dreck matt; regelbar im F4-Panel Reiter „Features“: `FeaturePart.WET_DARK`, `WET_FRESNEL`, `WET_ROUGH`, `WET_COAT`, `REFLECT`) und **spiegelt die Umgebung** über Reflection Probes (`FeatureSet.update_reflections`, nahe Teile teilen sich eine – `PROBE_GAP` 3 m, sonst über 60 Probes; UPDATE_ONCE, unsichtbar aufgenommen und danach weich eingeblendet, sonst flackern die Features beim Start; Log `SPIEGELUNG ein`; nur auf die Features über `REFLECT_LAYER`, ab Grafik Mittel, nur im Spiel), mit Kratzern (je Teil eigener Zufall `seed` aus Lage + Bauteil, `FeaturePart._seed`), schwarzes Rail matt mit Längskratzern (`FeaturePart._rail_mat`; graues Pro Rail bleibt Stahl), Verschmutzung vom Wasser aus (`water_dirt`: bis ca. 8 cm über Wasser braun/gelblich, darüber ca. 30 cm grau-fleckiger Verlauf). **Kanten scharf** (`_build_heightfield`): Gitterlinien liegen genau auf den Knickstellen (`_grid_lines`: Auffahrt-Enden, Profilpunkte, seitliche Auffahrt, Bump-Plateau), Maschen werden entlang der passenden Diagonale geteilt, Normalen nur bis `CREASE` 10° geglättet – sonst sahen Kanten rund und am Handy verschwommen aus |
-| `scripts/ui/start_screen.gd` | Startseite (responsiv, Popups Einstellungen / Features & Hacks / Detail) |
+| `scripts/ui/start_screen.gd` | Startseite (responsiv, Popups Einstellungen / Features & Hacks / Detail); oben links WAKEPARK (Knopf mit gezeichneter Weltkugel) öffnet die World Map, Überschrift der Anlagen-Auswahl aus `Park.system_label` (Wakeport „TERMINAL“, sonst „ANLAGE“) |
+| `scripts/ui/world_map.gd`, `assets/map/world.json` | **World Map** (eigene Seite wie der Setup-Editor): Karte aus Natural Earth (gemeinfrei, `tools/world_map_data.mjs`: Land, große Seen, Grenzen, vereinfacht) als Mesh in Länge/Breite, Pins selbst gezeichnet (Knöpfe, MenuNav), rechts bzw. hochkant unten Name, Ort, Anlagen mit Typ (`Park.type_name`), „Hier fahren“; Mausrad/zwei Finger zoomen, Ziehen verschiebt. Park-Wechsel speichert [game] park (Tests nicht) und baut die Szene neu auf (`Geo`/`Plants` laden je Park neu) |
 | `scripts/ui/setup_editor.gd` | Setup-Editor (eigene Seite, Draufsicht/3D, Bauteile, Hacks, Auswahl, Speichern in `user://setups`, JSON); Reiter **Pflanzen**: auf dem Luftbild malen/radieren/Automatik zurückholen (Pinsel, Dichte, eigenes Rückgängig), speichert `setups/plants.json` (aus dem Projekt gestartet; exportiert `user://plants.json`), Spiel baut die Bepflanzung danach neu auf; Test `--screen=@editor:t2:sel=2:3d…`, Pflanzen `…:pflanzen:mitte=S,X:art=ID:malen=S,X,S2,X2:psave` (psave schreibt die Datei!) |
 | `scripts/plants.gd`, `setups/plants.json` | Bepflanzung: Arten (Schilf, Ufergras, Wiesengras, Strauch, Laubbaum, Kiefer), **Automatik am Ufer** (Schilf im flachen Wasser, nicht in der Fahrbahn `LANE_FREE`; Ufergras; Sträucher; Büschel per Rauschen) und **von Hand gemalt** (Spielkoordinaten). Gemalt/radiert = Stelle **von Hand gepflegt** (Raster 2 m, je Ebene Boden/Gehölz): dort keine Automatik, auch kein Wald/Wiesengras aus den Daten. Zufall je Rasterpunkt mit `Plants.mix` (nicht `hash()` als Seed: ähnliche Seeds = ähnliche Zufallsfolgen) |
 | `scripts/ui/feature_preview.gd` | drehbare 3D-Vorschau eines Features/Hacks (eigene Welt) |
@@ -166,6 +180,8 @@ Fallstricke:
 | `scripts/npcs/` | Umgebung (Steuermänner, wartende Fahrer, SUPs), Flugzeuge im Anflug; **Leben nach Jahreszeit** (alle über `apply_season(weather)` bei jedem `Weather.changed`; Werte `Weather.warm`/`heat`/`daylight`/`month()`): `ambient.gd` Hecht nur April–Oktober, SUPs nach Wärme (Winter/Regen/Nacht keine, Hitzetag + `SUP_EXTRA` je Grafikstufe, nie zwischen den Bahnen); `bathers.gd` Hitzetag: Luftmatratzen/Schwimmringe (Person `float`/`ring`, nur einmal posiert) im Badebereich und seeseitig, Liegewiese am Nordstrand (x −200..−120), Obergrenzen je Grafikstufe; `wildlife.gd` Haubentaucher (März–Nov., tauchen vor dem Fahrer), Schwanenpaar (Küken Mai–Sep., Herz), Graureiher, Kranichzug (Feb./März, Okt./Nov.), Libellen, Fledermäuse, Glühwürmchen, Eisschollen (Dez.–Feb.); `storm.gd` Gewitter-Blitze. Herbstlaub/kahle Laubbäume: globale Shader-Parameter `autumn`/`bare` (`Weather._leaves`), Pappelflug im Mai. Kein Wind/keine höheren Wellen (Physik = Rangliste) |
 | `scripts/wakeboard.gd`, `shaders/boot*.gdshader*` | Board + Bindungen (Schaft knickt per Shader mit dem Schienbein) |
 | `setups/parts.json`, `setups/setup_*.json`, `setups/index.json` | Bauteil-Katalog, Feature-Setups je Terminal |
+
+Seen anderer Parks: das grobe Wasser-Gitter deckt alle Seen ab (`Water._lake_rect`, Wakeport fest `LAKE_RECT`).
 
 Koordinaten: Seil T2 entlang −z vom Startmast (z = 0). `s` = Abstand vom Startmast entlang des
 Seils, `x` = seitlich (+ rechts mit Blick zum Endmast). Lage: 50,0122 N, 8,4773 E. Seeseite der

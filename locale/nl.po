@@ -299,6 +299,9 @@ msgstr "Orbit"
 msgid "Ufer"
 msgstr "Oever"
 
+msgid "Rundfahrt"
+msgstr "Rondje"
+
 msgid "Runde 7:30"
 msgstr "Ronde 7:30"
 
@@ -376,6 +379,9 @@ msgstr ""
 "Pijl ↑ / ↓   in de lucht Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), op de slider (al bij de aanloop) Nose- / Tailpress, in de drift Drift Press, op de steiger ▼ ingedrukt = steigerstart (in lijn Nolli, dwars Raley Start)\n"
 "DRIFT (links, boven SPRONG)   kant loslaten (trap van de pool alleen in de drift)        Na een val: ZWEMMEN ingedrukt = zwemmen, SKIP = meteen verder (−1:00)\n"
 "☰   Menu (gepauzeerd): instellingen, help, terug naar de steiger (spelmodi: nieuwe poging), startscherm, geluid, scenario dobbelen, lijn losscheuren aan/uit (uit: geen ranglijst)"
+
+msgid "Rundanlage: das Seil läuft im Kreis über alle Masten, keine Wenden – um die Ecken zieht es dich herum. Nach einem Sturz geht es kurz darauf zurück zum Startsteg (−1:00)."
+msgstr "Rondbaan: de kabel loopt in een rondje over alle masten, geen keerpunten – hij trekt je door de bochten. Na een val ga je kort daarna terug naar de startsteiger (−1:00)."
 
 msgid "Runde %s"
 msgstr "Ronde %s"
@@ -515,8 +521,18 @@ msgstr "Je beste: %s"
 msgid "PLATZ %d von %d"
 msgstr "PLAATS %d VAN %d"
 
+msgid "Zurück zum Startsteg"
+msgstr "Terug naar de startsteiger"
+
 msgid "FREI"
 msgstr "VRIJ"
+
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Kamera: %s%s"
+msgstr ""
+"Rider %d km/h   ·   Kabel %s: %s (snelheid %d km/h)\n"
+"Camera: %s%s"
 
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
@@ -586,12 +602,6 @@ msgstr "In de boot gereden!"
 msgid "Boot crash!"
 msgstr "Bootcrash!"
 
-msgid "Terminal 1"
-msgstr "Terminal 1"
-
-msgid "Terminal 2"
-msgstr "Terminal 2"
-
 msgid "MODUS"
 msgstr "MODUS"
 
@@ -603,6 +613,15 @@ msgstr "Muziek toevoegen"
 
 msgid "Vom Blitz getroffen!"
 msgstr "Door de bliksem geraakt!"
+
+msgid "2-Mast-Anlage (2.0)"
+msgstr "2-mastbaan (2.0)"
+
+msgid "Rundanlage"
+msgstr "Rondbaan"
+
+msgid "ANLAGE"
+msgstr "BAAN"
 
 msgid "Bodenpflanzen (Gräser, Schilf)"
 msgstr "Bodemplanten (grassen, riet)"
@@ -1777,12 +1796,6 @@ msgstr "SETUP-EDITOR"
 msgid "Name des Setups"
 msgstr "Naam van de setup"
 
-msgid "Terminal 2 (Strand)"
-msgstr "Terminal 2 (strand)"
-
-msgid "Terminal 1 (Lounge-Steg)"
-msgstr "Terminal 1 (lounge-steiger)"
-
 msgid "Rückgängig"
 msgstr "Ongedaan maken"
 
@@ -2110,11 +2123,14 @@ msgstr "Eindmast"
 msgid "WAKE THE HACK"
 msgstr "WAKE THE HACK"
 
-msgid "Wakeport Raunheim"
-msgstr "Wakeport Raunheim"
-
 msgid "„%s“"
 msgstr "„%s”"
+
+msgid "WAKEPARK"
+msgstr "WAKEPARK"
+
+msgid "World Map: anderen Wakepark wählen"
+msgstr "Wereldkaart: ander wakepark kiezen"
 
 msgid "SPIELMODUS"
 msgstr "SPELMODUS"
@@ -2577,6 +2593,18 @@ msgstr "Scenario dobbelen"
 msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
 msgstr "Lijn losscheuren aan/uit  (uit: geen ranglijst)"
 
+msgid "WAKEPARK WÄHLEN"
+msgstr "WAKEPARK KIEZEN"
+
+msgid "ANLAGEN"
+msgstr "BANEN"
+
+msgid "HIER FAHREN"
+msgstr "HIER RIJDEN"
+
+msgid "%s (kommt bald)"
+msgstr "%s (binnenkort)"
+
 msgid "Sonnig"
 msgstr "Zonnig"
 
@@ -2753,4 +2781,46 @@ msgstr "Bal"
 
 msgid "Bump"
 msgstr "Bump"
+
+msgid "Manavgat, Antalya, Türkei"
+msgstr "Manavgat, Antalya, Turkije"
+
+msgid "L2 nach Luftbild"
+msgstr "L2 naar luchtfoto"
+
+msgid "Ohne Features"
+msgstr "Zonder obstakels"
+
+msgid "System 1"
+msgstr "Systeem 1"
+
+msgid "System 1 (L3, 2-Mast-Anlage)"
+msgstr "Systeem 1 (L3, 2-mastbaan)"
+
+msgid "System 2"
+msgstr "Systeem 2"
+
+msgid "System 2 (L3, 2-Mast-Anlage)"
+msgstr "Systeem 2 (L3, 2-mastbaan)"
+
+msgid "L2"
+msgstr "L2"
+
+msgid "L2 (Rundanlage, 5 Masten)"
+msgstr "L2 (rondbaan, 5 masten)"
+
+msgid "Raunheim, Deutschland"
+msgstr "Raunheim, Duitsland"
+
+msgid "Terminal 1"
+msgstr "Terminal 1"
+
+msgid "Terminal 1 (Lounge-Steg)"
+msgstr "Terminal 1 (lounge-steiger)"
+
+msgid "Terminal 2"
+msgstr "Terminal 2"
+
+msgid "Terminal 2 (Strand)"
+msgstr "Terminal 2 (strand)"
 

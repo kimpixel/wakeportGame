@@ -299,6 +299,9 @@ msgstr "Orbit"
 msgid "Ufer"
 msgstr "Shore"
 
+msgid "Rundfahrt"
+msgstr "Riding the loop"
+
 msgid "Runde 7:30"
 msgstr "Round 7:30"
 
@@ -376,6 +379,9 @@ msgstr ""
 "Arrow ↑ / ↓   in the air Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), on a slider (already on approach) Nose- / Tailpress, in a drift Drift Press, on the dock hold ▼ = dock start (in line Nolli, sideways Raley Start)\n"
 "DRIFT (left, above JUMP)   release the edge (pool stairs only in a drift)        After a crash: hold SWIM = swim, SKIP = continue right away (−1:00)\n"
 "☰   Menu (paused): settings, help, back to the dock (game modes: new attempt), home screen, sound, shuffle scenario, rope rip on/off (off: no leaderboard)"
+
+msgid "Rundanlage: das Seil läuft im Kreis über alle Masten, keine Wenden – um die Ecken zieht es dich herum. Nach einem Sturz geht es kurz darauf zurück zum Startsteg (−1:00)."
+msgstr "Full-size cable: the cable runs in a loop over all towers, no turnarounds – it pulls you around the corners. After a fall you're taken back to the start dock shortly after (−1:00)."
 
 msgid "Runde %s"
 msgstr "Round %s"
@@ -515,8 +521,18 @@ msgstr "Your best: %s"
 msgid "PLATZ %d von %d"
 msgstr "RANK %d of %d"
 
+msgid "Zurück zum Startsteg"
+msgstr "Back to the start dock"
+
 msgid "FREI"
 msgstr "FREE"
+
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Kamera: %s%s"
+msgstr ""
+"Rider %d km/h   ·   Cable %s: %s (speed %d km/h)\n"
+"Camera: %s%s"
 
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
@@ -586,12 +602,6 @@ msgstr "Rode into the boat!"
 msgid "Boot crash!"
 msgstr "Boat crash!"
 
-msgid "Terminal 1"
-msgstr "Terminal 1"
-
-msgid "Terminal 2"
-msgstr "Terminal 2"
-
 msgid "MODUS"
 msgstr "MODE"
 
@@ -603,6 +613,15 @@ msgstr "Add music"
 
 msgid "Vom Blitz getroffen!"
 msgstr "Struck by lightning!"
+
+msgid "2-Mast-Anlage (2.0)"
+msgstr "2-tower system (2.0)"
+
+msgid "Rundanlage"
+msgstr "Full-size cable"
+
+msgid "ANLAGE"
+msgstr "CABLE"
 
 msgid "Bodenpflanzen (Gräser, Schilf)"
 msgstr "Ground plants (grasses, reeds)"
@@ -1777,12 +1796,6 @@ msgstr "SETUP EDITOR"
 msgid "Name des Setups"
 msgstr "Setup name"
 
-msgid "Terminal 2 (Strand)"
-msgstr "Terminal 2 (beach)"
-
-msgid "Terminal 1 (Lounge-Steg)"
-msgstr "Terminal 1 (lounge dock)"
-
 msgid "Rückgängig"
 msgstr "Undo"
 
@@ -2110,11 +2123,14 @@ msgstr "End tower"
 msgid "WAKE THE HACK"
 msgstr "WAKE THE HACK"
 
-msgid "Wakeport Raunheim"
-msgstr "Wakeport Raunheim"
-
 msgid "„%s“"
 msgstr "“%s”"
+
+msgid "WAKEPARK"
+msgstr "WAKEPARK"
+
+msgid "World Map: anderen Wakepark wählen"
+msgstr "World map: choose another wakepark"
 
 msgid "SPIELMODUS"
 msgstr "GAME MODE"
@@ -2577,6 +2593,18 @@ msgstr "Shuffle scenario"
 msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
 msgstr "Rope rip on/off  (off: no leaderboard)"
 
+msgid "WAKEPARK WÄHLEN"
+msgstr "CHOOSE WAKEPARK"
+
+msgid "ANLAGEN"
+msgstr "CABLES"
+
+msgid "HIER FAHREN"
+msgstr "RIDE HERE"
+
+msgid "%s (kommt bald)"
+msgstr "%s (coming soon)"
+
 msgid "Sonnig"
 msgstr "Sunny"
 
@@ -2753,4 +2781,46 @@ msgstr "Ball"
 
 msgid "Bump"
 msgstr "Bump"
+
+msgid "Manavgat, Antalya, Türkei"
+msgstr "Manavgat, Antalya, Turkey"
+
+msgid "L2 nach Luftbild"
+msgstr "L2 from aerial photo"
+
+msgid "Ohne Features"
+msgstr "No features"
+
+msgid "System 1"
+msgstr "System 1"
+
+msgid "System 1 (L3, 2-Mast-Anlage)"
+msgstr "System 1 (L3, 2-tower system)"
+
+msgid "System 2"
+msgstr "System 2"
+
+msgid "System 2 (L3, 2-Mast-Anlage)"
+msgstr "System 2 (L3, 2-tower system)"
+
+msgid "L2"
+msgstr "L2"
+
+msgid "L2 (Rundanlage, 5 Masten)"
+msgstr "L2 (full-size cable, 5 towers)"
+
+msgid "Raunheim, Deutschland"
+msgstr "Raunheim, Germany"
+
+msgid "Terminal 1"
+msgstr "Terminal 1"
+
+msgid "Terminal 1 (Lounge-Steg)"
+msgstr "Terminal 1 (lounge dock)"
+
+msgid "Terminal 2"
+msgstr "Terminal 2"
+
+msgid "Terminal 2 (Strand)"
+msgstr "Terminal 2 (beach)"
 

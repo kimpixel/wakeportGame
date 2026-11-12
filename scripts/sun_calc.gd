@@ -1,9 +1,6 @@
 class_name SunCalc
-## Sonnenstand am Wakeport (NOAA-Näherung, auf etwa ein Grad genau) und deutsche Zeit
-## (MEZ/MESZ mit Umstellung am letzten Sonntag im März bzw. Oktober).
-
-const LAT := 50.0122               # T2-Startmast, aus den UTM-Koordinaten der Geodaten
-const LON := 8.4773
+## Sonnenstand am gewählten Park (NOAA-Näherung, auf etwa ein Grad genau) und Ortszeit des Parks
+## (Lage und Zeitzone aus parks/<id>/park.json, siehe Park).
 
 # i18n-begin
 const MONTHS := ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August",
@@ -13,7 +10,12 @@ const MONTHS := ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "
 
 ## Sonnenstand: x = Höhe über dem Horizont, y = Azimut (Grad, von Norden im Uhrzeigersinn).
 ## day_of_year: 1..365, hour_utc: Stunde in UTC.
-static func position(day_of_year: int, hour_utc: float, lat := LAT, lon := LON) -> Vector2:
+## lat/lon: NAN = Lage des Parks.
+static func position(day_of_year: int, hour_utc: float, lat := NAN, lon := NAN) -> Vector2:
+	if is_nan(lat):
+		lat = Park.lat()
+	if is_nan(lon):
+		lon = Park.lon()
 	var g := TAU / 365.0 * (day_of_year - 1 + (hour_utc - 12.0) / 24.0)
 	var eqtime := 229.18 * (0.000075 + 0.001868 * cos(g) - 0.032077 * sin(g)
 		- 0.014615 * cos(2.0 * g) - 0.040849 * sin(2.0 * g))
@@ -28,11 +30,9 @@ static func position(day_of_year: int, hour_utc: float, lat := LAT, lon := LON) 
 	return Vector2(el, fposmod(az, 360.0))
 
 
-## Unterschied deutsche Zeit -> UTC (1 = MEZ, 2 = MESZ) für den Tag im Jahr.
+## Unterschied Ortszeit des Parks -> UTC für den Tag im Jahr (Wakeport: 1 = MEZ, 2 = MESZ).
 static func utc_offset(year: int, day_of_year: int) -> int:
-	var start := _last_sunday(year, 3)
-	var end := _last_sunday(year, 10)
-	return 2 if day_of_year >= start and day_of_year < end else 1
+	return Park.utc_offset(year, day_of_year)
 
 
 ## Tag im Jahr -> "21. Juni"
@@ -53,7 +53,8 @@ static func _date(year: int, doy: int) -> Dictionary:
 	return Time.get_datetime_dict_from_unix_time(t0 + (doy - 1) * 86400)
 
 
-static func _last_sunday(year: int, month: int) -> int:
+## Tag im Jahr des letzten Sonntags im Monat (Sommerzeit-Umstellung).
+static func last_sunday(year: int, month: int) -> int:
 	var last := day_of_year(year, month + 1, 1) - 1
 	var wd: int = _date(year, last)["weekday"]          # 0 = Sonntag
 	return last - wd

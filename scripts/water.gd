@@ -107,17 +107,40 @@ func _ready() -> void:
 	add_child(_patch)
 
 	# Grobes Gitter für den restlichen See; unter dem feinen Gitter abgesenkt.
+	var lake := _lake_rect()
 	var coarse := PlaneMesh.new()
-	coarse.size = LAKE_RECT.size
-	coarse.subdivide_width = int(LAKE_RECT.size.x / 4.0)
-	coarse.subdivide_depth = int(LAKE_RECT.size.y / 4.0)
+	coarse.size = lake.size
+	coarse.subdivide_width = int(lake.size.x / 4.0)
+	coarse.subdivide_depth = int(lake.size.y / 4.0)
 	coarse.material = _coarse_material
 	var cm := MeshInstance3D.new()
 	cm.mesh = coarse
-	cm.position = Vector3(LAKE_RECT.get_center().x, 0.0, LAKE_RECT.get_center().y)
+	cm.position = Vector3(lake.get_center().x, 0.0, lake.get_center().y)
 	cm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	cm.extra_cull_margin = 2.0
 	add_child(cm)
+
+
+## Rechteck, das alle Seen des Parks bedeckt (grobes Gitter). Wakeport: fest (LAKE_RECT), andere Parks: aus dem Gelände
+## (alle 4 m geprüft, wo es unter dem Wasserspiegel liegt) plus 12 m Rand.
+func _lake_rect() -> Rect2:
+	if Park.scenery() == "wakeport":
+		return LAKE_RECT
+	var b := Geo.game_bounds()
+	var mn := Vector2(INF, INF)
+	var mx := Vector2(-INF, -INF)
+	var z := b.position.y
+	while z < b.end.y:
+		var x := b.position.x
+		while x < b.end.x:
+			if Geo.in_area(x, z) and Geo.height(x, z) < 0.0:
+				mn = mn.min(Vector2(x, z))
+				mx = mx.max(Vector2(x, z))
+			x += 4.0
+		z += 4.0
+	if mn.x == INF:
+		return LAKE_RECT
+	return Rect2(mn, mx - mn).grow(12.0)
 
 
 func _make_material(compat: bool) -> ShaderMaterial:

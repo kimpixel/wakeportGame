@@ -199,6 +199,22 @@ function extract() {
 		else if (v && typeof v === 'object') for (const k in v) { if (k === 'name' && typeof v[k] === 'string') names.add(v[k]); else walkJ(v[k]); }
 	})(parts);
 	for (const n of names) addMsg(msgs, n, 'setups/parts.json');
+	// Wakeparks (parks/*/park.json): Ort, Anlagen-Namen und -Hinweise (Park-Namen sind Eigennamen, bleiben)
+	const pdir = path.join(ROOT, 'parks');
+	for (const e of fs.readdirSync(pdir, { withFileTypes: true }).filter((d) => d.isDirectory()).sort((a, b) => a.name.localeCompare(b.name))) {
+		const f = path.join(pdir, e.name, 'park.json');
+		if (!fs.existsSync(f)) continue;
+		const park = JSON.parse(fs.readFileSync(f, 'utf8'));
+		const where = 'parks/' + e.name + '/park.json';
+		if (park.place) addMsg(msgs, park.place, where);
+		if (park.system_label) addMsg(msgs, park.system_label, where);
+		const sx = path.join(pdir, e.name, 'setups', 'index.json');
+		if (fs.existsSync(sx)) for (const st of JSON.parse(fs.readFileSync(sx, 'utf8')).setups) addMsg(msgs, st.name, where);
+		for (const s of park.systems || []) {
+			if (s.name) addMsg(msgs, s.name, where);
+			if (s.hint) addMsg(msgs, s.hint, where);
+		}
+	}
 	return msgs;
 }
 
