@@ -236,14 +236,15 @@ static func auto_shore(color_at: Callable) -> Array:
 	var lanes := []
 	var lo := Vector2(INF, INF)
 	var hi := Vector2(-INF, -INF)
-	for t: String in ["t1", "t2"]:
-		var a: Vector3 = Geo.masts[t + "_start"]
-		var e: Vector3 = Geo.masts[t + "_end"]
+	var docks := []
+	for pair: Array in Park.lanes():
+		var a: Vector3 = Geo.masts[pair[0]]
+		var e: Vector3 = Geo.masts[pair[1]]
 		lanes.append([Vector2(a.x, a.z), Vector2(e.x, e.z)])
+		docks.append(Vector2(a.x, a.z))
 		for p: Vector3 in [a, e]:
 			lo = lo.min(Vector2(p.x, p.z))
 			hi = hi.max(Vector2(p.x, p.z))
-	var docks := [Vector2(Geo.masts["t1_start"].x, Geo.masts["t1_start"].z), Vector2(Geo.masts["t2_start"].x, Geo.masts["t2_start"].z)]
 	var gb := Geo.game_bounds()
 	lo = (lo - Vector2.ONE * AUTO_RANGE).max(gb.position)
 	hi = (hi + Vector2.ONE * AUTO_RANGE).min(gb.end)

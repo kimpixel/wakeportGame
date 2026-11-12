@@ -6,7 +6,7 @@
 
 ## Die Anlage
 
-Nachgebaut ist der **Wakeport am Raunheimer Waldsee** (Hessen). Weitere Wakeparks folgen: Auf der Startseite öffnet **WAKEPARK** die **World Map** – dort wählst du den Park (Pin antippen, „Hier fahren“; Mausrad bzw. zwei Finger zoomen, Ziehen verschiebt die Karte). **Auf der Startseite wählst du, an welcher Anlage du fährst: T2 oder T1.** An der anderen fährt ein NPC (blaue Weste) mit Sprüngen und 180ern. An beiden Startstegen steht ein Steuermann mit der gelben Fernsteuerung; der Jubel kommt immer aus dem Startblock deiner Anlage.
+Nachgebaut ist der **Wakeport am Raunheimer Waldsee** (Hessen). Dazu der **Hip-Notics Cable Park** bei Antalya (Türkei; bisher System 1 und System 2, die beiden 2-Mast-Anlagen auf L3, noch ohne Features – die Rundanlagen folgen). Auf der Startseite öffnet **WAKEPARK** die **World Map** – dort wählst du den Park (Pin antippen, „Hier fahren“; Mausrad bzw. zwei Finger zoomen, Ziehen verschiebt die Karte). **Auf der Startseite wählst du, an welcher Anlage du fährst: T2 oder T1.** An der anderen fährt ein NPC (blaue Weste) mit Sprüngen und 180ern. An beiden Startstegen steht ein Steuermann mit der gelben Fernsteuerung; der Jubel kommt immer aus dem Startblock deiner Anlage.
 
 - Der Startmast steht am Strand (echte Koordinaten), der Endmast rund 233 m weiter draußen im See (T1: 240 m). Die Endmasten stehen 35 m weiter draußen als in den Geodaten, damit zwischen Features und Wendebojen genug Platz ist (`Lake.END_EXTEND`).
 - Ein Stahlseil ist als Schlaufe um zwei Rollen (Ø 30 cm) oben an den A-förmigen Gittermasten gespannt.
@@ -186,6 +186,8 @@ Die aufbereiteten Daten liegen in `assets/geo/`. Neu laden kannst du sie mit:
 cd tools
 node fetch_geodata.mjs
 ```
+
+Für **Hip-Notics** gibt es keine amtlichen Daten: `tools/park_geo.mjs` erzeugt Gelände, Uferlinie, Bäume und Luftbild aus freien Copernicus-Daten (Copernicus DEM GLO-30 © DLR e.V. 2014–2018 und © Airbus Defence and Space GmbH 2018, bereitgestellt im Rahmen von COPERNICUS durch EU und ESA; enthält veränderte Copernicus-Sentinel-2-Daten 2025).
 
 Die **World Map** zeichnet Küsten, Seen und Grenzen aus [Natural Earth](https://www.naturalearthdata.com/) (gemeinfrei), aufbereitet mit `tools/world_map_data.mjs` nach `assets/map/world.json`.
 

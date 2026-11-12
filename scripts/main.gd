@@ -219,6 +219,7 @@ func _ready() -> void:
 	water.sun = weather.sun
 	water.env = weather.env
 	_build_cables()
+	beach.build_docks(_start, cables)          # andere Parks: einfache Startstege (Wakeport hat seine Kulisse)
 	rider = Rider.new()
 	rider.test_pitch = _test_pitch
 	rider.test_dpress = _test_dpress
@@ -353,6 +354,8 @@ func _ready() -> void:
 	ambient.features = features
 	ambient.sfx = sfx
 	ambient.player = rider
+	var raunheim := Park.scenery() == "wakeport"   # Leben am Raunheimer Waldsee (Orte dort eingemessen)
+	ambient.sups_on = raunheim
 	add_child(ambient)
 	ambient.build()
 	# Tiere je nach Jahreszeit und Badegäste an heißen Tagen (folgen dem Wetter/Szenario)
@@ -360,12 +363,14 @@ func _ready() -> void:
 	wildlife.water = water
 	wildlife.features = features
 	wildlife.player = rider
+	wildlife.enabled = raunheim
 	add_child(wildlife)
 	wildlife.build()
 	bathers = Bathers.new()
 	bathers.water = water
 	bathers.features = features
 	bathers.player = rider
+	bathers.enabled = raunheim
 	add_child(bathers)
 	storm = Storm.new()                       # Szenario Gewitter: Blitze (ganz selten ein Volltreffer)
 	storm.weather = weather
@@ -403,6 +408,7 @@ func _ready() -> void:
 	# Einflugschneise Frankfurt: Jets im Landeanflug über dem See
 	airplanes = Airplanes.new()
 	airplanes.jet_sound = sfx.make_jet_loop()
+	airplanes.enabled = raunheim
 	add_child(airplanes)
 	if not is_nan(_plane_arg):
 		airplanes.spawn_at(_plane_arg, _plane_near, _plane_land)
@@ -850,7 +856,8 @@ func _build_cables() -> void:
 		var sy := Park.system(t)
 		var c := CableSystem.new()
 		var ms: Array = sy.get("masts", [])
-		if sy.get("origin", false):
+		if sy.get("origin", false) and not sy.has("dock"):
+			# Wakeport T2: Maße aus Lake (Steg vor der großen Hütte, Endmast)
 			if sy.has("turn_a_z"):
 				c.turn_a_z = float(sy["turn_a_z"])   # Wakeport T2: Ufer-Wende 6 m weiter draußen (Abstand zum Ufer)
 			_start[t] = {"pos": Rider.START_POS, "yaw": 0.0, "dock": Rect2(Lake.DOCK_MIN, Lake.DOCK_MAX - Lake.DOCK_MIN),
@@ -858,18 +865,36 @@ func _build_cables() -> void:
 		else:
 			c.place_between(Geo.masts[ms[0]], Geo.masts[ms[1]])
 			var dk: Dictionary = sy.get("dock", {})
-			var rel: Array = dk.get("rel", [0.0, 0.0])
-			var size: Array = dk.get("size", [6.0, 4.0])
-			var dc := Geo.rel_to_game(float(rel[0]), float(rel[1]))
-			var start := Vector3(dc.x + float(dk.get("start_dx", 0.0)), float(dk.get("y", Lake.DOCK_Y)), dc.y)
+			var start: Vector3
+			var dock: Rect2
+			if dk.get("auto", false):
+				# Startsteg am Ufer vor dem Startmast: erste Stelle entlang des Seils, an der Wasser ist; der Steg ragt
+				# 5 m hinein (Breite wie T2: 1,2 m links bis 4,6 m rechts vom Seil), Startplatz 3 m im Wasser
+				var s_shore := 0.0
+				while s_shore < 60.0:
+					var w := c.transform * Vector3(0.0, 0.0, -s_shore)
+					if Lake.in_lake(w.x, w.z, 0.5):
+						break
+					s_shore += 0.5
+				start = c.transform * Vector3(1.7, 0.0, -(s_shore + 3.0))
+				start.y = Lake.DOCK_Y
+				dock = Rect2(Vector2(start.x, start.z), Vector2.ZERO)
+				for corner: Vector3 in [Vector3(-1.2, 0, -(s_shore - 1.0)), Vector3(4.6, 0, -(s_shore - 1.0)),
+						Vector3(-1.2, 0, -(s_shore + 5.0)), Vector3(4.6, 0, -(s_shore + 5.0))]:
+					var g := c.transform * corner
+					dock = dock.expand(Vector2(g.x, g.z))
+			else:
+				var rel: Array = dk.get("rel", [0.0, 0.0])
+				var size: Array = dk.get("size", [6.0, 4.0])
+				var dc := Geo.rel_to_game(float(rel[0]), float(rel[1]))
+				start = Vector3(dc.x + float(dk.get("start_dx", 0.0)), float(dk.get("y", Lake.DOCK_Y)), dc.y)
+				dock = Rect2(dc.x - float(size[0]) * 0.5, dc.y - float(size[1]) * 0.5, float(size[0]), float(size[1]))
 			var local_z := (c.transform.affine_inverse() * start).z
 			c.start_z = local_z - float(dk.get("start_back", 9.0))
 			c.turn_a_z = local_z - float(dk.get("turn_back", 16.0))
 			if sy.has("turn_a_z"):
 				c.turn_a_z = float(sy["turn_a_z"])
-			_start[t] = {"pos": start, "yaw": c.rotation.y,
-				"dock": Rect2(dc.x - float(size[0]) * 0.5, dc.y - float(size[1]) * 0.5, float(size[0]), float(size[1])),
-				"mast_b": Geo.masts[ms[1]]}
+			_start[t] = {"pos": start, "yaw": c.rotation.y, "dock": dock, "mast_b": Geo.masts[ms[1]]}
 		cables[t] = c
 		add_child(c)
 	# cables in Anzeige-Reihenfolge (wie park.json; Features werden in dieser Reihenfolge aufgebaut)

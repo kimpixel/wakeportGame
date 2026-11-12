@@ -64,7 +64,7 @@ msgid "Ein Haubentaucher ist direkt unter dir durchgetaucht."
 msgstr ""
 
 #: scripts/achievements.gd:19
-#: scripts/main.gd:387
+#: scripts/main.gd:392
 msgid "Schwanenliebe"
 msgstr ""
 
@@ -325,9 +325,9 @@ msgid "als %s"
 msgstr ""
 
 #: scripts/challenge.gd:919
-#: scripts/main.gd:1441
-#: scripts/main.gd:1446
-#: scripts/main.gd:1447
+#: scripts/main.gd:1466
+#: scripts/main.gd:1471
+#: scripts/main.gd:1472
 msgid "Rangliste: %s"
 msgstr ""
 
@@ -383,13 +383,13 @@ msgid "Bestwert %s"
 msgstr ""
 
 #: scripts/challenge.gd:111
-#: scripts/main.gd:1585
+#: scripts/main.gd:1610
 msgid "VERSUCH"
 msgstr ""
 
 #: scripts/challenge.gd:129
 #: scripts/hud.gd:263
-#: scripts/main.gd:1585
+#: scripts/main.gd:1610
 msgid "ZEIT"
 msgstr ""
 
@@ -612,180 +612,180 @@ msgstr ""
 msgid "Diesen Namen bitte nicht"
 msgstr ""
 
-#: scripts/main.gd:300
+#: scripts/main.gd:301
 msgid "Abgesoffen!"
 msgstr ""
 
-#: scripts/main.gd:384
+#: scripts/main.gd:389
 msgid "Was ein Frechdachs!"
 msgstr ""
 
-#: scripts/main.gd:392
+#: scripts/main.gd:397
 msgid "Badegast nass gespritzt!"
 msgstr ""
 
-#: scripts/main.gd:396
+#: scripts/main.gd:401
 msgid "Zugvogel!"
 msgstr ""
 
-#: scripts/main.gd:411
+#: scripts/main.gd:417
 msgid "Hecht erwischt!"
 msgstr ""
 
-#: scripts/main.gd:417
+#: scripts/main.gd:423
 msgid "SUP nass gespritzt!"
 msgstr ""
 
-#: scripts/main.gd:420
+#: scripts/main.gd:426
 msgid "Igitt – Insekt verschluckt!"
 msgstr ""
 
-#: scripts/main.gd:426
+#: scripts/main.gd:432
 msgid "Arschbombe!"
 msgstr ""
 
-#: scripts/main.gd:429
+#: scripts/main.gd:435
 msgid "Steg-Landung!"
 msgstr ""
 
-#: scripts/main.gd:1055
+#: scripts/main.gd:1080
 msgid "Seil reißt ab: an"
 msgstr ""
 
-#: scripts/main.gd:1055
+#: scripts/main.gd:1080
 msgid "Seil reißt ab: aus – keine Rangliste"
 msgstr ""
 
-#: scripts/main.gd:1173
+#: scripts/main.gd:1198
 msgid "Setup: %s"
 msgstr ""
 
-#: scripts/main.gd:1380
+#: scripts/main.gd:1405
 msgid "Strafzeit −%d:%02d"
 msgstr ""
 
-#: scripts/main.gd:1394
+#: scripts/main.gd:1419
 msgid "Zeit um!  %d Punkte"
 msgstr ""
 
-#: scripts/main.gd:1403
-#: scripts/main.gd:1440
+#: scripts/main.gd:1428
+#: scripts/main.gd:1465
 msgid "Letzte Runde: %d Punkte"
 msgstr ""
 
-#: scripts/main.gd:1433
+#: scripts/main.gd:1458
 msgid "Rangliste …"
 msgstr ""
 
-#: scripts/main.gd:1439
+#: scripts/main.gd:1464
 msgid "Platz %d von %d"
 msgstr ""
 
-#: scripts/main.gd:1441
-#: scripts/main.gd:1444
+#: scripts/main.gd:1466
+#: scripts/main.gd:1469
 msgid "Dein Bestwert: %s"
 msgstr ""
 
-#: scripts/main.gd:1442
+#: scripts/main.gd:1467
 msgid "PLATZ %d von %d"
 msgstr ""
 
-#: scripts/main.gd:1583
+#: scripts/main.gd:1608
 msgid "FREI"
 msgstr ""
 
-#: scripts/main.gd:1589
+#: scripts/main.gd:1614
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
 "Wenden %d   ·   Kamera: %s%s"
 msgstr ""
 
-#: scripts/main.gd:1619
+#: scripts/main.gd:1644
 msgid "STURZ  –  der Operator bringt dir die Handle"
 msgstr ""
 
-#: scripts/main.gd:1620
+#: scripts/main.gd:1645
 msgid "STURZ  –  die Handle liegt bereit"
 msgstr ""
 
-#: scripts/main.gd:1622
+#: scripts/main.gd:1647
 msgid "ca. %d s"
 msgstr ""
 
-#: scripts/main.gd:1624
+#: scripts/main.gd:1649
 msgid "SCHWIMMEN halten"
 msgstr ""
 
-#: scripts/main.gd:1624
-#: scripts/main.gd:1628
+#: scripts/main.gd:1649
+#: scripts/main.gd:1653
 msgid "Zur Handle schwimmen"
 msgstr ""
 
-#: scripts/main.gd:1625
+#: scripts/main.gd:1650
 #: scripts/ui/touch_pad.gd:230
 msgid "SKIP"
 msgstr ""
 
-#: scripts/main.gd:1625
-#: scripts/main.gd:1629
+#: scripts/main.gd:1650
+#: scripts/main.gd:1654
 msgid "Sofort weiterfahren"
 msgstr ""
 
-#: scripts/main.gd:1625
-#: scripts/main.gd:1626
-#: scripts/main.gd:1629
-#: scripts/main.gd:1630
+#: scripts/main.gd:1650
+#: scripts/main.gd:1651
+#: scripts/main.gd:1654
+#: scripts/main.gd:1655
 msgid "keine Strafzeit"
 msgstr ""
 
-#: scripts/main.gd:1626
-#: scripts/main.gd:1630
+#: scripts/main.gd:1651
+#: scripts/main.gd:1655
 msgid "Zurück zum Steg"
 msgstr ""
 
-#: scripts/main.gd:1628
+#: scripts/main.gd:1653
 msgid "LEERTASTE halten"
 msgstr ""
 
-#: scripts/main.gd:1629
+#: scripts/main.gd:1654
 msgid "STRG"
 msgstr ""
 
-#: scripts/main.gd:1641
+#: scripts/main.gd:1666
 msgid ""
 "Neigungssensor nicht verfügbar –\n"
 "Bewegungssensoren im Browser erlauben"
 msgstr ""
 
-#: scripts/main.gd:1646
+#: scripts/main.gd:1671
 msgid "SPRUNG-START  %d %%"
 msgstr ""
 
-#: scripts/main.gd:1713
+#: scripts/main.gd:1738
 msgid "Hitboxen an"
 msgstr ""
 
-#: scripts/main.gd:1713
+#: scripts/main.gd:1738
 msgid "Hitboxen aus"
 msgstr ""
 
-#: scripts/main.gd:1743
+#: scripts/main.gd:1768
 msgid "Wende um die Boje"
 msgstr ""
 
-#: scripts/main.gd:1743
+#: scripts/main.gd:1768
 msgid "Saubere Wende"
 msgstr ""
 
-#: scripts/main.gd:1903
+#: scripts/main.gd:1928
 msgid "Ins Boot gefahren!"
 msgstr ""
 
-#: scripts/main.gd:1904
+#: scripts/main.gd:1929
 msgid "Boot crash!"
 msgstr ""
 
-#: scripts/main.gd:1585
+#: scripts/main.gd:1610
 msgid "MODUS"
 msgstr ""
 
@@ -810,7 +810,7 @@ msgstr ""
 msgid "Rundanlage"
 msgstr ""
 
-#: scripts/park.gd:12
+#: scripts/park.gd:15
 msgid "ANLAGE"
 msgstr ""
 
@@ -3518,8 +3518,12 @@ msgid "ANLAGEN"
 msgstr ""
 
 #: scripts/ui/world_map.gd:122
-#: scripts/ui/world_map.gd:352
+#: scripts/ui/world_map.gd:357
 msgid "HIER FAHREN"
+msgstr ""
+
+#: scripts/ui/world_map.gd:352
+msgid "%s (kommt bald)"
 msgstr ""
 
 #: scripts/weather.gd:14
@@ -3756,6 +3760,34 @@ msgstr ""
 
 #: setups/parts.json
 msgid "Bump"
+msgstr ""
+
+#: parks/hipnotics/park.json
+msgid "Manavgat, Antalya, Türkei"
+msgstr ""
+
+#: parks/hipnotics/park.json
+msgid "Ohne Features"
+msgstr ""
+
+#: parks/hipnotics/park.json
+msgid "System 1"
+msgstr ""
+
+#: parks/hipnotics/park.json
+msgid "System 1 (L3, 2-Mast-Anlage)"
+msgstr ""
+
+#: parks/hipnotics/park.json
+msgid "System 2"
+msgstr ""
+
+#: parks/hipnotics/park.json
+msgid "System 2 (L3, 2-Mast-Anlage)"
+msgstr ""
+
+#: parks/hipnotics/park.json
+msgid "L2"
 msgstr ""
 
 #: parks/wakeport/park.json

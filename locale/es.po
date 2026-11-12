@@ -2586,6 +2586,9 @@ msgstr "CABLES"
 msgid "HIER FAHREN"
 msgstr "RIDEAR AQUÍ"
 
+msgid "%s (kommt bald)"
+msgstr "%s (próximamente)"
+
 msgid "Sonnig"
 msgstr "Soleado"
 
@@ -2762,6 +2765,27 @@ msgstr "Pelota"
 
 msgid "Bump"
 msgstr "Bump"
+
+msgid "Manavgat, Antalya, Türkei"
+msgstr "Manavgat, Antalya, Turquía"
+
+msgid "Ohne Features"
+msgstr "Sin obstáculos"
+
+msgid "System 1"
+msgstr "Sistema 1"
+
+msgid "System 1 (L3, 2-Mast-Anlage)"
+msgstr "Sistema 1 (L3, sistema de 2 torres)"
+
+msgid "System 2"
+msgstr "Sistema 2"
+
+msgid "System 2 (L3, 2-Mast-Anlage)"
+msgstr "Sistema 2 (L3, sistema de 2 torres)"
+
+msgid "L2"
+msgstr "L2"
 
 msgid "Raunheim, Deutschland"
 msgstr "Raunheim, Alemania"

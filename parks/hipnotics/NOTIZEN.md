@@ -1,7 +1,8 @@
 # Hip-Notics Cable Park – Notizen (Stand 12.11.2026)
 
 Recherche für den zweiten Park. Der Betreiber hat die Nutzung seiner Inhalte erlaubt (laut Nutzer, 12.11.2026).
-Noch **keine** `park.json` – kommt mit Phase 3, sobald Masten/Stege feststehen.
+**Im Spiel seit Phase 3** (`park.json`): System 1 und System 2 auf L3 fahrbar (2.0), L2 als Rundanlage eingetragen
+(noch nicht fahrbar, Phase 4), L1 fehlt (Masten). Setup bisher nur „Ohne Features“.
 
 ## Eckdaten
 
@@ -51,12 +52,28 @@ Kachel `N36_00_E031_00`).
 - Sentinel-2, Copernicus DEM: frei („Contains modified Copernicus Sentinel data 2025“ bzw. „© DLR e.V. 2014–2018 and
   © Airbus Defence and Space GmbH 2018, provided under COPERNICUS by the European Union and ESA“).
 
+## Im Spiel (Phase 3)
+
+- **Masten** (Wegpunkte des Nutzers, mapy.com): System 1 Start/Ende, System 2 Start/Ende (beide auf L3, 128 bzw. 123 m),
+  L2 fünf Masten gegen den Uhrzeigersinn ab dem Start (Umfang 637 m; Website: 540 m). Stehen in `geo_quelle.json`.
+- **Geodaten** aus `tools/park_geo.mjs hipnotics` (danach `tools/png_to_jpg.gd`): Gebiet 1120 × 980 m um den Startmast von
+  System 1, Seen per Wasserindex (NDWI ≥ 0) aus Sentinel-2, nur Seen bis 60 m an Masten bzw. `lake_seeds` (sonst kamen
+  Gewächshäuser mit), Tiefe 1,7 m, flaches Ufer; Gelände außen aus Copernicus DEM (Hügel im Norden, über 35 m weich gekappt);
+  Bäume aus NDVI (Obstplantagen); Luftbild Sentinel-2 (10 m, unscharf). Kontrollbild: `recherche/ufer_kontrolle.png`.
+- Spielachse nach Norden (`geo_axis`), Anlagen zwischen ihre Masten gesetzt, **Startsteg automatisch** am Ufer vor dem
+  Startmast (`dock: {auto}`), einfache Kulisse (Holzsteg, Hütte, Steuermann, wartender Fahrer). Keine SUPs, Badegäste,
+  Tiere, Flugzeuge (die sind am Wakeport eingemessen).
+- **Knapp auf L3**: nach außen nur 16–23 m (System 1 links) bzw. 13–17 m (System 2 rechts) Wasser – der Autopilot (NPC)
+  schwingt in der Wende manchmal ans Ufer. Auf der kurzen Bahn (74 m zwischen den Wenden) reißt beim Autopiloten ab und zu
+  das Seil (Zug > 5000 N nach der Wende) – am Wakeport nicht. Uferlinie aus 10-m-Daten ist ±3–5 m ungenau.
+- Luftbilder vom Nutzer (aktuell): `recherche/luftbild_von_sueden.jpg`, `recherche/luftbild_von_westen.jpg` – L2 mit vielen
+  Features rund um die Insel, Wasser türkis, Palmen, Bungalow-Reihe, Gewächshäuser.
+
 ## Fehlt noch (vom Nutzer)
 
-1. Masten jeder Anlage (Breite/Länge, der Reihe nach) und Fahrtrichtung der Rundanlagen
-2. Anzeigenamen im Spiel (z. B. „L1“, „L2“, „L3 links“, „L3 rechts“)
-3. Startstege, Gebäude, aktuelles Feature-Setup je See (Fotos/Plan)
-4. Höhenkarte (falls genauer als Copernicus 30 m)
+1. Masten von L1 (6 Masten) und Fahrtrichtung
+2. Startstege (wo genau), Gebäude, aktuelles Feature-Setup je See (Fotos/Plan) – vor allem L2
+3. ggf. Uferpunkte von L3 (für eine genauere Uferlinie als aus 10-m-Satellitendaten)
 
 ## Quellen
 

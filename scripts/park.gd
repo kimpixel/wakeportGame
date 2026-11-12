@@ -8,6 +8,9 @@ extends RefCounted
 
 const INDEX := "res://parks/index.json"
 const TYPE_NAMES := {"2.0": "2-Mast-Anlage (2.0)", "full": "Rundanlage"}  # i18n
+## Anlagen-Typen, die das Spiel schon fahren kann (Rundanlage "full" kommt mit Phase 4). Andere stehen in park.json und
+## auf der World Map, werden aber nicht gebaut.
+const PLAYABLE := ["2.0"]
 ## Standard-Überschrift der Anlagen-Auswahl (siehe system_label), nur damit der Text übersetzt wird.
 const LABELS := ["ANLAGE"]  # i18n
 
@@ -34,7 +37,8 @@ static func select(want := "") -> String:
 	id = str(data.get("id", ""))
 	_systems.clear()
 	for s: Dictionary in data.get("systems", []):
-		_systems[s["id"]] = s
+		if str(s.get("type", "2.0")) in PLAYABLE:
+			_systems[s["id"]] = s
 	return id
 
 
@@ -77,12 +81,13 @@ static func type_name(type: String) -> String:
 
 # ---------------------------------------------------------------- Anlagen
 
-## ids der Anlagen in Anzeige-Reihenfolge (wie in park.json).
+## ids der fahrbaren Anlagen in Anzeige-Reihenfolge (wie in park.json).
 static func system_ids() -> Array:
 	ensure_loaded()
 	var out: Array = []
 	for s: Dictionary in data.get("systems", []):
-		out.append(s["id"])
+		if _systems.has(s["id"]):
+			out.append(s["id"])
 	return out
 
 
@@ -135,9 +140,25 @@ static func default_system() -> String:
 static func origin_system() -> String:
 	ensure_loaded()
 	for s: Dictionary in data.get("systems", []):
-		if s.get("origin", false):
+		if s.get("origin", false) and _systems.has(s["id"]):
 			return s["id"]
 	return default_system()
+
+
+## Bahnen der fahrbaren Anlagen als [Startmast, Endmast] (Namen in geo.json), in Anzeige-Reihenfolge
+## (Bepflanzung, Gras, Strand an den Startmasten).
+static func lanes() -> Array:
+	var out: Array = []
+	for t: String in system_ids():
+		var ms: Array = system(t).get("masts", [])
+		if ms.size() >= 2:
+			out.append([ms[0], ms[ms.size() - 1]])
+	return out
+
+
+## Kann das Spiel diesen Anlagen-Typ schon fahren?
+static func playable(type: String) -> bool:
+	return type in PLAYABLE
 
 
 # ---------------------------------------------------------------- Lage, Zeit, Daten

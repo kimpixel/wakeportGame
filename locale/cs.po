@@ -2592,6 +2592,9 @@ msgstr "VLEKY"
 msgid "HIER FAHREN"
 msgstr "JEZDIT TADY"
 
+msgid "%s (kommt bald)"
+msgstr "%s (již brzy)"
+
 msgid "Sonnig"
 msgstr "Slunečno"
 
@@ -2768,6 +2771,27 @@ msgstr "Míč"
 
 msgid "Bump"
 msgstr "Bump"
+
+msgid "Manavgat, Antalya, Türkei"
+msgstr "Manavgat, Antalya, Turecko"
+
+msgid "Ohne Features"
+msgstr "Bez překážek"
+
+msgid "System 1"
+msgstr "Systém 1"
+
+msgid "System 1 (L3, 2-Mast-Anlage)"
+msgstr "Systém 1 (L3, dvoustožárový vlek)"
+
+msgid "System 2"
+msgstr "Systém 2"
+
+msgid "System 2 (L3, 2-Mast-Anlage)"
+msgstr "Systém 2 (L3, dvoustožárový vlek)"
+
+msgid "L2"
+msgstr "L2"
 
 msgid "Raunheim, Deutschland"
 msgstr "Raunheim, Německo"

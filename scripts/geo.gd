@@ -41,6 +41,11 @@ static func ensure_loaded() -> void:
 	var b: Array = m[om[1]]
 	origin = Vector2(a[0], a[1])
 	dir_u = (Vector2(b[0], b[1]) - origin).normalized()
+	# "geo_axis" in park.json: -z der Spielkoordinaten zeigt in diese Himmelsrichtung (dE, dN), z. B. [0, 1] = Norden –
+	# dann liegt das (nach UTM ausgerichtete) Datengebiet gerade im Spiel. Ohne: entlang der Anlage im Ursprung (Wakeport).
+	var ax: Array = Park.data.get("geo_axis", [])
+	if ax.size() == 2:
+		dir_u = Vector2(float(ax[0]), float(ax[1])).normalized()
 	var ar: Dictionary = meta["area"]
 	_w = int(ar["w"])
 	_h = int(ar["h"])

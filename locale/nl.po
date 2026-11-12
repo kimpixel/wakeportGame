@@ -2586,6 +2586,9 @@ msgstr "BANEN"
 msgid "HIER FAHREN"
 msgstr "HIER RIJDEN"
 
+msgid "%s (kommt bald)"
+msgstr "%s (binnenkort)"
+
 msgid "Sonnig"
 msgstr "Zonnig"
 
@@ -2762,6 +2765,27 @@ msgstr "Bal"
 
 msgid "Bump"
 msgstr "Bump"
+
+msgid "Manavgat, Antalya, Türkei"
+msgstr "Manavgat, Antalya, Turkije"
+
+msgid "Ohne Features"
+msgstr "Zonder obstakels"
+
+msgid "System 1"
+msgstr "Systeem 1"
+
+msgid "System 1 (L3, 2-Mast-Anlage)"
+msgstr "Systeem 1 (L3, 2-mastbaan)"
+
+msgid "System 2"
+msgstr "Systeem 2"
+
+msgid "System 2 (L3, 2-Mast-Anlage)"
+msgstr "Systeem 2 (L3, 2-mastbaan)"
+
+msgid "L2"
+msgstr "L2"
 
 msgid "Raunheim, Deutschland"
 msgstr "Raunheim, Duitsland"

@@ -65,6 +65,10 @@ var _sup_extra_built := false
 var _weather: Weather
 
 
+## SUPs nur am Wakeport (Badebereich, Seemitte sind dort eingemessen).
+var sups_on := true
+
+
 func build() -> void:
 	for t: String in beach.operator_paths:
 		var op := Person.new()
@@ -89,7 +93,8 @@ func build() -> void:
 		if not w.setup(models[i % models.size()]):
 			w.queue_free()
 		i += 1
-	_build_sups()
+	if sups_on:
+		_build_sups()                       # Runden im Raunheimer Badebereich (nur Wakeport)
 	_build_pike()
 	_build_insects()
 
@@ -102,7 +107,7 @@ func apply_season(w: Weather) -> void:
 	_pike_rate = 0.6 if m in [4, 5, 9, 10] else 1.0
 	# SUPs: Winter/Regen/Nacht keine, Übergangszeit wenige, Sommer alle, Hitzetag noch mehr
 	var n := 0
-	if w.rain_now < 0.3 and w.snow_now == 0.0 and w.daylight > 0.5:
+	if sups_on and w.rain_now < 0.3 and w.snow_now == 0.0 and w.daylight > 0.5:
 		if w.warm > 0.75:
 			n = 4
 		elif w.warm > 0.55:

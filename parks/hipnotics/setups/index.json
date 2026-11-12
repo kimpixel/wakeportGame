@@ -1,0 +1,6 @@
+{
+  "_info": "Feature-Setups von Hip-Notics (Format wie setups/index.json). Die echten Setups fehlen noch (Fotos/Plan).",
+  "setups": [
+    { "id": "leer", "name": "Ohne Features", "file": "res://parks/hipnotics/setups/setup_leer.json" }
+  ]
+}

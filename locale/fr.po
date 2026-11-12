@@ -2586,6 +2586,9 @@ msgstr "TÉLÉSKIS"
 msgid "HIER FAHREN"
 msgstr "RIDER ICI"
 
+msgid "%s (kommt bald)"
+msgstr "%s (bientôt)"
+
 msgid "Sonnig"
 msgstr "Ensoleillé"
 
@@ -2762,6 +2765,27 @@ msgstr "Ballon"
 
 msgid "Bump"
 msgstr "Bump"
+
+msgid "Manavgat, Antalya, Türkei"
+msgstr "Manavgat, Antalya, Turquie"
+
+msgid "Ohne Features"
+msgstr "Sans modules"
+
+msgid "System 1"
+msgstr "Système 1"
+
+msgid "System 1 (L3, 2-Mast-Anlage)"
+msgstr "Système 1 (L3, téléski 2 mâts)"
+
+msgid "System 2"
+msgstr "Système 2"
+
+msgid "System 2 (L3, 2-Mast-Anlage)"
+msgstr "Système 2 (L3, téléski 2 mâts)"
+
+msgid "L2"
+msgstr "L2"
 
 msgid "Raunheim, Deutschland"
 msgstr "Raunheim, Allemagne"

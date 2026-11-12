@@ -11,7 +11,8 @@ Spielerdoku: `README.md`. Feature-Setups und Bauteile: `setups/README.md`. Wakep
 Geodaten, Setups, Anlagen mit id/Name/Typ), Liste `parks/index.json`, geladen von `scripts/park.gd` (`Park`). Phasen: 1 Umbau
 (Wakeport als park.json, ohne sichtbare Änderung – erledigt), 2 World Map + Anlagen-Auswahl (erledigt: `scripts/ui/world_map.gd`,
 Startseite WAKEPARK, Park-Wechsel = Szene neu aufbauen `main.gd _change_park`, Test `--screen=@weltkarte[:zoom=F][:park=ID][:waehlen]`), 3 Hip-Notics (Antalya) mit den
-2.0-Anlagen, 4 Rundanlage (`type: "full"`), 5 Feinschliff. Recherche Hip-Notics: `parks/hipnotics/NOTIZEN.md`.
+2.0-Anlagen (erledigt: System 1/2 auf L3, Geodaten aus `tools/park_geo.mjs`, Startsteg automatisch, einfache Kulisse
+`Beach.build_docks`; Raunheimer Leben nur bei `scenery: wakeport`), 4 Rundanlage (L2 hat für den Nutzer Vorrang) (`type: "full"`), 5 Feinschliff. Recherche Hip-Notics: `parks/hipnotics/NOTIZEN.md`.
 Anlagen-ids des Wakeports bleiben `T1`/`T2` (Setup-Dateien, Ranglisten unverändert); andere Parks: Ranglisten
 `comp/SEK/<park>.<anlage>/…` (`Park.board_prefix`). Nie `"T1"`/`"T2"` fest in neuen Code schreiben – `Park.system_ids()`,
 `Park.default_system()`, `main.gd cables`.

@@ -2592,6 +2592,9 @@ msgstr "WYCIĄGI"
 msgid "HIER FAHREN"
 msgstr "JEDŹ TUTAJ"
 
+msgid "%s (kommt bald)"
+msgstr "%s (wkrótce)"
+
 msgid "Sonnig"
 msgstr "Słonecznie"
 
@@ -2768,6 +2771,27 @@ msgstr "Piłka"
 
 msgid "Bump"
 msgstr "Bump"
+
+msgid "Manavgat, Antalya, Türkei"
+msgstr "Manavgat, Antalya, Turcja"
+
+msgid "Ohne Features"
+msgstr "Bez przeszkód"
+
+msgid "System 1"
+msgstr "System 1"
+
+msgid "System 1 (L3, 2-Mast-Anlage)"
+msgstr "System 1 (L3, wyciąg 2-masztowy)"
+
+msgid "System 2"
+msgstr "System 2"
+
+msgid "System 2 (L3, 2-Mast-Anlage)"
+msgstr "System 2 (L3, wyciąg 2-masztowy)"
+
+msgid "L2"
+msgstr "L2"
 
 msgid "Raunheim, Deutschland"
 msgstr "Raunheim, Niemcy"

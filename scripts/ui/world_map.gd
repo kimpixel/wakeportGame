@@ -346,7 +346,12 @@ func _select(i: int) -> void:
 	for c in _systems.get_children():
 		c.queue_free()
 	for s: Dictionary in p["systems"]:
-		var l := host._label("%s   ·   %s" % [tr(str(s.get("name", s.get("id", "")))), tr(Park.type_name(str(s.get("type", ""))))], 18)
+		var type := str(s.get("type", ""))
+		var kind := tr(Park.type_name(type))
+		if not Park.playable(type):
+			kind = tr("%s (kommt bald)") % kind
+		var l := host._label("%s   ·   %s" % [tr(str(s.get("name", s.get("id", "")))), kind], 18,
+			Color.WHITE if Park.playable(type) else Color(1, 1, 1, 0.55))
 		_systems.add_child(l)
 	_go.disabled = false
 	_go.text = tr("HIER FAHREN")

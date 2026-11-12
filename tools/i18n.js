@@ -208,6 +208,8 @@ function extract() {
 		const where = 'parks/' + e.name + '/park.json';
 		if (park.place) addMsg(msgs, park.place, where);
 		if (park.system_label) addMsg(msgs, park.system_label, where);
+		const sx = path.join(pdir, e.name, 'setups', 'index.json');
+		if (fs.existsSync(sx)) for (const st of JSON.parse(fs.readFileSync(sx, 'utf8')).setups) addMsg(msgs, st.name, where);
 		for (const s of park.systems || []) {
 			if (s.name) addMsg(msgs, s.name, where);
 			if (s.hint) addMsg(msgs, s.hint, where);
