@@ -530,6 +530,13 @@ msgstr "VOLNĚ"
 
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Kamera: %s%s"
+msgstr ""
+"Jezdec %d km/h   ·   Vlek %s: %s (rychlost %d km/h)\n"
+"Kamera: %s%s"
+
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
 "Wenden %d   ·   Kamera: %s%s"
 msgstr ""
 "Jezdec %d km/h   ·   Vlek %s: %s (rychlost %d km/h)\n"

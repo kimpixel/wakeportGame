@@ -529,6 +529,13 @@ msgstr "LIBRE"
 
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Kamera: %s%s"
+msgstr ""
+"Rider %d km/h   ·   Téléski %s : %s (vitesse %d km/h)\n"
+"Caméra : %s%s"
+
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
 "Wenden %d   ·   Kamera: %s%s"
 msgstr ""
 "Rider %d km/h   ·   Téléski %s : %s (vitesse %d km/h)\n"

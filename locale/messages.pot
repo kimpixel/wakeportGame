@@ -709,94 +709,100 @@ msgstr ""
 msgid "FREI"
 msgstr ""
 
-#: scripts/main.gd:1670
+#: scripts/main.gd:1671
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Kamera: %s%s"
+msgstr ""
+
+#: scripts/main.gd:1675
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
 "Wenden %d   ·   Kamera: %s%s"
 msgstr ""
 
-#: scripts/main.gd:1700
+#: scripts/main.gd:1705
 msgid "STURZ  –  der Operator bringt dir die Handle"
 msgstr ""
 
-#: scripts/main.gd:1701
+#: scripts/main.gd:1706
 msgid "STURZ  –  die Handle liegt bereit"
 msgstr ""
 
-#: scripts/main.gd:1703
+#: scripts/main.gd:1708
 msgid "ca. %d s"
 msgstr ""
 
-#: scripts/main.gd:1705
+#: scripts/main.gd:1710
 msgid "SCHWIMMEN halten"
 msgstr ""
 
-#: scripts/main.gd:1705
-#: scripts/main.gd:1709
+#: scripts/main.gd:1710
+#: scripts/main.gd:1714
 msgid "Zur Handle schwimmen"
 msgstr ""
 
-#: scripts/main.gd:1706
+#: scripts/main.gd:1711
 #: scripts/ui/touch_pad.gd:230
 msgid "SKIP"
 msgstr ""
 
-#: scripts/main.gd:1706
-#: scripts/main.gd:1710
+#: scripts/main.gd:1711
+#: scripts/main.gd:1715
 msgid "Sofort weiterfahren"
 msgstr ""
 
-#: scripts/main.gd:1706
-#: scripts/main.gd:1707
-#: scripts/main.gd:1710
 #: scripts/main.gd:1711
+#: scripts/main.gd:1712
+#: scripts/main.gd:1715
+#: scripts/main.gd:1716
 msgid "keine Strafzeit"
 msgstr ""
 
-#: scripts/main.gd:1707
-#: scripts/main.gd:1711
+#: scripts/main.gd:1712
+#: scripts/main.gd:1716
 msgid "Zurück zum Steg"
 msgstr ""
 
-#: scripts/main.gd:1709
+#: scripts/main.gd:1714
 msgid "LEERTASTE halten"
 msgstr ""
 
-#: scripts/main.gd:1710
+#: scripts/main.gd:1715
 msgid "STRG"
 msgstr ""
 
-#: scripts/main.gd:1722
+#: scripts/main.gd:1727
 msgid ""
 "Neigungssensor nicht verfügbar –\n"
 "Bewegungssensoren im Browser erlauben"
 msgstr ""
 
-#: scripts/main.gd:1727
+#: scripts/main.gd:1732
 msgid "SPRUNG-START  %d %%"
 msgstr ""
 
-#: scripts/main.gd:1794
+#: scripts/main.gd:1799
 msgid "Hitboxen an"
 msgstr ""
 
-#: scripts/main.gd:1794
+#: scripts/main.gd:1799
 msgid "Hitboxen aus"
 msgstr ""
 
-#: scripts/main.gd:1824
+#: scripts/main.gd:1829
 msgid "Wende um die Boje"
 msgstr ""
 
-#: scripts/main.gd:1824
+#: scripts/main.gd:1829
 msgid "Saubere Wende"
 msgstr ""
 
-#: scripts/main.gd:1984
+#: scripts/main.gd:1989
 msgid "Ins Boot gefahren!"
 msgstr ""
 
-#: scripts/main.gd:1985
+#: scripts/main.gd:1990
 msgid "Boot crash!"
 msgstr ""
 

@@ -1667,9 +1667,14 @@ func _process(_delta: float) -> void:
 	hud.set_stats(time_text, state,
 		_final_score if _finishing or _round_over else rider.score, rider.tension_smooth, minf(rider.crash_tension, Rider.CRASH_TENSION))
 	hud.set_speed(rider.horizontal_speed() * 3.6)
-	hud.set_debug(tr("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nWenden %d   ·   Kamera: %s%s") % [
-		roundi(rider.horizontal_speed() * 3.6), terminal, tr(pc.state_text()), roundi(pc.max_speed * 3.6),
-		pc.laps, cam.mode_name(), "   ·   AUTOPILOT" if rider.autopilot else ""])
+	if pc is FullCable:                   # Rundanlage: keine Wenden – auch keine Anzeige dafür
+		hud.set_debug(tr("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nKamera: %s%s") % [
+			roundi(rider.horizontal_speed() * 3.6), terminal, tr(pc.state_text()), roundi(pc.max_speed * 3.6),
+			cam.mode_name(), "   ·   AUTOPILOT" if rider.autopilot else ""])
+	else:
+		hud.set_debug(tr("Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\nWenden %d   ·   Kamera: %s%s") % [
+			roundi(rider.horizontal_speed() * 3.6), terminal, tr(pc.state_text()), roundi(pc.max_speed * 3.6),
+			pc.laps, cam.mode_name(), "   ·   AUTOPILOT" if rider.autopilot else ""])
 	hud.set_board(rider.board_state_text())
 	if touch_pad:
 		touch_pad.set_swim(rider.mode == Rider.Mode.CRASHED)     # im Wasser: SCHWIMMEN / SKIP

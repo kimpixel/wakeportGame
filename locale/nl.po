@@ -529,6 +529,13 @@ msgstr "VRIJ"
 
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Kamera: %s%s"
+msgstr ""
+"Rider %d km/h   ·   Kabel %s: %s (snelheid %d km/h)\n"
+"Camera: %s%s"
+
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
 "Wenden %d   ·   Kamera: %s%s"
 msgstr ""
 "Rider %d km/h   ·   Kabel %s: %s (snelheid %d km/h)\n"
