@@ -599,6 +599,15 @@ msgstr "Přidat hudbu"
 msgid "Vom Blitz getroffen!"
 msgstr "Zasažen bleskem!"
 
+msgid "2-Mast-Anlage (2.0)"
+msgstr "Dvoustožárový vlek (2.0)"
+
+msgid "Rundanlage"
+msgstr "Okruhový vlek"
+
+msgid "ANLAGE"
+msgstr "VLEK"
+
 msgid "Bodenpflanzen (Gräser, Schilf)"
 msgstr "Přízemní rostliny (trávy, rákos)"
 
@@ -2103,11 +2112,14 @@ msgstr "Koncový stožár"
 msgid "WAKE THE HACK"
 msgstr "WAKE THE HACK"
 
-msgid "Wakeport Raunheim"
-msgstr "Wakeport Raunheim"
-
 msgid "„%s“"
 msgstr "„%s“"
+
+msgid "WAKEPARK"
+msgstr "WAKEPARK"
+
+msgid "World Map: anderen Wakepark wählen"
+msgstr "Mapa světa: vybrat jiný wakepark"
 
 msgid "SPIELMODUS"
 msgstr "HERNÍ REŽIM"
@@ -2570,6 +2582,15 @@ msgstr "Náhodný scénář"
 
 msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
 msgstr "Vytržení lana zap./vyp.  (vyp.: bez žebříčku)"
+
+msgid "WAKEPARK WÄHLEN"
+msgstr "VYBRAT WAKEPARK"
+
+msgid "ANLAGEN"
+msgstr "VLEKY"
+
+msgid "HIER FAHREN"
+msgstr "JEZDIT TADY"
 
 msgid "Sonnig"
 msgstr "Slunečno"

@@ -599,6 +599,15 @@ msgstr "Dodaj muzykę"
 msgid "Vom Blitz getroffen!"
 msgstr "Trafiony piorunem!"
 
+msgid "2-Mast-Anlage (2.0)"
+msgstr "Wyciąg 2-masztowy (2.0)"
+
+msgid "Rundanlage"
+msgstr "Wyciąg pełnowymiarowy"
+
+msgid "ANLAGE"
+msgstr "WYCIĄG"
+
 msgid "Bodenpflanzen (Gräser, Schilf)"
 msgstr "Rośliny niskie (trawy, trzcina)"
 
@@ -2103,11 +2112,14 @@ msgstr "Maszt końcowy"
 msgid "WAKE THE HACK"
 msgstr "WAKE THE HACK"
 
-msgid "Wakeport Raunheim"
-msgstr "Wakeport Raunheim"
-
 msgid "„%s“"
 msgstr "„%s”"
+
+msgid "WAKEPARK"
+msgstr "WAKEPARK"
+
+msgid "World Map: anderen Wakepark wählen"
+msgstr "Mapa świata: wybierz inny wakepark"
 
 msgid "SPIELMODUS"
 msgstr "TRYB GRY"
@@ -2570,6 +2582,15 @@ msgstr "Losuj scenariusz"
 
 msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
 msgstr "Wyrywanie liny wł./wył.  (wył.: bez rankingu)"
+
+msgid "WAKEPARK WÄHLEN"
+msgstr "WYBIERZ WAKEPARK"
+
+msgid "ANLAGEN"
+msgstr "WYCIĄGI"
+
+msgid "HIER FAHREN"
+msgstr "JEDŹ TUTAJ"
 
 msgid "Sonnig"
 msgstr "Słonecznie"

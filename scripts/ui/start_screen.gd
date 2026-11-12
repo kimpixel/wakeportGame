@@ -18,6 +18,7 @@ signal task_chosen(idx: int)
 signal setups_changed(id: String, play: bool)   # Setup-Editor hat gespeichert bzw. gelöscht
 signal plants_changed                           # Setup-Editor hat die Bepflanzung gespeichert
 signal ingame_closed                            # Einstellungen im Spiel (Pause) geschlossen
+signal park_chosen(id: String)                  # World Map: anderer Wakepark gewählt
 
 const BASE_SHORT := 740.0        # so viele Einheiten hat die kurze Bildschirmseite mindestens
 const BASE_LONG := 1200.0        # … und die lange
@@ -52,6 +53,8 @@ var _term_select: SelectBox
 var _setup_select: SelectBox
 var _setup_idx := 0
 var _editor: SetupEditor
+var _world: WorldMap             # World Map (Wakepark wählen), eigene Seite wie der Editor
+var _park_btn: Button
 var _start_btn: Button
 var _kofi_btn: Button             # dezenter Link „Kaffee spendieren“ (Ko-fi) unter dem Start
 var _mode_select: SelectBox
@@ -159,7 +162,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	var t := _label(tr("WAKE THE HACK"), 44)
 	t.add_theme_constant_override("outline_size", 10)
 	tb.add_child(t)
-	var place := _label(tr("Wakeport Raunheim"), 20, Color(1, 1, 1, 0.85))
+	var place := _label(Park.park_name(), 20, Color(1, 1, 1, 0.85))
 	tb.add_child(place)
 	# Szenario (Datum, Uhrzeit, Wetter; jeder Start würfelt eins aus)
 	var scene_l := _label("", 18, Color(1, 1, 1, 0.7))
@@ -200,6 +203,15 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	right.add_theme_constant_override("separation", 10)
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_split.add_child(right)
+	# Wakepark: öffnet die World Map
+	left.add_child(_small(tr("WAKEPARK")))
+	_park_btn = _button(Park.park_name(), 20)
+	_park_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_park_btn.add_theme_constant_override("h_separation", 10)
+	_park_btn.tooltip_text = tr("World Map: anderen Wakepark wählen")
+	_park_btn.draw.connect(func() -> void: _draw_globe(_park_btn))
+	_park_btn.pressed.connect(open_world_map)
+	left.add_child(_park_btn)
 	# Spielmodus: Competition, darunter die Community Challenges (Wenden, Kicker, Slider …)
 	left.add_child(_small(tr("SPIELMODUS")))
 	_mode_select = _select(20)
@@ -264,7 +276,7 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_task_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_task_info.custom_minimum_size = Vector2(100, 0)
 	_train_box.add_child(_task_info)
-	_comp_box.add_child(_small(tr("TERMINAL")))
+	_comp_box.add_child(_small(tr(Park.system_label())))
 	_term_select = _select(20)
 	for n: String in terminal_names:
 		_term_select.add_item(tr(n))
@@ -338,6 +350,13 @@ func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	# Tastatur/Gamepad (MenuNav): Menü mit Fokus anfangs auf Start; der Editor bedient sich selbst
 	MenuNav.add_scope(_menu, 0, _start_btn)
 	MenuNav.add_scope(_editor, 15, null, true)
+	_world = WorldMap.new()
+	_world.host = self
+	_world.visible = false
+	_ui.add_child(_world)
+	_world.build()
+	_world.closed.connect(func() -> void: get_viewport().disable_3d = false)
+	_world.park_chosen.connect(func(id: String) -> void: park_chosen.emit(id))
 
 
 ## Spielmodus und Challenge anzeigen (Auswahl mit Pokalen, kurzes Ziel).
@@ -390,6 +409,32 @@ func open_editor() -> void:
 
 func editor_open() -> bool:
 	return _editor != null and _editor.visible
+
+
+## World Map öffnen (Wakepark wählen). Die Szene dahinter wird so lange nicht gerendert.
+func open_world_map() -> void:
+	_close_popups()
+	_world.open()
+	get_viewport().disable_3d = true
+
+
+func world_map_open() -> bool:
+	return _world != null and _world.visible
+
+
+## Kleine Weltkugel rechts im Park-Knopf (selbst gezeichnet, Symbole fehlen in der Web-Schrift).
+func _draw_globe(b: Button) -> void:
+	var r := 11.0
+	var c := Vector2(b.size.x - 26.0, b.size.y * 0.5)
+	var col := Color(1, 1, 1, 0.85)
+	b.draw_arc(c, r, 0.0, TAU, 32, col, 2.0, true)
+	b.draw_line(c - Vector2(r, 0), c + Vector2(r, 0), col, 1.5, true)
+	var pts := PackedVector2Array()
+	for i in 17:
+		var a := -PI * 0.5 + PI * i / 16.0
+		pts.append(c + Vector2(cos(a) * r * 0.45, sin(a) * r))
+	b.draw_polyline(pts, col, 1.5, true)
+	b.draw_line(c - Vector2(0, r), c + Vector2(0, r), col, 1.5, true)
 
 
 func _ready() -> void:
@@ -574,6 +619,7 @@ func _layout() -> void:
 	for p: PanelContainer in [_settings, _browser, _detail, _achieve, _rank_pop]:
 		_fit_popup(p, size)
 	_editor.layout(size, _k)
+	_world.layout(size, _k)
 
 
 ## Mini-Rangliste rechts unten, bündig mit der Unterkante des Menüs – nur wenn rechts daneben Platz ist
@@ -1637,6 +1683,10 @@ func activate() -> void:
 
 ## Feature/Hack mit diesem Namensteil im Popup zeigen (Test: --screen=NAME).
 func select_by_name(prefix: String) -> void:
+	if prefix.begins_with("@weltkarte"):            # @weltkarte[:zoom=F][:park=ID]
+		open_world_map()
+		_world.run_test(prefix.substr(10))
+		return
 	if prefix.begins_with("@editor"):
 		open_editor()
 		_editor.run_test(prefix.substr(7))
@@ -1749,7 +1799,7 @@ func _next_tab(d: int) -> void:
 ## Enter / PS = Spiel starten, Esc / Kreis = Fenster schließen, O / Options = Einstellungen.
 ## Fokus wandern und Knöpfe drücken (Leertaste / Kreuz) macht MenuNav bzw. Godot.
 func _input(event: InputEvent) -> void:
-	if not visible or not event.is_pressed() or event.is_echo() or editor_open():
+	if not visible or not event.is_pressed() or event.is_echo() or editor_open() or world_map_open():
 		return
 	var cancel := event.is_action_pressed("ui_cancel")
 	var focus := get_viewport().gui_get_focus_owner()

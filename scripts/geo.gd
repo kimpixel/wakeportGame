@@ -19,6 +19,7 @@ static var _canopy := PackedByteArray()
 static var _cw := 0
 static var _ch := 0
 static var _loaded := false
+static var _park := ""                   # Park, dessen Daten geladen sind (anderer Park = neu laden)
 
 
 ## Ordner der Geodaten des Parks.
@@ -27,9 +28,11 @@ static func dir() -> String:
 
 
 static func ensure_loaded() -> void:
-	if _loaded:
+	if _loaded and _park == Park.id:
 		return
 	_loaded = true
+	_park = Park.id
+	masts.clear()
 	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(dir() + "geo.json"))
 	water_level = meta["water_level"]
 	var m: Dictionary = meta["masts"]

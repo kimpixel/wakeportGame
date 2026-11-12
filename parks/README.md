@@ -1,7 +1,7 @@
 # Wakeparks
 
 Jeder Wakepark hat einen eigenen Ordner `parks/<id>/` mit einer `park.json`. Die Liste aller Parks steht in
-`parks/index.json` (später die World Map, `default` = Standard-Park). Geladen wird der Park von `scripts/park.gd`
+`parks/index.json` (World Map auf der Startseite, `default` = Standard-Park; Pins aus `location`). Geladen wird der Park von `scripts/park.gd`
 (`Park.select(id)`); Test: `--park=ID`. Gespeichert wird die Wahl in `user://settings.cfg [game] park`.
 
 ## park.json
@@ -14,6 +14,8 @@ Jeder Wakepark hat einen eigenen Ordner `parks/<id>/` mit einer `park.json`. Die
 | `timezone` | `utc` = Abstand zu UTC in Stunden, `dst`: `"eu"` = Sommerzeit wie in der EU (letzter Sonntag März bis letzter Sonntag Oktober), `""` = keine |
 | `geo` | Ordner der Geodaten (`geo.json`, `terrain.bin`, `canopy.bin`, `dop_core.jpg`, `dop_wide.jpg`, siehe `tools/fetch_geodata.mjs`) |
 | `setups` | Liste der Feature-Setups (Format wie `setups/index.json`) |
+| `plants` | Bepflanzung (Format wie `setups/plants.json`, Setup-Editor Reiter Pflanzen) |
+| `system_label` | Überschrift der Anlagen-Auswahl auf der Startseite (Wakeport `"TERMINAL"`, Standard `"ANLAGE"`) |
 | `scenery` | Kulisse (Gebäude, Stege, Leute am Ufer): bisher nur `"wakeport"` (`scripts/beach.gd`) |
 | `default_system` | Anlage, auf der man standardmäßig fährt |
 | `systems` | die Anlagen (siehe unten), in Anzeige-Reihenfolge |

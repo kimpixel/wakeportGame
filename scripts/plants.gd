@@ -7,12 +7,10 @@ class_name Plants
 ## Schilf) und Gehölze (Sträucher, Bäume). Dort setzt die Automatik nichts mehr, auch keine Bäume
 ## aus dem Oberflächenmodell bzw. kein Wiesengras; es stehen nur die gemalten Pflanzen.
 ##
-## Datei setups/plants.json (Spielkoordinaten): {"plants": [[art, x, z, höhe, yaw], …],
+## Datei je Park ("plants" in park.json, Wakeport setups/plants.json; Spielkoordinaten): {"plants": [[art, x, z, höhe, yaw], …],
 ## "boden": [[cx, cz], …], "gehoelz": [[cx, cz], …]}. Lokal (aus dem Projekt gestartet) speichert der
-## Editor direkt dorthin (dann committen), in exportierten Versionen nach user://plants.json.
-
-const FILE := "res://setups/plants.json"
-const USER_FILE := "user://plants.json"
+## Editor direkt dorthin (dann committen), in exportierten Versionen nach user://plants.json (andere Parks
+## user://plants_<park>.json).
 const CELL := 2.0            # m Raster der von Hand gepflegten Stellen
 const LAYERS := ["boden", "gehoelz"]
 const LAYER_NAMES := {"boden": "Bodenpflanzen (Gräser, Schilf)", "gehoelz": "Gehölze (Sträucher, Bäume)"}  # i18n
@@ -46,18 +44,33 @@ static var managed := {"boden": {}, "gehoelz": {}}   # Ebene -> {Vector2i: true}
 static var _loaded := false
 static var _auto: Array = []   # [art, x, z, höhe, yaw, helligkeit]
 static var _auto_done := false
+static var _park := ""         # Park, dessen Bepflanzung geladen ist (anderer Park = neu laden)
+
+
+## Bepflanzung des Parks im Projekt.
+static func file() -> String:
+	return str(Park.data.get("plants", "res://setups/plants.json"))
+
+
+## Bepflanzung aus dem Editor in exportierten Versionen.
+static func user_file() -> String:
+	return "user://plants.json" if Park.board_prefix() == "" else "user://plants_%s.json" % Park.id
 
 
 static func ensure_loaded() -> void:
-	if _loaded:
+	if _loaded and _park == Park.id:
 		return
 	_loaded = true
-	var file := FILE
-	if OS.has_feature("template") and FileAccess.file_exists(USER_FILE):
-		file = USER_FILE
+	if _park != Park.id:
+		_auto.clear()
+		_auto_done = false
+	_park = Park.id
+	var path := file()
+	if OS.has_feature("template") and FileAccess.file_exists(user_file()):
+		path = user_file()
 	var d: Variant = null
-	if FileAccess.file_exists(file):
-		d = JSON.parse_string(FileAccess.get_file_as_string(file))
+	if FileAccess.file_exists(path):
+		d = JSON.parse_string(FileAccess.get_file_as_string(path))
 	from_data(d if d is Dictionary else {})
 
 
@@ -155,14 +168,14 @@ static func from_data(d: Dictionary) -> void:
 ## Speichern: aus dem Projekt gestartet direkt in setups/plants.json (zum Committen),
 ## sonst nach user://. Ergebnis: Pfad oder "" bei Fehler.
 static func save() -> String:
-	var file := USER_FILE if OS.has_feature("template") else FILE
-	var f := FileAccess.open(file, FileAccess.WRITE)
+	var path := user_file() if OS.has_feature("template") else file()
+	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
-		push_warning("Konnte %s nicht schreiben" % file)
+		push_warning("Konnte %s nicht schreiben" % path)
 		return ""
 	f.store_string(to_json())
 	f.close()
-	return file
+	return path
 
 
 static func to_json() -> String:
@@ -185,14 +198,14 @@ static func to_json() -> String:
 
 ## Eigene Datei (exportierte Version) löschen: wieder die Bepflanzung aus dem Spiel.
 static func reset_user() -> void:
-	if FileAccess.file_exists(USER_FILE):
-		DirAccess.remove_absolute(USER_FILE)
-	var d: Variant = JSON.parse_string(FileAccess.get_file_as_string(FILE)) if FileAccess.file_exists(FILE) else null
+	if FileAccess.file_exists(user_file()):
+		DirAccess.remove_absolute(user_file())
+	var d: Variant = JSON.parse_string(FileAccess.get_file_as_string(file())) if FileAccess.file_exists(file()) else null
 	from_data(d if d is Dictionary else {})
 
 
 static func can_reset_user() -> bool:
-	return OS.has_feature("template") and FileAccess.file_exists(USER_FILE)
+	return OS.has_feature("template") and FileAccess.file_exists(user_file())
 
 
 # ---------------------------------------------------------------- Automatik am Ufer

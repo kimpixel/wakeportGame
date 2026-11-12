@@ -53,6 +53,8 @@ const RESET_DELAY := 3.0
 var _lang := ""                 # verwendete Sprache (Loc), Wechsel baut die Szene neu auf
 var _lang_req := ""             # Einstellung "lang" dazu ("" = automatisch)
 var _lang_web := "-"            # Browser: Sprache aus dem localStorage ("-" = keine)
+static var _park_req := ""           # World Map: diesen Park nach dem Neuaufbau der Szene laden
+static var _park_reload := false     # Szene wurde für einen Park-Wechsel neu aufgebaut: Startseite zeigen
 static var _lang_reload := false   # Szene wurde für einen Sprachwechsel neu aufgebaut: Einstellungen wieder öffnen
 
 # Spielregeln: eine Runde dauert 7:30, es zählen die Punkte in dieser Zeit. Danach wird man
@@ -200,6 +202,8 @@ func _ready() -> void:
 	_setup_input()
 	_parse_args()
 	Park.select(_initial_park())             # Wakepark: Lage, Zeitzone, Geodaten, Anlagen, Setups
+	if _park_reload and _test_log:
+		print("PARK geladen: ", Park.id)
 	_lang = _initial_lang()
 	_background_window()
 	Analytics.init()                        # Nutzungsstatistik (nur Web-Hauptversion)
@@ -547,6 +551,9 @@ func _ready() -> void:
 		_task_idx = (mi[1].to_int() - 1) if mi.size() > 1 else 0
 		if not _screen_arg:
 			_enter_training()
+	if _park_reload:                         # nach Park-Wechsel (World Map): Startseite
+		_park_reload = false
+		_screen_arg = true
 	if _lang_reload:                         # nach Sprachwechsel: Startseite mit offenen Einstellungen
 		_lang_reload = false
 		_screen_arg = true
@@ -597,6 +604,7 @@ func _build_start_screen() -> void:
 		start_screen.refresh_mode(game_mode, _task_idx))
 	start_screen.setups_changed.connect(_on_setups_changed)
 	start_screen.plants_changed.connect(func() -> void: terrain.rebuild_vegetation())
+	start_screen.park_chosen.connect(_change_park)
 
 
 ## Setup-Editor hat ein eigenes Setup gespeichert (bzw. gelöscht): Listen neu laden, das
@@ -820,8 +828,11 @@ func _npc_terminal(t: String) -> String:
 	return t
 
 
-## Start-Park: --park=ID, sonst der zuletzt gewählte, sonst der Standard (parks/index.json).
+## Start-Park: nach Park-Wechsel der gewählte, sonst --park=ID, sonst der zuletzt gewählte, sonst der Standard
+## (parks/index.json).
 func _initial_park() -> String:
+	if _park_req != "":
+		return _park_req
 	if _park_arg != "":
 		return _park_arg
 	var cfg := ConfigFile.new()
@@ -935,6 +946,24 @@ func _change_lang(code: String) -> void:
 		JavaScriptBridge.eval("window.location.reload()", true)
 		return
 	_lang_reload = true
+	get_tree().paused = false
+	get_tree().reload_current_scene.call_deferred()
+
+
+## World Map: anderer Wakepark. Merken (Tests speichern nichts) und die Szene neu aufbauen – Gelände, Anlagen,
+## Setups, Kulisse hängen alle am Park.
+func _change_park(id: String) -> void:
+	if id == Park.id or Park.info(id).is_empty():
+		return
+	Analytics.count("park/" + id)
+	print("PARK: ", Park.id, " -> ", id)
+	if OS.get_cmdline_user_args().is_empty():
+		var cfg := ConfigFile.new()
+		cfg.load(SETTINGS)
+		cfg.set_value("game", "park", id)
+		cfg.save(SETTINGS)
+	_park_req = id
+	_park_reload = true
 	get_tree().paused = false
 	get_tree().reload_current_scene.call_deferred()
 

@@ -207,6 +207,7 @@ function extract() {
 		const park = JSON.parse(fs.readFileSync(f, 'utf8'));
 		const where = 'parks/' + e.name + '/park.json';
 		if (park.place) addMsg(msgs, park.place, where);
+		if (park.system_label) addMsg(msgs, park.system_label, where);
 		for (const s of park.systems || []) {
 			if (s.name) addMsg(msgs, s.name, where);
 			if (s.hint) addMsg(msgs, s.hint, where);

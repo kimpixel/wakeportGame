@@ -598,6 +598,15 @@ msgstr "Muziek toevoegen"
 msgid "Vom Blitz getroffen!"
 msgstr "Door de bliksem geraakt!"
 
+msgid "2-Mast-Anlage (2.0)"
+msgstr "2-mastbaan (2.0)"
+
+msgid "Rundanlage"
+msgstr "Rondbaan"
+
+msgid "ANLAGE"
+msgstr "BAAN"
+
 msgid "Bodenpflanzen (Gräser, Schilf)"
 msgstr "Bodemplanten (grassen, riet)"
 
@@ -2098,11 +2107,14 @@ msgstr "Eindmast"
 msgid "WAKE THE HACK"
 msgstr "WAKE THE HACK"
 
-msgid "Wakeport Raunheim"
-msgstr "Wakeport Raunheim"
-
 msgid "„%s“"
 msgstr "„%s”"
+
+msgid "WAKEPARK"
+msgstr "WAKEPARK"
+
+msgid "World Map: anderen Wakepark wählen"
+msgstr "Wereldkaart: ander wakepark kiezen"
 
 msgid "SPIELMODUS"
 msgstr "SPELMODUS"
@@ -2564,6 +2576,15 @@ msgstr "Scenario dobbelen"
 
 msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
 msgstr "Lijn losscheuren aan/uit  (uit: geen ranglijst)"
+
+msgid "WAKEPARK WÄHLEN"
+msgstr "WAKEPARK KIEZEN"
+
+msgid "ANLAGEN"
+msgstr "BANEN"
+
+msgid "HIER FAHREN"
+msgstr "HIER RIJDEN"
 
 msgid "Sonnig"
 msgstr "Zonnig"

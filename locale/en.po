@@ -598,6 +598,15 @@ msgstr "Add music"
 msgid "Vom Blitz getroffen!"
 msgstr "Struck by lightning!"
 
+msgid "2-Mast-Anlage (2.0)"
+msgstr "2-tower system (2.0)"
+
+msgid "Rundanlage"
+msgstr "Full-size cable"
+
+msgid "ANLAGE"
+msgstr "CABLE"
+
 msgid "Bodenpflanzen (Gräser, Schilf)"
 msgstr "Ground plants (grasses, reeds)"
 
@@ -2098,11 +2107,14 @@ msgstr "End tower"
 msgid "WAKE THE HACK"
 msgstr "WAKE THE HACK"
 
-msgid "Wakeport Raunheim"
-msgstr "Wakeport Raunheim"
-
 msgid "„%s“"
 msgstr "“%s”"
+
+msgid "WAKEPARK"
+msgstr "WAKEPARK"
+
+msgid "World Map: anderen Wakepark wählen"
+msgstr "World map: choose another wakepark"
 
 msgid "SPIELMODUS"
 msgstr "GAME MODE"
@@ -2564,6 +2576,15 @@ msgstr "Shuffle scenario"
 
 msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
 msgstr "Rope rip on/off  (off: no leaderboard)"
+
+msgid "WAKEPARK WÄHLEN"
+msgstr "CHOOSE WAKEPARK"
+
+msgid "ANLAGEN"
+msgstr "CABLES"
+
+msgid "HIER FAHREN"
+msgstr "RIDE HERE"
 
 msgid "Sonnig"
 msgstr "Sunny"

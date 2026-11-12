@@ -7,6 +7,9 @@ extends RefCounted
 ## (kommt noch). Die Anlage mit "origin": true legt die Spielkoordinaten fest (Startmast = Ursprung, Seil entlang -z).
 
 const INDEX := "res://parks/index.json"
+const TYPE_NAMES := {"2.0": "2-Mast-Anlage (2.0)", "full": "Rundanlage"}  # i18n
+## Standard-Überschrift der Anlagen-Auswahl (siehe system_label), nur damit der Text übersetzt wird.
+const LABELS := ["ANLAGE"]  # i18n
 
 static var id := ""
 static var data := {}
@@ -49,6 +52,27 @@ static func list() -> Array:
 static func park_name() -> String:
 	ensure_loaded()
 	return str(data.get("name", id))
+
+
+## Daten eines beliebigen Parks aus parks/index.json lesen, ohne ihn zu wählen (World Map). {} = unbekannt.
+static func info(park_id: String) -> Dictionary:
+	for p: Dictionary in list():
+		if p["id"] == park_id:
+			var d: Variant = JSON.parse_string(FileAccess.get_file_as_string(p["file"]))
+			return d if d is Dictionary else {}
+	return {}
+
+
+## Überschrift der Anlagen-Auswahl auf der Startseite (deutscher Ausgangstext, mit tr() übersetzen):
+## Wakeport „TERMINAL“, sonst „ANLAGE“.
+static func system_label() -> String:
+	ensure_loaded()
+	return str(data.get("system_label", "ANLAGE"))
+
+
+## Art einer Anlage als Text (deutscher Ausgangstext, mit tr() übersetzen).
+static func type_name(type: String) -> String:
+	return TYPE_NAMES.get(type, type)
 
 
 # ---------------------------------------------------------------- Anlagen

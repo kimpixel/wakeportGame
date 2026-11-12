@@ -8,8 +8,10 @@
   "timezone": { "utc": 1, "dst": "eu" },
   "geo": "res://assets/geo/",
   "setups": "res://setups/index.json",
+  "plants": "res://setups/plants.json",
   "scenery": "wakeport",
   "default_system": "T2",
+  "system_label": "TERMINAL",
   "systems": [
     {
       "id": "T1", "name": "Terminal 1", "hint": "Terminal 1 (Lounge-Steg)", "type": "2.0",

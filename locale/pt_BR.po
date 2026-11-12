@@ -598,6 +598,15 @@ msgstr "Adicionar música"
 msgid "Vom Blitz getroffen!"
 msgstr "Atingido por um raio!"
 
+msgid "2-Mast-Anlage (2.0)"
+msgstr "Sistema de 2 torres (2.0)"
+
+msgid "Rundanlage"
+msgstr "Cabo completo"
+
+msgid "ANLAGE"
+msgstr "CABO"
+
 msgid "Bodenpflanzen (Gräser, Schilf)"
 msgstr "Plantas rasteiras (gramíneas, juncos)"
 
@@ -2098,11 +2107,14 @@ msgstr "Torre final"
 msgid "WAKE THE HACK"
 msgstr "WAKE THE HACK"
 
-msgid "Wakeport Raunheim"
-msgstr "Wakeport Raunheim"
-
 msgid "„%s“"
 msgstr "“%s”"
+
+msgid "WAKEPARK"
+msgstr "WAKEPARK"
+
+msgid "World Map: anderen Wakepark wählen"
+msgstr "Mapa-múndi: escolher outro wakepark"
 
 msgid "SPIELMODUS"
 msgstr "MODO DE JOGO"
@@ -2564,6 +2576,15 @@ msgstr "Sortear cenário"
 
 msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
 msgstr "Arrancar o cabo liga/desliga  (desligado: sem ranking)"
+
+msgid "WAKEPARK WÄHLEN"
+msgstr "ESCOLHER WAKEPARK"
+
+msgid "ANLAGEN"
+msgstr "CABOS"
+
+msgid "HIER FAHREN"
+msgstr "ANDAR AQUI"
 
 msgid "Sonnig"
 msgstr "Ensolarado"
