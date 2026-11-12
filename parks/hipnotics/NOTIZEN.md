@@ -77,8 +77,10 @@ Kachel `N36_00_E031_00`).
 - Setup „L2 nach Luftbild“ (`setups/setup_foto_2025.json`): 8 Features, Lage aus dem Foto von Süden geschätzt, Typen nach der
   Website-Liste: Westseite Kicker S, Fun Box 16 m, A-Frame Rail, Kicker L; Ostseite Down Ledge (Slider 20 m), Pyramid (Table),
   Kicker M, Pro Rail.
-- Geodaten: entlang des Seilwegs Wasser ausgehoben (`carve_loops`), an den Ecken 15 m über den Mast hinaus – sonst lief das Seil
-  an den Süd-Ecken über Land.
+- Masten an Land mit Kran-Ausleger (Rixen: 13–15 m, Ausleger übers Wasser); Seil mittig im Kanal (Ausleger 8–25 m lang),
+  Seilweg 532 m (Website: 540 m). Kein ausgehobener Wasserstreifen mehr (`carve_loops` leer).
+- Start: Blick zur Insel, Brett quer zum Seil; Steg draußen unter dem Seil, Laufsteg zum Ufer.
+- Motormast am Start: Nutzer hat ein Foto (Google-Vorschau, hier nicht ladbar) – Optik folgt nach Upload.
 - Autopilot fährt mehrere Runden ohne Sturz (Seilzug max. ~800 N).
 
 ## Fehlt noch (vom Nutzer)

@@ -1,21 +1,24 @@
 class_name FullCable
 extends CableSystem
-## Rundanlage (Full-Size-Cable): das Stahlseil läuft als geschlossene Schlaufe über 4–7 Masten, immer in eine Richtung
-## (Mast-Reihenfolge aus park.json, Hip-Notics L2 gegen den Uhrzeigersinn). Mehrere Carrier hängen im gleichen Abstand am
-## Seil; einer davon zieht den Spieler. Es gibt keine Wenden – an den Masten führt das Seil um eine Rolle (Ecken des
-## Pfads gerundet), der Fahrer wird um die Ecke gezogen.
+## Rundanlage (Full-Size-Cable, wie Rixen „Big Bro“): das Stahlseil läuft als geschlossene Schlaufe über 4–7 Masten, immer
+## in eine Richtung (Mast-Reihenfolge aus park.json, Hip-Notics L2 gegen den Uhrzeigersinn). Die Masten (13–15 m) stehen an
+## Land, ein kranartiger Ausleger reicht weit übers Wasser; an seiner Spitze läuft das Seil über die Umlenkrollen
+## (Ecken des Seilwegs = Auslegerspitzen, centered_tips: jede Strecke mittig zwischen Ufer und Insel). Mehrere Carrier
+## hängen im gleichen Abstand am Seil; einer davon zieht den Spieler. Keine Wenden – der Fahrer wird um die Ecke gezogen.
 ##
 ## Für den Fahrer verhält sich die Anlage wie CableSystem: Aufhängepunkt (get_anchor), Carrier-Geschwindigkeit
 ## (get_velocity, local_vz) und Zustände IDLE/START/RUN/DONE. Die Fahrphysik bleibt dieselbe. Der feste Rahmen
 ## (transform: Ursprung am Startmast, -z entlang der ersten Strecke) dient nur als Bezug für Dinge, die starr gerechnet
 ## werden (Abstände); Bahn-Koordinaten (s entlang des Seils, x seitlich) liefern path_frame / to_lane.
 
-const CORNER_R := 14.0           # m: an den Masten läuft das Seil über einen Bogen aus Umlenkrollen am Ausleger
-                                 # (die Kurve beginnt so weit vor dem Mast; mit 5 m schoss man in den Mast)
+const CORNER_R := 10.0           # m Rundung des Seilwegs an den Auslegerspitzen (Rollen + Ausschwingen des Carriers)
+const MAST_H := 14.0             # m Masthöhe (Rixen: 13–15 m)
+const BOOM_MAX := 45.0           # m längster Ausleger (sonst bleibt die Ecke näher am Mast)
 const CARRIER_GAP := 100.0       # m Abstand der Carrier am Seil (Anzahl = Länge / Abstand)
 const POLE_R := 0.28
 
 var masts_w: Array[Vector3] = []          # Masten (Welt, y = 0) in Fahrtrichtung
+var tips_w: Array[Vector3] = []           # Auslegerspitzen = Ecken des Seilwegs (Welt, y = 0)
 var length := 0.0                         # Seilweg (Schlaufe) in m
 var u := 0.0                              # Spieler-Carrier entlang des Seilwegs (0 = Ende der Rundung am Startmast)
 var start_u := 0.0                        # Parkposition des Carriers am Startsteg
@@ -31,10 +34,11 @@ func setup_path(masts: Array) -> void:
 	masts_w.clear()
 	for m: Vector3 in masts:
 		masts_w.append(Vector3(m.x, 0.0, m.z))
+	tips_w = centered_tips(masts_w)
 	_build_path()
-	# fester Rahmen: Startmast, -z entlang der ersten Strecke
-	var d := masts_w[1] - masts_w[0]
-	position = masts_w[0]
+	# fester Rahmen: Auslegerspitze am Startmast, -z entlang der ersten Strecke
+	var d := tips_w[1] - tips_w[0]
+	position = tips_w[0]
 	rotation.y = atan2(-d.x, -d.z)
 	mast_a_z = 0.0
 	mast_b_z = -d.length()
@@ -43,15 +47,64 @@ func setup_path(masts: Array) -> void:
 	dir = 1.0
 
 
+## Auslegerspitzen: jede Strecke Mast i → Mast i+1 seitlich so verschoben, dass sie mittig über dem Wasser liegt
+## (zwischen Ufer und Insel: quer zur Strecke vom äußeren Ufer her die erste durchgehende Wasserfläche, deren Mitte,
+## gemittelt über die mittleren Punkte der Strecke); Ecken = Schnittpunkte der verschobenen Strecken.
+static func centered_tips(masts: Array[Vector3]) -> Array[Vector3]:
+	var n := masts.size()
+	var off: Array[float] = []
+	for i in n:
+		var a := masts[i]
+		var b := masts[(i + 1) % n]
+		var f := (b - a).normalized()
+		var left := -f.cross(Vector3.UP).normalized()
+		var sum := 0.0
+		var cnt := 0
+		for k in 7:
+			var p := a.lerp(b, 0.25 + 0.5 * k / 6.0)
+			var start := NAN
+			var x := -40.0
+			while x <= 80.0:
+				var q := p + left * x
+				var wet := Lake.in_lake(q.x, q.z, 0.3)
+				if wet and is_nan(start):
+					start = x
+				elif not wet and not is_nan(start):
+					if x - start > 8.0:
+						sum += (start + x) * 0.5
+						cnt += 1
+						break
+					start = NAN
+				x += 0.5
+		off.append(sum / cnt if cnt > 0 else 0.0)
+	var tips: Array[Vector3] = []
+	for i in n:
+		# Ecke an Mast i: Schnitt der verschobenen Strecken i-1 (davor) und i (danach)
+		var j := (i - 1 + n) % n
+		var a0 := masts[j]
+		var f0 := (masts[i] - a0).normalized()
+		var p0 := a0 - f0.cross(Vector3.UP).normalized() * off[j]
+		var f1 := (masts[(i + 1) % n] - masts[i]).normalized()
+		var p1 := masts[i] - f1.cross(Vector3.UP).normalized() * off[i]
+		var hit: Variant = Geometry2D.line_intersects_line(Vector2(p0.x, p0.z), Vector2(f0.x, f0.z), Vector2(p1.x, p1.z), Vector2(f1.x, f1.z))
+		var t := masts[i]
+		if hit != null:
+			t = Vector3((hit as Vector2).x, 0.0, (hit as Vector2).y)
+		if t.distance_to(masts[i]) > BOOM_MAX:
+			t = masts[i] + (t - masts[i]).normalized() * BOOM_MAX
+		tips.append(t)
+	return tips
+
+
 func _build_path() -> void:
 	_pts.clear()
-	var n := masts_w.size()
+	var n := tips_w.size()
 	# Ecke i: gerundet zwischen den Nachbarstrecken (quadratische Bézier von a über den Mast nach b)
 	var corners: Array = []
 	for i in n:
-		var p := masts_w[i]
-		var prev := masts_w[(i - 1 + n) % n]
-		var next := masts_w[(i + 1) % n]
+		var p := tips_w[i]
+		var prev := tips_w[(i - 1 + n) % n]
+		var next := tips_w[(i + 1) % n]
 		var r := minf(CORNER_R, minf(p.distance_to(prev), p.distance_to(next)) * 0.3)
 		corners.append([p + (prev - p).normalized() * r, p, p + (next - p).normalized() * r])
 	_arc_mid.clear()
@@ -253,18 +306,39 @@ func _ready() -> void:
 	var vis := Node3D.new()
 	vis.top_level = true                   # Grafik in Weltkoordinaten (der Rahmen der Anlage ist nur ein Bezug)
 	add_child(vis)
-	# Masten: Rohrmast mit Ausleger zur Innenseite, oben die große Umlenkrolle
+	# Masten wie ein Kran: Rohrmast an Land, Fachwerk-Ausleger übers Wasser bis zur Spitze (Rollenbogen),
+	# vom Mastkopf abgespannt; hinten ein kurzer Gegenausleger mit Abspannung zum Boden
 	var n := masts_w.size()
 	for i in n:
 		var m := masts_w[i]
 		var g := maxf(Geo.height(m.x, m.z) if Geo.in_area(m.x, m.z) else 0.3, 0.0)
-		var top := Lake.CABLE_Y + 0.6
+		var top := MAST_H
 		Util.beam(vis, Vector3(m.x, g - 0.5, m.z), Vector3(m.x, top, m.z), POLE_R, galv)
-		# Ausleger vom Mast zum Rollenbogen, abgespannt; am Bogen drei Umlenkrollen
 		var mid := _arc_mid[i]
-		Util.beam(vis, Vector3(m.x, top - 0.3, m.z), mid + Vector3(0, Lake.CABLE_Y + 0.35, 0), 0.14, galv)
-		Util.beam(vis, Vector3(m.x, top + 1.6, m.z), mid + Vector3(0, Lake.CABLE_Y + 0.45, 0), 0.03, steel)
-		Util.beam(vis, Vector3(m.x, top + 1.6, m.z), Vector3(m.x, top - 0.3, m.z), POLE_R * 0.7, galv)
+		var arm_y := Lake.CABLE_Y + 0.35
+		var out := Vector3(mid.x - m.x, 0.0, mid.z - m.z)
+		var side := out.normalized().cross(Vector3.UP) * 0.35
+		var root := Vector3(m.x, arm_y, m.z)
+		var tip := mid + Vector3(0, arm_y, 0)
+		# Fachwerk: zwei Untergurte, ein Obergurt, Diagonalen
+		var up := Vector3(0, 0.9, 0)
+		for sd: float in [-1.0, 1.0]:
+			Util.beam(vis, root + side * sd, tip + side * sd * 0.6, 0.06, galv)
+		Util.beam(vis, root + up, tip + up * 0.4, 0.06, galv)
+		var segs := maxi(2, int(out.length() / 2.5))
+		for k in segs:
+			var t0 := float(k) / segs
+			var t1 := float(k + 1) / segs
+			var b0 := root.lerp(tip, t0) + side * lerpf(1.0, 0.6, t0) * (1.0 if k % 2 == 0 else -1.0)
+			var u1 := root.lerp(tip, t1) + up * lerpf(1.0, 0.4, t1)
+			Util.beam(vis, b0, u1, 0.03, galv)
+		# Abspannung vom Mastkopf zur Spitze und zum Gegenausleger
+		var back := Vector3(m.x, arm_y, m.z) - out.normalized() * 4.0
+		Util.beam(vis, Vector3(m.x, top, m.z), tip + Vector3(0, 0.4, 0), 0.025, steel)
+		Util.beam(vis, Vector3(m.x, top, m.z), tip.lerp(root, 0.5) + Vector3(0, 0.6, 0), 0.02, steel)
+		Util.beam(vis, root, back, 0.08, galv)
+		Util.beam(vis, Vector3(m.x, top, m.z), back, 0.025, steel)
+		Util.beam(vis, back, Vector3(back.x, g, back.z) - out.normalized() * 3.0, 0.02, steel)
 		for k in 3:
 			var cu := nearest_u(mid) + (k - 1) * 4.0
 			var wheel := MeshInstance3D.new()
@@ -281,6 +355,8 @@ func _ready() -> void:
 		Util.beam(vis, point_at(nearest_u(mid) - 5.0) + Vector3(0, Lake.CABLE_Y + 0.35, 0),
 			point_at(nearest_u(mid) + 5.0) + Vector3(0, Lake.CABLE_Y + 0.35, 0), 0.1, galv)
 		Util.box(vis, Vector3(0.3, 0.35, 0.3), Vector3(m.x, top + 0.2, m.z), Util.mat(Color(1.0, 0.45, 0.1), 0.5))
+		if i == 0:                                     # Motormast (Antrieb, Kupplung der Carrier)
+			Util.box(vis, Vector3(2.2, 2.0, 2.2), Vector3(m.x, g + 1.0, m.z), Util.mat(Color(0.9, 0.9, 0.88), 0.6))
 	# Stahlseil entlang des Seilwegs
 	for i in _pts.size() - 1:
 		Util.beam(vis, _pts[i] + Vector3(0, Lake.CABLE_Y, 0), _pts[i + 1] + Vector3(0, Lake.CABLE_Y, 0), 0.03, steel)

@@ -63,6 +63,7 @@ const GAME_TIME := 450.0
 const SKIP_PENALTY := 60.0      # Strg nach Sturz: Schwimmen abbrechen, Handle sofort da
 const RESET_PENALTY := 120.0    # R: zurück zum Startsteg
 const FULL_DOCK_X := 5.5        # Rundanlage: Startplatz so weit rechts neben dem Seil (Steg 5,8 m breit, ab 2,6 m)
+const FULL_START_S := 8.0       # Rundanlage: Steg ab so viel m hinter der Ecke am Startmast (Startplatz 3 m weiter)
 const FULL_RETURN := 3.5        # Rundanlage: so lange sieht man den Sturz, dann zurück zum Startsteg (Strafzeit wie Strg)
 var _session := false           # Runde läuft (Zeit zählt)
 var _game_time := GAME_TIME    # Test: --game-time=SEK
@@ -920,12 +921,9 @@ func _build_full_cable(t: String, ms: Array) -> void:
 	for m: String in ms:
 		mw.append(Geo.masts[m])
 	fc.setup_path(mw)
-	var s_shore := 0.0
-	while s_shore < 60.0:
-		var w := fc.point_at(s_shore)
-		if Lake.in_lake(w.x, w.z, 0.5):
-			break
-		s_shore += 0.5
+	# Startplatz kurz hinter der Ecke am Startmast (der Seilweg beginnt am Ende ihrer Rundung, schon über dem Wasser);
+	# der Steg führt vom Ufer dorthin (Beach.build_docks)
+	var s_shore := FULL_START_S
 	# Steg seitlich außen (rechts in Fahrtrichtung) neben dem Seil – wer die Runde fährt, kommt daran vorbei
 	var fr := fc.path_frame(s_shore + 3.0)
 	var start := fr * Vector3(FULL_DOCK_X, 0.0, 0.0)
@@ -936,8 +934,9 @@ func _build_full_cable(t: String, ms: Array) -> void:
 		var g := fc.path_frame(corner.y) * Vector3(corner.x, 0.0, 0.0)
 		dock = dock.expand(Vector2(g.x, g.z))
 	fc.start_u = fposmod(s_shore + 3.0 - 9.0, fc.length)
-	var f := fc.tangent_at(s_shore + 3.0)
-	_start[t] = {"pos": start, "yaw": atan2(-f.x, -f.z), "dock": dock, "mast_b": Vector3(1.0e6, 0.0, 1.0e6)}
+	# Start wie an echten Rundanlagen: Blick zur Insel (nach links, quer zum Seil), das Brett liegt längs der Fahrtrichtung
+	var left := -fc.tangent_at(s_shore + 3.0).cross(Vector3.UP).normalized()
+	_start[t] = {"pos": start, "yaw": atan2(-left.x, -left.z), "dock": dock, "mast_b": Vector3(1.0e6, 0.0, 1.0e6)}
 	cables[t] = fc
 	add_child(fc)
 

@@ -931,6 +931,18 @@ func build_docks(starts: Dictionary, cables: Dictionary) -> void:
 			_b(dock, Vector3(0.25, 0.32, len), mid + Vector3(side * 2.9, -0.02, 0), _blue)
 		# Hütte am Ufer rechts neben dem Steg, Boden auf dem Gelände
 		var hut_l := Vector3(6.2 + sx, 0.0, lz + 6.5)
+		if c is FullCable:
+			# Rundanlage: der Startplatz liegt draußen unter dem Seil – Laufsteg seitlich zum Ufer, Hütte an seinem Ende
+			var x0 := sx + 4.6
+			var x1 := x0
+			while x1 < x0 + 60.0:
+				var w := c.transform * Vector3(x1, 0.0, lz + 1.0)
+				if not Lake.in_lake(w.x, w.z, 0.0):
+					break
+				x1 += 0.5
+			if x1 > x0 + 0.5:
+				_b(dock, Vector3(x1 - x0 + 1.0, 0.25, 1.6), Vector3((x0 + x1) * 0.5, y, lz + 1.0), _wood)
+			hut_l = Vector3(x1 + 2.5, 0.0, lz + 1.0)
 		var hw := c.transform * hut_l
 		var gy := maxf(Geo.height(hw.x, hw.z), 0.2)
 		var hut := Node3D.new()

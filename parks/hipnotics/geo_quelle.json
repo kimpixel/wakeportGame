@@ -60,16 +60,8 @@
       31.2041
     ]
   ],
-  "_carve": "Rundanlagen: entlang des Seilwegs ist immer Wasser (Breite carve_width je Seite, an den Ecken carve_extend m über den Mast hinaus – dort schießt man geradeaus weiter, solange das Seil durchhängt). Die Uferlinie aus 10-m-Daten und die Mastpunkte sind ±5 m ungenau; an den Ecken lief das Seil sonst über Land. Nur bis carve_mast m um die Masten bleibt Land.",
-  "carve_loops": [
-    [
-      "l2_1",
-      "l2_2",
-      "l2_3",
-      "l2_4",
-      "l2_5"
-    ]
-  ],
+  "_carve": "carve_loops (Wasser entlang eines Seilwegs ausheben) wird nicht mehr gebraucht: das Seil der Rundanlage läuft an den Auslegern mittig über dem Wasser (FullCable.centered_tips). Werkzeug bleibt für andere Parks.",
+  "carve_loops": [],
   "carve_width": 7,
   "carve_mast": 2,
   "carve_extend": 15
