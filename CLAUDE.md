@@ -5,7 +5,15 @@ Frankfurt mit zwei 2-Mast-Seilanlagen (T1, T2). Web-Version auf GitHub Pages:
 https://kimpixel.github.io/wakeportGame/ (Repo `kimpixel/wakeportGame`, Build per
 `.github/workflows/web.yml` bei jedem Push auf `main`, dauert ca. 1 min).
 
-Spielerdoku: `README.md`. Feature-Setups und Bauteile: `setups/README.md`.
+Spielerdoku: `README.md`. Feature-Setups und Bauteile: `setups/README.md`. Wakeparks: `parks/README.md`.
+
+**Mehrere Wakeparks** (Branch `claude/multi-park-wakeboard-xtkris`, in Arbeit): je Park `parks/<id>/park.json` (Lage, Zeitzone,
+Geodaten, Setups, Anlagen mit id/Name/Typ), Liste `parks/index.json`, geladen von `scripts/park.gd` (`Park`). Phasen: 1 Umbau
+(Wakeport als park.json, ohne sichtbare Änderung – erledigt), 2 World Map + Anlagen-Auswahl, 3 Hip-Notics (Antalya) mit den
+2.0-Anlagen, 4 Rundanlage (`type: "full"`), 5 Feinschliff. Recherche Hip-Notics: `parks/hipnotics/NOTIZEN.md`.
+Anlagen-ids des Wakeports bleiben `T1`/`T2` (Setup-Dateien, Ranglisten unverändert); andere Parks: Ranglisten
+`comp/SEK/<park>.<anlage>/…` (`Park.board_prefix`). Nie `"T1"`/`"T2"` fest in neuen Code schreiben – `Park.system_ids()`,
+`Park.default_system()`, `main.gd cables`.
 
 ## Begriffe und Kurzformen des Nutzers (immer so verstehen)
 
@@ -100,7 +108,7 @@ Godot liegt im Repo-Root: `./Godot_v4.7.2-stable_win64_console.exe`. Kein ffmpeg
 
 Wichtige Test-Argumente (vollständig im Kopf von `scripts/main.gd`): `--autotest`, `--quit=S`,
 `--shot=P --shot-time=S`, `--view=x,y,z,lx,ly,lz`, `--closeup=x,y,z[,lx,ly,lz]` (relativ zum Fahrer),
-`--terminal=T1|T2`, `--setup=ID`, `--screen[=NAME|@liste|@einstellungen]`, `--no-screen`,
+`--park=ID`, `--terminal=T1|T2`, `--setup=ID`, `--screen[=NAME|@liste|@einstellungen]`, `--no-screen`,
 `--mobile --tilt=GRAD`, `--jump-at=S`, `--pitch=±1`, `--hold=AKTION@T0-T1`, `--crash-at=S`, `--letgo-at=S`,
 `--game-time=S`, `--scenario=ID`, `--weather=ID --hour=H --day=T`, `--plane=S`, `--passive`.
 Mit `--hold` wird die Gamepad-Belegung entfernt (`main.gd _drop_pad_input`): Godot liest Gamepads auch ohne Fensterfokus, wer
@@ -139,6 +147,7 @@ Fallstricke:
 
 | Datei | Inhalt |
 |---|---|
+| `scripts/park.gd`, `parks/` | gewählter Wakepark aus `parks/<id>/park.json`: Lage (`Park.lat/lon` → Sonnenstand, Live-Wetter), Zeitzone (`Park.utc_offset`, Wakeport MEZ/MESZ), Geodaten-Ordner (`Geo.dir()`), Setup-Liste (`FeatureSet.index_file()`), Anlagen (`system_ids`, `system_name`, `default_system`, `origin_system`); main.gd baut daraus alle Anlagen (`_build_cables`, `cables`: id → CableSystem; `cable` = Anlage im Ursprung, `cable_t1` = Nachbaranlage des NPC). `tools/cog_crop.mjs`: Ausschnitt aus Sentinel-2/Copernicus-DEM (freie Geodaten für neue Parks) |
 | `scripts/main.gd` | Szene aufbauen, Eingabe (`_setup_input`), Spielablauf (Runde, Strafzeiten, Wenden-Wertung), Startseite öffnen/schließen, Test-Argumente |
 | `scripts/rider.gd` | Fahrer: Physik (Wasser, Luft, Slider), Seilzug, Tricks und Punkte, Posen (IK am Menschen-Rig), Raley/Überschlag/Press, Sturz/Schwimmen/Deep-Water-Start, Autopilot/NPC |
 | `scripts/training.gd`, `scripts/challenge.gd`, `scripts/ui/task_panel.gd` | Spielmodi: Aufgaben/Medaillen (Daten), Ablauf eines Versuchs (Platzieren, Countdown, Messen), Aufgaben-Fenster |

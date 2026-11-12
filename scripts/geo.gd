@@ -1,11 +1,9 @@
 class_name Geo
 extends RefCounted
-## Echte Geodaten des Raunheimer Waldsees (siehe tools/fetch_geodata.mjs).
+## Echte Geodaten des gewählten Parks (Ordner aus park.json, Wakeport: assets/geo/, siehe tools/fetch_geodata.mjs).
 ##
-## Spielkoordinaten: Ursprung = Startmast T2, -Z zeigt entlang des T2-Seils (fast genau Osten),
-## +X zeigt rechts davon (fast genau Süden). y = Höhe über dem Wasserspiegel.
-
-const DIR := "res://assets/geo/"
+## Spielkoordinaten: Ursprung = Startmast der Anlage mit "origin" (Wakeport: T2), -Z zeigt entlang ihres Seils
+## (Wakeport: fast genau Osten), +X zeigt rechts davon. y = Höhe über dem Wasserspiegel.
 
 static var water_level := 0.0
 static var origin := Vector2.ZERO        # UTM (E, N) des T2-Startmasts
@@ -23,15 +21,21 @@ static var _ch := 0
 static var _loaded := false
 
 
+## Ordner der Geodaten des Parks.
+static func dir() -> String:
+	return Park.geo_dir()
+
+
 static func ensure_loaded() -> void:
 	if _loaded:
 		return
 	_loaded = true
-	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(DIR + "geo.json"))
+	var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(dir() + "geo.json"))
 	water_level = meta["water_level"]
 	var m: Dictionary = meta["masts"]
-	var a: Array = m["t2_start"]
-	var b: Array = m["t2_end"]
+	var om: Array = Park.system(Park.origin_system())["masts"]
+	var a: Array = m[om[0]]
+	var b: Array = m[om[1]]
 	origin = Vector2(a[0], a[1])
 	dir_u = (Vector2(b[0], b[1]) - origin).normalized()
 	var ar: Dictionary = meta["area"]
@@ -48,13 +52,18 @@ static func ensure_loaded() -> void:
 		var p: Array = m[key]
 		var g := utm_to_game(float(p[0]), float(p[1]))
 		masts[key] = Vector3(g.x, 0.0, g.y)
-	# Die Endmasten stehen weiter draußen als in den Daten (Bahnen sind länger, siehe Lake.END_EXTEND)
-	for t: String in ["t1", "t2"]:
-		var sa: Vector3 = masts[t + "_start"]
-		var sb: Vector3 = masts[t + "_end"]
-		masts[t + "_end"] = sb + (sb - sa).normalized() * Lake.END_EXTEND
-	_terrain = FileAccess.get_file_as_bytes(DIR + "terrain.bin")
-	_canopy = FileAccess.get_file_as_bytes(DIR + "canopy.bin")
+	# Endmasten von 2-Mast-Anlagen ggf. weiter draußen als in den Daten ("end_extend", Wakeport: Bahnen länger,
+	# siehe Lake.END_EXTEND)
+	for t: String in Park.system_ids():
+		var sy := Park.system(t)
+		var ext := float(sy.get("end_extend", 0.0))
+		var ms: Array = sy.get("masts", [])
+		if ext != 0.0 and ms.size() == 2:
+			var sa: Vector3 = masts[ms[0]]
+			var sb: Vector3 = masts[ms[1]]
+			masts[ms[1]] = sb + (sb - sa).normalized() * ext
+	_terrain = FileAccess.get_file_as_bytes(dir() + "terrain.bin")
+	_canopy = FileAccess.get_file_as_bytes(dir() + "canopy.bin")
 
 
 ## UTM (absolut) -> Spiel (x, z)

@@ -35,9 +35,9 @@ func _ready() -> void:
 	var compat := RenderingServer.get_current_rendering_method() == "gl_compatibility"
 	_material = ShaderMaterial.new()
 	_material.shader = preload("res://shaders/terrain.gdshader")
-	var wide: Texture2D = load(Geo.DIR + "dop_wide.jpg")
+	var wide: Texture2D = load(Geo.dir() + "dop_wide.jpg")
 	_material.set_shader_parameter("dop_wide", wide)
-	_material.set_shader_parameter("dop_core", load(Geo.DIR + "dop_core.jpg"))
+	_material.set_shader_parameter("dop_core", load(Geo.dir() + "dop_core.jpg"))
 	_material.set_shader_parameter("area_rect", Vector4(Geo.area.position.x, Geo.area.position.y, Geo.area.end.x, Geo.area.end.y))
 	_material.set_shader_parameter("core_rect", Vector4(Geo.core.position.x, Geo.core.position.y, Geo.core.end.x, Geo.core.end.y))
 	_material.set_shader_parameter("dir_u", Geo.dir_u)
@@ -61,7 +61,7 @@ func _ready() -> void:
 ## Wald, Gras und Uferpflanzen (Automatik + von Hand gemalt, siehe Plants).
 func _build_vegetation() -> void:
 	Plants.ensure_loaded()
-	_dop_core = (load(Geo.DIR + "dop_core.jpg") as Texture2D).get_image()
+	_dop_core = (load(Geo.dir() + "dop_core.jpg") as Texture2D).get_image()
 	if _dop_core and _dop_core.is_compressed():
 		_dop_core.decompress()
 	_build_trees()

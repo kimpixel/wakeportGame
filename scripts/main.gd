@@ -10,7 +10,8 @@ extends Node3D
 ##                     --bg gilt automatisch bei --shot und --write-movie
 ##   --cam=side|orbit  Kameramodus beim Start
 ##   --setup=ID        Feature-Setup aus setups/index.json (z. B. 2026-09, a, b)
-##   --terminal=T1|T2  an welcher Anlage man fährt (der NPC fährt an der anderen)
+##   --park=ID         Wakepark aus parks/index.json (Standard: wakeport)
+##   --terminal=T1|T2  an welcher Anlage man fährt (ids aus park.json; der NPC fährt an einer anderen)
 ##   --mobile          Handy-Steuerung erzwingen (mit --tilt=GRAD feste Neigung)
 ##   --touch-at=SEK,…  Test: Finger zu diesen Zeiten 0.4 s auf den Bildschirm
 ##   --screen[=NAME]   Startbildschirm erzwingen (NAME: Feature/Hack auswählen, z. B. "hack";
@@ -106,15 +107,15 @@ var _mode_arg := ""
 var _go_at := -1.0
 var mode_auto := false           # Test: im Spielmodus fährt der Autopilot (--mode-auto)
 
-## Welche Anlage fährt der Spieler? Der NPC fährt immer an der anderen.
-const TERMINALS := ["T1", "T2"]
-const TERMINAL_NAMES := ["Terminal 1", "Terminal 2"]  # i18n
+## Welche Anlage fährt der Spieler? Der NPC fährt immer an einer anderen. Anlagen, ids und Namen kommen aus dem
+## Park (parks/<id>/park.json, siehe Park): Wakeport "T1"/"T2" = „Terminal 1“/„Terminal 2“.
 var terminal := "T2"
 var pc: CableSystem              # Anlage des Spielers
 var nc: CableSystem              # Anlage des NPC
 var _terminal_menu: OptionButton
 var _terminal_arg := ""
-var _start := {}                 # "T1"/"T2" -> {pos, yaw, dock, mast_b}
+var _park_arg := ""
+var _start := {}                 # Anlagen-id -> {pos, yaw, dock, mast_b}
 var sfx: Sfx
 var ambient: Ambient
 var wildlife: Wildlife
@@ -141,7 +142,8 @@ var _screen_arg := false
 var _no_screen := false
 var _screen_select := ""
 
-var cable_t1: CableSystem
+var cable_t1: CableSystem        # Nachbaranlage (Wakeport: T1), dort fährt anfangs der NPC
+var cables := {}                 # Anlagen-id -> CableSystem (alle Anlagen des Parks)
 var features: FeatureSet
 var npc: Rider
 var _npc_crash_t := 0.0
@@ -197,6 +199,7 @@ var _log_t := 0.0
 func _ready() -> void:
 	_setup_input()
 	_parse_args()
+	Park.select(_initial_park())             # Wakepark: Lage, Zeitzone, Geodaten, Anlagen, Setups
 	_lang = _initial_lang()
 	_background_window()
 	Analytics.init()                        # Nutzungsstatistik (nur Web-Hauptversion)
@@ -211,18 +214,7 @@ func _ready() -> void:
 	add_child(water)
 	water.sun = weather.sun
 	water.env = weather.env
-	cable = CableSystem.new()
-	add_child(cable)
-	cable.turn_a_z = -28.0          # Ufer-Wende T2: 6 m weiter draußen (mehr Abstand zum Ufer)
-	# Nachbaranlage T1 mit einem NPC-Fahrer (startet vom T1-Schwimmsteg)
-	cable_t1 = CableSystem.new()
-	cable_t1.place_between(Geo.masts["t1_start"], Geo.masts["t1_end"])
-	var dc := Geo.rel_to_game(21.9, -29.5)
-	var npc_start := Vector3(dc.x + 1.5, Lake.DOCK_T1_Y, dc.y)
-	var npc_local_z := (cable_t1.transform.affine_inverse() * npc_start).z
-	cable_t1.start_z = npc_local_z - 9.0
-	cable_t1.turn_a_z = npc_local_z - 16.0
-	add_child(cable_t1)
+	_build_cables()
 	rider = Rider.new()
 	rider.test_pitch = _test_pitch
 	rider.test_dpress = _test_dpress
@@ -242,15 +234,15 @@ func _ready() -> void:
 	buoys = TurnBuoys.new()
 	buoys.water = water
 	add_child(buoys)
-	buoys.add_cable(cable)
-	buoys.add_cable(cable_t1)
+	for t: String in Park.system_ids_default_first():
+		buoys.add_cable(cables[t])
 
 	features = FeatureSet.new()
 	features.reflections = int(settings.values["quality"]) >= 1
 	add_child(features)
 	_setups = FeatureSet.list_setups()
 	_setup_idx = _initial_setup()
-	features.load_setup(_setups[_setup_idx]["file"], {"T1": cable_t1, "T2": cable}, _s_offset())
+	features.load_setup(_setups[_setup_idx]["file"], cables, _s_offset())
 	rider.features = features
 	water.features = features
 
@@ -267,11 +259,6 @@ func _ready() -> void:
 	npc.board_design = 4               # "Dots" aus der Brett-Bibliothek
 	npc.helmet_design = 2
 	add_child(npc)
-	# Startplätze beider Anlagen (Startsteg, Blickrichtung, Steg-Fläche, Endmast)
-	_start["T2"] = {"pos": Rider.START_POS, "yaw": 0.0, "dock": Rect2(Lake.DOCK_MIN, Lake.DOCK_MAX - Lake.DOCK_MIN),
-		"mast_b": Vector3(0.0, 0.0, Lake.MAST_B_Z)}
-	_start["T1"] = {"pos": npc_start, "yaw": cable_t1.rotation.y, "dock": Rect2(dc.x - 3.5, dc.y - 2.2, 7.0, 4.4),
-		"mast_b": Geo.masts["t1_end"]}
 	npc.grabbed.connect(func() -> void: nc.resume())
 	npc.crashed.connect(func(reason: String) -> void:
 		if _test_log:
@@ -328,7 +315,7 @@ func _ready() -> void:
 
 	hud = Hud.new()
 	add_child(hud)
-	_terminal_menu = hud.add_menu_choice("Terminal", TERMINAL_NAMES, 0, _on_terminal_menu)
+	_terminal_menu = hud.add_menu_choice("Terminal", Park.system_names(), 0, _on_terminal_menu)
 	var names: Array = []
 	for e: Dictionary in _setups:
 		names.append(Loc.setup_name(str(e["name"])))
@@ -578,7 +565,7 @@ func _build_start_screen() -> void:
 	start_screen = StartScreen.new()
 	start_screen.features = features
 	start_screen.weather = weather
-	start_screen.cable_of = {"T1": cable_t1, "T2": cable}
+	start_screen.cable_of = cables
 	start_screen.s_offset = _s_offset()
 	start_screen.mobile = mobile.active
 	start_screen.settings = settings
@@ -587,7 +574,7 @@ func _build_start_screen() -> void:
 	var names: Array = []
 	for e: Dictionary in _setups:
 		names.append(e["name"])
-	start_screen.build(TERMINALS, TERMINAL_NAMES, names)
+	start_screen.build(Park.system_ids(), Park.system_names(), names)
 	start_screen.visible = false
 	add_child(start_screen)
 	start_screen.terminal_chosen.connect(func(t: String) -> void:
@@ -750,7 +737,7 @@ func _leave_training() -> void:
 		if _comp_terminal != terminal:
 			_apply_terminal(_comp_terminal)
 		_comp_terminal = ""
-	features.load_setup(_setups[_setup_idx]["file"], {"T1": cable_t1, "T2": cable}, _s_offset())
+	features.load_setup(_setups[_setup_idx]["file"], cables, _s_offset())
 	rider.forget_features()
 	npc.forget_features()
 	_apply_anlage()
@@ -818,21 +805,82 @@ func _initial_terminal() -> String:
 	if want == "":
 		var cfg := ConfigFile.new()
 		if cfg.load(SETTINGS) == OK:
-			want = cfg.get_value("game", "terminal", "T2")
-	return want if want in TERMINALS else "T2"
+			want = cfg.get_value("game", "terminal", Park.default_system())
+	for t: String in Park.system_ids():
+		if t.to_lower() == want.to_lower():                # --terminal=t1 geht auch
+			return t
+	return Park.default_system()
+
+
+## Anlage des NPC: die erste andere (Standard-Anlage zuerst).
+func _npc_terminal(t: String) -> String:
+	for o: String in Park.system_ids_default_first():
+		if o != t:
+			return o
+	return t
+
+
+## Start-Park: --park=ID, sonst der zuletzt gewählte, sonst der Standard (parks/index.json).
+func _initial_park() -> String:
+	if _park_arg != "":
+		return _park_arg
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS) == OK:
+		return str(cfg.get_value("game", "park", ""))
+	return ""
+
+
+## Alle Anlagen des Parks aufbauen (park.json "systems"). Die Anlage mit "origin" liegt im Ursprung (Wakeport: T2),
+## die anderen zwischen ihren Masten aus den Geodaten. "dock": Startsteg relativ zum Ursprung (dE, dN), dort beginnt
+## der Carrier "start_back" und die Ufer-Wende "turn_back" Meter weiter draußen. Dazu je Anlage der Startplatz
+## (Startsteg, Blickrichtung, Steg-Fläche, Endmast).
+func _build_cables() -> void:
+	for t: String in Park.system_ids_default_first():
+		var sy := Park.system(t)
+		var c := CableSystem.new()
+		var ms: Array = sy.get("masts", [])
+		if sy.get("origin", false):
+			if sy.has("turn_a_z"):
+				c.turn_a_z = float(sy["turn_a_z"])   # Wakeport T2: Ufer-Wende 6 m weiter draußen (Abstand zum Ufer)
+			_start[t] = {"pos": Rider.START_POS, "yaw": 0.0, "dock": Rect2(Lake.DOCK_MIN, Lake.DOCK_MAX - Lake.DOCK_MIN),
+				"mast_b": Vector3(0.0, 0.0, Lake.MAST_B_Z)}
+		else:
+			c.place_between(Geo.masts[ms[0]], Geo.masts[ms[1]])
+			var dk: Dictionary = sy.get("dock", {})
+			var rel: Array = dk.get("rel", [0.0, 0.0])
+			var size: Array = dk.get("size", [6.0, 4.0])
+			var dc := Geo.rel_to_game(float(rel[0]), float(rel[1]))
+			var start := Vector3(dc.x + float(dk.get("start_dx", 0.0)), float(dk.get("y", Lake.DOCK_Y)), dc.y)
+			var local_z := (c.transform.affine_inverse() * start).z
+			c.start_z = local_z - float(dk.get("start_back", 9.0))
+			c.turn_a_z = local_z - float(dk.get("turn_back", 16.0))
+			if sy.has("turn_a_z"):
+				c.turn_a_z = float(sy["turn_a_z"])
+			_start[t] = {"pos": start, "yaw": c.rotation.y,
+				"dock": Rect2(dc.x - float(size[0]) * 0.5, dc.y - float(size[1]) * 0.5, float(size[0]), float(size[1])),
+				"mast_b": Geo.masts[ms[1]]}
+		cables[t] = c
+		add_child(c)
+	# cables in Anzeige-Reihenfolge (wie park.json; Features werden in dieser Reihenfolge aufgebaut)
+	var ordered := {}
+	for t: String in Park.system_ids():
+		ordered[t] = cables[t]
+	cables = ordered
+	cable = cables[Park.origin_system()]
+	cable_t1 = cables[_npc_terminal(Park.origin_system())]
 
 
 func _on_terminal_menu(idx: int) -> void:
-	_select_terminal(TERMINALS[idx])
+	_select_terminal(Park.system_ids()[idx])
 
 
 ## Spieler an die andere Anlage (nur solange seine Anlage steht); der NPC wechselt mit.
 func _select_terminal(t: String) -> void:
 	if t == terminal or pc.state != CableSystem.State.IDLE or rider.mode == Rider.Mode.CRASHED:
-		_terminal_menu.select(TERMINALS.find(terminal))
+		_terminal_menu.select(Park.system_ids().find(terminal))
 		return
 	_apply_terminal(t)
-	hud.show_trick(tr(TERMINAL_NAMES[TERMINALS.find(t)]) if t in TERMINALS else t)
+	hud.show_trick(tr(Park.system_name(t)))
 	var cfg := ConfigFile.new()
 	cfg.load(SETTINGS)
 	cfg.set_value("game", "terminal", t)
@@ -1018,17 +1066,17 @@ func _apply_quality(q: int) -> void:
 
 func _apply_terminal(t: String) -> void:
 	terminal = t
-	var other := "T1" if t == "T2" else "T2"
-	pc = cable if t == "T2" else cable_t1
-	nc = cable_t1 if t == "T2" else cable
+	var other := _npc_terminal(t)
+	pc = cables[t]
+	nc = cables[other]
 	_place_rider(rider, pc, _start[t])
 	_place_rider(npc, nc, _start[other])
 	_apply_anlage()
-	_terminal_menu.select(TERMINALS.find(t))
+	_terminal_menu.select(Park.system_ids().find(t))
 	# Jubel kommt aus dem Startblock der eigenen Anlage
-	sfx.set_people(beach.people if t == "T2" else beach.people_t1)
+	sfx.set_people(beach.people_of(t))
 	sfx.operator = ambient.operator(t)
-	ambient.set_watch(rider if t == "T2" else npc, rider if t == "T1" else npc)
+	ambient.set_watch({t: rider, other: npc})
 	pc.reset()
 	nc.reset()
 	nc.start()
@@ -1051,15 +1099,19 @@ func _place_rider(r: Rider, c: CableSystem, s: Dictionary) -> void:
 
 ## Alle Features stehen so viel weiter draußen als in den Setup-Dateien (mehr Platz zur Ufer-Wende).
 const FEATURE_SHIFT := 10.0
-## Zusätzlich je Anlage in die Mitte gerückt: im Schnitt aller Setups gleich viel Platz zwischen
-## roter Boje und erstem bzw. letztem Feature (vorher vorne ~19 m, hinten ~42 m).
-const CENTER_SHIFT := {"T1": 10.5, "T2": 12.5}
+## Zusätzlich je Anlage in die Mitte gerückt ("center_shift" in park.json, Wakeport T1 10,5 m, T2 12,5 m): im
+## Schnitt aller Setups gleich viel Platz zwischen roter Boje und erstem bzw. letztem Feature (vorher vorne ~19 m,
+## hinten ~42 m).
 
-## Die Setups sind ab dem T2-Startsteg gemessen. Der T1-Steg liegt weiter draußen am Seil –
-## dort rücken die Teile um den Unterschied nach hinten (gleicher Anlauf auf beiden Anlagen).
+## Die Setups sind ab dem Startsteg der Anlage im Ursprung gemessen (Wakeport: T2). Liegt der Steg einer anderen
+## Anlage weiter draußen am Seil (T1), rücken die Teile dort um den Unterschied nach hinten (gleicher Anlauf).
 func _s_offset() -> Dictionary:
-	return {"T2": FEATURE_SHIFT + float(CENTER_SHIFT["T2"]),
-		"T1": FEATURE_SHIFT + float(CENTER_SHIFT["T1"]) + (cable.start_z - cable_t1.start_z) - (cable.mast_a_z - cable_t1.mast_a_z)}
+	var out := {}
+	for t: String in Park.system_ids_default_first():
+		var c: CableSystem = cables[t]
+		out[t] = FEATURE_SHIFT + float(Park.system(t).get("center_shift", 0.0)) \
+			+ (cable.start_z - c.start_z) - (cable.mast_a_z - c.mast_a_z)
+	return out
 
 
 ## Start-Setup: --setup=ID, sonst das zuletzt gewählte, sonst das erste (aktuellste).
@@ -1081,7 +1133,7 @@ func _select_setup(idx: int, force := false) -> void:
 		_setup_menu.select(_setup_idx)
 		return
 	_setup_idx = idx
-	features.load_setup(_setups[idx]["file"], {"T1": cable_t1, "T2": cable}, _s_offset())
+	features.load_setup(_setups[idx]["file"], cables, _s_offset())
 	rider.forget_features()
 	npc.forget_features()
 	npc.reset()
@@ -1323,7 +1375,7 @@ func _end_session() -> void:
 	Analytics.count("runde/ende/" + Analytics.score_bucket(_final_score))
 	# man bleibt im Spiel: Ergebnis groß im Fenster, Punkte im HUD bleiben bis zum Neustart stehen
 	var st: Dictionary = _setups[_setup_idx]
-	round_panel.show_round("COMPETITION   ·   %s   ·   %s   ·   %s" % [tr(TERMINAL_NAMES[TERMINALS.find(terminal)]),
+	round_panel.show_round("COMPETITION   ·   %s   ·   %s   ·   %s" % [tr(Park.system_name(terminal)),
 		Loc.setup_name(str(st["name"]), true), _clock(_game_time)], _final_score, "")
 	_submit_round(_final_score)
 
@@ -1350,7 +1402,7 @@ func _submit_round(score: int) -> void:
 		round_panel.set_rank(why)
 		return
 	round_panel.set_rank(tr("Rangliste …"))
-	var b := leaderboard.competition_board(sec, terminal, st, TERMINAL_NAMES[TERMINALS.find(terminal)])
+	var b := leaderboard.competition_board(sec, terminal, st, Park.system_name(terminal))
 	var r := await leaderboard.submit(b, score)
 	var rank := ""
 	var placed: bool = r.get("ok", false)
@@ -2001,7 +2053,9 @@ func _parse_args() -> void:
 			for id in arg.substr(9).split(","):
 				Achievements.unlock(id)
 		elif arg.begins_with("--terminal="):
-			_terminal_arg = arg.substr(11).to_upper()
+			_terminal_arg = arg.substr(11)
+		elif arg.begins_with("--park="):
+			_park_arg = arg.substr(7)
 		elif arg.begins_with("--setup="):
 			_setup_arg = arg.substr(8)
 		elif arg.begins_with("--touch-at="):

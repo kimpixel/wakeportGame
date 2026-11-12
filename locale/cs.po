@@ -587,12 +587,6 @@ msgstr "Vjel jsi do lodi!"
 msgid "Boot crash!"
 msgstr "Srážka s lodí!"
 
-msgid "Terminal 1"
-msgstr "Terminál 1"
-
-msgid "Terminal 2"
-msgstr "Terminál 2"
-
 msgid "MODUS"
 msgstr "REŽIM"
 
@@ -1781,12 +1775,6 @@ msgstr "EDITOR SETUPŮ"
 msgid "Name des Setups"
 msgstr "Název setupu"
 
-msgid "Terminal 2 (Strand)"
-msgstr "Terminál 2 (pláž)"
-
-msgid "Terminal 1 (Lounge-Steg)"
-msgstr "Terminál 1 (lounge molo)"
-
 msgid "Rückgängig"
 msgstr "Zpět o krok"
 
@@ -2759,4 +2747,19 @@ msgstr "Míč"
 
 msgid "Bump"
 msgstr "Bump"
+
+msgid "Raunheim, Deutschland"
+msgstr "Raunheim, Německo"
+
+msgid "Terminal 1"
+msgstr "Terminál 1"
+
+msgid "Terminal 1 (Lounge-Steg)"
+msgstr "Terminál 1 (lounge molo)"
+
+msgid "Terminal 2"
+msgstr "Terminál 2"
+
+msgid "Terminal 2 (Strand)"
+msgstr "Terminál 2 (pláž)"
 

@@ -162,12 +162,12 @@ func operator(t: String) -> Node3D:
 	return _operators.get(t, null)
 
 
-## Wer schaut auf wen: die Steuermänner auf den Fahrer ihrer Anlage, die Wartenden auf den Spieler.
-func set_watch(t2_rider: Node3D, t1_rider: Node3D) -> void:
-	if _operators.has("T2"):
-		_operators["T2"].watch = t2_rider
-	if _operators.has("T1"):
-		_operators["T1"].watch = t1_rider
+## Wer schaut auf wen: die Steuermänner auf den Fahrer ihrer Anlage (riders: Anlagen-id -> Fahrer), die Wartenden
+## auf den Spieler.
+func set_watch(riders: Dictionary) -> void:
+	for t: String in riders:
+		if _operators.has(t):
+			_operators[t].watch = riders[t]
 	for c in get_children():
 		if c is Person and (c as Person).kind.begins_with("wait"):
 			(c as Person).watch = player

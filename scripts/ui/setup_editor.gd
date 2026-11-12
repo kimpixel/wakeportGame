@@ -35,7 +35,7 @@ var ui_scale := 1.0              # Skalierung der Startseite (für die Auflösun
 
 var _catalog: Dictionary = {}    # parts.json
 var _data: Dictionary = {}       # Setup in Arbeit {"name", "T2": [...], "T1": [...]}
-var _terminal := "T2"
+var _terminal := ""
 var _user_id := ""               # eigenes Setup, das gerade bearbeitet wird ("" = noch nicht gespeichert)
 var _sel: Array[int] = []        # ausgewählte Zeilen (des aktuellen Terminals)
 var _undo: Array[String] = []
@@ -51,7 +51,7 @@ var _hack_templates: Array = []  # [{label, where, rows}] aus allen Setups
 var _vp: SubViewport
 var _world: Node3D
 var _fs: FeatureSet
-var _cables := {}                # "T1"/"T2" -> CableSystem nur für die Koordinaten (nicht im Baum)
+var _cables := {}                # Anlagen-id -> CableSystem nur für die Koordinaten (nicht im Baum)
 var _lane := {}                  # Bahn-Marken des aktuellen Terminals (in Setup-Koordinaten)
 var _lane_root: Node3D
 var _cam: Camera3D
@@ -133,7 +133,8 @@ func build() -> void:
 	bg.color = Color(0.04, 0.06, 0.08)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
-	for t: String in ["T2", "T1"]:
+	_terminal = Park.default_system()
+	for t: String in Park.system_ids_default_first():
 		var c := CableSystem.new()       # nur Koordinaten: Startmast im Ursprung, Seil entlang -z
 		c.mast_a_z = 0.0
 		_cables[t] = c
@@ -219,12 +220,12 @@ func _build_top_bar() -> Control:
 		_dirty = true)
 	row.add_child(_name_edit)
 	var tg := ButtonGroup.new()
-	for t: String in ["T2", "T1"]:
+	for t: String in Park.system_ids_default_first():
 		var b := host._button(t, 16)
 		b.toggle_mode = true
 		b.button_group = tg
 		b.custom_minimum_size.x = 56
-		b.tooltip_text = tr("Terminal 2 (Strand)") if t == "T2" else tr("Terminal 1 (Lounge-Steg)")
+		b.tooltip_text = tr(Park.system_hint(t))
 		b.pressed.connect(func() -> void: _set_terminal(t))
 		row.add_child(b)
 		_term_buttons.append(b)
@@ -467,7 +468,7 @@ func _fill_templates() -> void:
 	empty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	empty.pressed.connect(func() -> void:
 		_begin()
-		_load({"name": "Eigenes Setup", "T2": [], "T1": []}, ""))
+		_load(_empty_setup(), ""))
 	grid.add_child(empty)
 	for e: Dictionary in FeatureSet.list_setups():
 		var b := host._button(Loc.setup_name(str(e["name"]), true), 16)
@@ -495,7 +496,7 @@ func open(entry: Dictionary, terminal: String) -> void:
 		_redo.clear()
 		_load_entry(entry)
 		_dirty = false
-	_set_terminal(terminal if terminal in _cables else "T2", true)
+	_set_terminal(terminal if terminal in _cables else Park.default_system(), true)
 	_need_fit = true
 	_resize_view()
 
@@ -548,12 +549,23 @@ func _set_terminal(t: String, force := false) -> void:
 
 
 func _mark_terminal() -> void:
+	var ids := Park.system_ids_default_first()
 	for i in _term_buttons.size():
-		_term_buttons[i].set_pressed_no_signal((i == 0) == (_terminal == "T2"))
+		_term_buttons[i].set_pressed_no_signal(ids[i] == _terminal)
 
 
+## Die andere Anlage (Kopieren, Übersicht): die nächste in der Liste des Parks.
 func _other() -> String:
-	return "T1" if _terminal == "T2" else "T2"
+	var ids := Park.system_ids_default_first()
+	return ids[(ids.find(_terminal) + 1) % ids.size()]
+
+
+## Leeres Setup mit allen Anlagen des Parks.
+func _empty_setup() -> Dictionary:
+	var d := {"name": "Eigenes Setup"}
+	for t: String in Park.system_ids_default_first():
+		d[t] = []
+	return d
 
 
 func _rows() -> Array:
@@ -641,7 +653,7 @@ func _build_lane() -> void:
 		var m := StandardMaterial3D.new()
 		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		m.cull_mode = BaseMaterial3D.CULL_DISABLED
-		m.albedo_texture = load(Geo.DIR + k[1])
+		m.albedo_texture = load(Geo.dir() + k[1])
 		mi.material_override = m
 		_ground.add_child(mi)
 
@@ -1341,7 +1353,7 @@ func _collect_hacks() -> void:
 	var by_sig := {}
 	for e: Dictionary in FeatureSet.list_setups():
 		var d := FeatureSet.read_setup(e["file"])
-		for t: String in ["T2", "T1"]:
+		for t: String in Park.system_ids_default_first():
 			var rows: Array = d.get(t, [])
 			if rows.size() < 2:
 				continue
@@ -1419,7 +1431,7 @@ func _update_info() -> void:
 func _clean_data() -> Dictionary:
 	var out := {"name": _name_edit.text.strip_edges() if _name_edit.text.strip_edges() != "" else "Eigenes Setup",
 		"date": _data.get("date", "????-??"), "source": "Setup-Editor"}
-	for t: String in ["T2", "T1"]:
+	for t: String in Park.system_ids_default_first():
 		var rows: Array = []
 		for r: Dictionary in _data.get(t, []):
 			var nr := {}
@@ -1441,7 +1453,7 @@ func _export_json() -> String:
 
 func _import_json() -> void:
 	var d: Variant = JSON.parse_string(_json_edit.text)
-	if not (d is Dictionary) or not ((d as Dictionary).has("T2") or (d as Dictionary).has("T1")):
+	if not (d is Dictionary) or not Park.system_ids().any(func(t: String) -> bool: return (d as Dictionary).has(t)):
 		_show_toast(tr("Kein gültiges Setup-JSON (braucht \"T2\" und/oder \"T1\")"))
 		return
 	_begin()

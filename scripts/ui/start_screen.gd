@@ -34,7 +34,7 @@ const VEST_NAMES := ["Orange", "Rot", "Blau", "Grün", "Gelb", "Lila", "Schwarz"
 
 var features: FeatureSet
 var weather: Weather
-var cable_of := {}               # "T1"/"T2" -> CableSystem
+var cable_of := {}               # Anlagen-id -> CableSystem (main.gd cables)
 var s_offset := {}               # wie FeatureSet.load_setup (für die Setups im Katalog)
 var settings: GameSettings      # Einstellungen (von main.gd gesetzt, vor build)
 var music: Music                 # eigene Musik des Spielers (von main.gd gesetzt, vor build)
@@ -42,7 +42,7 @@ var mobile := false              # Handy: keine Tastenhinweise
 
 var _terminals: Array = []
 var _terminal_names: Array = []
-var _terminal := "T2"
+var _terminal := ""
 var _setup_names: Array = []
 var _ui: Control
 var _menu: PanelContainer
@@ -129,10 +129,11 @@ func _init() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-## terminals: z. B. ["T2", "T1"] mit Anzeigenamen; setup_names: Namen aus setups/index.json
+## terminals: Anlagen des Parks (Park.system_ids, z. B. ["T1", "T2"]) mit Anzeigenamen; setup_names: Namen aus setups/index.json
 func build(terminals: Array, terminal_names: Array, setup_names: Array) -> void:
 	_terminals = terminals
 	_terminal_names = terminal_names
+	_terminal = Park.default_system()
 	_setup_names = setup_names
 	var sf := SystemFont.new()
 	sf.font_names = PackedStringArray(["Segoe UI", "Roboto", "Helvetica Neue", "Arial"])
@@ -1266,7 +1267,7 @@ func _open_ranking() -> void:
 func _fill_rank_select(filled: Variant) -> void:
 	_rank_all.clear()
 	var setups: Array = FeatureSet.list_setups().filter(func(e: Dictionary) -> bool: return not e.get("user", false))
-	var terms: Array = ["T2", "T1"]                 # Terminal 2 zuerst (dort fährt man meist)
+	var terms: Array = Park.system_ids_default_first()   # Standard-Anlage zuerst (Wakeport: Terminal 2, dort fährt man meist)
 	var lengths: Array = []
 	for m: Array in GameSettings.MODES:
 		if int(m[0]) > 0:

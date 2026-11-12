@@ -30,6 +30,15 @@ var waiting_spots: Array[Dictionary] = []
 var obstacles: Array[Dictionary] = []
 
 
+
+## Leute im Startblock der Anlage (Jubel, Sturzruf), Anlagen-id wie in parks/wakeport/park.json.
+func people_of(t: String) -> Array[Dictionary]:
+	if t == "T2":
+		return people
+	if t == "T1":
+		return people_t1
+	return []
+
 func _ready() -> void:
 	Geo.ensure_loaded()
 	_north_yaw = Geo.north_yaw()

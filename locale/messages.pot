@@ -64,7 +64,7 @@ msgid "Ein Haubentaucher ist direkt unter dir durchgetaucht."
 msgstr ""
 
 #: scripts/achievements.gd:19
-#: scripts/main.gd:393
+#: scripts/main.gd:383
 msgid "Schwanenliebe"
 msgstr ""
 
@@ -145,8 +145,8 @@ msgid "Bremst zur Wende"
 msgstr ""
 
 #: scripts/cable_system.gd:349
-#: scripts/ui/setup_editor.gd:1798
-#: scripts/ui/setup_editor.gd:1799
+#: scripts/ui/setup_editor.gd:1810
+#: scripts/ui/setup_editor.gd:1811
 msgid "Wende"
 msgstr ""
 
@@ -295,50 +295,50 @@ msgstr ""
 msgid "%s geschafft!"
 msgstr ""
 
-#: scripts/challenge.gd:854
+#: scripts/challenge.gd:856
 msgid "Gerade abgefahren – hier quer mit Drift abgehen"
 msgstr ""
 
-#: scripts/challenge.gd:865
+#: scripts/challenge.gd:867
 msgid "noch keine Medaille"
 msgstr ""
 
-#: scripts/challenge.gd:898
+#: scripts/challenge.gd:900
 #: scripts/leaderboard.gd:178
 msgid "Rangliste nicht mit Seilzug-Grenze „Aus“"
 msgstr ""
 
-#: scripts/challenge.gd:900
+#: scripts/challenge.gd:902
 msgid "Rangliste: wird gesendet …"
 msgstr ""
 
-#: scripts/challenge.gd:908
+#: scripts/challenge.gd:910
 msgid "Rangliste: Platz %d von %d"
 msgstr ""
 
-#: scripts/challenge.gd:909
+#: scripts/challenge.gd:911
 msgid "Rangliste: Platz %d von %d mit deinem Bestwert %s"
 msgstr ""
 
-#: scripts/challenge.gd:912
+#: scripts/challenge.gd:914
 msgid "als %s"
 msgstr ""
 
-#: scripts/challenge.gd:917
-#: scripts/main.gd:1356
-#: scripts/main.gd:1361
-#: scripts/main.gd:1362
+#: scripts/challenge.gd:919
+#: scripts/main.gd:1407
+#: scripts/main.gd:1412
+#: scripts/main.gd:1413
 msgid "Rangliste: %s"
 msgstr ""
 
-#: scripts/challenge.gd:917
+#: scripts/challenge.gd:919
 #: scripts/ui/name_field.gd:79
-#: scripts/ui/start_screen.gd:1204
-#: scripts/ui/start_screen.gd:1403
+#: scripts/ui/start_screen.gd:1205
+#: scripts/ui/start_screen.gd:1404
 msgid "Fehler"
 msgstr ""
 
-#: scripts/challenge.gd:942
+#: scripts/challenge.gd:944
 #: scripts/leaderboard.gd:245
 #: scripts/training.gd:542
 #: scripts/ui/task_panel.gd:239
@@ -347,49 +347,49 @@ msgid_plural "%d Punkte"
 msgstr[0] ""
 msgstr[1] ""
 
-#: scripts/challenge.gd:944
-#: scripts/challenge.gd:949
-#: scripts/challenge.gd:958
+#: scripts/challenge.gd:946
+#: scripts/challenge.gd:951
+#: scripts/challenge.gd:960
 msgid "Höhe %s"
 msgstr ""
 
-#: scripts/challenge.gd:951
+#: scripts/challenge.gd:953
 msgid "Weite %s"
 msgstr ""
 
-#: scripts/challenge.gd:960
+#: scripts/challenge.gd:962
 msgid "links %d / %d   rechts %d / %d"
 msgstr ""
 
-#: scripts/challenge.gd:965
+#: scripts/challenge.gd:967
 msgid "Bester Drift %s"
 msgstr ""
 
-#: scripts/challenge.gd:968
+#: scripts/challenge.gd:970
 msgid "%d Wechsel   Bester %s"
 msgstr ""
 
-#: scripts/challenge.gd:970
 #: scripts/challenge.gd:972
+#: scripts/challenge.gd:974
 msgid "Press am Stück %s"
 msgstr ""
 
-#: scripts/challenge.gd:977
+#: scripts/challenge.gd:979
 msgid "%d geschafft"
 msgstr ""
 
-#: scripts/challenge.gd:982
+#: scripts/challenge.gd:984
 msgid "Bestwert %s"
 msgstr ""
 
 #: scripts/challenge.gd:111
-#: scripts/main.gd:1500
+#: scripts/main.gd:1551
 msgid "VERSUCH"
 msgstr ""
 
 #: scripts/challenge.gd:129
 #: scripts/hud.gd:263
-#: scripts/main.gd:1500
+#: scripts/main.gd:1551
 msgid "ZEIT"
 msgstr ""
 
@@ -397,22 +397,22 @@ msgstr ""
 msgid "Verpasst"
 msgstr ""
 
-#: scripts/challenge.gd:822
+#: scripts/challenge.gd:823
 msgid "Transfer verpasst"
 msgstr ""
 
 #: scripts/chase_camera.gd:13
-#: scripts/ui/start_screen.gd:853
+#: scripts/ui/start_screen.gd:854
 msgid "Verfolger"
 msgstr ""
 
 #: scripts/chase_camera.gd:13
-#: scripts/ui/start_screen.gd:853
+#: scripts/ui/start_screen.gd:854
 msgid "Orbit"
 msgstr ""
 
 #: scripts/chase_camera.gd:13
-#: scripts/ui/start_screen.gd:853
+#: scripts/ui/start_screen.gd:854
 msgid "Ufer"
 msgstr ""
 
@@ -437,7 +437,7 @@ msgid "Niedrig"
 msgstr ""
 
 #: scripts/game_settings.gd:29
-#: scripts/ui/start_screen.gd:857
+#: scripts/ui/start_screen.gd:858
 msgid "Mittel"
 msgstr ""
 
@@ -497,7 +497,7 @@ msgid ""
 msgstr ""
 
 #: scripts/leaderboard.gd:165
-#: scripts/ui/start_screen.gd:1277
+#: scripts/ui/start_screen.gd:1278
 msgid "Runde %s"
 msgstr ""
 
@@ -520,9 +520,9 @@ msgid "Du erscheinst nicht in der Rangliste (Startseite → Rangliste)"
 msgstr ""
 
 #: scripts/leaderboard.gd:188
-#: scripts/ui/start_screen.gd:777
 #: scripts/ui/start_screen.gd:778
-#: scripts/ui/start_screen.gd:780
+#: scripts/ui/start_screen.gd:779
+#: scripts/ui/start_screen.gd:781
 msgid "Aus"
 msgstr ""
 
@@ -612,193 +612,185 @@ msgstr ""
 msgid "Diesen Namen bitte nicht"
 msgstr ""
 
-#: scripts/main.gd:306
+#: scripts/main.gd:296
 msgid "Abgesoffen!"
 msgstr ""
 
-#: scripts/main.gd:390
+#: scripts/main.gd:380
 msgid "Was ein Frechdachs!"
 msgstr ""
 
-#: scripts/main.gd:398
+#: scripts/main.gd:388
 msgid "Badegast nass gespritzt!"
 msgstr ""
 
-#: scripts/main.gd:402
+#: scripts/main.gd:392
 msgid "Zugvogel!"
 msgstr ""
 
-#: scripts/main.gd:417
+#: scripts/main.gd:407
 msgid "Hecht erwischt!"
 msgstr ""
 
-#: scripts/main.gd:423
+#: scripts/main.gd:413
 msgid "SUP nass gespritzt!"
 msgstr ""
 
-#: scripts/main.gd:426
+#: scripts/main.gd:416
 msgid "Igitt – Insekt verschluckt!"
 msgstr ""
 
-#: scripts/main.gd:432
+#: scripts/main.gd:422
 msgid "Arschbombe!"
 msgstr ""
 
-#: scripts/main.gd:435
+#: scripts/main.gd:425
 msgid "Steg-Landung!"
 msgstr ""
 
-#: scripts/main.gd:974
+#: scripts/main.gd:1021
 msgid "Seil reißt ab: an"
 msgstr ""
 
-#: scripts/main.gd:974
+#: scripts/main.gd:1021
 msgid "Seil reißt ab: aus – keine Rangliste"
 msgstr ""
 
-#: scripts/main.gd:1088
+#: scripts/main.gd:1139
 msgid "Setup: %s"
 msgstr ""
 
-#: scripts/main.gd:1295
+#: scripts/main.gd:1346
 msgid "Strafzeit −%d:%02d"
 msgstr ""
 
-#: scripts/main.gd:1309
+#: scripts/main.gd:1360
 msgid "Zeit um!  %d Punkte"
 msgstr ""
 
-#: scripts/main.gd:1318
-#: scripts/main.gd:1355
+#: scripts/main.gd:1369
+#: scripts/main.gd:1406
 msgid "Letzte Runde: %d Punkte"
 msgstr ""
 
-#: scripts/main.gd:1348
+#: scripts/main.gd:1399
 msgid "Rangliste …"
 msgstr ""
 
-#: scripts/main.gd:1354
+#: scripts/main.gd:1405
 msgid "Platz %d von %d"
 msgstr ""
 
-#: scripts/main.gd:1356
-#: scripts/main.gd:1359
+#: scripts/main.gd:1407
+#: scripts/main.gd:1410
 msgid "Dein Bestwert: %s"
 msgstr ""
 
-#: scripts/main.gd:1357
+#: scripts/main.gd:1408
 msgid "PLATZ %d von %d"
 msgstr ""
 
-#: scripts/main.gd:1498
+#: scripts/main.gd:1549
 msgid "FREI"
 msgstr ""
 
-#: scripts/main.gd:1504
+#: scripts/main.gd:1555
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
 "Wenden %d   ·   Kamera: %s%s"
 msgstr ""
 
-#: scripts/main.gd:1534
+#: scripts/main.gd:1585
 msgid "STURZ  –  der Operator bringt dir die Handle"
 msgstr ""
 
-#: scripts/main.gd:1535
+#: scripts/main.gd:1586
 msgid "STURZ  –  die Handle liegt bereit"
 msgstr ""
 
-#: scripts/main.gd:1537
+#: scripts/main.gd:1588
 msgid "ca. %d s"
 msgstr ""
 
-#: scripts/main.gd:1539
+#: scripts/main.gd:1590
 msgid "SCHWIMMEN halten"
 msgstr ""
 
-#: scripts/main.gd:1539
-#: scripts/main.gd:1543
+#: scripts/main.gd:1590
+#: scripts/main.gd:1594
 msgid "Zur Handle schwimmen"
 msgstr ""
 
-#: scripts/main.gd:1540
+#: scripts/main.gd:1591
 #: scripts/ui/touch_pad.gd:230
 msgid "SKIP"
 msgstr ""
 
-#: scripts/main.gd:1540
-#: scripts/main.gd:1544
+#: scripts/main.gd:1591
+#: scripts/main.gd:1595
 msgid "Sofort weiterfahren"
 msgstr ""
 
-#: scripts/main.gd:1540
-#: scripts/main.gd:1541
-#: scripts/main.gd:1544
-#: scripts/main.gd:1545
+#: scripts/main.gd:1591
+#: scripts/main.gd:1592
+#: scripts/main.gd:1595
+#: scripts/main.gd:1596
 msgid "keine Strafzeit"
 msgstr ""
 
-#: scripts/main.gd:1541
-#: scripts/main.gd:1545
+#: scripts/main.gd:1592
+#: scripts/main.gd:1596
 msgid "Zurück zum Steg"
 msgstr ""
 
-#: scripts/main.gd:1543
+#: scripts/main.gd:1594
 msgid "LEERTASTE halten"
 msgstr ""
 
-#: scripts/main.gd:1544
+#: scripts/main.gd:1595
 msgid "STRG"
 msgstr ""
 
-#: scripts/main.gd:1556
+#: scripts/main.gd:1607
 msgid ""
 "Neigungssensor nicht verfügbar –\n"
 "Bewegungssensoren im Browser erlauben"
 msgstr ""
 
-#: scripts/main.gd:1561
+#: scripts/main.gd:1612
 msgid "SPRUNG-START  %d %%"
 msgstr ""
 
-#: scripts/main.gd:1627
+#: scripts/main.gd:1679
 msgid "Hitboxen an"
 msgstr ""
 
-#: scripts/main.gd:1627
+#: scripts/main.gd:1679
 msgid "Hitboxen aus"
 msgstr ""
 
-#: scripts/main.gd:1657
+#: scripts/main.gd:1709
 msgid "Wende um die Boje"
 msgstr ""
 
-#: scripts/main.gd:1657
+#: scripts/main.gd:1709
 msgid "Saubere Wende"
 msgstr ""
 
-#: scripts/main.gd:1815
+#: scripts/main.gd:1869
 msgid "Ins Boot gefahren!"
 msgstr ""
 
-#: scripts/main.gd:1816
+#: scripts/main.gd:1870
 msgid "Boot crash!"
 msgstr ""
 
-#: scripts/main.gd:110
-msgid "Terminal 1"
-msgstr ""
-
-#: scripts/main.gd:110
-msgid "Terminal 2"
-msgstr ""
-
-#: scripts/main.gd:1500
+#: scripts/main.gd:1551
 msgid "MODUS"
 msgstr ""
 
 #: scripts/music.gd:249
-#: scripts/ui/start_screen.gd:724
+#: scripts/ui/start_screen.gd:725
 msgid "Musik"
 msgstr ""
 
@@ -842,68 +834,68 @@ msgstr ""
 msgid "Kiefer"
 msgstr ""
 
-#: scripts/rider.gd:898
+#: scripts/rider.gd:901
 msgid "Seil aus der Hand gerissen!"
 msgstr ""
 
-#: scripts/rider.gd:1482
+#: scripts/rider.gd:1485
 msgid "Quer abgefahren – Brett gerade stellen oder driften!"
 msgstr ""
 
-#: scripts/rider.gd:1517
+#: scripts/rider.gd:1520
 msgid "Treppe nur im Drift!"
 msgstr ""
 
-#: scripts/rider.gd:1543
+#: scripts/rider.gd:1546
 msgid "Drift-Press zu quer gedriftet!"
 msgstr ""
 
-#: scripts/rider.gd:1593
+#: scripts/rider.gd:1596
 msgid "Gegen den Steg!"
 msgstr ""
 
-#: scripts/rider.gd:1593
-#: scripts/rider.gd:2090
+#: scripts/rider.gd:1596
+#: scripts/rider.gd:2111
 msgid "Gegen %s gefahren!"
 msgstr ""
 
-#: scripts/rider.gd:1866
+#: scripts/rider.gd:1875
 msgid "das Hindernis"
 msgstr ""
 
-#: scripts/rider.gd:2201
+#: scripts/rider.gd:2223
 msgid "Verkantet gelandet!"
 msgstr ""
 
-#: scripts/rider.gd:2205
+#: scripts/rider.gd:2227
 msgid "Auf dem Ball gelandet!"
 msgstr ""
 
-#: scripts/rider.gd:2208
+#: scripts/rider.gd:2230
 msgid "Zu harte Landung!"
 msgstr ""
 
-#: scripts/rider.gd:2211
+#: scripts/rider.gd:2233
 msgid "Überschlag nicht geschafft!"
 msgstr ""
 
-#: scripts/rider.gd:2214
+#: scripts/rider.gd:2236
 msgid "Backroll nicht geschafft!"
 msgstr ""
 
-#: scripts/rider.gd:2360
+#: scripts/rider.gd:2387
 msgid "Ab ans Ufer!"
 msgstr ""
 
-#: scripts/rider.gd:2363
+#: scripts/rider.gd:2390
 msgid "Gegen den Mast!"
 msgstr ""
 
-#: scripts/rider.gd:2747
+#: scripts/rider.gd:2774
 msgid "%s – Drift-Winkel %d°  (erlaubt bis %d°)"
 msgstr ""
 
-#: scripts/rider.gd:2749
+#: scripts/rider.gd:2776
 msgid "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)"
 msgstr ""
 
@@ -911,51 +903,51 @@ msgstr ""
 msgid "{tag}. {monat}"
 msgstr ""
 
-#: scripts/sun_calc.gd:9
+#: scripts/sun_calc.gd:6
 msgid "Januar"
 msgstr ""
 
-#: scripts/sun_calc.gd:9
+#: scripts/sun_calc.gd:6
 msgid "Februar"
 msgstr ""
 
-#: scripts/sun_calc.gd:9
+#: scripts/sun_calc.gd:6
 msgid "März"
 msgstr ""
 
-#: scripts/sun_calc.gd:9
+#: scripts/sun_calc.gd:6
 msgid "April"
 msgstr ""
 
-#: scripts/sun_calc.gd:9
+#: scripts/sun_calc.gd:6
 msgid "Mai"
 msgstr ""
 
-#: scripts/sun_calc.gd:9
+#: scripts/sun_calc.gd:6
 msgid "Juni"
 msgstr ""
 
-#: scripts/sun_calc.gd:9
+#: scripts/sun_calc.gd:6
 msgid "Juli"
 msgstr ""
 
-#: scripts/sun_calc.gd:9
+#: scripts/sun_calc.gd:6
 msgid "August"
 msgstr ""
 
-#: scripts/sun_calc.gd:10
+#: scripts/sun_calc.gd:7
 msgid "September"
 msgstr ""
 
-#: scripts/sun_calc.gd:10
+#: scripts/sun_calc.gd:7
 msgid "Oktober"
 msgstr ""
 
-#: scripts/sun_calc.gd:10
+#: scripts/sun_calc.gd:7
 msgid "November"
 msgstr ""
 
-#: scripts/sun_calc.gd:10
+#: scripts/sun_calc.gd:7
 msgid "Dezember"
 msgstr ""
 
@@ -1062,7 +1054,7 @@ msgid "Der Press braucht knapp eine Sekunde, bis er ganz drin ist – nicht zu h
 msgstr ""
 
 #: scripts/training.gd:65
-#: scripts/ui/start_screen.gd:1315
+#: scripts/ui/start_screen.gd:1316
 msgid "Competition"
 msgstr ""
 
@@ -2336,7 +2328,7 @@ msgid "DU"
 msgstr ""
 
 #: scripts/ui/mini_rank.gd:265
-#: scripts/ui/start_screen.gd:1117
+#: scripts/ui/start_screen.gd:1118
 msgid "RANGLISTE"
 msgstr ""
 
@@ -2373,12 +2365,12 @@ msgid "dein Name"
 msgstr ""
 
 #: scripts/ui/name_field.gd:44
-#: scripts/ui/start_screen.gd:1182
+#: scripts/ui/start_screen.gd:1183
 msgid "Dein Name für die Rangliste (2 bis 16 Zeichen)"
 msgstr ""
 
 #: scripts/ui/name_field.gd:73
-#: scripts/ui/start_screen.gd:1466
+#: scripts/ui/start_screen.gd:1467
 msgid "Wird gespeichert …"
 msgstr ""
 
@@ -2391,7 +2383,7 @@ msgid "Weiter  (Esc)"
 msgstr ""
 
 #: scripts/ui/pause_menu.gd:53
-#: scripts/ui/start_screen.gd:283
+#: scripts/ui/start_screen.gd:284
 #: scripts/ui/touch_pad.gd:108
 msgid "Einstellungen"
 msgstr ""
@@ -2403,7 +2395,7 @@ msgstr ""
 
 #: scripts/ui/pause_menu.gd:55
 #: scripts/ui/pause_menu.gd:79
-#: scripts/ui/start_screen.gd:903
+#: scripts/ui/start_screen.gd:904
 msgid "Nächster Titel"
 msgstr ""
 
@@ -2413,308 +2405,300 @@ msgstr ""
 msgid "Startseite"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:206
+#: scripts/ui/setup_editor.gd:207
 #: scripts/ui/task_panel.gd:250
 msgid "Zurück"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:209
+#: scripts/ui/setup_editor.gd:210
 msgid "SETUP-EDITOR"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:214
+#: scripts/ui/setup_editor.gd:215
 msgid "Name des Setups"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:227
-msgid "Terminal 2 (Strand)"
-msgstr ""
-
-#: scripts/ui/setup_editor.gd:227
-msgid "Terminal 1 (Lounge-Steg)"
-msgstr ""
-
-#: scripts/ui/setup_editor.gd:231
+#: scripts/ui/setup_editor.gd:232
 msgid "Rückgängig"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:232
+#: scripts/ui/setup_editor.gd:233
 msgid "Strg+Z"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:235
+#: scripts/ui/setup_editor.gd:236
 msgid "Wiederholen"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:236
+#: scripts/ui/setup_editor.gd:237
 msgid "Strg+Y"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:251
+#: scripts/ui/setup_editor.gd:252
 msgid "SPEICHERN"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:254
+#: scripts/ui/setup_editor.gd:255
 msgid "SPEICHERN & FAHREN"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:294
+#: scripts/ui/setup_editor.gd:295
 msgid "Ganze Bahn zeigen"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:340
+#: scripts/ui/setup_editor.gd:341
 msgid "Hacks werden beim Öffnen gesammelt …"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:376
+#: scripts/ui/setup_editor.gd:377
 msgid "Antippen stellt das Teil in die Mitte der Karte. Danach ziehen, drehen, Richtung wählen."
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:407
+#: scripts/ui/setup_editor.gd:408
 msgid "VORLAGE LADEN   (ersetzt beide Terminals)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:414
-#: scripts/ui/start_screen.gd:266
+#: scripts/ui/setup_editor.gd:415
+#: scripts/ui/start_screen.gd:267
 msgid "TERMINAL"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:418
+#: scripts/ui/setup_editor.gd:419
 msgid "Terminal leeren"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:426
+#: scripts/ui/setup_editor.gd:427
 msgid "Vom anderen Terminal"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:428
+#: scripts/ui/setup_editor.gd:429
 msgid "Teile des anderen Terminals hierher kopieren (ersetzt dieses Terminal)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:435
+#: scripts/ui/setup_editor.gd:436
 msgid "JSON   (zum Weitergeben oder für setups/ im Projekt)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:438
+#: scripts/ui/setup_editor.gd:439
 msgid "Hier ein Setup-JSON einfügen und „Aus Text laden“ drücken"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:445
-#: scripts/ui/setup_editor.gd:1577
+#: scripts/ui/setup_editor.gd:446
+#: scripts/ui/setup_editor.gd:1589
 msgid "Als JSON kopieren"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:451
+#: scripts/ui/setup_editor.gd:452
 msgid "JSON in die Zwischenablage kopiert"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:453
+#: scripts/ui/setup_editor.gd:454
 msgid "Aus Text laden"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:457
+#: scripts/ui/setup_editor.gd:458
 msgid "Eigenes Setup löschen"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:466
+#: scripts/ui/setup_editor.gd:467
 msgid "Leeres Setup"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:512
+#: scripts/ui/setup_editor.gd:513
 msgid "Nicht gespeichert! Nochmal „Zurück“ = trotzdem verlassen (bleibt bis zum Neuladen erhalten)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:522
+#: scripts/ui/setup_editor.gd:523
 msgid "Mein %s"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:823
+#: scripts/ui/setup_editor.gd:835
 msgid "verschieben   s %+.1f m   x %+.1f m"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1020
-#: scripts/ui/setup_editor.gd:1040
+#: scripts/ui/setup_editor.gd:1032
+#: scripts/ui/setup_editor.gd:1052
 msgid "%s eingefügt"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1183
+#: scripts/ui/setup_editor.gd:1195
 msgid ""
 "Nichts ausgewählt. Ein Feature in der Karte antippen (doppelt = ganzer Hack), Umschalt/Strg + Klick wählt mehrere.\n"
 "\n"
 "Tasten: Pfeile verschieben (Umschalt 1 m), Q/E drehen, F Richtung, M spiegeln, Strg+D duplizieren, Entf löschen, Strg+Z rückgängig."
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1200
+#: scripts/ui/setup_editor.gd:1212
 msgid "POSITION ENTLANG DES SEILS  s (m)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1202
+#: scripts/ui/setup_editor.gd:1214
 msgid "SEITLICH  x (m)   + rechts, − links (Blick zum Endmast)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1204
+#: scripts/ui/setup_editor.gd:1216
 msgid "DREHUNG (Grad)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1207
+#: scripts/ui/setup_editor.gd:1219
 msgid "RICHTUNG (Anfahrt)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1239
+#: scripts/ui/setup_editor.gd:1251
 msgid "%d Teile ausgewählt – sie werden gemeinsam verschoben, gedreht und gespiegelt."
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1268
+#: scripts/ui/setup_editor.gd:1280
 msgid "%d Teil"
 msgid_plural "%d Teile"
 msgstr[0] ""
 msgstr[1] ""
 
-#: scripts/ui/setup_editor.gd:1374
+#: scripts/ui/setup_editor.gd:1386
 msgid "Antippen fügt den Hack in die Mitte der Karte ein (gleiche Anordnung, seitlich wie im Original)."
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1384
+#: scripts/ui/setup_editor.gd:1396
 msgid ""
 "%s\n"
 "Im Setup: %s"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1401
+#: scripts/ui/setup_editor.gd:1413
 msgid "%s: %d Features/Hacks (%d Zeilen), davon %d Hacks.   %s: %d Zeilen."
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1408
+#: scripts/ui/setup_editor.gd:1420
 msgid "Achtung: %s bei s = %.0f m liegt außerhalb der Fahrstrecke."
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1409
+#: scripts/ui/setup_editor.gd:1421
 msgid "Eigenes Setup (gespeichert)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1409
+#: scripts/ui/setup_editor.gd:1421
 msgid "Noch nicht gespeichert – „Speichern“ legt ein eigenes Setup an."
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1413
+#: scripts/ui/setup_editor.gd:1425
 msgid "Pflanzen   ·   %s: %s   ·   linke Taste = Pinsel, rechte Taste ziehen = Karte bewegen, Rad / + − = Zoom"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1416
+#: scripts/ui/setup_editor.gd:1428
 msgid "%s   ·   %d Teile   ·   Ziehen = verschieben, freie Fläche ziehen = Karte bewegen, Rad / + − = Zoom"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1445
+#: scripts/ui/setup_editor.gd:1457
 msgid "Kein gültiges Setup-JSON (braucht \"T2\" und/oder \"T1\")"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1449
+#: scripts/ui/setup_editor.gd:1461
 msgid "Setup aus Text geladen"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1457
-#: scripts/ui/setup_editor.gd:1723
+#: scripts/ui/setup_editor.gd:1469
+#: scripts/ui/setup_editor.gd:1735
 msgid "Speichern fehlgeschlagen"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1463
+#: scripts/ui/setup_editor.gd:1475
 msgid "Gespeichert: %s"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1478
+#: scripts/ui/setup_editor.gd:1490
 msgid "Eigenes Setup gelöscht (bleibt hier zum Weiterbearbeiten)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1486
+#: scripts/ui/setup_editor.gd:1498
 msgid "Auf dem Luftbild malen. Wo du malst, radierst oder die Automatik zurückholst, übernimmst du die Stelle: dort setzt das Spiel nichts Automatisches mehr (Wiesengras, Schilf, Ufergras bzw. Sträucher und Bäume aus dem Wald) – getrennt für Bodenpflanzen und Gehölze. Rechte Maustaste ziehen = Karte bewegen."
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1490
+#: scripts/ui/setup_editor.gd:1502
 msgid "WERKZEUG"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1510
+#: scripts/ui/setup_editor.gd:1522
 msgid "PFLANZE   (Radieren/Automatik wirken auf ihre Ebene)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1525
+#: scripts/ui/setup_editor.gd:1537
 msgid "%s: %.1f–%.1f m hoch, Abstand %.1f m – %s"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1534
+#: scripts/ui/setup_editor.gd:1546
 msgid "PINSEL"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1552
+#: scripts/ui/setup_editor.gd:1564
 msgid "DICHTE BEIM MALEN"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1571
+#: scripts/ui/setup_editor.gd:1583
 msgid "PFLANZEN SPEICHERN"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1579
+#: scripts/ui/setup_editor.gd:1591
 msgid "Für setups/plants.json im Projekt"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1582
+#: scripts/ui/setup_editor.gd:1594
 msgid "Bepflanzung als JSON in die Zwischenablage kopiert"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1584
+#: scripts/ui/setup_editor.gd:1596
 msgid "Zurücksetzen"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1586
+#: scripts/ui/setup_editor.gd:1598
 msgid "Eigene Bepflanzung löschen, wieder die aus dem Spiel"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1593
+#: scripts/ui/setup_editor.gd:1605
 msgid "Bepflanzung aus dem Spiel geladen"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1612
+#: scripts/ui/setup_editor.gd:1624
 msgid "Gemalt: %s"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1612
+#: scripts/ui/setup_editor.gd:1624
 msgid "noch nichts"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1613
+#: scripts/ui/setup_editor.gd:1625
 msgid "Von Hand gepflegt: %d m² Boden, %d m² Gehölz"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1616
+#: scripts/ui/setup_editor.gd:1628
 msgid "Ebene der Pflanze: %s"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1618
+#: scripts/ui/setup_editor.gd:1630
 msgid "Nicht gespeichert."
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1729
+#: scripts/ui/setup_editor.gd:1741
 msgid "Bepflanzung gespeichert (%s), im Spiel neu aufgebaut"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1804
+#: scripts/ui/setup_editor.gd:1816
 msgid "links (−x)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1806
+#: scripts/ui/setup_editor.gd:1818
 msgid "rechts (+x)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1861
+#: scripts/ui/setup_editor.gd:1873
 msgid "2 Ausgänge (wählbar)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1862
+#: scripts/ui/setup_editor.gd:1874
 msgid "Modul: %s"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1867
-#: scripts/ui/start_screen.gd:1602
+#: scripts/ui/setup_editor.gd:1879
+#: scripts/ui/start_screen.gd:1603
 msgid "%s   %.1f × %.1f m, Höhe %.2f m"
 msgstr ""
 
@@ -2754,621 +2738,621 @@ msgstr ""
 msgid "Schieben"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:320
+#: scripts/ui/setup_editor.gd:321
 msgid "Teile"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:320
+#: scripts/ui/setup_editor.gd:321
 msgid "Hacks"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:320
+#: scripts/ui/setup_editor.gd:321
 msgid "Auswahl"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:320
+#: scripts/ui/setup_editor.gd:321
 msgid "Setup"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:320
+#: scripts/ui/setup_editor.gd:321
 msgid "Pflanzen"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1212
+#: scripts/ui/setup_editor.gd:1224
 msgid "Zum Endmast  →"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1212
+#: scripts/ui/setup_editor.gd:1224
 msgid "←  Zum Steg"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1228
+#: scripts/ui/setup_editor.gd:1240
 msgid "AUSGANG LINKS (Blick von der Rampe)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1228
+#: scripts/ui/setup_editor.gd:1240
 msgid "AUSGANG RECHTS (Blick von der Rampe)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1232
+#: scripts/ui/setup_editor.gd:1244
 msgid "AUFFAHRT VORNE (m, 0 = ab)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1232
+#: scripts/ui/setup_editor.gd:1244
 msgid "AUFFAHRT HINTEN (m, 0 = ab)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1245
+#: scripts/ui/setup_editor.gd:1257
 msgid "Drehen +15°  (Q)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1246
+#: scripts/ui/setup_editor.gd:1258
 msgid "Drehen −15°  (E)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1247
+#: scripts/ui/setup_editor.gd:1259
 msgid "Umdrehen  (F)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1248
+#: scripts/ui/setup_editor.gd:1260
 msgid "Spiegeln  (M)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1249
+#: scripts/ui/setup_editor.gd:1261
 msgid "Duplizieren"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1250
+#: scripts/ui/setup_editor.gd:1262
 msgid "Ganzen Hack wählen"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1251
+#: scripts/ui/setup_editor.gd:1263
 msgid "Löschen"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1375
+#: scripts/ui/setup_editor.gd:1387
 msgid "HACKS"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1375
+#: scripts/ui/setup_editor.gd:1387
 msgid "GÄNGIGE KOMBINATIONEN"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1503
+#: scripts/ui/setup_editor.gd:1515
 msgid "Gewählte Pflanze setzen"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1503
+#: scripts/ui/setup_editor.gd:1515
 msgid "Pflanzen der Ebene entfernen (auch die automatischen)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1504
+#: scripts/ui/setup_editor.gd:1516
 msgid "Stellen wieder der Automatik überlassen (entfernt Gemaltes der Ebene)"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1504
+#: scripts/ui/setup_editor.gd:1516
 msgid "Karte mit dem Finger bewegen"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1798
+#: scripts/ui/setup_editor.gd:1810
 msgid "Startmast"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1798
-#: scripts/ui/setup_editor.gd:1799
+#: scripts/ui/setup_editor.gd:1810
+#: scripts/ui/setup_editor.gd:1811
 msgid "rote Boje"
 msgstr ""
 
-#: scripts/ui/setup_editor.gd:1799
+#: scripts/ui/setup_editor.gd:1811
 msgid "Endmast"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:158
+#: scripts/ui/start_screen.gd:159
 msgid "WAKE THE HACK"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:161
+#: scripts/ui/start_screen.gd:162
 msgid "Wakeport Raunheim"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:169
+#: scripts/ui/start_screen.gd:170
 msgid "„%s“"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:203
+#: scripts/ui/start_screen.gd:204
 msgid "SPIELMODUS"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:210
+#: scripts/ui/start_screen.gd:211
 msgid "COMMUNITY CHALLENGE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:215
+#: scripts/ui/start_screen.gd:216
 msgid "SZENARIO"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:218
+#: scripts/ui/start_screen.gd:219
 msgid "Zufällig"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:231
+#: scripts/ui/start_screen.gd:232
 msgid "Neues Szenario würfeln  (Z, Gamepad: Share)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:258
+#: scripts/ui/start_screen.gd:259
 msgid "CHALLENGE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:272
+#: scripts/ui/start_screen.gd:273
 msgid "FEATURE-SETUP"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:287
+#: scripts/ui/start_screen.gd:288
 msgid "Setup-Editor"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:291
+#: scripts/ui/start_screen.gd:292
 msgid "Erfolge"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:295
+#: scripts/ui/start_screen.gd:296
 msgid "Rangliste"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:299
-#: scripts/ui/start_screen.gd:350
+#: scripts/ui/start_screen.gd:300
+#: scripts/ui/start_screen.gd:351
 msgid "SPIEL STARTEN"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:304
+#: scripts/ui/start_screen.gd:305
 msgid "Kostenlos & Open Source – spendier mir einen Kaffee"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:350
+#: scripts/ui/start_screen.gd:351
 msgid "CHALLENGE STARTEN"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:363
+#: scripts/ui/start_screen.gd:364
 #: scripts/ui/task_panel.gd:224
 msgid "Bestwert: %s"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:708
+#: scripts/ui/start_screen.gd:709
 msgid "EINSTELLUNGEN"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:724
+#: scripts/ui/start_screen.gd:725
 msgid "Spiel"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:724
+#: scripts/ui/start_screen.gd:725
 msgid "Fahrer"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:724
+#: scripts/ui/start_screen.gd:725
 msgid "Welt"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:724
+#: scripts/ui/start_screen.gd:725
 msgid "Technik"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:724
+#: scripts/ui/start_screen.gd:725
 msgid "Wasser"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:755
+#: scripts/ui/start_screen.gd:756
 msgid "FERTIG"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:763
+#: scripts/ui/start_screen.gd:764
 msgid "Automatisch (System)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:768
+#: scripts/ui/start_screen.gd:769
 msgid "SPRACHE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:775
+#: scripts/ui/start_screen.gd:776
 msgid "COMPETITION: RUNDENLÄNGE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:776
+#: scripts/ui/start_screen.gd:777
 msgid "HILFEN   (je ausgeschaltete Hilfe +15 % auf alle Tricks)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:777
+#: scripts/ui/start_screen.gd:778
 msgid "Auf dem Slider einloggen"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:777
 #: scripts/ui/start_screen.gd:778
-#: scripts/ui/start_screen.gd:780
-#: scripts/ui/start_screen.gd:843
+#: scripts/ui/start_screen.gd:779
+#: scripts/ui/start_screen.gd:781
+#: scripts/ui/start_screen.gd:844
 msgid "An"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:778
+#: scripts/ui/start_screen.gd:779
 msgid "Überschlag dreht von selbst zu Ende"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:779
+#: scripts/ui/start_screen.gd:780
 msgid "SEILZUG-GRENZE   (zu viel Zug reißt die Handle aus der Hand; im Spiel G; Aus = keine Rangliste)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:787
+#: scripts/ui/start_screen.gd:788
 msgid "BRETT"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:788
+#: scripts/ui/start_screen.gd:789
 msgid "STANCE   (Regular: links vorne)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:788
+#: scripts/ui/start_screen.gd:789
 msgid "Regular"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:788
+#: scripts/ui/start_screen.gd:789
 msgid "Goofy"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:792
+#: scripts/ui/start_screen.gd:793
 msgid "HELM"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:796
+#: scripts/ui/start_screen.gd:797
 msgid "WESTE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:806
+#: scripts/ui/start_screen.gd:807
 msgid "WETTER   (von Hand, bis zum Neustart; Szenario auf der Startseite)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:807
-#: scripts/ui/start_screen.gd:827
+#: scripts/ui/start_screen.gd:808
+#: scripts/ui/start_screen.gd:828
 msgid "DATUM"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:813
-#: scripts/ui/start_screen.gd:828
+#: scripts/ui/start_screen.gd:814
+#: scripts/ui/start_screen.gd:829
 msgid "UHRZEIT"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:819
+#: scripts/ui/start_screen.gd:820
 msgid "Jetzt  (live)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:820
+#: scripts/ui/start_screen.gd:821
 msgid "Heute, aktuelle Uhrzeit und Wetter am See"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:834
+#: scripts/ui/start_screen.gd:835
 msgid "SEILLÄNGE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:835
+#: scripts/ui/start_screen.gd:836
 msgid "ANLAGEN-TEMPO"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:835
+#: scripts/ui/start_screen.gd:836
 msgid "%d km/h"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:836
+#: scripts/ui/start_screen.gd:837
 msgid "Seil und Tempo: Standard  (16 m, 30 km/h)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:842
+#: scripts/ui/start_screen.gd:843
 msgid "FLUGZEUGE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:842
+#: scripts/ui/start_screen.gd:843
 msgid "Normal"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:842
+#: scripts/ui/start_screen.gd:843
 msgid "Rush Hour"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:843
+#: scripts/ui/start_screen.gd:844
 msgid "FAHRER AUF DER ANDEREN ANLAGE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:844
+#: scripts/ui/start_screen.gd:845
 msgid "CHALLENGE: FILMTEAM"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:844
+#: scripts/ui/start_screen.gd:845
 msgid "Zufall"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:844
+#: scripts/ui/start_screen.gd:845
 msgid "Boot"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:844
+#: scripts/ui/start_screen.gd:845
 msgid "Drohne"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:850
+#: scripts/ui/start_screen.gd:851
 msgid "LAUTSTÄRKE EFFEKTE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:851
+#: scripts/ui/start_screen.gd:852
 msgid "LAUTSTÄRKE JUBEL"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:852
+#: scripts/ui/start_screen.gd:853
 msgid "LAUTSTÄRKE FLUGZEUGE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:853
+#: scripts/ui/start_screen.gd:854
 msgid "KAMERA"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:854
+#: scripts/ui/start_screen.gd:855
 msgid "KAMERA-ABSTAND"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:856
+#: scripts/ui/start_screen.gd:857
 msgid "LENKUNG"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:856
+#: scripts/ui/start_screen.gd:857
 msgid "Gyro (Handy neigen)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:856
+#: scripts/ui/start_screen.gd:857
 msgid "Tasten (Steuerkreuz)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:857
+#: scripts/ui/start_screen.gd:858
 msgid "NEIGUNG ZUM LENKEN"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:857
+#: scripts/ui/start_screen.gd:858
 msgid "Wenig empfindlich"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:857
+#: scripts/ui/start_screen.gd:858
 msgid "Sehr empfindlich"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:858
+#: scripts/ui/start_screen.gd:859
 msgid "NEIGUNG UMKEHREN"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:858
+#: scripts/ui/start_screen.gd:859
 msgid "Nein"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:858
+#: scripts/ui/start_screen.gd:859
 msgid "Ja"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:863
+#: scripts/ui/start_screen.gd:864
 msgid "Die Grafikstufe stellt alle Wasser-Effekte passend ein. Einzelne Effekte lassen sich hier an- und ausschalten (wirkt sofort) – weicht etwas von der Stufe ab, steht die Grafik auf „Custom“."
 msgstr ""
 
-#: scripts/ui/start_screen.gd:869
+#: scripts/ui/start_screen.gd:870
 msgid "WASSERFARBE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:869
+#: scripts/ui/start_screen.gd:870
 msgid "Türkis  (bisher)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:869
+#: scripts/ui/start_screen.gd:870
 msgid "Seeblau"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:870
+#: scripts/ui/start_screen.gd:871
 msgid "OBERFLÄCHENSTRUKTUR   (gleitende Kräuselung statt Sinus)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:871
+#: scripts/ui/start_screen.gd:872
 msgid "SPIEGELUNG JE NACH BLICKWINKEL   (flach: Himmel, von oben: ins Wasser)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:872
+#: scripts/ui/start_screen.gd:873
 msgid "SONNENGLITZERN"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:873
+#: scripts/ui/start_screen.gd:874
 msgid "LICHT DURCH DIE WELLENKÄMME"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:874
+#: scripts/ui/start_screen.gd:875
 msgid "SCHAUM MIT STRUKTUR   (fleckig, reißt auf)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:875
+#: scripts/ui/start_screen.gd:876
 msgid "SPITZE WELLEN   (auch für die Physik)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:876
+#: scripts/ui/start_screen.gd:877
 msgid "MIT WASSERTIEFE   (etwas teurer; Wasser wird dafür transparent gezeichnet)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:877
+#: scripts/ui/start_screen.gd:878
 msgid "DURCHSICHT IM FLACHEN"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:879
+#: scripts/ui/start_screen.gd:880
 msgid "ECHTE SPIEGELBILDER   (nur Desktop, teuer; nur wenn die Durchsicht aus ist)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:885
+#: scripts/ui/start_screen.gd:886
 msgid "Spiel-Musik: lizenzfreie Titel von Pixabay. Dazu kannst du eigene Titel wählen (MP3, OGG, WAV) – sie bleiben auf diesem Gerät bzw. in diesem Browser gespeichert. Alles läuft gemischt im Hintergrund."
 msgstr ""
 
-#: scripts/ui/start_screen.gd:889
+#: scripts/ui/start_screen.gd:890
 msgid "MUSIK"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:890
+#: scripts/ui/start_screen.gd:891
 msgid "QUELLE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:890
+#: scripts/ui/start_screen.gd:891
 msgid "Spiel-Musik"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:890
+#: scripts/ui/start_screen.gd:891
 msgid "Eigene Titel"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:890
+#: scripts/ui/start_screen.gd:891
 msgid "Beides"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:892
+#: scripts/ui/start_screen.gd:893
 msgid "LAUTSTÄRKE MUSIK"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:901
+#: scripts/ui/start_screen.gd:902
 msgid "Titel hinzufügen"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:905
+#: scripts/ui/start_screen.gd:906
 msgid "Eigene entfernen"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:915
+#: scripts/ui/start_screen.gd:916
 msgid "%d Spiel-Musik, %d eigene"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:919
+#: scripts/ui/start_screen.gd:920
 msgid "lädt: %s"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:923
+#: scripts/ui/start_screen.gd:924
 msgid "Danke für die Spiel-Musik (Pixabay): %s"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:928
+#: scripts/ui/start_screen.gd:929
 msgid "ODER NEBENHER HÖREN, z. B. mit Spotify (dann hier Musik aus)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:931
+#: scripts/ui/start_screen.gd:932
 msgid "Skate-Punk bei Spotify"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:979
+#: scripts/ui/start_screen.gd:980
 msgid "GRAFIK   (niedrig = flüssiger, schont den Akku; stellt auch das Wasser ein)"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:995
+#: scripts/ui/start_screen.gd:996
 msgid "Nr. %d"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1049
+#: scripts/ui/start_screen.gd:1050
 msgid "FEATURES & HACKS"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1084
+#: scripts/ui/start_screen.gd:1085
 msgid "GEHEIME ERFOLGE"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1103
+#: scripts/ui/start_screen.gd:1104
 msgid "%d von %d entdeckt – was es gibt, siehst du erst, wenn du es geschafft hast."
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1155
+#: scripts/ui/start_screen.gd:1156
 msgid "IN DER RANGLISTE ERSCHEINEN"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1167
+#: scripts/ui/start_screen.gd:1168
 #: scripts/ui/task_panel.gd:115
 msgid "DEIN NAME"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1171
+#: scripts/ui/start_screen.gd:1172
 msgid "ohne Namen: anonym"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1188
+#: scripts/ui/start_screen.gd:1189
 #: scripts/ui/task_panel.gd:112
 msgid "Speichern"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1199
+#: scripts/ui/start_screen.gd:1200
 msgid "Wird gelöscht …"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1206
+#: scripts/ui/start_screen.gd:1207
 msgid "Gelöscht: Name und alle deine Einträge."
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1233
+#: scripts/ui/start_screen.gd:1234
 msgid "Heads up! Das Game ist noch mitten im Shape – Physik und Punkte werden ständig nachgeschliffen. Darum wird die Rangliste ab und zu gewiped. Kein Stress: einfach neu droppen und wieder ganz nach oben shredden."
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1253
-#: scripts/ui/start_screen.gd:1398
+#: scripts/ui/start_screen.gd:1254
+#: scripts/ui/start_screen.gd:1399
 msgid "Lädt …"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1315
+#: scripts/ui/start_screen.gd:1316
 msgid "Challenge"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1318
+#: scripts/ui/start_screen.gd:1319
 msgid "Noch keine Einträge"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1388
+#: scripts/ui/start_screen.gd:1389
 msgid "Noch niemand in der Rangliste – fahr den ersten Eintrag!"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1389
-#: scripts/ui/start_screen.gd:1427
+#: scripts/ui/start_screen.gd:1390
+#: scripts/ui/start_screen.gd:1428
 msgid "Test-Version: eigene Test-Rangliste"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1419
+#: scripts/ui/start_screen.gd:1420
 msgid "Noch kein Eintrag – fahr den ersten!"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1421
+#: scripts/ui/start_screen.gd:1422
 msgid "%d Fahrer"
 msgid_plural "%d Fahrer"
 msgstr[0] ""
 msgstr[1] ""
 
-#: scripts/ui/start_screen.gd:1423
+#: scripts/ui/start_screen.gd:1424
 msgid "Wertung geändert: ältere Ergebnisse stehen in einer früheren Rangliste"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1463
+#: scripts/ui/start_screen.gd:1464
 msgid "Der Name bleibt. Ganz raus: Schalter oben auf Aus (löscht alles)."
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1469
+#: scripts/ui/start_screen.gd:1470
 msgid "Gespeichert. Deine Einträge stehen jetzt unter diesem Namen."
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1482
+#: scripts/ui/start_screen.gd:1483
 msgid "Deine Bestwerte erscheinen öffentlich in der Rangliste – ohne Namen als „Anonym #…“. Gespeichert werden nur Name (falls angegeben), Bestwerte und Datum, dazu eine zufällige Geräte-Nummer als Prüfsumme. Aus = alles löschen."
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1485
+#: scripts/ui/start_screen.gd:1486
 msgid "Du erscheinst nicht in der Rangliste, es wird nichts gesendet."
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1517
+#: scripts/ui/start_screen.gd:1518
 msgid "erreicht am %s"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1519
+#: scripts/ui/start_screen.gd:1520
 msgid "Geheim"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1520
+#: scripts/ui/start_screen.gd:1521
 msgid "Noch nicht entdeckt"
 msgstr ""
 
-#: scripts/ui/start_screen.gd:1604
+#: scripts/ui/start_screen.gd:1605
 msgid "Im Setup: %s"
 msgstr ""
 
@@ -3742,5 +3726,25 @@ msgstr ""
 
 #: setups/parts.json
 msgid "Bump"
+msgstr ""
+
+#: parks/wakeport/park.json
+msgid "Raunheim, Deutschland"
+msgstr ""
+
+#: parks/wakeport/park.json
+msgid "Terminal 1"
+msgstr ""
+
+#: parks/wakeport/park.json
+msgid "Terminal 1 (Lounge-Steg)"
+msgstr ""
+
+#: parks/wakeport/park.json
+msgid "Terminal 2"
+msgstr ""
+
+#: parks/wakeport/park.json
+msgid "Terminal 2 (Strand)"
 msgstr ""
 
