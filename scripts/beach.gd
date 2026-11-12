@@ -915,20 +915,22 @@ func build_docks(starts: Dictionary, cables: Dictionary) -> void:
 		var c: CableSystem = cables[t]
 		var st: Dictionary = starts[t]
 		var start: Vector3 = st["pos"]
-		var lz := (c.transform.affine_inverse() * start).z          # Startplatz entlang des Seils (lokal)
+		var sl := c.transform.affine_inverse() * start
+		var lz := sl.z                                               # Startplatz entlang des Seils (lokal)
+		var sx := sl.x - 1.7                                         # Steg seitlich versetzt (Rundanlage: außen)
 		var dock := Node3D.new()
 		dock.transform = c.transform
 		add_child(dock)
 		# Steg: lokal x -1,2 … 4,6, z vom Ufer (lz + 4) bis 2 m hinter den Startplatz (lz - 2)
 		var y := Lake.DOCK_Y - 0.15
 		var len := 6.0
-		var mid := Vector3(1.7, y, lz + 1.0)
+		var mid := Vector3(1.7 + sx, y, lz + 1.0)
 		_b(dock, Vector3(5.8, 0.3, len), mid, _wood)
 		_b(dock, Vector3(5.8, 0.32, 0.25), mid + Vector3(0, -0.02, -len * 0.5), _blue)
 		for side: float in [-1.0, 1.0]:
 			_b(dock, Vector3(0.25, 0.32, len), mid + Vector3(side * 2.9, -0.02, 0), _blue)
 		# Hütte am Ufer rechts neben dem Steg, Boden auf dem Gelände
-		var hut_l := Vector3(6.2, 0.0, lz + 6.5)
+		var hut_l := Vector3(6.2 + sx, 0.0, lz + 6.5)
 		var hw := c.transform * hut_l
 		var gy := maxf(Geo.height(hw.x, hw.z), 0.2)
 		var hut := Node3D.new()
@@ -940,9 +942,9 @@ func build_docks(starts: Dictionary, cables: Dictionary) -> void:
 		# Steuermann am landseitigen Ende des Stegs, Laufweg quer über den Steg
 		var dw := func(l: Vector3) -> Vector3: return dock.global_transform * l
 		var crowd: Array[Dictionary] = []
-		_operator(t, [dw.call(Vector3(3.6, y + 0.15, lz + 3.2)), dw.call(Vector3(2.8, y + 0.15, lz + 2.4)),
-			dw.call(Vector3(0.4, y + 0.15, lz + 2.6)), dw.call(Vector3(3.9, y + 0.15, lz + 1.4))], crowd)
+		_operator(t, [dw.call(Vector3(3.6 + sx, y + 0.15, lz + 3.2)), dw.call(Vector3(2.8 + sx, y + 0.15, lz + 2.4)),
+			dw.call(Vector3(0.4 + sx, y + 0.15, lz + 2.6)), dw.call(Vector3(3.9 + sx, y + 0.15, lz + 1.4))], crowd)
 		_people_by[t] = crowd
 		# wartender Fahrer sitzt an der Stegkante (Seite weg vom Seil)
-		waiting_spots.append({"pos": dw.call(Vector3(4.4, y + 0.15, lz + 0.6)), "face": dock.global_basis.x, "kind": "wait_sit"})
+		waiting_spots.append({"pos": dw.call(Vector3(4.4 + sx, y + 0.15, lz + 0.6)), "face": dock.global_basis.x, "kind": "wait_sit"})
 

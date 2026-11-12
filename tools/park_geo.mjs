@@ -124,6 +124,28 @@ function components(mask, val) {
 	console.log(`Seen: ${[...keep].map((k) => sizes[k] + ' m²').join(', ')}`);
 }
 
+// Rundanlagen: Streifen entlang des Seilwegs als Wasser (Daten ±5 m ungenau, das Seil läuft in echt über Wasser);
+// direkt an den Masten bleibt Land
+for (const loop of Q.carve_loops || []) {
+	const P = loop.map((k) => masts[k]);
+	const w = Q.carve_width || 6, mr = Q.carve_mast || 3, ext = Q.carve_extend || 0;
+	for (let k = 0; k < P.length; k++) {
+		let [ae, an] = P[k], [be, bn] = P[(k + 1) % P.length];
+		const len = Math.hypot(be - ae, bn - an), ue = (be - ae) / len, un = (bn - an) / len;
+		ae -= ue * ext; an -= un * ext; be += ue * ext; bn += un * ext;
+		const e0 = Math.min(ae, be) - w, e1 = Math.max(ae, be) + w, n0 = Math.min(an, bn) - w, n1 = Math.max(an, bn) + w;
+		for (let nn = Math.floor(n0); nn <= n1; nn++) for (let e = Math.floor(e0); e <= e1; e++) {
+			const c = e - AREA.e0, r = AREA.n1 - nn;
+			if (c < 0 || r < 0 || c >= W || r >= H) continue;
+			const dx = be - ae, dn = bn - an, l2 = dx * dx + dn * dn;
+			const t = Math.max(0, Math.min(1, ((e - ae) * dx + (nn - an) * dn) / l2));
+			const d = Math.hypot(e - ae - t * dx, nn - an - t * dn);
+			const dm = Math.min(...P.map(([me, mn]) => Math.hypot(e - me, nn - mn)));
+			if (d <= w && dm > mr) wet[r * W + c] = 1;
+		}
+	}
+}
+
 // Abstand zum Ufer (Chamfer 3-4, in Metern), innen und außen
 function distance(inside) {
 	const D = new Float32Array(N1).fill(1e9);

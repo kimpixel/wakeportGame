@@ -8,9 +8,9 @@ extends RefCounted
 
 const INDEX := "res://parks/index.json"
 const TYPE_NAMES := {"2.0": "2-Mast-Anlage (2.0)", "full": "Rundanlage"}  # i18n
-## Anlagen-Typen, die das Spiel schon fahren kann (Rundanlage "full" kommt mit Phase 4). Andere stehen in park.json und
-## auf der World Map, werden aber nicht gebaut.
-const PLAYABLE := ["2.0"]
+## Anlagen-Typen, die das Spiel fahren kann ("2.0" = CableSystem, "full" = FullCable). Andere stehen in park.json
+## und auf der World Map, werden aber nicht gebaut.
+const PLAYABLE := ["2.0", "full"]
 ## Standard-Überschrift der Anlagen-Auswahl (siehe system_label), nur damit der Text übersetzt wird.
 const LABELS := ["ANLAGE"]  # i18n
 

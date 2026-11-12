@@ -299,6 +299,9 @@ msgstr "Orbite"
 msgid "Ufer"
 msgstr "Rive"
 
+msgid "Rundfahrt"
+msgstr "Tour de circuit"
+
 msgid "Runde 7:30"
 msgstr "Manche 7:30"
 
@@ -376,6 +379,9 @@ msgstr ""
 "Flèche ↑ / ↓   en l'air Frontroll / Backroll (Invert : ▲ S-Bend, ▼ Backroll), sur le slider (dès l'approche) Nose- / Tailpress, en drift Drift Press, sur le ponton maintenir ▼ = départ ponton (dans l'axe Nolli, en travers Raley Start)\n"
 "DRIFT (à gauche, au-dessus de SAUT)   relâcher la carre (escalier du pool seulement en drift)        Après une chute : maintenir NAGER = nager, SKIP = repartir tout de suite (−1:00)\n"
 "☰   Menu (en pause) : réglages, aide, retour au ponton (modes : nouvel essai), accueil, son, scénario au hasard, arrachement on/off (off : pas de classement)"
+
+msgid "Rundanlage: das Seil läuft im Kreis über alle Masten, keine Wenden – um die Ecken zieht es dich herum. Nach einem Sturz geht es kurz darauf zurück zum Startsteg (−1:00)."
+msgstr "Téléski nautique : le câble tourne en boucle sur tous les pylônes, pas de demi-tours – il te tire dans les virages. Après une chute, retour au ponton de départ peu après (−1:00)."
 
 msgid "Runde %s"
 msgstr "Manche %s"
@@ -514,6 +520,9 @@ msgstr "Ton record : %s"
 
 msgid "PLATZ %d von %d"
 msgstr "PLACE %d SUR %d"
+
+msgid "Zurück zum Startsteg"
+msgstr "Retour au ponton de départ"
 
 msgid "FREI"
 msgstr "LIBRE"
@@ -2769,6 +2778,9 @@ msgstr "Bump"
 msgid "Manavgat, Antalya, Türkei"
 msgstr "Manavgat, Antalya, Turquie"
 
+msgid "L2 nach Luftbild"
+msgstr "L2 d'après photo aérienne"
+
 msgid "Ohne Features"
 msgstr "Sans modules"
 
@@ -2786,6 +2798,9 @@ msgstr "Système 2 (L3, téléski 2 mâts)"
 
 msgid "L2"
 msgstr "L2"
+
+msgid "L2 (Rundanlage, 5 Masten)"
+msgstr "L2 (téléski nautique, 5 pylônes)"
 
 msgid "Raunheim, Deutschland"
 msgstr "Raunheim, Allemagne"

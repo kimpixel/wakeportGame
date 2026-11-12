@@ -299,6 +299,9 @@ msgstr "Orbit"
 msgid "Ufer"
 msgstr "Oever"
 
+msgid "Rundfahrt"
+msgstr "Rondje"
+
 msgid "Runde 7:30"
 msgstr "Ronde 7:30"
 
@@ -376,6 +379,9 @@ msgstr ""
 "Pijl ↑ / ↓   in de lucht Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), op de slider (al bij de aanloop) Nose- / Tailpress, in de drift Drift Press, op de steiger ▼ ingedrukt = steigerstart (in lijn Nolli, dwars Raley Start)\n"
 "DRIFT (links, boven SPRONG)   kant loslaten (trap van de pool alleen in de drift)        Na een val: ZWEMMEN ingedrukt = zwemmen, SKIP = meteen verder (−1:00)\n"
 "☰   Menu (gepauzeerd): instellingen, help, terug naar de steiger (spelmodi: nieuwe poging), startscherm, geluid, scenario dobbelen, lijn losscheuren aan/uit (uit: geen ranglijst)"
+
+msgid "Rundanlage: das Seil läuft im Kreis über alle Masten, keine Wenden – um die Ecken zieht es dich herum. Nach einem Sturz geht es kurz darauf zurück zum Startsteg (−1:00)."
+msgstr "Rondbaan: de kabel loopt in een rondje over alle masten, geen keerpunten – hij trekt je door de bochten. Na een val ga je kort daarna terug naar de startsteiger (−1:00)."
 
 msgid "Runde %s"
 msgstr "Ronde %s"
@@ -514,6 +520,9 @@ msgstr "Je beste: %s"
 
 msgid "PLATZ %d von %d"
 msgstr "PLAATS %d VAN %d"
+
+msgid "Zurück zum Startsteg"
+msgstr "Terug naar de startsteiger"
 
 msgid "FREI"
 msgstr "VRIJ"
@@ -2769,6 +2778,9 @@ msgstr "Bump"
 msgid "Manavgat, Antalya, Türkei"
 msgstr "Manavgat, Antalya, Turkije"
 
+msgid "L2 nach Luftbild"
+msgstr "L2 naar luchtfoto"
+
 msgid "Ohne Features"
 msgstr "Zonder obstakels"
 
@@ -2786,6 +2798,9 @@ msgstr "Systeem 2 (L3, 2-mastbaan)"
 
 msgid "L2"
 msgstr "L2"
+
+msgid "L2 (Rundanlage, 5 Masten)"
+msgstr "L2 (rondbaan, 5 masten)"
 
 msgid "Raunheim, Deutschland"
 msgstr "Raunheim, Duitsland"

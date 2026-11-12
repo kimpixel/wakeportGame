@@ -300,6 +300,9 @@ msgstr "Orbita"
 msgid "Ufer"
 msgstr "Brzeg"
 
+msgid "Rundfahrt"
+msgstr "Jazda po okręgu"
+
 msgid "Runde 7:30"
 msgstr "Runda 7:30"
 
@@ -377,6 +380,9 @@ msgstr ""
 "Strzałka ↑ / ↓   w powietrzu Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), na sliderze (już przy dojeździe) Nose- / Tailpress, w drifcie Drift Press, na pomoście trzymaj ▼ = start z pomostu (wzdłuż Nolli, w poprzek Raley Start)\n"
 "DRIFT (po lewej, nad SKOK)   puszczenie krawędzi (schody w poolu tylko w drifcie)        Po upadku: trzymaj PŁYŃ = płynięcie, SKIP = od razu dalej (−1:00)\n"
 "☰   Menu (pauza): ustawienia, pomoc, powrót na pomost (tryby: nowa próba), ekran startowy, dźwięk, losuj scenariusz, wyrywanie liny wł./wył. (wył.: bez rankingu)"
+
+msgid "Rundanlage: das Seil läuft im Kreis über alle Masten, keine Wenden – um die Ecken zieht es dich herum. Nach einem Sturz geht es kurz darauf zurück zum Startsteg (−1:00)."
+msgstr "Wyciąg pełnowymiarowy: lina biegnie w pętli przez wszystkie maszty, bez nawrotów – przeciąga cię przez zakręty. Po upadku wkrótce wracasz na pomost startowy (−1:00)."
 
 msgid "Runde %s"
 msgstr "Runda %s"
@@ -515,6 +521,9 @@ msgstr "Twój rekord: %s"
 
 msgid "PLATZ %d von %d"
 msgstr "MIEJSCE %d Z %d"
+
+msgid "Zurück zum Startsteg"
+msgstr "Powrót na pomost startowy"
 
 msgid "FREI"
 msgstr "WOLNA"
@@ -2775,6 +2784,9 @@ msgstr "Bump"
 msgid "Manavgat, Antalya, Türkei"
 msgstr "Manavgat, Antalya, Turcja"
 
+msgid "L2 nach Luftbild"
+msgstr "L2 wg zdjęcia lotniczego"
+
 msgid "Ohne Features"
 msgstr "Bez przeszkód"
 
@@ -2792,6 +2804,9 @@ msgstr "System 2 (L3, wyciąg 2-masztowy)"
 
 msgid "L2"
 msgstr "L2"
+
+msgid "L2 (Rundanlage, 5 Masten)"
+msgstr "L2 (wyciąg pełnowymiarowy, 5 masztów)"
 
 msgid "Raunheim, Deutschland"
 msgstr "Raunheim, Niemcy"

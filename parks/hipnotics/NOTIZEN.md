@@ -69,6 +69,18 @@ Kachel `N36_00_E031_00`).
 - Luftbilder vom Nutzer (aktuell): `recherche/luftbild_von_sueden.jpg`, `recherche/luftbild_von_westen.jpg` – L2 mit vielen
   Features rund um die Insel, Wasser türkis, Palmen, Bungalow-Reihe, Gewächshäuser.
 
+## Rundanlage L2 (Phase 4)
+
+- Fahrbar als `FullCable` (Standard-Anlage im Park): 631 m Seilweg, Ecken als Rollenbogen (14 m), 6 Carrier, Fahrtrichtung
+  in Mast-Reihenfolge (gegen den Uhrzeigersinn), Tempo 30 km/h (Nutzer: 30–32 km/h; Einstellung, Rangliste nur bei 30).
+- Startblock am Startmast (Nutzer), Steg seitlich außen. Sturz: zurück zum Startsteg (Nutzer: „im Wesentlichen ein Skippen“).
+- Setup „L2 nach Luftbild“ (`setups/setup_foto_2025.json`): 8 Features, Lage aus dem Foto von Süden geschätzt, Typen nach der
+  Website-Liste: Westseite Kicker S, Fun Box 16 m, A-Frame Rail, Kicker L; Ostseite Down Ledge (Slider 20 m), Pyramid (Table),
+  Kicker M, Pro Rail.
+- Geodaten: entlang des Seilwegs Wasser ausgehoben (`carve_loops`), an den Ecken 15 m über den Mast hinaus – sonst lief das Seil
+  an den Süd-Ecken über Land.
+- Autopilot fährt mehrere Runden ohne Sturz (Seilzug max. ~800 N).
+
 ## Fehlt noch (vom Nutzer)
 
 1. Masten von L1 (6 Masten) und Fahrtrichtung

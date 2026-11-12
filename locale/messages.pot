@@ -64,7 +64,7 @@ msgid "Ein Haubentaucher ist direkt unter dir durchgetaucht."
 msgstr ""
 
 #: scripts/achievements.gd:19
-#: scripts/main.gd:392
+#: scripts/main.gd:395
 msgid "Schwanenliebe"
 msgstr ""
 
@@ -124,41 +124,44 @@ msgstr ""
 msgid "Dots"
 msgstr ""
 
-#: scripts/cable_system.gd:345
+#: scripts/cable_system.gd:358
+#: scripts/full_cable.gd:236
 msgid "Bereit"
 msgstr ""
 
-#: scripts/cable_system.gd:346
+#: scripts/cable_system.gd:359
+#: scripts/full_cable.gd:237
 msgid "Anfahren"
 msgstr ""
 
-#: scripts/cable_system.gd:347
+#: scripts/cable_system.gd:360
 msgid "Fahrt → Mast 2"
 msgstr ""
 
-#: scripts/cable_system.gd:347
+#: scripts/cable_system.gd:360
 msgid "Fahrt → Ufer"
 msgstr ""
 
-#: scripts/cable_system.gd:348
+#: scripts/cable_system.gd:361
 msgid "Bremst zur Wende"
 msgstr ""
 
-#: scripts/cable_system.gd:349
+#: scripts/cable_system.gd:362
 #: scripts/ui/setup_editor.gd:1810
 #: scripts/ui/setup_editor.gd:1811
 msgid "Wende"
 msgstr ""
 
-#: scripts/cable_system.gd:350
+#: scripts/cable_system.gd:363
 msgid "Operator bringt die Handle"
 msgstr ""
 
-#: scripts/cable_system.gd:351
+#: scripts/cable_system.gd:364
 msgid "Wartet auf den Fahrer"
 msgstr ""
 
-#: scripts/cable_system.gd:352
+#: scripts/cable_system.gd:365
+#: scripts/full_cable.gd:239
 msgid "Ende – zurück am Start"
 msgstr ""
 
@@ -325,9 +328,9 @@ msgid "als %s"
 msgstr ""
 
 #: scripts/challenge.gd:919
-#: scripts/main.gd:1466
-#: scripts/main.gd:1471
-#: scripts/main.gd:1472
+#: scripts/main.gd:1506
+#: scripts/main.gd:1511
+#: scripts/main.gd:1512
 msgid "Rangliste: %s"
 msgstr ""
 
@@ -383,13 +386,13 @@ msgid "Bestwert %s"
 msgstr ""
 
 #: scripts/challenge.gd:111
-#: scripts/main.gd:1610
+#: scripts/main.gd:1666
 msgid "VERSUCH"
 msgstr ""
 
 #: scripts/challenge.gd:129
-#: scripts/hud.gd:263
-#: scripts/main.gd:1610
+#: scripts/hud.gd:265
+#: scripts/main.gd:1666
 msgid "ZEIT"
 msgstr ""
 
@@ -414,6 +417,10 @@ msgstr ""
 #: scripts/chase_camera.gd:13
 #: scripts/ui/start_screen.gd:900
 msgid "Ufer"
+msgstr ""
+
+#: scripts/full_cable.gd:238
+msgid "Rundfahrt"
 msgstr ""
 
 #: scripts/game_settings.gd:14
@@ -449,27 +456,27 @@ msgstr ""
 msgid "Custom"
 msgstr ""
 
-#: scripts/hud.gd:106
+#: scripts/hud.gd:108
 msgid "H  Hilfe"
 msgstr ""
 
-#: scripts/hud.gd:280
+#: scripts/hud.gd:282
 msgid "PUNKTE"
 msgstr ""
 
-#: scripts/hud.gd:376
+#: scripts/hud.gd:378
 msgid "ZEIT UM"
 msgstr ""
 
-#: scripts/hud.gd:459
+#: scripts/hud.gd:461
 msgid "GEHEIMER ERFOLG FREIGESCHALTET"
 msgstr ""
 
-#: scripts/hud.gd:693
+#: scripts/hud.gd:700
 msgid "TEMPO"
 msgstr ""
 
-#: scripts/hud.gd:737
+#: scripts/hud.gd:744
 msgid "SEILZUG"
 msgstr ""
 
@@ -494,6 +501,10 @@ msgid ""
 "Pfeil ↑ / ↓   in der Luft Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), auf dem Slider (schon im Anflug) Nose- / Tailpress, im Drift Drift-Press, auf dem Steg ▼ halten = Sprung-Start (längs Nolli, quer Raley Start)\n"
 "DRIFT (links, über SPRUNG)   Kante lösen (Treppe am Pool nur im Drift)        Nach Sturz: SCHWIMMEN halten = schwimmen, SKIP = sofort weiter (−1:00)\n"
 "☰   Menü (pausiert): Einstellungen, Hilfe, Zurück zum Steg (Spielmodi: neuer Versuch), Startseite, Ton, Szenario würfeln, Seil-Abreißen an/aus (aus: keine Rangliste)"
+msgstr ""
+
+#: scripts/hud.gd:25
+msgid "Rundanlage: das Seil läuft im Kreis über alle Masten, keine Wenden – um die Ecken zieht es dich herum. Nach einem Sturz geht es kurz darauf zurück zum Startsteg (−1:00)."
 msgstr ""
 
 #: scripts/leaderboard.gd:165
@@ -612,180 +623,184 @@ msgstr ""
 msgid "Diesen Namen bitte nicht"
 msgstr ""
 
-#: scripts/main.gd:301
+#: scripts/main.gd:304
 msgid "Abgesoffen!"
 msgstr ""
 
-#: scripts/main.gd:389
+#: scripts/main.gd:392
 msgid "Was ein Frechdachs!"
 msgstr ""
 
-#: scripts/main.gd:397
+#: scripts/main.gd:400
 msgid "Badegast nass gespritzt!"
 msgstr ""
 
-#: scripts/main.gd:401
+#: scripts/main.gd:404
 msgid "Zugvogel!"
 msgstr ""
 
-#: scripts/main.gd:417
+#: scripts/main.gd:420
 msgid "Hecht erwischt!"
 msgstr ""
 
-#: scripts/main.gd:423
+#: scripts/main.gd:426
 msgid "SUP nass gespritzt!"
 msgstr ""
 
-#: scripts/main.gd:426
+#: scripts/main.gd:429
 msgid "Igitt – Insekt verschluckt!"
 msgstr ""
 
-#: scripts/main.gd:432
+#: scripts/main.gd:435
 msgid "Arschbombe!"
 msgstr ""
 
-#: scripts/main.gd:435
+#: scripts/main.gd:438
 msgid "Steg-Landung!"
 msgstr ""
 
-#: scripts/main.gd:1080
+#: scripts/main.gd:1116
 msgid "Seil reißt ab: an"
 msgstr ""
 
-#: scripts/main.gd:1080
+#: scripts/main.gd:1116
 msgid "Seil reißt ab: aus – keine Rangliste"
 msgstr ""
 
-#: scripts/main.gd:1198
+#: scripts/main.gd:1238
 msgid "Setup: %s"
 msgstr ""
 
-#: scripts/main.gd:1405
+#: scripts/main.gd:1445
 msgid "Strafzeit −%d:%02d"
 msgstr ""
 
-#: scripts/main.gd:1419
+#: scripts/main.gd:1459
 msgid "Zeit um!  %d Punkte"
 msgstr ""
 
-#: scripts/main.gd:1428
-#: scripts/main.gd:1465
+#: scripts/main.gd:1468
+#: scripts/main.gd:1505
 msgid "Letzte Runde: %d Punkte"
 msgstr ""
 
-#: scripts/main.gd:1458
+#: scripts/main.gd:1498
 msgid "Rangliste …"
 msgstr ""
 
-#: scripts/main.gd:1464
+#: scripts/main.gd:1504
 msgid "Platz %d von %d"
 msgstr ""
 
-#: scripts/main.gd:1466
-#: scripts/main.gd:1469
+#: scripts/main.gd:1506
+#: scripts/main.gd:1509
 msgid "Dein Bestwert: %s"
 msgstr ""
 
-#: scripts/main.gd:1467
+#: scripts/main.gd:1507
 msgid "PLATZ %d von %d"
 msgstr ""
 
-#: scripts/main.gd:1608
+#: scripts/main.gd:1611
+msgid "Zurück zum Startsteg"
+msgstr ""
+
+#: scripts/main.gd:1664
 msgid "FREI"
 msgstr ""
 
-#: scripts/main.gd:1614
+#: scripts/main.gd:1670
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
 "Wenden %d   ·   Kamera: %s%s"
 msgstr ""
 
-#: scripts/main.gd:1644
+#: scripts/main.gd:1700
 msgid "STURZ  –  der Operator bringt dir die Handle"
 msgstr ""
 
-#: scripts/main.gd:1645
+#: scripts/main.gd:1701
 msgid "STURZ  –  die Handle liegt bereit"
 msgstr ""
 
-#: scripts/main.gd:1647
+#: scripts/main.gd:1703
 msgid "ca. %d s"
 msgstr ""
 
-#: scripts/main.gd:1649
+#: scripts/main.gd:1705
 msgid "SCHWIMMEN halten"
 msgstr ""
 
-#: scripts/main.gd:1649
-#: scripts/main.gd:1653
+#: scripts/main.gd:1705
+#: scripts/main.gd:1709
 msgid "Zur Handle schwimmen"
 msgstr ""
 
-#: scripts/main.gd:1650
+#: scripts/main.gd:1706
 #: scripts/ui/touch_pad.gd:230
 msgid "SKIP"
 msgstr ""
 
-#: scripts/main.gd:1650
-#: scripts/main.gd:1654
+#: scripts/main.gd:1706
+#: scripts/main.gd:1710
 msgid "Sofort weiterfahren"
 msgstr ""
 
-#: scripts/main.gd:1650
-#: scripts/main.gd:1651
-#: scripts/main.gd:1654
-#: scripts/main.gd:1655
+#: scripts/main.gd:1706
+#: scripts/main.gd:1707
+#: scripts/main.gd:1710
+#: scripts/main.gd:1711
 msgid "keine Strafzeit"
 msgstr ""
 
-#: scripts/main.gd:1651
-#: scripts/main.gd:1655
+#: scripts/main.gd:1707
+#: scripts/main.gd:1711
 msgid "Zurück zum Steg"
 msgstr ""
 
-#: scripts/main.gd:1653
+#: scripts/main.gd:1709
 msgid "LEERTASTE halten"
 msgstr ""
 
-#: scripts/main.gd:1654
+#: scripts/main.gd:1710
 msgid "STRG"
 msgstr ""
 
-#: scripts/main.gd:1666
+#: scripts/main.gd:1722
 msgid ""
 "Neigungssensor nicht verfügbar –\n"
 "Bewegungssensoren im Browser erlauben"
 msgstr ""
 
-#: scripts/main.gd:1671
+#: scripts/main.gd:1727
 msgid "SPRUNG-START  %d %%"
 msgstr ""
 
-#: scripts/main.gd:1738
+#: scripts/main.gd:1794
 msgid "Hitboxen an"
 msgstr ""
 
-#: scripts/main.gd:1738
+#: scripts/main.gd:1794
 msgid "Hitboxen aus"
 msgstr ""
 
-#: scripts/main.gd:1768
+#: scripts/main.gd:1824
 msgid "Wende um die Boje"
 msgstr ""
 
-#: scripts/main.gd:1768
+#: scripts/main.gd:1824
 msgid "Saubere Wende"
 msgstr ""
 
-#: scripts/main.gd:1928
+#: scripts/main.gd:1984
 msgid "Ins Boot gefahren!"
 msgstr ""
 
-#: scripts/main.gd:1929
+#: scripts/main.gd:1985
 msgid "Boot crash!"
 msgstr ""
 
-#: scripts/main.gd:1610
+#: scripts/main.gd:1666
 msgid "MODUS"
 msgstr ""
 
@@ -850,64 +865,64 @@ msgstr ""
 msgid "Seil aus der Hand gerissen!"
 msgstr ""
 
-#: scripts/rider.gd:1485
+#: scripts/rider.gd:1487
 msgid "Quer abgefahren – Brett gerade stellen oder driften!"
 msgstr ""
 
-#: scripts/rider.gd:1520
+#: scripts/rider.gd:1522
 msgid "Treppe nur im Drift!"
 msgstr ""
 
-#: scripts/rider.gd:1546
+#: scripts/rider.gd:1548
 msgid "Drift-Press zu quer gedriftet!"
 msgstr ""
 
-#: scripts/rider.gd:1596
+#: scripts/rider.gd:1598
 msgid "Gegen den Steg!"
 msgstr ""
 
-#: scripts/rider.gd:1596
-#: scripts/rider.gd:2111
+#: scripts/rider.gd:1598
+#: scripts/rider.gd:2113
 msgid "Gegen %s gefahren!"
 msgstr ""
 
-#: scripts/rider.gd:1875
+#: scripts/rider.gd:1877
 msgid "das Hindernis"
 msgstr ""
 
-#: scripts/rider.gd:2223
+#: scripts/rider.gd:2225
 msgid "Verkantet gelandet!"
 msgstr ""
 
-#: scripts/rider.gd:2227
+#: scripts/rider.gd:2229
 msgid "Auf dem Ball gelandet!"
 msgstr ""
 
-#: scripts/rider.gd:2230
+#: scripts/rider.gd:2232
 msgid "Zu harte Landung!"
 msgstr ""
 
-#: scripts/rider.gd:2233
+#: scripts/rider.gd:2235
 msgid "Überschlag nicht geschafft!"
 msgstr ""
 
-#: scripts/rider.gd:2236
+#: scripts/rider.gd:2238
 msgid "Backroll nicht geschafft!"
 msgstr ""
 
-#: scripts/rider.gd:2387
+#: scripts/rider.gd:2389
 msgid "Ab ans Ufer!"
 msgstr ""
 
-#: scripts/rider.gd:2390
+#: scripts/rider.gd:2392
 msgid "Gegen den Mast!"
 msgstr ""
 
-#: scripts/rider.gd:2774
+#: scripts/rider.gd:2776
 msgid "%s – Drift-Winkel %d°  (erlaubt bis %d°)"
 msgstr ""
 
-#: scripts/rider.gd:2776
+#: scripts/rider.gd:2778
 msgid "DRIFT – Kante gelöst, Brett rutscht quer (%.1f m/s)"
 msgstr ""
 
@@ -3767,6 +3782,10 @@ msgid "Manavgat, Antalya, Türkei"
 msgstr ""
 
 #: parks/hipnotics/park.json
+msgid "L2 nach Luftbild"
+msgstr ""
+
+#: parks/hipnotics/park.json
 msgid "Ohne Features"
 msgstr ""
 
@@ -3788,6 +3807,10 @@ msgstr ""
 
 #: parks/hipnotics/park.json
 msgid "L2"
+msgstr ""
+
+#: parks/hipnotics/park.json
+msgid "L2 (Rundanlage, 5 Masten)"
 msgstr ""
 
 #: parks/wakeport/park.json

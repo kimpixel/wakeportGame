@@ -300,6 +300,9 @@ msgstr "Orbit"
 msgid "Ufer"
 msgstr "Břeh"
 
+msgid "Rundfahrt"
+msgstr "Jízda okruhem"
+
 msgid "Runde 7:30"
 msgstr "Kolo 7:30"
 
@@ -377,6 +380,9 @@ msgstr ""
 "Šipka ↑ / ↓   ve vzduchu Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), na slideru (už při nájezdu) Nose- / Tailpress, v driftu Drift Press, na molu drž ▼ = start z mola (podél Nolli, napříč Raley Start)\n"
 "DRIFT (vlevo, nad SKOK)   uvolnit hranu (schody v poolu jen v driftu)        Po pádu: drž PLAVAT = plavání, SKIP = hned dál (−1:00)\n"
 "☰   Menu (pauza): nastavení, nápověda, zpět na molo (módy: nový pokus), úvodní obrazovka, zvuk, náhodný scénář, vytržení lana zap./vyp. (vyp.: bez žebříčku)"
+
+msgid "Rundanlage: das Seil läuft im Kreis über alle Masten, keine Wenden – um die Ecken zieht es dich herum. Nach einem Sturz geht es kurz darauf zurück zum Startsteg (−1:00)."
+msgstr "Okruhový vlek: lano vede dokola přes všechny stožáry, žádné obrátky – v zatáčkách tě protáhne. Po pádu se brzy vrátíš na startovní molo (−1:00)."
 
 msgid "Runde %s"
 msgstr "Kolo %s"
@@ -515,6 +521,9 @@ msgstr "Tvůj rekord: %s"
 
 msgid "PLATZ %d von %d"
 msgstr "MÍSTO %d Z %d"
+
+msgid "Zurück zum Startsteg"
+msgstr "Zpět na startovní molo"
 
 msgid "FREI"
 msgstr "VOLNĚ"
@@ -2775,6 +2784,9 @@ msgstr "Bump"
 msgid "Manavgat, Antalya, Türkei"
 msgstr "Manavgat, Antalya, Turecko"
 
+msgid "L2 nach Luftbild"
+msgstr "L2 podle leteckého snímku"
+
 msgid "Ohne Features"
 msgstr "Bez překážek"
 
@@ -2792,6 +2804,9 @@ msgstr "Systém 2 (L3, dvoustožárový vlek)"
 
 msgid "L2"
 msgstr "L2"
+
+msgid "L2 (Rundanlage, 5 Masten)"
+msgstr "L2 (okruhový vlek, 5 stožárů)"
 
 msgid "Raunheim, Deutschland"
 msgstr "Raunheim, Německo"

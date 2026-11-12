@@ -11,7 +11,7 @@
   "setups": "res://parks/hipnotics/setups/index.json",
   "plants": "res://parks/hipnotics/plants.json",
   "scenery": "simple",
-  "default_system": "S1",
+  "default_system": "L2",
   "systems": [
     {
       "id": "S1", "name": "System 1", "hint": "System 1 (L3, 2-Mast-Anlage)", "type": "2.0", "origin": true,
@@ -22,7 +22,7 @@
       "masts": ["s2_start", "s2_end"], "dock": { "auto": true }
     },
     {
-      "id": "L2", "name": "L2", "type": "full",
+      "id": "L2", "name": "L2", "hint": "L2 (Rundanlage, 5 Masten)", "type": "full",
       "masts": ["l2_1", "l2_2", "l2_3", "l2_4", "l2_5"]
     }
   ]

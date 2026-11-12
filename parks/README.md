@@ -27,7 +27,7 @@ Jeder Wakepark hat einen eigenen Ordner `parks/<id>/` mit einer `park.json`. Die
 |---|---|
 | `id` | Schlüssel der Anlage: in den Setup-Dateien (`"T2": [...]`), Ranglisten, Einstellungen, `--terminal=` |
 | `name`, `hint` | Anzeigename („Terminal 2“) und Hinweis im Setup-Editor (beide übersetzt) |
-| `type` | `"2.0"` = 2-Mast-Anlage (Carrier pendelt); `"full"` = Rundanlage (steht auf der World Map, wird noch nicht gebaut: `Park.PLAYABLE`) |
+| `type` | `"2.0"` = 2-Mast-Anlage (Carrier pendelt, `CableSystem`); `"full"` = Rundanlage (`FullCable`: Seil im Kreis über alle `masts` in Fahrtrichtung, Startsteg am ersten Mast, Setups mit `s` entlang des Seils) |
 | `origin` | `true` bei genau einer Anlage: ihr Startmast ist der Ursprung der Spielkoordinaten, ihr Seil läuft entlang −z |
 | `masts` | Namen der Masten in `geo.json` (`masts`), der Reihe nach (2.0: Start-, Endmast) |
 | (Wakeport T2) | `origin` ohne `dock` = alte Maße aus `Lake` (Steg vor der großen Hütte); alle anderen Anlagen werden zwischen ihre Masten gesetzt |
@@ -42,10 +42,10 @@ Ranglisten: Der Wakeport behält seine Schlüssel (`comp/SEK/T2/SETUP`), jeder a
 ## Parks
 
 - `wakeport/`: Wakeport Raunheim (2 × 2.0: Terminal 1, Terminal 2)
-- `hipnotics/`: Hip-Notics Cable Park, Manavgat/Antalya (System 1/2 auf L3 fahrbar, L2 Rundanlage folgt; `NOTIZEN.md`)
+- `hipnotics/`: Hip-Notics Cable Park, Manavgat/Antalya (Rundanlage L2 mit Setup „L2 nach Luftbild“, System 1/2 auf L3; `NOTIZEN.md`)
 
 ## Geodaten für neue Parks
 
 Ohne amtliche Daten: `parks/<id>/geo_quelle.json` (Masten als Breite/Länge, UTM-Zone, Gebiet, Quellen) anlegen, dann
 `node tools/park_geo.mjs <id>` (Copernicus DEM + Sentinel-2, siehe Kopf der Datei) und
-`Godot --headless --path . -s tools/png_to_jpg.gd -- parks/<id>/geo`. Kontrollbild der Uferlinie: `parks/<id>/recherche/ufer_kontrolle.png`.
+`Godot --headless --path . -s tools/png_to_jpg.gd -- parks/<id>/geo`. Kontrollbild der Uferlinie: `parks/<id>/recherche/ufer_kontrolle.png`. Rundanlagen: `carve_loops` hebt entlang des Seilwegs Wasser aus (`carve_width`, an den Ecken `carve_extend` über den Mast hinaus, nur `carve_mast` um den Mast bleibt Land) – die Uferlinie aus 10-m-Daten ist zu ungenau, an den Ecken lief das Seil sonst über Land.

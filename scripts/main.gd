@@ -62,6 +62,8 @@ static var _lang_reload := false   # Szene wurde für einen Sprachwechsel neu au
 const GAME_TIME := 450.0
 const SKIP_PENALTY := 60.0      # Strg nach Sturz: Schwimmen abbrechen, Handle sofort da
 const RESET_PENALTY := 120.0    # R: zurück zum Startsteg
+const FULL_DOCK_X := 5.5        # Rundanlage: Startplatz so weit rechts neben dem Seil (Steg 5,8 m breit, ab 2,6 m)
+const FULL_RETURN := 3.5        # Rundanlage: so lange sieht man den Sturz, dann zurück zum Startsteg (Strafzeit wie Strg)
 var _session := false           # Runde läuft (Zeit zählt)
 var _game_time := GAME_TIME    # Test: --game-time=SEK
 var _time_left := GAME_TIME
@@ -240,7 +242,8 @@ func _ready() -> void:
 	buoys.water = water
 	add_child(buoys)
 	for t: String in Park.system_ids_default_first():
-		buoys.add_cable(cables[t])
+		if not cables[t] is FullCable:              # Rundanlage: keine Wenden, keine Wendebojen
+			buoys.add_cable(cables[t])
 
 	features = FeatureSet.new()
 	features.reflections = int(settings.values["quality"]) >= 1
@@ -854,8 +857,11 @@ func _initial_park() -> String:
 func _build_cables() -> void:
 	for t: String in Park.system_ids_default_first():
 		var sy := Park.system(t)
-		var c := CableSystem.new()
 		var ms: Array = sy.get("masts", [])
+		if str(sy.get("type", "2.0")) == "full":
+			_build_full_cable(t, ms)
+			continue
+		var c := CableSystem.new()
 		if sy.get("origin", false) and not sy.has("dock"):
 			# Wakeport T2: Maße aus Lake (Steg vor der großen Hütte, Endmast)
 			if sy.has("turn_a_z"):
@@ -904,6 +910,36 @@ func _build_cables() -> void:
 	cables = ordered
 	cable = cables[Park.origin_system()]
 	cable_t1 = cables[_npc_terminal(Park.origin_system())]
+
+
+## Rundanlage (FullCable): Seilweg über alle Masten; Startblock am Startmast – der Steg liegt an der ersten Stelle mit
+## Wasser entlang der ersten Strecke (wie dock.auto der 2-Mast-Anlagen), der Carrier wartet 9 m dahinter.
+func _build_full_cable(t: String, ms: Array) -> void:
+	var fc := FullCable.new()
+	var mw: Array = []
+	for m: String in ms:
+		mw.append(Geo.masts[m])
+	fc.setup_path(mw)
+	var s_shore := 0.0
+	while s_shore < 60.0:
+		var w := fc.point_at(s_shore)
+		if Lake.in_lake(w.x, w.z, 0.5):
+			break
+		s_shore += 0.5
+	# Steg seitlich außen (rechts in Fahrtrichtung) neben dem Seil – wer die Runde fährt, kommt daran vorbei
+	var fr := fc.path_frame(s_shore + 3.0)
+	var start := fr * Vector3(FULL_DOCK_X, 0.0, 0.0)
+	start.y = Lake.DOCK_Y
+	var dock := Rect2(Vector2(start.x, start.z), Vector2.ZERO)
+	for corner: Vector2 in [Vector2(FULL_DOCK_X - 2.9, s_shore - 1.0), Vector2(FULL_DOCK_X + 2.9, s_shore - 1.0),
+			Vector2(FULL_DOCK_X - 2.9, s_shore + 5.0), Vector2(FULL_DOCK_X + 2.9, s_shore + 5.0)]:
+		var g := fc.path_frame(corner.y) * Vector3(corner.x, 0.0, 0.0)
+		dock = dock.expand(Vector2(g.x, g.z))
+	fc.start_u = fposmod(s_shore + 3.0 - 9.0, fc.length)
+	var f := fc.tangent_at(s_shore + 3.0)
+	_start[t] = {"pos": start, "yaw": atan2(-f.x, -f.z), "dock": dock, "mast_b": Vector3(1.0e6, 0.0, 1.0e6)}
+	cables[t] = fc
+	add_child(fc)
 
 
 func _on_terminal_menu(idx: int) -> void:
@@ -1129,6 +1165,7 @@ func _apply_terminal(t: String) -> void:
 	_terminal_menu.select(Park.system_ids().find(t))
 	# Jubel kommt aus dem Startblock der eigenen Anlage
 	sfx.set_people(beach.people_of(t))
+	hud.set_help_full(pc is FullCable)
 	sfx.operator = ambient.operator(t)
 	ambient.set_watch({t: rider, other: npc})
 	pc.reset()
@@ -1163,6 +1200,9 @@ func _s_offset() -> Dictionary:
 	var out := {}
 	for t: String in Park.system_ids_default_first():
 		var c: CableSystem = cables[t]
+		if c is FullCable:
+			out[t] = 0.0                     # Rundanlage: s der Setups = Meter entlang des Seils ab dem Startmast
+			continue
 		out[t] = FEATURE_SHIFT + float(Park.system(t).get("center_shift", 0.0)) \
 			+ (cable.start_z - c.start_z) - (cable.mast_a_z - c.mast_a_z)
 	return out
@@ -1562,6 +1602,22 @@ func _recover(r: Rider, c: CableSystem, delta: float) -> void:
 		return
 	var t: float = _lost_t.get(id, 0.0) + delta
 	_lost_t[id] = t
+	if c is FullCable:
+		# Rundanlage: kein Operator bringt die Handle – nach dem Sturz (kurz zeigen) zurück zum Startsteg (Skip)
+		if t > FULL_RETURN:
+			_lost_t[id] = 0.0
+			if r == rider:
+				_penalty(SKIP_PENALTY)
+				hud.show_trick(tr("Zurück zum Startsteg"))
+				_reset()
+				if _test_log:
+					print("RUNDANLAGE: zurück zum Startsteg")
+					pc.start()
+			else:
+				r.reset()
+				c.reset()
+				c.start()
+		return
 	var stranded := not Lake.in_lake(r.pos.x, r.pos.z, 0.0) or r.in_dock(r.pos.x, r.pos.z)
 	if (stranded and t > RESET_DELAY) or t > 120.0:
 		_lost_t[id] = 0.0

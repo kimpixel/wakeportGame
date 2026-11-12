@@ -3,24 +3,74 @@
   "utm_zone": 36,
   "origin": "s1_start",
   "axis": "s1_end",
-  "area": { "west": 420, "east": 700, "south": 560, "north": 420 },
+  "area": {
+    "west": 420,
+    "east": 700,
+    "south": 560,
+    "north": 420
+  },
   "core": 110,
   "masts": {
-    "s1_start": [36.912070, 31.201502],
-    "s1_end":   [36.911380, 31.200356],
-    "s2_start": [36.912327, 31.201231],
-    "s2_end":   [36.911590, 31.200197],
-    "l2_1": [36.911537, 31.201395],
-    "l2_2": [36.909817, 31.200460],
-    "l2_3": [36.909325, 31.200861],
-    "l2_4": [36.909480, 31.201600],
-    "l2_5": [36.911255, 31.202322]
+    "s1_start": [
+      36.91207,
+      31.201502
+    ],
+    "s1_end": [
+      36.91138,
+      31.200356
+    ],
+    "s2_start": [
+      36.912327,
+      31.201231
+    ],
+    "s2_end": [
+      36.91159,
+      31.200197
+    ],
+    "l2_1": [
+      36.911537,
+      31.201395
+    ],
+    "l2_2": [
+      36.909817,
+      31.20046
+    ],
+    "l2_3": [
+      36.909325,
+      31.200861
+    ],
+    "l2_4": [
+      36.90948,
+      31.2016
+    ],
+    "l2_5": [
+      36.911255,
+      31.202322
+    ]
   },
   "dem": "https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N36_00_E031_00_DEM/Copernicus_DSM_COG_10_N36_00_E031_00_DEM.tif",
   "sentinel": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/36/S/UF/2025/8/S2A_36SUF_20250815_0_L2A/",
   "lake_depth": 1.7,
-  "ndwi": 0.0,
+  "ndwi": 0,
   "min_lake": 600,
   "_lakes": "Nur Seen behalten, die bis 60 m an einem Mast oder einer dieser Stellen liegen (sonst kommen Gewächshäuser/Kanäle mit). L1: Mitte des großen Sees (Sentinel-2), Masten fehlen noch.",
-  "lake_seeds": [[36.91210, 31.20410]]
+  "lake_seeds": [
+    [
+      36.9121,
+      31.2041
+    ]
+  ],
+  "_carve": "Rundanlagen: entlang des Seilwegs ist immer Wasser (Breite carve_width je Seite, an den Ecken carve_extend m über den Mast hinaus – dort schießt man geradeaus weiter, solange das Seil durchhängt). Die Uferlinie aus 10-m-Daten und die Mastpunkte sind ±5 m ungenau; an den Ecken lief das Seil sonst über Land. Nur bis carve_mast m um die Masten bleibt Land.",
+  "carve_loops": [
+    [
+      "l2_1",
+      "l2_2",
+      "l2_3",
+      "l2_4",
+      "l2_5"
+    ]
+  ],
+  "carve_width": 7,
+  "carve_mast": 2,
+  "carve_extend": 15
 }

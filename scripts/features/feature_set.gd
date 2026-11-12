@@ -275,14 +275,14 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 	part.row_index = row.get("_row", -1)
 	part.cable = cable
 	part.collide = colliders
-	var world := cable.transform * Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, cable.mast_a_z)) * local
+	var world := cable.place_xf(local)          # 2-Mast-Anlage: entlang -z; Rundanlage: entlang des Seils (FullCable)
 	part.transform = world
-	var on_cable := cable.transform.affine_inverse() * world.origin
-	part.s_center = cable.mast_a_z - on_cable.z
-	part.x_center = on_cable.x
+	var on_cable := cable.to_lane(world.origin)  # (s, x) auf der Bahn
+	part.s_center = on_cable.x
+	part.x_center = on_cable.y
 	# Auf welcher Seite (lokal v) liegt das Seil? Dort sind Transitions / seitliche Auffahrten.
-	var side_pt := cable.transform.affine_inverse() * (world * Vector3(1.0, 0.0, 0.0))
-	part.inner_v = 1.0 if absf(side_pt.x) < absf(on_cable.x) else -1.0
+	var side_pt := cable.to_lane(world * Vector3(1.0, 0.0, 0.0))
+	part.inner_v = 1.0 if absf(side_pt.y) < absf(on_cable.y) else -1.0
 	if p.has("inner_v"):
 		part.inner_v = signf(float(p["inner_v"]))      # z. B. gespiegelte 1/2 Transition Rails
 	# Transition Rail: Setup-Positionen beziehen sich auf die alte Breite (TR_REF_WIDTH). Breiter wird es nur
@@ -290,9 +290,9 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 	if part.type == "transition" and part.width != TR_REF_WIDTH:
 		world = world * Transform3D(Basis.IDENTITY, Vector3((part.width - TR_REF_WIDTH) * 0.5 * part.inner_v, 0.0, 0.0))
 		part.transform = world
-		on_cable = cable.transform.affine_inverse() * world.origin
-		part.s_center = cable.mast_a_z - on_cable.z
-		part.x_center = on_cable.x
+		on_cable = cable.to_lane(world.origin)
+		part.s_center = on_cable.x
+		part.x_center = on_cable.y
 	add_child(part)
 	parts.append(part)
 	if part.type == "pool":

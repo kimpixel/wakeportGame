@@ -1,0 +1,17 @@
+{
+  "name": "L2 nach Luftbild",
+  "date": "2025-??",
+  "source": "Luftbilder des Nutzers (recherche/luftbild_von_sueden.jpg, luftbild_von_westen.jpg) und Feature-Liste der Website (Kicker S/L, Fun Box 16 m, Slider 20 m, Table, A-Frame 19 m); Lage geschätzt. L2: s = Meter entlang des Seils ab dem Startmast, Westseite s 20–185 (Richtung Süden), Ostseite s 355–525 (Richtung Norden), x < 0 = innen zur Insel.",
+  "L2": [
+    { "part": "kicker_s",        "s": 45.0,  "x": -6.5, "dir": "out" },
+    { "part": "ollie_box",       "s": 85.0,  "x": -7.5, "dir": "out", "length": 16.0 },
+    { "part": "py_aframe_rail",  "s": 128.0, "x": -9.0, "dir": "out" },
+    { "part": "kicker_l",        "s": 168.0, "x": -6.5, "dir": "out" },
+    { "part": "down_ledge",      "s": 382.0, "x": -7.0, "dir": "out" },
+    { "part": "py_pyramid",      "s": 425.0, "x": 7.5,  "dir": "out" },
+    { "part": "kicker_m",        "s": 465.0, "x": -6.5, "dir": "out" },
+    { "part": "pro_rail",        "s": 505.0, "x": 6.5,  "dir": "out" }
+  ],
+  "S1": [],
+  "S2": []
+}

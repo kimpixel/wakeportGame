@@ -1241,20 +1241,22 @@ func _autopilot_input(delta: float) -> void:
 	var rope_yaw := atan2(-rope_dir.x, -rope_dir.z)
 	var side := 1.0 if fmod(_auto_t, 9.0) < 4.5 else -1.0
 	var carving := speed > 5.0 and tension_smooth > 50.0
-	var offset := 0.35 * side if carving else 0.0
-	if not is_nan(auto_lane):
+	var offset := 0.35 * side if carving and not cable is FullCable else 0.0   # Rundanlage: nicht pendeln (an den Ecken sonst außen am Mast)
+	if cable is FullCable:
+		pass        # Rundanlage: keine Wenden, Spur-Planung auf der geraden Bahn passt nicht – dem Seil folgen
+	elif not is_nan(auto_lane):
 		_lane_input(auto_lane, true)
 		return
-	if _turn_input(speed):
+	elif _turn_input(speed):
 		return
 	# Gummiball voraus: seitlich daran vorbeifahren
-	var dodge := _ball_dodge_lane()
+	var dodge := _ball_dodge_lane() if not cable is FullCable else NAN
 	if not is_nan(dodge):
 		_line = null
 		_lane_input(dodge, false)
 		return
 	# Features fahren: passendes Feature voraus suchen und auf dessen Spur einschwenken
-	if features and (tension_smooth > 50.0 or mode == Mode.AIR):
+	if features and (tension_smooth > 50.0 or mode == Mode.AIR) and not cable is FullCable:
 		var lane := _line_lane()
 		if not is_nan(lane):
 			_lane_input(lane, false)
@@ -1263,7 +1265,7 @@ func _autopilot_input(delta: float) -> void:
 	else:
 		_line = null
 	# Hindernisse voraus: nicht seitlich hineincarven, sondern Richtung Seillinie (Carrier) halten
-	if features and _feature_ahead():
+	if features and not cable is FullCable and _feature_ahead():
 		offset = 0.0
 	var target := rope_yaw + offset
 	if carving:

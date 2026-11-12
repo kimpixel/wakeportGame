@@ -1666,6 +1666,13 @@ func refresh(terminal: String, setup_idx: int, _focus_idx := -1) -> void:
 	var c: CableSystem = cable_of[terminal]
 	_focus_goal = c.global_transform * Vector3(0.0, 0.0, (c.mast_a_z + c.mast_b_z) * 0.5)
 	_radius_goal = absf(c.mast_b_z - c.mast_a_z) * 0.55 + 30.0
+	if c is FullCable:                       # Rundanlage: Mitte und Ausdehnung aller Masten
+		var fc := c as FullCable
+		var box := AABB(fc.masts_w[0], Vector3.ZERO)
+		for m: Vector3 in fc.masts_w:
+			box = box.expand(m)
+		_focus_goal = box.get_center()
+		_radius_goal = maxf(box.size.x, box.size.z) * 0.55 + 30.0
 	_basis = c.global_basis.orthonormalized()
 	if _focus == Vector3.ZERO:
 		_focus = _focus_goal

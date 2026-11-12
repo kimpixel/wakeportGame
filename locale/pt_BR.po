@@ -299,6 +299,9 @@ msgstr "Órbita"
 msgid "Ufer"
 msgstr "Margem"
 
+msgid "Rundfahrt"
+msgstr "Volta no circuito"
+
 msgid "Runde 7:30"
 msgstr "Rodada 7:30"
 
@@ -376,6 +379,9 @@ msgstr ""
 "Seta ↑ / ↓   no ar Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), no slider (já na aproximação) Nose- / Tailpress, no drift Drift Press, no deck segurar ▼ = largada do deck (alinhada Nolli, atravessada Raley Start)\n"
 "DRIFT (à esquerda, acima de PULO)   soltar a borda (escada do pool só no drift)        Depois de uma queda: segurar NADAR = nadar, SKIP = seguir na hora (−1:00)\n"
 "☰   Menu (pausado): configurações, ajuda, voltar ao deck (modos: nova tentativa), tela inicial, som, sortear cenário, arrancar o cabo liga/desliga (desligado: sem ranking)"
+
+msgid "Rundanlage: das Seil läuft im Kreis über alle Masten, keine Wenden – um die Ecken zieht es dich herum. Nach einem Sturz geht es kurz darauf zurück zum Startsteg (−1:00)."
+msgstr "Cabo completo: o cabo corre em circuito por todas as torres, sem retornos – ele te puxa nas curvas. Depois de uma queda você volta logo ao deck de largada (−1:00)."
 
 msgid "Runde %s"
 msgstr "Rodada %s"
@@ -514,6 +520,9 @@ msgstr "Seu recorde: %s"
 
 msgid "PLATZ %d von %d"
 msgstr "POSIÇÃO %d DE %d"
+
+msgid "Zurück zum Startsteg"
+msgstr "Voltar ao deck de largada"
 
 msgid "FREI"
 msgstr "LIVRE"
@@ -2769,6 +2778,9 @@ msgstr "Bump"
 msgid "Manavgat, Antalya, Türkei"
 msgstr "Manavgat, Antalya, Turquia"
 
+msgid "L2 nach Luftbild"
+msgstr "L2 pela foto aérea"
+
 msgid "Ohne Features"
 msgstr "Sem obstáculos"
 
@@ -2786,6 +2798,9 @@ msgstr "Sistema 2 (L3, sistema de 2 torres)"
 
 msgid "L2"
 msgstr "L2"
+
+msgid "L2 (Rundanlage, 5 Masten)"
+msgstr "L2 (cabo completo, 5 torres)"
 
 msgid "Raunheim, Deutschland"
 msgstr "Raunheim, Alemanha"

@@ -1,6 +1,6 @@
 {
   "source": "Copernicus DEM GLO-30, Sentinel-2 L2A (NDWI/NDVI/TCI) – tools/park_geo.mjs",
-  "water_level": 12.25,
+  "water_level": 12.23,
   "area": {
     "e0": 339365,
     "e1": 340485,
