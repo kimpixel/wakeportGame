@@ -12,10 +12,10 @@ extends CableSystem
 ## werden (Abstände); Bahn-Koordinaten (s entlang des Seils, x seitlich) liefern path_frame / to_lane.
 
 const CORNER_R := 10.0           # m Rundung des Seilwegs an den Auslegerspitzen (Rollen + Ausschwingen des Carriers)
-const MAST_H := 14.0             # m Masthöhe (Rixen: 13–15 m)
+const MAST_OVER := 5.5           # Mastspitze so hoch über dem Ausleger (Foto)
+const MAST_LEAN := 7.0           # Mastspitze so weit zum Wasser geneigt (höchstens 40 % des Auslegers)
 const BOOM_MAX := 45.0           # m längster Ausleger (sonst bleibt die Ecke näher am Mast)
 const CARRIER_GAP := 100.0       # m Abstand der Carrier am Seil (Anzahl = Länge / Abstand)
-const POLE_R := 0.28
 
 var masts_w: Array[Vector3] = []          # Masten (Welt, y = 0) in Fahrtrichtung
 var tips_w: Array[Vector3] = []           # Auslegerspitzen = Ecken des Seilwegs (Welt, y = 0)
@@ -306,39 +306,46 @@ func _ready() -> void:
 	var vis := Node3D.new()
 	vis.top_level = true                   # Grafik in Weltkoordinaten (der Rahmen der Anlage ist nur ein Bezug)
 	add_child(vis)
-	# Masten wie ein Kran: Rohrmast an Land, Fachwerk-Ausleger übers Wasser bis zur Spitze (Rollenbogen),
-	# vom Mastkopf abgespannt; hinten ein kurzer Gegenausleger mit Abspannung zum Boden
+	# Masten nach dem Foto des Motormasts (L2-Start): Dreigurt-Gittermast am Ufer, schräg zum Wasser geneigt;
+	# auf Seilhöhe ein waagrechter Fachwerk-Ausleger bis zur Spitze (Rollenbogen), von der Mastspitze zur
+	# Auslegerspitze und nach hinten zum Boden abgespannt. Am Startmast hängt der Antrieb an der Auslegerspitze.
+	# Alle Stahlteile in zwei zusammengefassten Meshes (Gitter, Seile) – wenige Draw-Calls am Handy.
+	var truss := SurfaceTool.new()
+	truss.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var wires := SurfaceTool.new()
+	wires.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var tube := CylinderMesh.new()
+	tube.top_radius = 1.0
+	tube.bottom_radius = 1.0
+	tube.height = 1.0
+	tube.radial_segments = 6
+	tube.rings = 1
 	var n := masts_w.size()
 	for i in n:
 		var m := masts_w[i]
 		var g := maxf(Geo.height(m.x, m.z) if Geo.in_area(m.x, m.z) else 0.3, 0.0)
-		var top := MAST_H
-		Util.beam(vis, Vector3(m.x, g - 0.5, m.z), Vector3(m.x, top, m.z), POLE_R, galv)
 		var mid := _arc_mid[i]
-		var arm_y := Lake.CABLE_Y + 0.35
 		var out := Vector3(mid.x - m.x, 0.0, mid.z - m.z)
-		var side := out.normalized().cross(Vector3.UP) * 0.35
-		var root := Vector3(m.x, arm_y, m.z)
-		var tip := mid + Vector3(0, arm_y, 0)
-		# Fachwerk: zwei Untergurte, ein Obergurt, Diagonalen
-		var up := Vector3(0, 0.9, 0)
+		var reach := out.length()
+		var od := out / maxf(reach, 0.01)
+		var arm_y := Lake.CABLE_Y + 0.6
+		var apex_y := arm_y + MAST_OVER
+		var lean := minf(MAST_LEAN, reach * 0.4)       # Neigung zum Wasser (Foto: kräftig)
+		var foot := Vector3(m.x, g - 0.3, m.z)
+		var apex := Vector3(m.x, apex_y, m.z) + od * lean
+		var root := foot.lerp(apex, (arm_y - foot.y) / (apex_y - foot.y))
+		var tip := Vector3(mid.x, arm_y, mid.z)
+		_truss(truss, tube, foot, apex, 0.95, 0.6, od)
+		_truss(truss, tube, root, tip, 0.85, 0.6, Vector3.UP)
+		# Abspannung: Mastspitze → Auslegerspitze (zwei), → Auslegermitte; nach hinten zwei zum Boden
+		var side := od.cross(Vector3.UP)
 		for sd: float in [-1.0, 1.0]:
-			Util.beam(vis, root + side * sd, tip + side * sd * 0.6, 0.06, galv)
-		Util.beam(vis, root + up, tip + up * 0.4, 0.06, galv)
-		var segs := maxi(2, int(out.length() / 2.5))
-		for k in segs:
-			var t0 := float(k) / segs
-			var t1 := float(k + 1) / segs
-			var b0 := root.lerp(tip, t0) + side * lerpf(1.0, 0.6, t0) * (1.0 if k % 2 == 0 else -1.0)
-			var u1 := root.lerp(tip, t1) + up * lerpf(1.0, 0.4, t1)
-			Util.beam(vis, b0, u1, 0.03, galv)
-		# Abspannung vom Mastkopf zur Spitze und zum Gegenausleger
-		var back := Vector3(m.x, arm_y, m.z) - out.normalized() * 4.0
-		Util.beam(vis, Vector3(m.x, top, m.z), tip + Vector3(0, 0.4, 0), 0.025, steel)
-		Util.beam(vis, Vector3(m.x, top, m.z), tip.lerp(root, 0.5) + Vector3(0, 0.6, 0), 0.02, steel)
-		Util.beam(vis, root, back, 0.08, galv)
-		Util.beam(vis, Vector3(m.x, top, m.z), back, 0.025, steel)
-		Util.beam(vis, back, Vector3(back.x, g, back.z) - out.normalized() * 3.0, 0.02, steel)
+			wires.append_from(tube, 0, Util.beam_transform(apex, tip + side * sd * 0.35, 0.025))
+			var anchor := Vector3(m.x, 0.0, m.z) - od * 12.0 + side * sd * 7.0
+			anchor.y = Geo.height(anchor.x, anchor.z) if Geo.in_area(anchor.x, anchor.z) else g
+			wires.append_from(tube, 0, Util.beam_transform(apex, anchor, 0.03))
+		wires.append_from(tube, 0, Util.beam_transform(apex, root.lerp(tip, 0.5), 0.02))
+		# Rollen am Bogen und ein Querträger darüber
 		for k in 3:
 			var cu := nearest_u(mid) + (k - 1) * 4.0
 			var wheel := MeshInstance3D.new()
@@ -352,14 +359,25 @@ func _ready() -> void:
 			wheel.position = point_at(cu) + Vector3(0, Lake.CABLE_Y + 0.15, 0)
 			vis.add_child(wheel)
 			_pulleys.append(wheel)
-		Util.beam(vis, point_at(nearest_u(mid) - 5.0) + Vector3(0, Lake.CABLE_Y + 0.35, 0),
-			point_at(nearest_u(mid) + 5.0) + Vector3(0, Lake.CABLE_Y + 0.35, 0), 0.1, galv)
-		Util.box(vis, Vector3(0.3, 0.35, 0.3), Vector3(m.x, top + 0.2, m.z), Util.mat(Color(1.0, 0.45, 0.1), 0.5))
-		if i == 0:                                     # Motormast (Antrieb, Kupplung der Carrier)
-			Util.box(vis, Vector3(2.2, 2.0, 2.2), Vector3(m.x, g + 1.0, m.z), Util.mat(Color(0.9, 0.9, 0.88), 0.6))
-	# Stahlseil entlang des Seilwegs
+			truss.append_from(tube, 0, Util.beam_transform(point_at(cu) + Vector3(0, Lake.CABLE_Y + 0.2, 0),
+				point_at(cu) + Vector3(0, arm_y, 0), 0.06))
+		truss.append_from(tube, 0, Util.beam_transform(point_at(nearest_u(mid) - 4.0) + Vector3(0, arm_y, 0),
+			point_at(nearest_u(mid) + 4.0) + Vector3(0, arm_y, 0), 0.09))
+		Util.box(vis, Vector3(0.3, 0.35, 0.3), apex + Vector3(0, 0.25, 0), Util.mat(Color(1.0, 0.45, 0.1), 0.5))
+		if i == 0:
+			_build_drive(vis, truss, tube, tip, od)
+	var mi := MeshInstance3D.new()
+	mi.mesh = truss.commit()
+	mi.material_override = galv
+	vis.add_child(mi)
+	# Stahlseil entlang des Seilwegs (im selben Mesh wie die Abspannungen)
 	for i in _pts.size() - 1:
-		Util.beam(vis, _pts[i] + Vector3(0, Lake.CABLE_Y, 0), _pts[i + 1] + Vector3(0, Lake.CABLE_Y, 0), 0.03, steel)
+		wires.append_from(tube, 0, Util.beam_transform(_pts[i] + Vector3(0, Lake.CABLE_Y, 0),
+			_pts[i + 1] + Vector3(0, Lake.CABLE_Y, 0), 0.03))
+	var mw := MeshInstance3D.new()
+	mw.mesh = wires.commit()
+	mw.material_override = steel
+	vis.add_child(mw)
 	# Carrier im gleichen Abstand; der erste zieht den Spieler
 	var count := maxi(1, roundi(length / CARRIER_GAP))
 	for k in count:
@@ -370,6 +388,79 @@ func _ready() -> void:
 		_carriers.append(car)
 	_carrier = _carriers[0]
 
+
+## Dreigurt-Fachwerk von a nach b (Breite w0 am Anfang, × taper am Ende), eine Spitze des Dreiecks zeigt nach `up_hint`.
+func _truss(st: SurfaceTool, tube: Mesh, a: Vector3, b: Vector3, w0: float, taper: float, up_hint: Vector3) -> void:
+	var axis := (b - a).normalized()
+	var u := (up_hint - axis * up_hint.dot(axis)).normalized()
+	if u.length() < 0.5:
+		u = axis.cross(Vector3.RIGHT).normalized()
+	var v := axis.cross(u)
+	var offs: Array[Vector3] = []
+	for k in 3:                                    # gleichseitiges Dreieck um die Achse
+		var ang := TAU * k / 3.0
+		offs.append((u * cos(ang) + v * sin(ang)) * w0 * 0.577)
+	var bays := maxi(2, int(a.distance_to(b) / 1.4))
+	for j in bays:
+		var t0 := float(j) / bays
+		var t1 := float(j + 1) / bays
+		var s0 := lerpf(1.0, taper, t0)
+		var s1 := lerpf(1.0, taper, t1)
+		var p0 := a.lerp(b, t0)
+		var p1 := a.lerp(b, t1)
+		for k in 3:
+			var o0 := offs[k] * s0
+			var o1 := offs[k] * s1
+			var on := offs[(k + 1) % 3]
+			st.append_from(tube, 0, Util.beam_transform(p0 + o0, p1 + o1, 0.045))           # Gurt
+			st.append_from(tube, 0, Util.beam_transform(p0 + o0, p0 + on * s0, 0.02))       # Ring
+			var d0 := p0 + (o0 if j % 2 == 0 else on * s0)
+			var d1 := p1 + (on * s1 if j % 2 == 0 else o1)
+			st.append_from(tube, 0, Util.beam_transform(d0, d1, 0.018))                     # Diagonale
+
+
+## Antrieb an der Auslegerspitze des Startmasts (Foto): dunkler Maschinenblock mit Seilscheiben unter dem
+## Ausleger, darüber eine Plattform mit Geländer und ein kleiner weißer Schaltkasten.
+func _build_drive(vis: Node3D, st: SurfaceTool, tube: Mesh, tip: Vector3, od: Vector3) -> void:
+	var dark := Util.mat(Color(0.26, 0.27, 0.28), 0.5)
+	dark.metallic = 0.5
+	var yaw := atan2(od.x, od.z)
+	var block := Util.box(vis, Vector3(1.2, 0.8, 2.2), tip + od * -0.6 + Vector3(0, -0.75, 0), dark)
+	block.rotation.y = yaw
+	var motor := Util.box(vis, Vector3(0.7, 0.7, 1.0), tip + od * -1.9 + Vector3(0, -0.7, 0), Util.mat(Color(0.25, 0.3, 0.36), 0.5))
+	motor.rotation.y = yaw
+	var side := od.cross(Vector3.UP)
+	for k in 2:                                    # große Seilscheiben seitlich am Block
+		var w := MeshInstance3D.new()
+		var c := CylinderMesh.new()
+		c.top_radius = 0.55
+		c.bottom_radius = 0.55
+		c.height = 0.14
+		c.radial_segments = 18
+		w.mesh = c
+		w.material_override = dark
+		w.position = tip + od * (0.2 - k * 1.2) + side * 0.8 + Vector3(0, -0.85, 0)
+		w.basis = Basis(od, side, od.cross(side))   # Achse quer zum Ausleger
+		vis.add_child(w)
+	# Plattform (Gitterrost) mit Geländer über der Spitze
+	var plat_c := tip + od * -0.8 + Vector3(0, 0.55, 0)
+	var plat := Util.box(vis, Vector3(2.4, 0.06, 3.4), plat_c, Util.mat(Color(0.55, 0.57, 0.58), 0.7))
+	plat.rotation.y = yaw
+	var cx := [-1.2, 1.2]
+	var cz := [-1.7, 1.7]
+	var corners: Array[Vector3] = []
+	for zz: float in cz:
+		for xx: float in cx:
+			corners.append(plat_c + side * xx + od * zz)
+	var order := [0, 1, 3, 2, 0]
+	for k in 4:
+		var a: Vector3 = corners[order[k]]
+		var b: Vector3 = corners[order[k + 1]]
+		st.append_from(tube, 0, Util.beam_transform(a + Vector3(0, 1.05, 0), b + Vector3(0, 1.05, 0), 0.03))
+		st.append_from(tube, 0, Util.beam_transform(a + Vector3(0, 0.5, 0), b + Vector3(0, 0.5, 0), 0.02))
+		st.append_from(tube, 0, Util.beam_transform(a, a + Vector3(0, 1.05, 0), 0.03))
+	var cab := Util.box(vis, Vector3(0.6, 0.7, 0.4), plat_c + od * -1.0 + side * 0.5 + Vector3(0, 0.4, 0), Util.mat(Color(0.93, 0.93, 0.9), 0.6))
+	cab.rotation.y = yaw
 
 func _process(_delta: float) -> void:
 	if _carriers.is_empty():

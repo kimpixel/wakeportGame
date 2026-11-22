@@ -80,7 +80,10 @@ Kachel `N36_00_E031_00`).
 - Masten an Land mit Kran-Ausleger (Rixen: 13–15 m, Ausleger übers Wasser); Seil mittig im Kanal (Ausleger 8–25 m lang),
   Seilweg 532 m (Website: 540 m). Kein ausgehobener Wasserstreifen mehr (`carve_loops` leer).
 - Start: Blick zur Insel, Brett quer zum Seil; Steg draußen unter dem Seil, Laufsteg zum Ufer.
-- Motormast am Start: Nutzer hat ein Foto (Google-Vorschau, hier nicht ladbar) – Optik folgt nach Upload.
+- Masten nach dem Foto des Motormasts (`recherche/motormast_l2.webp`, vom Nutzer, „sieht heute noch genauso aus“): Dreigurt-Gittermast
+  am Ufer, zum Wasser geneigt (`MAST_LEAN` 7 m, Spitze `MAST_OVER` 5,5 m über dem Ausleger), waagrechter Fachwerk-Ausleger auf Seilhöhe,
+  Abspannungen Mastspitze → Auslegerspitze und nach hinten zum Boden. Antrieb nur am Startmast **an der Auslegerspitze**
+  (Maschinenblock mit Seilscheiben, darüber Plattform mit Geländer und weißem Schaltkasten).
 - Autopilot fährt mehrere Runden ohne Sturz (Seilzug max. ~800 N).
 
 ## Fehlt noch (vom Nutzer)
