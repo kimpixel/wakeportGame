@@ -82,8 +82,8 @@ Kachel `N36_00_E031_00`).
 - Start: Blick zur Insel, Brett quer zum Seil; Steg draußen unter dem Seil, Laufsteg zum Ufer.
 - Masten nach dem Foto des Motormasts (`recherche/motormast_l2.webp`, vom Nutzer, „sieht heute noch genauso aus“): Dreigurt-Gittermast
   am Ufer, zum Wasser geneigt (`MAST_LEAN` 7 m, Spitze `MAST_OVER` 5,5 m über dem Ausleger), waagrechter Fachwerk-Ausleger auf Seilhöhe,
-  Abspannungen Mastspitze → Auslegerspitze und nach hinten zum Boden. Antrieb nur am Startmast **an der Auslegerspitze**
-  (Maschinenblock mit Seilscheiben, darüber Plattform mit Geländer und weißem Schaltkasten).
+  Abspannungen Mastspitze → Auslegerspitze und nach hinten zum Boden; je Mast **eine** große Umlenkrolle in der Mitte (Nutzer). Antrieb nur am Startmast **an der Auslegerspitze**
+  (Maschinenblock mit Motor, darüber Plattform mit Geländer und weißem Schaltkasten).
 - Autopilot fährt mehrere Runden ohne Sturz (Seilzug max. ~800 N).
 
 ## Fehlt noch (vom Nutzer)

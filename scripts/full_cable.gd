@@ -14,6 +14,7 @@ extends CableSystem
 const CORNER_R := 10.0           # m Rundung des Seilwegs an den Auslegerspitzen (Rollen + Ausschwingen des Carriers)
 const MAST_OVER := 5.5           # Mastspitze so hoch über dem Ausleger (Foto)
 const MAST_LEAN := 7.0           # Mastspitze so weit zum Wasser geneigt (höchstens 40 % des Auslegers)
+const PULLEY_R := 1.2            # m Radius der Umlenkrolle an jeder Ecke (eine große je Mast)
 const BOOM_MAX := 45.0           # m längster Ausleger (sonst bleibt die Ecke näher am Mast)
 const CARRIER_GAP := 100.0       # m Abstand der Carrier am Seil (Anzahl = Länge / Abstand)
 
@@ -345,24 +346,25 @@ func _ready() -> void:
 			anchor.y = Geo.height(anchor.x, anchor.z) if Geo.in_area(anchor.x, anchor.z) else g
 			wires.append_from(tube, 0, Util.beam_transform(apex, anchor, 0.03))
 		wires.append_from(tube, 0, Util.beam_transform(apex, root.lerp(tip, 0.5), 0.02))
-		# Rollen am Bogen und ein Querträger darüber
-		for k in 3:
-			var cu := nearest_u(mid) + (k - 1) * 4.0
-			var wheel := MeshInstance3D.new()
-			var c := CylinderMesh.new()
-			c.top_radius = 0.45
-			c.bottom_radius = 0.45
-			c.height = 0.12
-			c.radial_segments = 16
-			wheel.mesh = c
-			wheel.material_override = steel
-			wheel.position = point_at(cu) + Vector3(0, Lake.CABLE_Y + 0.15, 0)
-			vis.add_child(wheel)
-			_pulleys.append(wheel)
-			truss.append_from(tube, 0, Util.beam_transform(point_at(cu) + Vector3(0, Lake.CABLE_Y + 0.2, 0),
-				point_at(cu) + Vector3(0, arm_y, 0), 0.06))
-		truss.append_from(tube, 0, Util.beam_transform(point_at(nearest_u(mid) - 4.0) + Vector3(0, arm_y, 0),
-			point_at(nearest_u(mid) + 4.0) + Vector3(0, arm_y, 0), 0.09))
+		# Eine große Umlenkrolle unter der Auslegerspitze (Nutzer: nur eine, groß, in der Mitte); ihr Rand
+		# berührt das Seil in der Mitte des Bogens, die Achse hängt am Ausleger
+		var cu := nearest_u(mid)
+		var inner := tangent_at(cu + 2.0) - tangent_at(cu - 2.0)
+		inner = inner.normalized() if inner.length() > 0.001 else -od
+		var hub := point_at(cu) + inner * PULLEY_R + Vector3(0, Lake.CABLE_Y, 0)
+		var wheel := MeshInstance3D.new()
+		var c := CylinderMesh.new()
+		c.top_radius = PULLEY_R
+		c.bottom_radius = PULLEY_R
+		c.height = 0.16
+		c.radial_segments = 28
+		wheel.mesh = c
+		wheel.material_override = steel
+		wheel.position = hub
+		vis.add_child(wheel)
+		_pulleys.append(wheel)
+		truss.append_from(tube, 0, Util.beam_transform(hub - Vector3(0, 0.15, 0), Vector3(hub.x, arm_y, hub.z), 0.09))
+		truss.append_from(tube, 0, Util.beam_transform(Vector3(hub.x, arm_y, hub.z), tip, 0.08))
 		Util.box(vis, Vector3(0.3, 0.35, 0.3), apex + Vector3(0, 0.25, 0), Util.mat(Color(1.0, 0.45, 0.1), 0.5))
 		if i == 0:
 			_build_drive(vis, truss, tube, tip, od)
@@ -419,7 +421,7 @@ func _truss(st: SurfaceTool, tube: Mesh, a: Vector3, b: Vector3, w0: float, tape
 			st.append_from(tube, 0, Util.beam_transform(d0, d1, 0.018))                     # Diagonale
 
 
-## Antrieb an der Auslegerspitze des Startmasts (Foto): dunkler Maschinenblock mit Seilscheiben unter dem
+## Antrieb an der Auslegerspitze des Startmasts (Foto): dunkler Maschinenblock mit Motor unter dem
 ## Ausleger, darüber eine Plattform mit Geländer und ein kleiner weißer Schaltkasten.
 func _build_drive(vis: Node3D, st: SurfaceTool, tube: Mesh, tip: Vector3, od: Vector3) -> void:
 	var dark := Util.mat(Color(0.26, 0.27, 0.28), 0.5)
@@ -430,18 +432,6 @@ func _build_drive(vis: Node3D, st: SurfaceTool, tube: Mesh, tip: Vector3, od: Ve
 	var motor := Util.box(vis, Vector3(0.7, 0.7, 1.0), tip + od * -1.9 + Vector3(0, -0.7, 0), Util.mat(Color(0.25, 0.3, 0.36), 0.5))
 	motor.rotation.y = yaw
 	var side := od.cross(Vector3.UP)
-	for k in 2:                                    # große Seilscheiben seitlich am Block
-		var w := MeshInstance3D.new()
-		var c := CylinderMesh.new()
-		c.top_radius = 0.55
-		c.bottom_radius = 0.55
-		c.height = 0.14
-		c.radial_segments = 18
-		w.mesh = c
-		w.material_override = dark
-		w.position = tip + od * (0.2 - k * 1.2) + side * 0.8 + Vector3(0, -0.85, 0)
-		w.basis = Basis(od, side, od.cross(side))   # Achse quer zum Ausleger
-		vis.add_child(w)
 	# Plattform (Gitterrost) mit Geländer über der Spitze
 	var plat_c := tip + od * -0.8 + Vector3(0, 0.55, 0)
 	var plat := Util.box(vis, Vector3(2.4, 0.06, 3.4), plat_c, Util.mat(Color(0.55, 0.57, 0.58), 0.7))
@@ -474,4 +464,4 @@ func _process(_delta: float) -> void:
 		var f := tangent_at(cu)
 		car.rotation.y = atan2(-f.x, -f.z)
 	for p in _pulleys:
-		p.rotation.y = -cable_travel / 0.45
+		p.rotation.y = -cable_travel / PULLEY_R
