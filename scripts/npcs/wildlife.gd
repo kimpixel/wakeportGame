@@ -65,7 +65,13 @@ var _flies_on := false
 var _bats_on := false
 
 
+## Nur am Wakeport: Reviere und Wege der Tiere sind dort fest eingemessen (andere Parks: keine Tiere).
+var enabled := true
+
+
 func build() -> void:
+	if not enabled:
+		return
 	_build_grebes()
 	_build_swans()
 	_build_heron()
@@ -78,6 +84,8 @@ func build() -> void:
 
 ## Weather.changed: wer ist gerade da?
 func apply_season(w: Weather) -> void:
+	if not enabled:
+		return
 	var m := w.month()
 	var night := w.daylight < 0.3
 	_grebes_on = m >= 3 and m <= 11
@@ -106,7 +114,7 @@ func apply_season(w: Weather) -> void:
 
 ## Kraniche gerade über dem See (für den Erfolg "Zugvogel").
 func cranes_overhead() -> bool:
-	if _crane_t < 0.0 or player == null:
+	if not enabled or _crane_t < 0.0 or player == null:
 		return false
 	var c := _cranes.global_position
 	return Vector2(c.x - player.pos.x, c.z - player.pos.z).length() < 260.0
@@ -649,6 +657,8 @@ func _ellipsoid(parent: Node3D, size: Vector3, pos: Vector3, mat: Material) -> M
 
 
 func _process(delta: float) -> void:
+	if not enabled:
+		return
 	_t += delta
 	_move_grebes(delta)
 	_move_swans(delta)

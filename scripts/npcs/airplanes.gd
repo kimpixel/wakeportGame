@@ -58,7 +58,13 @@ func _ready() -> void:
 		_fill_rush()
 
 
+## Nur am Wakeport (Einflugschneise Frankfurt).
+var enabled := true
+
+
 func _process(delta: float) -> void:
+	if not enabled:
+		return
 	_t += delta
 	_next -= delta
 	if _next <= 0.0:

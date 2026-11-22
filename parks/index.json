@@ -1,0 +1,8 @@
+{
+  "_info": "Liste der Wakeparks (World Map). Neuer Park: Ordner parks/<id>/ mit park.json anlegen und hier eintragen (siehe parks/README.md).",
+  "default": "wakeport",
+  "parks": [
+    { "id": "wakeport", "file": "res://parks/wakeport/park.json" },
+    { "id": "hipnotics", "file": "res://parks/hipnotics/park.json" }
+  ]
+}

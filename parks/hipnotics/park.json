@@ -1,0 +1,29 @@
+{
+  "_info": "Hip-Notics Cable Park (Manavgat/Antalya). Masten aus Wegpunkten des Nutzers, Geodaten aus tools/park_geo.mjs (parks/hipnotics/geo_quelle.json). L2 = Rundanlage (noch nicht fahrbar, Phase 4); L1 (6 Masten) fehlt noch. Recherche: NOTIZEN.md.",
+  "id": "hipnotics",
+  "name": "Hip-Notics Cable Park",
+  "place": "Manavgat, Antalya, Türkei",
+  "country": "TR",
+  "location": { "lat": 36.9118, "lon": 31.2022 },
+  "timezone": { "utc": 3, "dst": "" },
+  "geo": "res://parks/hipnotics/geo/",
+  "geo_axis": [0, 1],
+  "setups": "res://parks/hipnotics/setups/index.json",
+  "plants": "res://parks/hipnotics/plants.json",
+  "scenery": "simple",
+  "default_system": "L2",
+  "systems": [
+    {
+      "id": "S1", "name": "System 1", "hint": "System 1 (L3, 2-Mast-Anlage)", "type": "2.0", "origin": true,
+      "masts": ["s1_start", "s1_end"], "dock": { "auto": true }
+    },
+    {
+      "id": "S2", "name": "System 2", "hint": "System 2 (L3, 2-Mast-Anlage)", "type": "2.0",
+      "masts": ["s2_start", "s2_end"], "dock": { "auto": true }
+    },
+    {
+      "id": "L2", "name": "L2", "hint": "L2 (Rundanlage, 5 Masten)", "type": "full",
+      "masts": ["l2_1", "l2_2", "l2_3", "l2_4", "l2_5"]
+    }
+  ]
+}

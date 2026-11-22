@@ -1,0 +1,26 @@
+{
+  "_info": "Konfiguration eines Wakeparks (siehe parks/README.md). Spielkoordinaten: Ursprung = Startmast der Anlage mit \"origin\": true, -z entlang ihres Seils.",
+  "id": "wakeport",
+  "name": "Wakeport Raunheim",
+  "place": "Raunheim, Deutschland",
+  "country": "DE",
+  "location": { "lat": 50.0122, "lon": 8.4773 },
+  "timezone": { "utc": 1, "dst": "eu" },
+  "geo": "res://assets/geo/",
+  "setups": "res://setups/index.json",
+  "plants": "res://setups/plants.json",
+  "scenery": "wakeport",
+  "default_system": "T2",
+  "system_label": "TERMINAL",
+  "systems": [
+    {
+      "id": "T1", "name": "Terminal 1", "hint": "Terminal 1 (Lounge-Steg)", "type": "2.0",
+      "masts": ["t1_start", "t1_end"], "end_extend": 35.0, "center_shift": 10.5,
+      "dock": { "rel": [21.9, -29.5], "size": [7.0, 4.4], "y": 0.33, "start_dx": 1.5, "start_back": 9.0, "turn_back": 16.0 }
+    },
+    {
+      "id": "T2", "name": "Terminal 2", "hint": "Terminal 2 (Strand)", "type": "2.0", "origin": true,
+      "masts": ["t2_start", "t2_end"], "end_extend": 35.0, "center_shift": 12.5, "turn_a_z": -28.0
+    }
+  ]
+}

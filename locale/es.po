@@ -299,6 +299,9 @@ msgstr "Órbita"
 msgid "Ufer"
 msgstr "Orilla"
 
+msgid "Rundfahrt"
+msgstr "Vuelta al circuito"
+
 msgid "Runde 7:30"
 msgstr "Ronda 7:30"
 
@@ -376,6 +379,9 @@ msgstr ""
 "Flecha ↑ / ↓   en el aire Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), en el slider (ya en la aproximación) Nose- / Tailpress, en drift Drift Press, en el muelle mantener ▼ = salida desde el muelle (alineada Nolli, atravesada Raley Start)\n"
 "DRIFT (izquierda, sobre SALTO)   soltar el canto (escalera del pool solo en drift)        Tras una caída: mantener NADAR = nadar, SKIP = seguir enseguida (−1:00)\n"
 "☰   Menú (en pausa): ajustes, ayuda, volver al muelle (modos: nuevo intento), inicio, sonido, escenario al azar, arranque de cuerda on/off (off: sin ranking)"
+
+msgid "Rundanlage: das Seil läuft im Kreis über alle Masten, keine Wenden – um die Ecken zieht es dich herum. Nach einem Sturz geht es kurz darauf zurück zum Startsteg (−1:00)."
+msgstr "Cable completo: el cable gira en circuito por todas las torres, sin giros de vuelta – te arrastra en las curvas. Tras una caída vuelves poco después al muelle de salida (−1:00)."
 
 msgid "Runde %s"
 msgstr "Ronda %s"
@@ -515,8 +521,18 @@ msgstr "Tu récord: %s"
 msgid "PLATZ %d von %d"
 msgstr "PUESTO %d DE %d"
 
+msgid "Zurück zum Startsteg"
+msgstr "Volver al muelle de salida"
+
 msgid "FREI"
 msgstr "LIBRE"
+
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Kamera: %s%s"
+msgstr ""
+"Rider %d km/h   ·   Cable %s: %s (velocidad %d km/h)\n"
+"Cámara: %s%s"
 
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
@@ -586,12 +602,6 @@ msgstr "¡Te estrellaste contra el barco!"
 msgid "Boot crash!"
 msgstr "¡Choque con el barco!"
 
-msgid "Terminal 1"
-msgstr "Terminal 1"
-
-msgid "Terminal 2"
-msgstr "Terminal 2"
-
 msgid "MODUS"
 msgstr "MODO"
 
@@ -603,6 +613,15 @@ msgstr "Añadir música"
 
 msgid "Vom Blitz getroffen!"
 msgstr "¡Te alcanzó un rayo!"
+
+msgid "2-Mast-Anlage (2.0)"
+msgstr "Sistema de 2 torres (2.0)"
+
+msgid "Rundanlage"
+msgstr "Cable completo"
+
+msgid "ANLAGE"
+msgstr "CABLE"
 
 msgid "Bodenpflanzen (Gräser, Schilf)"
 msgstr "Plantas bajas (hierbas, juncos)"
@@ -1777,12 +1796,6 @@ msgstr "EDITOR DE SETUP"
 msgid "Name des Setups"
 msgstr "Nombre del setup"
 
-msgid "Terminal 2 (Strand)"
-msgstr "Terminal 2 (playa)"
-
-msgid "Terminal 1 (Lounge-Steg)"
-msgstr "Terminal 1 (muelle lounge)"
-
 msgid "Rückgängig"
 msgstr "Deshacer"
 
@@ -2110,11 +2123,14 @@ msgstr "Torre final"
 msgid "WAKE THE HACK"
 msgstr "WAKE THE HACK"
 
-msgid "Wakeport Raunheim"
-msgstr "Wakeport Raunheim"
-
 msgid "„%s“"
 msgstr "«%s»"
+
+msgid "WAKEPARK"
+msgstr "WAKEPARK"
+
+msgid "World Map: anderen Wakepark wählen"
+msgstr "Mapa mundial: elegir otro wakepark"
 
 msgid "SPIELMODUS"
 msgstr "MODO DE JUEGO"
@@ -2577,6 +2593,18 @@ msgstr "Escenario al azar"
 msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
 msgstr "Arranque de cuerda on/off  (off: sin ranking)"
 
+msgid "WAKEPARK WÄHLEN"
+msgstr "ELEGIR WAKEPARK"
+
+msgid "ANLAGEN"
+msgstr "CABLES"
+
+msgid "HIER FAHREN"
+msgstr "RIDEAR AQUÍ"
+
+msgid "%s (kommt bald)"
+msgstr "%s (próximamente)"
+
 msgid "Sonnig"
 msgstr "Soleado"
 
@@ -2753,4 +2781,46 @@ msgstr "Pelota"
 
 msgid "Bump"
 msgstr "Bump"
+
+msgid "Manavgat, Antalya, Türkei"
+msgstr "Manavgat, Antalya, Turquía"
+
+msgid "L2 nach Luftbild"
+msgstr "L2 según foto aérea"
+
+msgid "Ohne Features"
+msgstr "Sin obstáculos"
+
+msgid "System 1"
+msgstr "Sistema 1"
+
+msgid "System 1 (L3, 2-Mast-Anlage)"
+msgstr "Sistema 1 (L3, sistema de 2 torres)"
+
+msgid "System 2"
+msgstr "Sistema 2"
+
+msgid "System 2 (L3, 2-Mast-Anlage)"
+msgstr "Sistema 2 (L3, sistema de 2 torres)"
+
+msgid "L2"
+msgstr "L2"
+
+msgid "L2 (Rundanlage, 5 Masten)"
+msgstr "L2 (cable completo, 5 torres)"
+
+msgid "Raunheim, Deutschland"
+msgstr "Raunheim, Alemania"
+
+msgid "Terminal 1"
+msgstr "Terminal 1"
+
+msgid "Terminal 1 (Lounge-Steg)"
+msgstr "Terminal 1 (muelle lounge)"
+
+msgid "Terminal 2"
+msgstr "Terminal 2"
+
+msgid "Terminal 2 (Strand)"
+msgstr "Terminal 2 (playa)"
 

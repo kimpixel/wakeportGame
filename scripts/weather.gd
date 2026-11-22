@@ -335,11 +335,16 @@ func set_now() -> void:
 	_sync_clock()
 	apply()
 	_http.cancel_request()
-	_http.request(API % [SunCalc.LAT, SunCalc.LON])
+	_http.request(API % [Park.lat(), Park.lon()])
 
 
+## Jetzt = Ortszeit am Park (UTC + Zeitzone des Parks), nicht die Uhr des Rechners.
 func _sync_clock() -> void:
-	var now := Time.get_datetime_dict_from_system()
+	var utc := Time.get_unix_time_from_system()
+	var now := Time.get_datetime_dict_from_unix_time(int(utc))
+	var y := int(now["year"])
+	var off := Park.utc_offset(y, SunCalc.day_of_year(y, int(now["month"]), int(now["day"])))
+	now = Time.get_datetime_dict_from_unix_time(int(utc) + off * 3600)
 	year = int(now["year"])
 	day = SunCalc.day_of_year(year, int(now["month"]), int(now["day"]))
 	hour = float(now["hour"]) + float(now["minute"]) / 60.0

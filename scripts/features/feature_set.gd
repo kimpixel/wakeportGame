@@ -6,9 +6,19 @@ extends Node3D
 
 const PARTS_FILE := "res://setups/parts.json"
 const TR_REF_WIDTH := 3.2        # Transition Rail: Breite, auf die sich die x-Positionen in den Setups beziehen
-const INDEX_FILE := "res://setups/index.json"
-const USER_DIR := "user://setups"                  # eigene Setups aus dem Setup-Editor
-const USER_INDEX := "user://setups/index.json"
+## Liste der Setups des Parks (Wakeport: res://setups/index.json, siehe Park.setups_index).
+static func index_file() -> String:
+	return Park.setups_index()
+
+
+## Eigene Setups aus dem Setup-Editor (Wakeport: user://setups, andere Parks: user://setups/<park>).
+static func user_dir() -> String:
+	return "user://setups" + ("/" + Park.id if Park.board_prefix() != "" else "")
+
+
+static func user_index() -> String:
+	return user_dir() + "/index.json"
+
 const OVERRIDES := ["length", "width", "height", "height_end", "ramp_in", "ramp_out", "ramp_curve", "side_ramp", "curve", "radius", "center_y", "color", "name", "body", "inner_v", "article", "body_curve", "profile", "side_curve", "lip", "round_top", "black_top"]
 
 var parts: Array[FeaturePart] = []
@@ -106,7 +116,7 @@ var _catalog: Dictionary = {}
 ## Alle Setups aus setups/index.json: [{"id", "name", "date", "file"}, …] (neuestes zuerst),
 ## danach die eigenen aus dem Setup-Editor (mit "user": true).
 static func list_setups() -> Array:
-	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(INDEX_FILE))
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(index_file()))
 	var out: Array = data.get("setups", []) if data is Dictionary else []
 	for e: Dictionary in user_setups():
 		var u := e.duplicate()
@@ -117,16 +127,16 @@ static func list_setups() -> Array:
 
 ## Eigene Setups (user://setups/index.json).
 static func user_setups() -> Array:
-	if not FileAccess.file_exists(USER_INDEX):
+	if not FileAccess.file_exists(user_index()):
 		return []
-	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(USER_INDEX))
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(user_index()))
 	return data.get("setups", []) if data is Dictionary else []
 
 
 ## Eigenes Setup speichern (neu oder überschreiben). Gibt die Datei zurück ("" bei Fehler).
 static func save_user_setup(id: String, setup: Dictionary) -> String:
-	DirAccess.make_dir_recursive_absolute(USER_DIR)
-	var file := "%s/%s.json" % [USER_DIR, id]
+	DirAccess.make_dir_recursive_absolute(user_dir())
+	var file := "%s/%s.json" % [user_dir(), id]
 	var f := FileAccess.open(file, FileAccess.WRITE)
 	if f == null:
 		push_warning("Konnte %s nicht schreiben" % file)
@@ -157,7 +167,7 @@ static func delete_user_setup(id: String) -> void:
 
 
 static func _write_user_index(list: Array) -> void:
-	var f := FileAccess.open(USER_INDEX, FileAccess.WRITE)
+	var f := FileAccess.open(user_index(), FileAccess.WRITE)
 	if f:
 		f.store_string(JSON.stringify({"setups": list}, "  ", false))
 		f.close()
@@ -175,7 +185,7 @@ static func read_catalog() -> Dictionary:
 
 
 ## Entfernt das aktuelle Setup und baut das Setup aus file auf.
-## terminals: z. B. {"T1": cable_t1, "T2": cable}
+## terminals: Anlagen-id -> CableSystem, z. B. main.gd cables ({"T1": …, "T2": …})
 ## s_offset: pro Terminal zusätzlicher Abstand (m) – die Setups sind vom T2-Startsteg aus
 ## gemessen; liegt der Startsteg einer Anlage weiter draußen, rücken ihre Teile mit.
 func load_setup(file: String, terminals: Dictionary, s_offset := {}) -> void:
@@ -265,14 +275,14 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 	part.row_index = row.get("_row", -1)
 	part.cable = cable
 	part.collide = colliders
-	var world := cable.transform * Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, cable.mast_a_z)) * local
+	var world := cable.place_xf(local)          # 2-Mast-Anlage: entlang -z; Rundanlage: entlang des Seils (FullCable)
 	part.transform = world
-	var on_cable := cable.transform.affine_inverse() * world.origin
-	part.s_center = cable.mast_a_z - on_cable.z
-	part.x_center = on_cable.x
+	var on_cable := cable.to_lane(world.origin)  # (s, x) auf der Bahn
+	part.s_center = on_cable.x
+	part.x_center = on_cable.y
 	# Auf welcher Seite (lokal v) liegt das Seil? Dort sind Transitions / seitliche Auffahrten.
-	var side_pt := cable.transform.affine_inverse() * (world * Vector3(1.0, 0.0, 0.0))
-	part.inner_v = 1.0 if absf(side_pt.x) < absf(on_cable.x) else -1.0
+	var side_pt := cable.to_lane(world * Vector3(1.0, 0.0, 0.0))
+	part.inner_v = 1.0 if absf(side_pt.y) < absf(on_cable.y) else -1.0
 	if p.has("inner_v"):
 		part.inner_v = signf(float(p["inner_v"]))      # z. B. gespiegelte 1/2 Transition Rails
 	# Transition Rail: Setup-Positionen beziehen sich auf die alte Breite (TR_REF_WIDTH). Breiter wird es nur
@@ -280,9 +290,9 @@ func _place(row: Dictionary, cable: CableSystem, file: String, parent := Transfo
 	if part.type == "transition" and part.width != TR_REF_WIDTH:
 		world = world * Transform3D(Basis.IDENTITY, Vector3((part.width - TR_REF_WIDTH) * 0.5 * part.inner_v, 0.0, 0.0))
 		part.transform = world
-		on_cable = cable.transform.affine_inverse() * world.origin
-		part.s_center = cable.mast_a_z - on_cable.z
-		part.x_center = on_cable.x
+		on_cable = cable.to_lane(world.origin)
+		part.s_center = on_cable.x
+		part.x_center = on_cable.y
 	add_child(part)
 	parts.append(part)
 	if part.type == "pool":

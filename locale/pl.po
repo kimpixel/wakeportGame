@@ -300,6 +300,9 @@ msgstr "Orbita"
 msgid "Ufer"
 msgstr "Brzeg"
 
+msgid "Rundfahrt"
+msgstr "Jazda po okręgu"
+
 msgid "Runde 7:30"
 msgstr "Runda 7:30"
 
@@ -377,6 +380,9 @@ msgstr ""
 "Strzałka ↑ / ↓   w powietrzu Frontroll / Backroll (Invert: ▲ S-Bend, ▼ Backroll), na sliderze (już przy dojeździe) Nose- / Tailpress, w drifcie Drift Press, na pomoście trzymaj ▼ = start z pomostu (wzdłuż Nolli, w poprzek Raley Start)\n"
 "DRIFT (po lewej, nad SKOK)   puszczenie krawędzi (schody w poolu tylko w drifcie)        Po upadku: trzymaj PŁYŃ = płynięcie, SKIP = od razu dalej (−1:00)\n"
 "☰   Menu (pauza): ustawienia, pomoc, powrót na pomost (tryby: nowa próba), ekran startowy, dźwięk, losuj scenariusz, wyrywanie liny wł./wył. (wył.: bez rankingu)"
+
+msgid "Rundanlage: das Seil läuft im Kreis über alle Masten, keine Wenden – um die Ecken zieht es dich herum. Nach einem Sturz geht es kurz darauf zurück zum Startsteg (−1:00)."
+msgstr "Wyciąg pełnowymiarowy: lina biegnie w pętli przez wszystkie maszty, bez nawrotów – przeciąga cię przez zakręty. Po upadku wkrótce wracasz na pomost startowy (−1:00)."
 
 msgid "Runde %s"
 msgstr "Runda %s"
@@ -516,8 +522,18 @@ msgstr "Twój rekord: %s"
 msgid "PLATZ %d von %d"
 msgstr "MIEJSCE %d Z %d"
 
+msgid "Zurück zum Startsteg"
+msgstr "Powrót na pomost startowy"
+
 msgid "FREI"
 msgstr "WOLNA"
+
+msgid ""
+"Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
+"Kamera: %s%s"
+msgstr ""
+"Rider %d km/h   ·   Wyciąg %s: %s (prędkość %d km/h)\n"
+"Kamera: %s%s"
 
 msgid ""
 "Fahrer %d km/h   ·   Anlage %s: %s (Tempo %d km/h)\n"
@@ -587,12 +603,6 @@ msgstr "Wjechałeś w łódź!"
 msgid "Boot crash!"
 msgstr "Kraksa z łodzią!"
 
-msgid "Terminal 1"
-msgstr "Terminal 1"
-
-msgid "Terminal 2"
-msgstr "Terminal 2"
-
 msgid "MODUS"
 msgstr "TRYB"
 
@@ -604,6 +614,15 @@ msgstr "Dodaj muzykę"
 
 msgid "Vom Blitz getroffen!"
 msgstr "Trafiony piorunem!"
+
+msgid "2-Mast-Anlage (2.0)"
+msgstr "Wyciąg 2-masztowy (2.0)"
+
+msgid "Rundanlage"
+msgstr "Wyciąg pełnowymiarowy"
+
+msgid "ANLAGE"
+msgstr "WYCIĄG"
 
 msgid "Bodenpflanzen (Gräser, Schilf)"
 msgstr "Rośliny niskie (trawy, trzcina)"
@@ -1781,12 +1800,6 @@ msgstr "EDYTOR SETUPU"
 msgid "Name des Setups"
 msgstr "Nazwa setupu"
 
-msgid "Terminal 2 (Strand)"
-msgstr "Terminal 2 (plaża)"
-
-msgid "Terminal 1 (Lounge-Steg)"
-msgstr "Terminal 1 (pomost lounge)"
-
 msgid "Rückgängig"
 msgstr "Cofnij"
 
@@ -2115,11 +2128,14 @@ msgstr "Maszt końcowy"
 msgid "WAKE THE HACK"
 msgstr "WAKE THE HACK"
 
-msgid "Wakeport Raunheim"
-msgstr "Wakeport Raunheim"
-
 msgid "„%s“"
 msgstr "„%s”"
+
+msgid "WAKEPARK"
+msgstr "WAKEPARK"
+
+msgid "World Map: anderen Wakepark wählen"
+msgstr "Mapa świata: wybierz inny wakepark"
 
 msgid "SPIELMODUS"
 msgstr "TRYB GRY"
@@ -2583,6 +2599,18 @@ msgstr "Losuj scenariusz"
 msgid "Seil-Abreißen an/aus  (aus: keine Rangliste)"
 msgstr "Wyrywanie liny wł./wył.  (wył.: bez rankingu)"
 
+msgid "WAKEPARK WÄHLEN"
+msgstr "WYBIERZ WAKEPARK"
+
+msgid "ANLAGEN"
+msgstr "WYCIĄGI"
+
+msgid "HIER FAHREN"
+msgstr "JEDŹ TUTAJ"
+
+msgid "%s (kommt bald)"
+msgstr "%s (wkrótce)"
+
 msgid "Sonnig"
 msgstr "Słonecznie"
 
@@ -2759,4 +2787,46 @@ msgstr "Piłka"
 
 msgid "Bump"
 msgstr "Bump"
+
+msgid "Manavgat, Antalya, Türkei"
+msgstr "Manavgat, Antalya, Turcja"
+
+msgid "L2 nach Luftbild"
+msgstr "L2 wg zdjęcia lotniczego"
+
+msgid "Ohne Features"
+msgstr "Bez przeszkód"
+
+msgid "System 1"
+msgstr "System 1"
+
+msgid "System 1 (L3, 2-Mast-Anlage)"
+msgstr "System 1 (L3, wyciąg 2-masztowy)"
+
+msgid "System 2"
+msgstr "System 2"
+
+msgid "System 2 (L3, 2-Mast-Anlage)"
+msgstr "System 2 (L3, wyciąg 2-masztowy)"
+
+msgid "L2"
+msgstr "L2"
+
+msgid "L2 (Rundanlage, 5 Masten)"
+msgstr "L2 (wyciąg pełnowymiarowy, 5 masztów)"
+
+msgid "Raunheim, Deutschland"
+msgstr "Raunheim, Niemcy"
+
+msgid "Terminal 1"
+msgstr "Terminal 1"
+
+msgid "Terminal 1 (Lounge-Steg)"
+msgstr "Terminal 1 (pomost lounge)"
+
+msgid "Terminal 2"
+msgstr "Terminal 2"
+
+msgid "Terminal 2 (Strand)"
+msgstr "Terminal 2 (plaża)"
 

@@ -320,6 +320,19 @@ func _remaining() -> float:
 	return (_target() - s) * dir
 
 
+## Lage eines Features (Setup-Zeile: lokal = Drehung + (x, 0, -s) ab dem Startmast) in der Welt. Rundanlagen
+## (FullCable) legen s entlang des Seils.
+func place_xf(local: Transform3D) -> Transform3D:
+	return transform * Transform3D(Basis.IDENTITY, Vector3(0.0, 0.0, mast_a_z)) * local
+
+
+## Welt -> (s, x) auf der Bahn: s = Abstand vom Startmast entlang des Seils, x = seitlich (+ rechts in Fahrtrichtung
+## zum Endmast).
+func to_lane(world: Vector3) -> Vector2:
+	var l := transform.affine_inverse() * world
+	return Vector2(mast_a_z - l.z, l.x)
+
+
 ## Aufhängepunkt des Zugseils (Physik), in Weltkoordinaten.
 func get_anchor() -> Vector3:
 	return transform * Vector3(Lake.PULLEY_RADIUS, Lake.CABLE_Y - CARRIER_HANG, s)

@@ -65,6 +65,10 @@ var _sup_extra_built := false
 var _weather: Weather
 
 
+## SUPs nur am Wakeport (Badebereich, Seemitte sind dort eingemessen).
+var sups_on := true
+
+
 func build() -> void:
 	for t: String in beach.operator_paths:
 		var op := Person.new()
@@ -89,7 +93,8 @@ func build() -> void:
 		if not w.setup(models[i % models.size()]):
 			w.queue_free()
 		i += 1
-	_build_sups()
+	if sups_on:
+		_build_sups()                       # Runden im Raunheimer Badebereich (nur Wakeport)
 	_build_pike()
 	_build_insects()
 
@@ -102,7 +107,7 @@ func apply_season(w: Weather) -> void:
 	_pike_rate = 0.6 if m in [4, 5, 9, 10] else 1.0
 	# SUPs: Winter/Regen/Nacht keine, Übergangszeit wenige, Sommer alle, Hitzetag noch mehr
 	var n := 0
-	if w.rain_now < 0.3 and w.snow_now == 0.0 and w.daylight > 0.5:
+	if sups_on and w.rain_now < 0.3 and w.snow_now == 0.0 and w.daylight > 0.5:
 		if w.warm > 0.75:
 			n = 4
 		elif w.warm > 0.55:
@@ -162,12 +167,12 @@ func operator(t: String) -> Node3D:
 	return _operators.get(t, null)
 
 
-## Wer schaut auf wen: die Steuermänner auf den Fahrer ihrer Anlage, die Wartenden auf den Spieler.
-func set_watch(t2_rider: Node3D, t1_rider: Node3D) -> void:
-	if _operators.has("T2"):
-		_operators["T2"].watch = t2_rider
-	if _operators.has("T1"):
-		_operators["T1"].watch = t1_rider
+## Wer schaut auf wen: die Steuermänner auf den Fahrer ihrer Anlage (riders: Anlagen-id -> Fahrer), die Wartenden
+## auf den Spieler.
+func set_watch(riders: Dictionary) -> void:
+	for t: String in riders:
+		if _operators.has(t):
+			_operators[t].watch = riders[t]
 	for c in get_children():
 		if c is Person and (c as Person).kind.begins_with("wait"):
 			(c as Person).watch = player
